@@ -1,21 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&display=swap");
+
+@import "@/components/ui/Inbox/style.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --color-primary: #c1d5e9;
+  --color-primary-light: #d3e2f0;
+  --color-primary-lighter: #e5eef7;
+  --color-primary-dark: #46525f;
+  --color-primary-darker: #252c33;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  --color-background-dark: #151516;
+  --color-background-light: #707070;
+  --color-background-darker: #111111;
+  --color-background-main: #1a1b1c;
+  --color-background-lighter: #909090;
+  --color-background-darkest: #050505;
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  --color-discord-blue: #5964f2;
+  --color-discord-blue-light: #7883f5;
+  --color-discord-blue-dark: #3a45ef;
+
+  --color-discord-yellow: #f0b133;
+  --color-discord-yellow-light: #f4c35c;
+  --color-discord-yellow-dark: #ec9f0a;
+
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 900;
+
+  --font-Zen: "Zen Kaku Gothic New", sans-serif;
+  --font-Figtree: "Figtree", sans-serif;
+  --font-DM: "DM Sans", sans-serif;
 }
