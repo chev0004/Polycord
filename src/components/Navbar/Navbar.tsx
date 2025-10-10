@@ -8,12 +8,14 @@ type NavbarProps = {
   iconUrl?: string;
   notifications: Notifications;
   onClick: () => void;
+  loginText: string;
 };
 
 export const Navbar: React.FC<NavbarProps> = ({
   iconUrl,
   onClick,
   notifications,
+  loginText,
 }) => {
   return (
     <nav className="flex h-16 h-50 w-full items-center justify-between bg-background-darker px-10 font-zen">
@@ -26,10 +28,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-4">
         {iconUrl ? (
           <>
-            {/* TODO: Display inbox */}
             <Inbox notifications={notifications} />
             <div className="flex items-center gap-2">
-              {/* TODO: Display actual icon */}
               <Image
                 src={iconUrl}
                 alt="User avatar"
@@ -46,7 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             icon={FaDiscord}
             onClick={onClick}
           >
-            Login with Discord
+            {loginText}
           </Button>
         )}
       </div>

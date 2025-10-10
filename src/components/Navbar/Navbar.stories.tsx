@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
+import { useTranslations } from 'next-intl';
 import { Navbar } from './Navbar';
 
 const meta: Meta<typeof Navbar> = {
@@ -14,33 +15,46 @@ export default meta;
 type Story = StoryObj<typeof Navbar>;
 
 export const LoggedIn: Story = {
-  args: {
-    iconUrl:
-      'https://cdn.discordapp.com/guilds/1265539349030768650/users/559278744330698752/avatars/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
-    notifications: [
-      {
-        id: '1',
-        message: 'An anonymous user has copied your username',
-        timestamp: '2 minutes ago',
-      },
-      {
-        id: '2',
-        message: 'xhev has copied your username',
-        timestamp: '1 hour ago',
-        iconUrl:
-          'https://cdn.discordapp.com/guilds/1265539349030768650/users/559278744330698752/avatars/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
-      },
-      {
-        id: '3',
-        message: 'An anonymous user has copied your username',
-        timestamp: '2 hours ago',
-      },
-    ],
+  render: () => {
+    const t = useTranslations();
+    return (
+      <Navbar
+        iconUrl="https://cdn.discordapp.com/avatars/559278744330698752/05acb5001d40db956558f9cfdbe6414d.webp?size=1024"
+        notifications={[
+          {
+            id: '1',
+            message: t('anonymousUserCopied'),
+            timestamp: t('minutesAgo', { count: 2 }),
+          },
+          {
+            id: '2',
+            message: t('userCopied', { user: 'xhev' }),
+            timestamp: t('hoursAgo', { count: 1 }),
+            iconUrl:
+              'https://cdn.discordapp.com/avatars/559278744330698752/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
+          },
+          {
+            id: '3',
+            message: t('anonymousUserCopied'),
+            timestamp: t('hoursAgo', { count: 2 }),
+          },
+        ]}
+        onClick={fn()}
+        loginText=""
+      />
+    );
   },
 };
 
 export const LoggedOut: Story = {
-  args: {
-    onClick: fn(),
+  render: () => {
+    const t = useTranslations();
+    return (
+      <Navbar
+        notifications={[]}
+        onClick={fn()}
+        loginText={t('loginWithDiscord')}
+      />
+    );
   },
 };

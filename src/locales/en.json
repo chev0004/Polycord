@@ -1,0 +1,15 @@
+{
+  "welcomeMessage": "Welcome to Disspeak",
+  "noNotifications": "No notifications yet",
+  "loginWithDiscord": "Login with Discord",
+  "button": "Button",
+  "discordButton": "Discord Button",
+  "notifications": "Notifications",
+  "markAsRead": "Mark as read",
+  "markAsUnread": "Mark as unread",
+  "delete": "Delete",
+  "anonymousUserCopied": "An anonymous user has copied your username",
+  "userCopied": "{user} has copied your username",
+  "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",
+  "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}"
+}
