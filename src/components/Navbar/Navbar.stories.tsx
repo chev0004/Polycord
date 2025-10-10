@@ -16,7 +16,7 @@ type Story = StoryObj<typeof Navbar>;
 export const LoggedIn: Story = {
   args: {
     iconUrl:
-      'https://cdn.discordapp.com/avatars/559278744330698752/9c1889761120a1aafb106df8fc21222f.webp?size=2048',
+      'https://cdn.discordapp.com/guilds/1265539349030768650/users/559278744330698752/avatars/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
     notifications: [
       {
         id: '1',
@@ -28,7 +28,7 @@ export const LoggedIn: Story = {
         message: 'xhev has copied your username',
         timestamp: '1 hour ago',
         iconUrl:
-          'https://cdn.discordapp.com/avatars/559278744330698752/9c1889761120a1aafb106df8fc21222f.webp?size=2048',
+          'https://cdn.discordapp.com/guilds/1265539349030768650/users/559278744330698752/avatars/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
       },
       {
         id: '3',
