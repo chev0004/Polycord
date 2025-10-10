@@ -16,7 +16,7 @@ type Story = StoryObj<typeof Navbar>;
 
 export const LoggedIn: Story = {
   render: () => {
-    const t = useTranslations();
+    const t = useTranslations('Inbox');
     return (
       <Navbar
         iconUrl="https://cdn.discordapp.com/avatars/559278744330698752/05acb5001d40db956558f9cfdbe6414d.webp?size=1024"

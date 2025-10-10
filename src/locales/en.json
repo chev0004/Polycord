@@ -1,15 +1,20 @@
 {
-  "welcomeMessage": "Welcome to Disspeak",
-  "noNotifications": "No notifications yet",
+  "disspeak": "Disspeak",
   "loginWithDiscord": "Login with Discord",
   "button": "Button",
   "discordButton": "Discord Button",
-  "notifications": "Notifications",
-  "markAsRead": "Mark as read",
-  "markAsUnread": "Mark as unread",
-  "delete": "Delete",
-  "anonymousUserCopied": "An anonymous user has copied your username",
-  "userCopied": "{user} has copied your username",
-  "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",
-  "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}"
+  "Inbox": {
+    "notifications": "Notifications",
+    "noNotifications": "No notifications yet",
+    "noNotificationsDescription": "We'll let you know when something new happens!",
+    "markAsRead": "Mark as read",
+    "markAsUnread": "Mark as unread",
+    "delete": "Delete",
+    "markAllRead": "Mark all read",
+    "clearAll": "Clear all",
+    "anonymousUserCopied": "An anonymous user has copied your username",
+    "userCopied": "{user} has copied your username",
+    "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",
+    "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}"
+  }
 }
