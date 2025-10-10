@@ -20,7 +20,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
 }) => {
   return (
     <div
-      className={`flex items-center justify-between gap-3 rounded-md bg-background-main p-3 text-white transition-all duration-300 hover:bg-background-light ${
+      className={`flex items-center justify-between gap-3 rounded-md bg-background-main p-3 text-white transition-all duration-300 ${
         notification.read
           ? 'origin-center scale-y-[0.98] opacity-60'
           : 'scale-y-100 opacity-100'
