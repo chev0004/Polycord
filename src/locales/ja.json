@@ -4,7 +4,7 @@
   "button": "ボタン",
   "discordButton": "Discordボタン",
   "Inbox": {
-    "notifications": "通知",
+    "notifications": "受信ボックス",
     "noNotifications": "まだ通知はありません",
     "noNotificationsDescription": "新しい通知があればここにお知らせします！",
     "markAsRead": "既読にする",
