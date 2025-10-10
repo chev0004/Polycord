@@ -5,14 +5,24 @@ export const useAlign = () => {
   const [align, setAlign] = useState<'end' | 'center' | 'start'>('end');
 
   useEffect(() => {
-    if (triggerRef.current) {
-      const { right } = triggerRef.current.getBoundingClientRect();
-      if (right > window.innerWidth / 2) {
-        setAlign('end');
-      } else {
-        setAlign('start');
+    const observer = new ResizeObserver(() => {
+      if (triggerRef.current) {
+        const { right } = triggerRef.current.getBoundingClientRect();
+        if (right > window.innerWidth / 2) {
+          setAlign('end');
+        } else {
+          setAlign('start');
+        }
       }
+    });
+
+    if (triggerRef.current) {
+      observer.observe(triggerRef.current);
     }
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   return { triggerRef, align };
