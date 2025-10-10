@@ -16,24 +16,26 @@ export const Inbox = ({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleMarkAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: !n.read } : n)),
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)),
     );
   };
 
   const handleDelete = (id: string) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
   return (
     <Popover.Root>
       <Popover.Trigger ref={triggerRef} className="relative">
         <MdOutlineInbox
-          className="cursor-pointer text-white text-xl transition-all transition-color duration-200 hover:text-gray-300"
+          className="cursor-pointer text-white text-xl transition-all duration-200 hover:text-gray-300"
           size={24}
         />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 flex h-2 w-2 items-center justify-center rounded-full bg-primary" />
+          <span className="-top-1 -right-1 absolute flex h-3 w-3 items-center justify-center rounded-full bg-primary text-black text-xs">
+            {unreadCount}
+          </span>
         )}
       </Popover.Trigger>
       <Popover.Portal>
@@ -41,9 +43,6 @@ export const Inbox = ({
           className="PopoverContent min-w-[300px] rounded-lg border-[1px] border-gray-500 bg-background-dark p-4 shadow-lg"
           side="bottom"
           align={align}
-          asChild={true}
-          avoidCollisions={true}
-          collisionPadding={16}
           sideOffset={5}
         >
           <div className="flex flex-col gap-2">
