@@ -69,22 +69,25 @@ export const Inbox = ({
             <h3 className="font-bold font-figtree text-lg text-white">
               {t('notifications')}
             </h3>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleMarkAllAsRead}
-                className="px-2 py-1 text-xs"
-                disabled={unreadCount === 0}
-              >
-                {t('markAllRead')}
-              </Button>
-              <Button
-                onClick={handleClearAll}
-                className="px-2 py-1 text-xs"
-                disabled={notifications.length === 0}
-              >
-                {t('clearAll')}
-              </Button>
-            </div>
+            {notifications.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleMarkAllAsRead}
+                  className="px-2 py-1 text-xs"
+                  disabled={unreadCount === 0}
+                >
+                  {t('markAllRead')}
+                </Button>
+                <Button
+                  onClick={handleClearAll}
+                  className="px-2 py-1 text-xs"
+                  disabled={notifications.length === 0}
+                  variant="outline"
+                >
+                  {t('clearAll')}
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Body */}
