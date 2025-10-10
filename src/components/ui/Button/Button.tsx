@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { IconType } from 'react-icons';
 
 type ButtonProps = {
-  children: ReactNode;
+  children?: ReactNode;
   variant?: 'discord' | 'primary' | 'white';
   font?: string;
   weight?: 'light' | 'regular' | 'medium' | 'semibold' | 'bold' | 'black';
@@ -19,7 +19,7 @@ export const Button = ({
   onClick,
   ...props
 }: ButtonProps) => {
-  const baseClasses = `flex items-center gap-2 rounded-3xl px-4 py-2 font-${weight} font-${font} text-sm transition-all`;
+  const baseClasses = `flex items-center gap-2 rounded-3xl px-4 py-2 font-${font} font-${weight} text-sm transition-all`;
 
   const variants = {
     primary:
