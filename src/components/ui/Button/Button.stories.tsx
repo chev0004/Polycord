@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useTranslations } from 'next-intl';
 import { FaDiscord } from 'react-icons/fa';
 import { Button } from './Button';
 
@@ -18,17 +19,20 @@ export default meta;
 type Story = StoryObj<typeof Button>;
 
 export const Default: Story = {
-  args: {
-    children: 'Button',
+  render: () => {
+    const t = useTranslations();
+    return <Button>{t('button')}</Button>;
   },
 };
 
 export const WithIcon: Story = {
-  args: {
-    variant: 'discord',
-    weight: 'bold',
-    children: 'Discord Button',
-    icon: () => <FaDiscord />,
+  render: () => {
+    const t = useTranslations();
+    return (
+      <Button variant="discord" weight="bold" icon={() => <FaDiscord />}>
+        {t('discordButton')}
+      </Button>
+    );
   },
 };
 
