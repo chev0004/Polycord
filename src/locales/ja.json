@@ -1,15 +1,20 @@
 {
-  "welcomeMessage": "Disspeakへようこそ",
-  "noNotifications": "まだ通知はありません",
+  "disspeak": "Disspeak",
   "loginWithDiscord": "Discordでログイン",
   "button": "ボタン",
   "discordButton": "Discordボタン",
-  "notifications": "通知",
-  "markAsRead": "既読にする",
-  "markAsUnread": "未読にする",
-  "delete": "削除",
-  "anonymousUserCopied": "匿名のユーザーがあなたのユーザー名をコピーしました",
-  "userCopied": "{user}があなたのユーザー名をコピーしました",
-  "minutesAgo": "{count}分前",
-  "hoursAgo": "{count}時間前"
+  "Inbox": {
+    "notifications": "通知",
+    "noNotifications": "まだ通知はありません",
+    "noNotificationsDescription": "新しい通知があればここにお知らせします！",
+    "markAsRead": "既読にする",
+    "markAsUnread": "未読にする",
+    "delete": "削除",
+    "markAllRead": "すべて既読",
+    "clearAll": "すべてクリア",
+    "anonymousUserCopied": "匿名のユーザーがあなたのユーザー名をコピーしました",
+    "userCopied": "{user}があなたのユーザー名をコピーしました",
+    "minutesAgo": "{count, plural, other {#分前}}",
+    "hoursAgo": "{count, plural, other {#時間前}}"
+  }
 }

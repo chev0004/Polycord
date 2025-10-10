@@ -13,13 +13,12 @@ const meta: Meta<typeof Inbox> = {
     ),
   ],
 };
-
 export default meta;
 type Story = StoryObj<typeof Inbox>;
 
 export const WithNotifications: Story = {
   render: () => {
-    const t = useTranslations();
+    const t = useTranslations('Inbox');
     return (
       <Inbox
         notifications={[
