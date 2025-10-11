@@ -2,7 +2,7 @@ import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useTranslations } from 'next-intl';
 import { NotificationEntry } from './NotificationEntry';
-import '@/app/globals.css';
+import 'src/app/globals.css';
 
 const meta: Meta<typeof NotificationEntry> = {
   title: 'Components/NotificationEntry',
