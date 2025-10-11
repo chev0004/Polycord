@@ -27,5 +27,32 @@
     "profile": "プロフィール",
     "settings": "設定",
     "logout": "ログアウト"
+  },
+  "Profile": {
+    "editProfile": "プロフィールを編集",
+    "saveProfile": "プロフィールを保存",
+    "saving": "保存中...",
+    "identity": "アイデンティティ",
+    "languageProfile": "言語プロフィール",
+    "primaryLanguageLabel": "主要言語",
+    "targetLanguageLabel": "学習言語",
+    "languageSelectPlaceholder": "言語を選択...",
+    "proficiencyLevelLabel": "習熟度",
+    "proficiencyLevelPlaceholder": "習熟度を選択...",
+    "proficiencyOptionBeginner": "初心者",
+    "proficiencyOptionIntermediate": "中級者",
+    "proficiencyOptionAdvanced": "上級者",
+    "countryLabel": "出身国 (任意)",
+    "countryPlaceholder": "国を選択...",
+    "timezoneLabel": "タイムゾーン (任意)",
+    "timezonePlaceholder": "タイムゾーンを選択...",
+    "aboutMe": "自己紹介",
+    "bioLabel": "自己紹介",
+    "bioPlaceholder": "あなた自身と語学学習の目標について教えてください。",
+    "interestsLabel": "興味 / トピック",
+    "interestsPlaceholder": "例: K-pop, ゲーム, アニメ, 料理",
+    "privacySettings": "プライバシー設定",
+    "allowAnonymousCopyingLabel": "匿名コピーを許可",
+    "allowAnonymousCopyingDescription": "ログインしていないユーザーが、接続のためにあなたのDiscordユーザー名をコピーすることを許可します。"
   }
 }
