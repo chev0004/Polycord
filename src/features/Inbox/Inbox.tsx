@@ -1,9 +1,9 @@
+import { Button } from '@/components/Button';
 import type { Notifications } from '@/types';
 import * as Popover from '@radix-ui/react-popover';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { MdOutlineInbox } from 'react-icons/md';
-import { Button } from '../Button';
 import { NotificationEntry } from './NotificationEntry';
 
 export const Inbox = ({
