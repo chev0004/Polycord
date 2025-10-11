@@ -3,8 +3,9 @@ import { NextIntlClientProvider, useMessages } from 'next-intl';
 import '../globals.css';
 
 export const metadata: Metadata = {
-  title: 'Disspeak',
-  description: 'Disspeak',
+  title: 'Polycord',
+  description:
+    'Polycord is a Discord-based social platform that helps language learners connect through user profiles instead of servers. Traditional discovery platforms focus on finding large communities, but Polycord is all about individuals, helping users find friends, or study buddies who share their target languages and interests.',
 };
 
 export default function RootLayout({
