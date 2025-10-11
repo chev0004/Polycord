@@ -1,27 +1,27 @@
+import { Button } from '@/components/Button';
 import type { Notifications } from '@/types';
 import * as Popover from '@radix-ui/react-popover';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { MdOutlineInbox } from 'react-icons/md';
-import { Button } from '../Button';
 import { NotificationEntry } from './NotificationEntry';
+
+const initializeNotifications = (initial: Notifications) =>
+  initial.map((n) => ({ ...n, read: false, isDeleting: false }));
 
 export const Inbox = ({
   notifications: initialNotifications,
-}: { notifications: Notifications }) => {
+}: {
+  notifications: Notifications;
+}) => {
   const t = useTranslations('Inbox');
-  const [notifications, setNotifications] = useState(
-    initialNotifications.map((n) => ({ ...n, read: false, isDeleting: false })),
+
+  const [notifications, setNotifications] = useState(() =>
+    initializeNotifications(initialNotifications),
   );
 
   useEffect(() => {
-    setNotifications(
-      initialNotifications.map((n) => ({
-        ...n,
-        read: false,
-        isDeleting: false,
-      })),
-    );
+    setNotifications(initializeNotifications(initialNotifications));
   }, [initialNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
