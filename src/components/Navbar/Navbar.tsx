@@ -1,8 +1,8 @@
 import type { Notifications } from '@/types';
 import Image from 'next/image';
 import { FaDiscord } from 'react-icons/fa';
-import { Button } from '../ui/Button/Button';
-import { Inbox } from '../ui/Inbox/Inbox';
+import { Button } from '../Button/Button';
+import { Inbox } from '../Inbox/Inbox';
 
 type NavbarProps = {
   iconUrl?: string;
