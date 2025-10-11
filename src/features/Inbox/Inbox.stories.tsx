@@ -1,9 +1,11 @@
 import { Button } from '@/components/Button';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
+import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
 import type { Notification } from '@/types';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Inbox } from './Inbox';
 
 const meta: Meta<typeof Inbox> = {
@@ -36,8 +38,7 @@ export const WithNotifications: Story = {
             id: '2',
             message: t('userCopied', { user: 'xhev' }),
             timestamp: t('hoursAgo', { count: 1 }),
-            iconUrl:
-              'https://cdn.discordapp.com/avatars/559278744330698752/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
+            iconUrl: MOCK_USER_AVATAR_URL,
           },
           {
             id: '3',
@@ -56,101 +57,87 @@ export const Empty: Story = {
   },
 };
 
-type ToastData = {
-  id: number;
-  title: string;
-  description: string;
-};
+const ToastItem = React.memo(
+  ({
+    toast,
+    onDismiss,
+  }: {
+    toast: ToastData;
+    onDismiss: (id: number) => void;
+  }) => {
+    const { open, onOpenChange, timerRef } = useToast({ toast, onDismiss });
 
-const BAR_DISPLAY_DURATION = 5000;
-const ANIMATION_DURATION = 300;
+    if (!open && !timerRef.current) return null;
 
-const ToastItem = React.memo(function ToastItem({
-  toast,
-  onDismiss,
-}: {
-  toast: ToastData;
-  onDismiss: (id: number) => void;
-}) {
-  const [open, setOpen] = useState(true);
-  const timerRef = useRef<HTMLDivElement>(null);
-
-  const handleBarAnimationEnd = useCallback((event: AnimationEvent) => {
-    if (event.animationName === 'shrink') {
-      setOpen(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const barElement = timerRef.current;
-
-    if (open && barElement) {
-      barElement.addEventListener('animationend', handleBarAnimationEnd);
-
-      return () => {
-        barElement.removeEventListener('animationend', handleBarAnimationEnd);
-      };
-    }
-  }, [open, handleBarAnimationEnd]);
-
-  const handleOpenChange = useCallback(
-    (isOpen: boolean) => {
-      if (!isOpen) {
-        setOpen(false);
-        setTimeout(() => {
-          onDismiss(toast.id);
-        }, ANIMATION_DURATION);
-      }
-    },
-    [onDismiss, toast.id],
-  );
-
-  return (
-    <Toast
-      open={open}
-      onOpenChange={handleOpenChange}
-      title={toast.title}
-      description={toast.description}
-      duration={BAR_DISPLAY_DURATION}
-      timerRef={timerRef}
-    />
-  );
-});
+    return (
+      <Toast
+        open={open}
+        onOpenChange={onOpenChange}
+        title={toast.title}
+        description={toast.description}
+        duration={toast.duration}
+        timerRef={timerRef}
+        iconUrl={toast.iconUrl}
+      />
+    );
+  },
+);
 
 const LiveUpdateStory = () => {
   const t = useTranslations('Inbox');
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [toasts, setToasts] = useState<ToastData[]>([]);
+  const { toasts, addToast, dismissToast } = useToastStack();
 
-  const simulateNotification = () => {
-    const newId = new Date().getTime();
+  const createNotificationAndToast = (
+    messageKey: 'anonymousUserCopied' | 'userCopied',
+    iconUrl?: string,
+  ) => {
+    const message =
+      messageKey === 'userCopied'
+        ? t('userCopied', { user: 'xhev' })
+        : t('anonymousUserCopied');
 
     const newNotification: Notification = {
-      id: newId.toString(),
-      message: t('anonymousUserCopied'),
+      id: new Date().getTime().toString(),
+      message: message,
       timestamp: t('minutesAgo', { count: 0 }),
+      iconUrl: iconUrl,
     };
 
-    const newToast: ToastData = {
-      id: newId,
+    const newToast: Omit<ToastData, 'id'> = {
       title: t('newNotification'),
       description: newNotification.message,
+      duration: 5000,
+      iconUrl: iconUrl,
     };
 
     setNotifications((prev) => [newNotification, ...prev]);
-    setToasts((prev) => [...prev, newToast]);
+    addToast(newToast);
   };
 
-  const handleDismiss = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  const simulateAnonNotification = () => {
+    createNotificationAndToast('anonymousUserCopied');
+  };
+
+  const simulateUserNotification = () => {
+    createNotificationAndToast('userCopied', MOCK_USER_AVATAR_URL);
+  };
 
   return (
     <>
       <div className="flex flex-col gap-8">
-        <div className="flex items-center justify-between">
-          <p className="text-white">{t('simulateInfo')}</p>
-          <Button onClick={simulateNotification}>{t('simulateButton')}</Button>
+        <div className="flex flex-col gap-4">
+          <p className="text-white">
+            {t('simulateTitle')} {t('simulateInfo')}
+          </p>
+          <div className="flex gap-4">
+            <Button onClick={simulateAnonNotification}>
+              {t('simulateAnonButton')}
+            </Button>
+            <Button variant="discord" onClick={simulateUserNotification}>
+              {t('simulateUserButton')}
+            </Button>
+          </div>
         </div>
         <div className="relative flex h-24 w-full items-center justify-end rounded-md bg-background-darker p-4">
           <Inbox notifications={notifications} />
@@ -158,7 +145,7 @@ const LiveUpdateStory = () => {
       </div>
 
       {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onDismiss={handleDismiss} />
+        <ToastItem key={toast.id} toast={toast} onDismiss={dismissToast} />
       ))}
     </>
   );
