@@ -12,6 +12,7 @@
     "delete": "Delete",
     "markAllRead": "Mark all read",
     "clearAll": "Clear all",
+    "page": "Page {current} of {total}",
     "anonymousUserCopied": "An anonymous user has copied your username",
     "userCopied": "{user} has copied your username",
     "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",

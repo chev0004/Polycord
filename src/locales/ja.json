@@ -12,6 +12,7 @@
     "delete": "削除",
     "markAllRead": "すべて既読",
     "clearAll": "すべてクリア",
+    "page": "{total} / {current} ページ",
     "anonymousUserCopied": "匿名のユーザーがあなたのユーザー名をコピーしました",
     "userCopied": "{user}があなたのユーザー名をコピーしました",
     "minutesAgo": "{count, plural, other {#分前}}",
