@@ -1,5 +1,5 @@
+import { Avatar } from '@/components/Avatar';
 import type { Notification } from '@/types';
-import Image from 'next/image';
 import type { HTMLAttributes } from 'react';
 import {
   MdClose,
@@ -37,19 +37,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
       />
 
       {/* Icon */}
-      {notification.iconUrl ? (
-        <Image
-          src={notification.iconUrl}
-          alt="User profile"
-          className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
-          width={32}
-          height={32}
-        />
-      ) : (
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-dark">
-          <span className="text-gray-400 text-xs">?</span>
-        </div>
-      )}
+      <Avatar avatarUrl={notification.iconUrl} size="sm" />
 
       {/* Text block - No longer truncates */}
       <div className="flex-grow whitespace-nowrap">
