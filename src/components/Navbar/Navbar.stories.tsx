@@ -1,3 +1,4 @@
+import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 import { useTranslations } from 'next-intl';
@@ -19,7 +20,7 @@ export const LoggedIn: Story = {
     const t = useTranslations('Inbox');
     return (
       <Navbar
-        iconUrl="https://cdn.discordapp.com/avatars/559278744330698752/05acb5001d40db956558f9cfdbe6414d.webp?size=1024"
+        iconUrl={MOCK_USER_AVATAR_URL}
         notifications={[
           {
             id: '1',
@@ -30,8 +31,7 @@ export const LoggedIn: Story = {
             id: '2',
             message: t('userCopied', { user: 'xhev' }),
             timestamp: t('hoursAgo', { count: 1 }),
-            iconUrl:
-              'https://cdn.discordapp.com/avatars/559278744330698752/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
+            iconUrl: MOCK_USER_AVATAR_URL,
           },
           {
             id: '3',
