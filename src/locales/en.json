@@ -15,6 +15,9 @@
     "anonymousUserCopied": "An anonymous user has copied your username",
     "userCopied": "{user} has copied your username",
     "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",
-    "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}"
+    "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}",
+    "newNotification": "New Notification",
+    "simulateTitle": "Simulate a new notification arriving in real-time.",
+    "simulateButton": "Simulate Notification"
   }
 }
