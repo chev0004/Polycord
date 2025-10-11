@@ -1,5 +1,4 @@
 import * as ToastPrimitive from '@radix-ui/react-toast';
-import Image from 'next/image';
 import type {
   CSSProperties,
   ComponentProps,
@@ -9,6 +8,7 @@ import type {
 import { useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import './style.css';
+import { Avatar } from '../Avatar';
 
 export const ToastProvider = (
   props: ComponentProps<typeof ToastPrimitive.Provider>,
@@ -49,19 +49,9 @@ export const Toast = ({
     >
       <div className="col-span-3 grid grid-cols-[auto_1fr_max-content] items-center gap-x-4 p-4">
         {iconUrl ? (
-          <Image
-            src={iconUrl}
-            alt="Notification icon"
-            className="h-14 w-14 flex-shrink-0 rounded-full object-cover"
-            width={32}
-            height={32}
-            draggable={false}
-            onDragStart={(e) => e.preventDefault()}
-          />
+          <Avatar avatarUrl={iconUrl} size={'md'} />
         ) : (
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-primary-dark">
-            <span className="text-gray-400 text-xl">?</span>
-          </div>
+          <Avatar size={'md'} />
         )}
 
         <div>
