@@ -34,7 +34,7 @@ export const Avatar = ({ avatarUrl, size }: AvatarProps) => {
         />
       ) : (
         <div
-          className="flex flex-shrink-0 items-center justify-center rounded-full bg-primary-dark"
+          className="flex flex-shrink-0 select-none items-center justify-center rounded-full bg-primary-dark"
           style={style}
         >
           <span className={`text-gray-400 ${fontSizeClass}`}>?</span>
