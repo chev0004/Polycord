@@ -1,9 +1,9 @@
+import { Button } from '@/components/Button';
+import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
 import type { Notification } from '@/types';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useTranslations } from 'next-intl';
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Button } from '../Button';
-import { Toast, ToastProvider, ToastViewport } from '../Toast';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Inbox } from './Inbox';
 
 const meta: Meta<typeof Inbox> = {

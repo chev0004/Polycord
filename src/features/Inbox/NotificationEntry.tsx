@@ -1,6 +1,5 @@
 import type { Notification } from '@/types';
 import Image from 'next/image';
-import type React from 'react';
 import type { HTMLAttributes } from 'react';
 import {
   MdClose,
