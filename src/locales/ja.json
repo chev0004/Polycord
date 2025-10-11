@@ -15,6 +15,7 @@
     "anonymousUserCopied": "匿名のユーザーがあなたのユーザー名をコピーしました",
     "userCopied": "{user}があなたのユーザー名をコピーしました",
     "minutesAgo": "{count, plural, other {#分前}}",
-    "hoursAgo": "{count, plural, other {#時間前}}"
+    "hoursAgo": "{count, plural, other {#時間前}}",
+    "newNotification": "新着通知"
   }
 }
