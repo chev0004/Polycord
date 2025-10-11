@@ -10,16 +10,23 @@ const meta: Meta<typeof Navbar> = {
   parameters: {
     layout: 'fullscreen',
   },
+  args: {
+    onLoginClick: fn(),
+    onProfileClick: fn(),
+    onSettingsClick: fn(),
+    onLogoutClick: fn(),
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof Navbar>;
 
 export const LoggedIn: Story = {
-  render: () => {
+  render: (args) => {
     const t = useTranslations('Inbox');
     return (
       <Navbar
+        {...args}
         iconUrl={MOCK_USER_AVATAR_URL}
         notifications={[
           {
@@ -39,22 +46,14 @@ export const LoggedIn: Story = {
             timestamp: t('hoursAgo', { count: 2 }),
           },
         ]}
-        onClick={fn()}
-        loginText=""
       />
     );
   },
 };
 
 export const LoggedOut: Story = {
-  render: () => {
+  render: (args) => {
     const t = useTranslations();
-    return (
-      <Navbar
-        notifications={[]}
-        onClick={fn()}
-        loginText={t('loginWithDiscord')}
-      />
-    );
+    return <Navbar {...args} notifications={[]} iconUrl={undefined} />;
   },
 };

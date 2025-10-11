@@ -28,7 +28,7 @@ export const Inbox = ({
 
   useEffect(() => {
     setNotifications(initializeNotifications(initialNotifications));
-    setCurrentPage(1); // Reset to first page when notifications change
+    setCurrentPage(1);
   }, [initialNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -60,7 +60,6 @@ export const Inbox = ({
     }, 300);
   };
 
-  // Pagination logic
   const totalPages = Math.ceil(notifications.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
