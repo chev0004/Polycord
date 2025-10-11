@@ -1,6 +1,6 @@
+import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import type { Notifications } from '@/types';
-import Image from 'next/image';
 import { FaDiscord } from 'react-icons/fa';
 import { Inbox } from '../Inbox';
 
@@ -30,13 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <>
             <Inbox notifications={notifications} />
             <div className="flex items-center gap-2">
-              <Image
-                src={iconUrl}
-                alt="User avatar"
-                className="h-8 w-8 rounded-full"
-                width={40}
-                height={40}
-              />
+              <Avatar avatarUrl={iconUrl} size="sm" />
             </div>
           </>
         ) : (
