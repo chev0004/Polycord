@@ -39,3 +39,32 @@
   --font-Figtree: "Figtree", sans-serif;
   --font-DM: "DM Sans", sans-serif;
 }
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.SelectContent[data-side="top"] {
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.SelectContent[data-side="bottom"] {
+  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
