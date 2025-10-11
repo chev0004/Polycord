@@ -33,7 +33,7 @@ This project is currently in the initial development phase. All features listed 
 
 1.  **Clone the repository:**
     ```
-    git clone https://github.com/chev0004/disspeak
+    git clone https://github.com/chev0004/polycord
     ```
 2.  **Install dependencies:**
     ```
