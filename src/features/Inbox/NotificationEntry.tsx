@@ -39,9 +39,9 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
       {/* Icon */}
       <Avatar avatarUrl={notification.iconUrl} size="sm" />
 
-      {/* Text block - No longer truncates */}
-      <div className="flex-grow whitespace-nowrap">
-        <p className="text-sm">{notification.message}</p>
+      {/* Text block */}
+      <div className="flex-grow overflow-hidden">
+        <p className="truncate text-sm">{notification.message}</p>
         <span className="text-gray-400 text-xs">{notification.timestamp}</span>
       </div>
 
