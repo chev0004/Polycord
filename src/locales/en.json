@@ -23,5 +23,10 @@
     "simulateInfo": "Click the button multiple times to see toasts stack.",
     "simulateAnonButton": "Anon Notification",
     "simulateUserButton": "User Notification"
+  },
+  "UserMenu": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
   }
 }
