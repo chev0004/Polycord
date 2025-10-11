@@ -19,6 +19,8 @@
     "newNotification": "New Notification",
     "simulateTitle": "Simulate a new notification arriving in real-time.",
     "simulateButton": "Simulate Notification",
-    "simulateInfo": "Click the button multiple times to see toasts stack."
+    "simulateInfo": "Click the button multiple times to see toasts stack.",
+    "simulateAnonButton": "Anon Notification",
+    "simulateUserButton": "User Notification"
   }
 }
