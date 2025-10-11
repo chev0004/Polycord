@@ -1,3 +1,4 @@
+import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useTranslations } from 'next-intl';
 import { NotificationEntry } from './NotificationEntry';
@@ -31,15 +32,14 @@ type Story = StoryObj<typeof NotificationEntry>;
 
 export const Default: Story = {
   render: () => {
-    const t = useTranslations();
+    const t = useTranslations('Inbox');
     return (
       <NotificationEntry
         notification={{
           id: '1',
           message: t('anonymousUserCopied'),
           timestamp: t('minutesAgo', { count: 2 }),
-          iconUrl:
-            'https://cdn.discordapp.com/avatars/559278744330698752/05acb5001d40db956558f9cfdbe6414d.webp?size=1024',
+          iconUrl: MOCK_USER_AVATAR_URL,
           read: false,
         }}
         onMarkAsRead={() => {}}
