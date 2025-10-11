@@ -50,6 +50,31 @@ export default {
         bold: 'var(--font-bold)',
         black: 'var(--font-black)',
       },
+      keyframes: {
+        slideIn: {
+          from: {
+            opacity: '0',
+            transform: 'translateX(calc(100% + 1.5rem))',
+          },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        hide: {
+          from: { opacity: '1', transform: 'translateX(0)' },
+          to: {
+            opacity: '0',
+            transform: 'translateX(calc(100% + 1.5rem))',
+          },
+        },
+        shrink: {
+          from: { width: '100%' },
+          to: { width: '0%' },
+        },
+      },
+      animation: {
+        slideIn: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        hide: 'hide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        shrink: 'shrink var(--toast-duration, 5000ms) linear forwards',
+      },
     },
   },
   plugins: [],

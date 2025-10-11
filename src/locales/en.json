@@ -18,6 +18,7 @@
     "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}",
     "newNotification": "New Notification",
     "simulateTitle": "Simulate a new notification arriving in real-time.",
-    "simulateButton": "Simulate Notification"
+    "simulateButton": "Simulate Notification",
+    "simulateInfo": "Click the button multiple times to see toasts stack."
   }
 }
