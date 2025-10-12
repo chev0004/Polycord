@@ -12,9 +12,21 @@ export const profileSchema = z.object({
 
   bio: z.string().max(500, 'Bio must be 500 characters or less.').optional(),
 
-  interests: z
-    .string()
-    .max(100, 'Interests list must be 100 characters or less.')
+  tags: z
+    .array(
+      z
+        .string()
+        .min(2, { message: 'tagTooShort' })
+        .max(20, { message: 'tagTooLong' }),
+    )
+    .max(6, { message: 'maxTags' })
+    .refine(
+      (items) =>
+        new Set(items.map((item) => item.toLowerCase())).size === items.length,
+      {
+        message: 'duplicateTag',
+      },
+    )
     .optional(),
 
   country: z
