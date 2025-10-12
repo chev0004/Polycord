@@ -17,6 +17,7 @@ export const Button = ({
   weight = 'light',
   icon: Icon,
   onClick,
+  type = 'button',
   ...props
 }: ButtonProps) => {
   const baseClasses = `flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background-dark active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed`;
@@ -34,7 +35,7 @@ export const Button = ({
   return (
     <button
       {...props}
-      type="button"
+      type={type}
       onClick={onClick}
       className={`${baseClasses} ${variants[variant]}`}
     >
