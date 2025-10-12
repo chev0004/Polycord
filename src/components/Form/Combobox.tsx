@@ -1,7 +1,14 @@
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useTranslations } from 'next-intl';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { MdCheck } from 'react-icons/md';
-import { ScrollArea } from './ScrollArea';
 
 export type ComboboxProps = {
   placeholder?: string;
@@ -18,40 +25,87 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     { placeholder, options, className, onBlur, onValueChange, value, name },
     forwardedRef,
   ) => {
+    const t = useTranslations('Combobox');
     const [open, setOpen] = useState(false);
-    const [inputValue, setInputValue] = useState(
-      options.find((option) => option.value === value)?.label || '',
-    );
+    const [inputValue, setInputValue] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [highlightedIndex, setHighlightedIndex] = useState(0);
+    const [loading, setLoading] = useState(false);
 
-    React.useEffect(() => {
+    const listRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
       const selectedOption = options.find((option) => option.value === value);
-      setInputValue(selectedOption?.label || '');
+      const newLabel = selectedOption?.label || '';
+      setInputValue(newLabel);
+      setSearchTerm(newLabel);
     }, [value, options]);
+
+    useEffect(() => {
+      if (inputValue === searchTerm) {
+        return;
+      }
+      const timer = setTimeout(() => {
+        setSearchTerm(inputValue);
+        setLoading(false); // Turn off loading after search term is updated
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }, [inputValue, searchTerm]);
 
     const filterOptions = useCallback(
       (search: string, opts: typeof options) => {
-        if (!search) return opts;
+        if (
+          !search ||
+          search === options.find((opt) => opt.value === value)?.label
+        ) {
+          return opts;
+        }
         const lowerSearch = search.toLowerCase();
         return opts.filter((option) =>
           option.label.toLowerCase().includes(lowerSearch),
         );
       },
-      [],
+      [value, options.find],
     );
 
     const filteredOptions = useMemo(
-      () => filterOptions(inputValue, options),
-      [inputValue, options, filterOptions],
+      () => filterOptions(searchTerm, options),
+      [searchTerm, options, filterOptions],
     );
+
+    useEffect(() => {
+      setHighlightedIndex(0);
+    }, []);
+
+    const rowVirtualizer = useVirtualizer({
+      count: filteredOptions.length,
+      getScrollElement: () => listRef.current,
+      estimateSize: () => 32,
+      overscan: 5,
+    });
+
+    useEffect(() => {
+      if (open && highlightedIndex >= 0) {
+        rowVirtualizer.scrollToIndex(highlightedIndex, { align: 'auto' });
+      }
+    }, [highlightedIndex, open, rowVirtualizer]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = event.target.value;
       setInputValue(newValue);
+      setOpen(!!newValue);
       if (newValue) {
-        setOpen(true);
+        setLoading(true); // Turn on loading immediately on input
       } else {
-        setOpen(false);
+        setLoading(false);
         onValueChange('');
+      }
+    };
+
+    const handleInputFocus = () => {
+      if (inputValue) {
+        setOpen(true);
       }
     };
 
@@ -65,7 +119,6 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
       setOpen(false);
-
       const match = options.find(
         (option) => option.label.toLowerCase() === inputValue.toLowerCase(),
       );
@@ -80,15 +133,42 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         setInputValue(selectedOption?.label || '');
       }
 
-      if (onBlur) {
-        onBlur(event);
-      }
+      onBlur?.(event);
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Tab' && open && filteredOptions.length > 0) {
+      if (!open) return;
+
+      const { key } = event;
+      const optionsLength = filteredOptions.length;
+
+      if (key === 'Escape') {
         event.preventDefault();
-        handleSelect(filteredOptions[0].value);
+        setOpen(false);
+        return;
+      }
+
+      // Prevent keyboard navigation while results are loading
+      if (optionsLength > 0 && !loading) {
+        switch (key) {
+          case 'ArrowDown':
+            event.preventDefault();
+            setHighlightedIndex((prev) => (prev + 1) % optionsLength);
+            break;
+          case 'ArrowUp':
+            event.preventDefault();
+            setHighlightedIndex(
+              (prev) => (prev - 1 + optionsLength) % optionsLength,
+            );
+            break;
+          case 'Enter':
+          case 'Tab':
+            event.preventDefault();
+            handleSelect(filteredOptions[highlightedIndex].value);
+            break;
+        }
+      } else if (key === 'Enter') {
+        event.preventDefault();
       }
     };
 
@@ -106,6 +186,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
               onChange={handleInputChange}
               onBlur={handleInputBlur}
               onKeyDown={handleKeyDown}
+              onFocus={handleInputFocus}
               placeholder={placeholder}
               className="w-full bg-transparent text-white placeholder-gray-500 focus:outline-none"
               autoComplete="off"
@@ -119,32 +200,63 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <ScrollArea className="p-1">
-              {filteredOptions.length > 0 ? (
-                filteredOptions.map((option) => (
-                  <button
-                    type="button"
-                    key={option.value}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSelect(option.value);
-                    }}
-                    className="relative flex h-8 w-full cursor-pointer select-none items-center rounded px-4 pl-8 text-left text-sm text-white hover:bg-primary-darker focus:outline-none data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
-                  >
-                    {option.label}
-                    {value === option.value && (
-                      <span className="absolute left-0 inline-flex w-8 items-center justify-center">
-                        <MdCheck size={18} className="text-primary" />
-                      </span>
-                    )}
-                  </button>
-                ))
+            <div ref={listRef} className="max-h-64 overflow-y-auto p-1">
+              {loading ? (
+                <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
+                  {t('loading')}
+                </div>
+              ) : filteredOptions.length > 0 ? (
+                <div
+                  style={{
+                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    width: '100%',
+                    position: 'relative',
+                  }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                    const option = filteredOptions[virtualItem.index];
+                    return (
+                      <button
+                        type="button"
+                        key={option.value}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: `${virtualItem.size}px`,
+                          transform: `translateY(${virtualItem.start}px)`,
+                        }}
+                        data-highlighted={
+                          virtualItem.index === highlightedIndex
+                            ? ''
+                            : undefined
+                        }
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleSelect(option.value);
+                        }}
+                        onMouseEnter={() =>
+                          setHighlightedIndex(virtualItem.index)
+                        }
+                        className="relative flex h-8 items-center rounded px-4 pl-8 text-left text-sm text-white hover:bg-primary-darker focus:outline-none data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
+                      >
+                        {option.label}
+                        {value === option.value && (
+                          <span className="absolute left-0 inline-flex w-8 items-center justify-center">
+                            <MdCheck size={18} className="text-primary" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               ) : (
                 <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
-                  No results found.
+                  {t('noResults')}
                 </div>
               )}
-            </ScrollArea>
+            </div>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
