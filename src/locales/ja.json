@@ -3,6 +3,10 @@
   "loginWithDiscord": "Discordでログイン",
   "button": "ボタン",
   "discordButton": "Discordボタン",
+  "Combobox": {
+    "loading": "読み込み中...",
+    "noResults": "結果が見つかりませんでした。"
+  },
   "Inbox": {
     "notifications": "受信ボックス",
     "noNotifications": "通知はまだありません",
@@ -64,7 +68,7 @@
     "statusPublic": "公開",
     "statusUnlisted": "未掲載",
     "makeProfilePublicLabel": "プロフィールを公開する",
-    "makeProfilePublicDescription": "他のユーザーが検索結果であなたのプロフィールを見つけられるようにします。",
+    "makeProfilePublicDescription": "他のユーザーが検索結果であなたのプロフィールを見つけられるようにする。",
     "viewPublicProfile": "掲載ページを見る",
     "deleteProfile": "プロフィール削除"
   }

@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@tanstack/react-virtual": "^3.13.12",
     "install": "^0.13.0",
     "next": "15.1.6",
     "next-intl": "^4.3.12",

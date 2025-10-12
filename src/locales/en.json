@@ -3,6 +3,10 @@
   "loginWithDiscord": "Login with Discord",
   "button": "Button",
   "discordButton": "Discord Button",
+  "Combobox": {
+    "loading": "Loading...",
+    "noResults": "No results found."
+  },
   "Inbox": {
     "notifications": "Notifications",
     "noNotifications": "No notifications yet",
