@@ -2,7 +2,7 @@ import * as Switch from '@radix-ui/react-switch';
 import React from 'react';
 
 const Toggle = React.forwardRef<
-  React.ElementRef<typeof Switch.Root>,
+  React.ComponentRef<typeof Switch.Root>,
   React.ComponentPropsWithoutRef<typeof Switch.Root>
 >(({ className, ...props }, ref) => (
   <Switch.Root
