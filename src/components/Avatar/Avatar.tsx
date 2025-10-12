@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 const sizeMap = {
   sm: 32,
   md: 56,
+  lg: 96,
 };
 
 type AvatarProps = {
@@ -17,7 +18,8 @@ export const Avatar = ({ avatarUrl, size }: AvatarProps) => {
     width: `${pixelSize}px`,
     height: `${pixelSize}px`,
   };
-  const fontSizeClass = pixelSize >= 56 ? 'text-xl' : 'text-xs';
+  const fontSizeClass =
+    pixelSize >= 96 ? 'text-3xl' : pixelSize >= 56 ? 'text-xl' : 'text-xs';
 
   return (
     <>
