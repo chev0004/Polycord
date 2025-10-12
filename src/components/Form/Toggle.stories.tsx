@@ -21,16 +21,7 @@ export const Default: Story = {
   render: () => (
     <>
       <Toggle id="airplane-mode" />
-      <Label htmlFor="airplane-mode">Airplane mode</Label>
-    </>
-  ),
-};
-
-export const Checked: Story = {
-  render: () => (
-    <>
-      <Toggle id="airplane-mode-checked" defaultChecked />
-      <Label htmlFor="airplane-mode-checked">Airplane mode</Label>
+      <Label htmlFor="airplane-mode">Toggle</Label>
     </>
   ),
 };
