@@ -207,7 +207,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             />
             {errors.primaryLanguage && (
               <p className="text-red-500 text-xs">
-                {errors.primaryLanguage.message}
+                {t(errors.primaryLanguage.message as string)}
               </p>
             )}
           </FormGroup>
@@ -231,7 +231,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             />
             {errors.targetLanguage && (
               <p className="text-red-500 text-xs">
-                {errors.targetLanguage.message}
+                {t(errors.targetLanguage.message as string)}
               </p>
             )}
           </FormGroup>
@@ -256,7 +256,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             />
             {errors.proficiencyLevel && (
               <p className="text-red-500 text-xs">
-                {errors.proficiencyLevel.message}
+                {t(errors.proficiencyLevel.message as string)}
               </p>
             )}
           </FormGroup>
@@ -291,7 +291,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {...register('timezone')}
               readOnly
               className="h-12 w-full cursor-not-allowed rounded-lg border border-gray-600 bg-background-darker p-3 text-gray-400 focus:outline-none"
-              placeholder={t('timezonePlaceholder')}
             />
             {errors.timezone && (
               <p className="text-red-500 text-xs">{errors.timezone.message}</p>
