@@ -1,11 +1,3 @@
-import { Avatar } from '@/components/Avatar';
-import { Button } from '@/components/Button';
-import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
-import {
-  MOCK_USER_AVATAR_URL,
-  countryOptions,
-  languageOptions,
-} from '@/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
@@ -19,6 +11,14 @@ import {
   MdOutlineDelete,
   MdOutlineVisibility,
 } from 'react-icons/md';
+import { Avatar } from '@/components/Avatar';
+import { Button } from '@/components/Button';
+import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
+import {
+  countryOptions,
+  languageOptions,
+  MOCK_USER_AVATAR_URL,
+} from '@/constants';
 import { type ProfileFormValues, profileSchema } from './schema';
 
 type ProfilePageProps = {

@@ -11,7 +11,7 @@ const Toggle = React.forwardRef<
     {...props}
     ref={ref}
   >
-    <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-[22px] " />
+    <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-[22px]" />
   </Switch.Root>
 ));
 
