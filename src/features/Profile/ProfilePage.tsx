@@ -1,53 +1,14 @@
-// File: src/features/Profile/ProfilePage.tsx
 
 import { Button } from '@/components/Button';
 import { Combobox, FormGroup, Label, Select } from '@/components/Form';
+import { countryOptions, languageOptions } from '@/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
-import countryList from 'country-list';
-import iso6391 from 'iso-639-1';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl'; 
 import type React from 'react';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import timezones from 'timezones-list';
 import { type ProfileFormValues, profileSchema } from './schema';
 
-// --- Data Preparation Functions ---
-
-// Creates options in the format { label: string, value: string }[] for Combobox.
-// We use the language's native name for the label and its ISO 639-1 code for the value.
-const getLanguageOptions = () => {
-  return (
-    iso6391
-      .getAllCodes()
-      .map((code) => ({
-        label: iso6391.getNativeName(code),
-        value: code,
-      }))
-      // Sort alphabetically by the native name
-      .sort((a, b) => a.label.localeCompare(b.label))
-  );
-};
-
-// Creates options in the format
-// { label: string, value: string }[] for Combobox.
-const getCountryOptions = () => {
-  return countryList.getData().map((country) => ({
-    label: country.name,
-    value: country.code, // ISO 3166-1 alpha-2 code
-  }));
-};
-
-// Creates options for timezones.
-const getTimezoneOptions = () => {
-  return timezones
-    .map((tz) => ({
-      label: tz.name,
-      value: tz.tzCode, // e.g., "Asia/Tokyo"
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-};
-
-// --- Component Definition ---
 
 const defaultValues: ProfileFormValues = {
   primaryLanguage: '',
@@ -60,22 +21,26 @@ const defaultValues: ProfileFormValues = {
   proficiencyLevel: undefined,
 };
 
-// Load options once on module load
-const languageOptions = getLanguageOptions();
-const countryOptions = getCountryOptions();
-const timezoneOptions = getTimezoneOptions();
-
 export const ProfilePage: React.FC = () => {
   const t = useTranslations('Profile');
+  const locale = useLocale(); 
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues,
   });
+
+  useEffect(() => {
+    // Automatically detect and set the user's timezone
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setValue('timezone', userTimezone, { shouldValidate: true });
+  }, [setValue]);
 
   const onSubmit = (data: ProfileFormValues) => {
     console.log('Profile Data Submitted', data);
@@ -88,6 +53,10 @@ export const ProfilePage: React.FC = () => {
     { label: t('proficiencyOptionAdvanced'), value: 'Advanced' },
   ];
 
+  const localizedLanguageOptions = languageOptions(locale);
+  const localizedCountryOptions = countryOptions(locale);
+
+
   return (
     <div className="mx-auto w-full max-w-4xl p-8">
       <h1 className="mb-8 font-bold font-figtree text-3xl text-white">
@@ -97,7 +66,7 @@ export const ProfilePage: React.FC = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-6 rounded-lg bg-background-dark p-6 shadow-xl"
       >
-        {/* --- Language Section --- */}
+        {/* Language Section */}
         <div className="flex flex-col gap-4">
           <h2 className="font-figtree font-semibold text-primary text-xl">
             {t('languageProfile')}
@@ -115,7 +84,7 @@ export const ProfilePage: React.FC = () => {
                   {...field}
                   value={field.value || ''}
                   onValueChange={field.onChange}
-                  options={languageOptions}
+                  options={localizedLanguageOptions} 
                   placeholder={t('languageSelectPlaceholder')}
                 />
               )}
@@ -139,7 +108,7 @@ export const ProfilePage: React.FC = () => {
                   {...field}
                   value={field.value || ''}
                   onValueChange={field.onChange}
-                  options={languageOptions}
+                  options={localizedLanguageOptions} 
                   placeholder={t('languageSelectPlaceholder')}
                 />
               )}
@@ -176,7 +145,7 @@ export const ProfilePage: React.FC = () => {
             )}
           </FormGroup>
 
-          {/* New Optional Field: Country */}
+          {/* Country Field */}
           <FormGroup>
             <Label htmlFor="country">{t('countryLabel')}</Label>
             <Controller
@@ -187,7 +156,7 @@ export const ProfilePage: React.FC = () => {
                   {...field}
                   value={field.value || ''}
                   onValueChange={field.onChange}
-                  options={countryOptions}
+                  options={localizedCountryOptions} 
                   placeholder={t('countryPlaceholder')}
                 />
               )}
@@ -197,21 +166,16 @@ export const ProfilePage: React.FC = () => {
             )}
           </FormGroup>
 
-          {/* New Optional Field: Timezone */}
+          {/* Timezone Field */}
           <FormGroup>
             <Label htmlFor="timezone">{t('timezoneLabel')}</Label>
-            <Controller
-              name="timezone"
-              control={control}
-              render={({ field }) => (
-                <Combobox
-                  {...field}
-                  value={field.value || ''}
-                  onValueChange={field.onChange}
-                  options={timezoneOptions}
-                  placeholder={t('timezonePlaceholder')}
-                />
-              )}
+            <input
+              id="timezone"
+              type="text"
+              {...register('timezone')}
+              readOnly
+              className="h-12 w-full cursor-not-allowed rounded-lg border border-gray-600 bg-background-dark p-3 text-gray-400 focus:outline-none"
+              placeholder={t('timezonePlaceholder')}
             />
             {errors.timezone && (
               <p className="text-red-500 text-xs">{errors.timezone.message}</p>
@@ -219,7 +183,7 @@ export const ProfilePage: React.FC = () => {
           </FormGroup>
         </div>
 
-        {/* --- About Me Section --- */}
+        {/* About Me Section */}
         <div className="flex flex-col gap-4 border-gray-700 border-t pt-6">
           <h2 className="font-figtree font-semibold text-primary text-xl">
             {t('aboutMe')}
@@ -253,13 +217,13 @@ export const ProfilePage: React.FC = () => {
           </FormGroup>
         </div>
 
-        {/* --- Privacy/Settings Section --- */}
+        {/* Privacy/Settings Section */}
         <div className="flex flex-col gap-4 border-gray-700 border-t pt-6">
           <h2 className="font-figtree font-semibold text-primary text-xl">
             {t('privacySettings')}
           </h2>
 
-          {/* isPublic Toggle/Checkbox */}
+          {/* Toggle */}
           <div className="flex items-center space-x-2">
             <input
               id="isPublic"
