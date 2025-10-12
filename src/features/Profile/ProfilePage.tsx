@@ -1,19 +1,18 @@
-
 import { Button } from '@/components/Button';
-import { Combobox, FormGroup, Label, Select } from '@/components/Form';
+import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
 import { countryOptions, languageOptions } from '@/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations, useLocale } from 'next-intl'; 
+import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { type ProfileFormValues, profileSchema } from './schema';
 
-
 const defaultValues: ProfileFormValues = {
   primaryLanguage: '',
   targetLanguage: '',
-  isPublic: true,
+  allowAnonymousCopy: true,
+  displayTimezone: true,
   bio: '',
   interests: '',
   country: '',
@@ -23,7 +22,7 @@ const defaultValues: ProfileFormValues = {
 
 export const ProfilePage: React.FC = () => {
   const t = useTranslations('Profile');
-  const locale = useLocale(); 
+  const locale = useLocale();
 
   const {
     register,
@@ -56,7 +55,6 @@ export const ProfilePage: React.FC = () => {
   const localizedLanguageOptions = languageOptions(locale);
   const localizedCountryOptions = countryOptions(locale);
 
-
   return (
     <div className="mx-auto w-full max-w-4xl p-8">
       <h1 className="mb-8 font-bold font-figtree text-3xl text-white">
@@ -84,7 +82,7 @@ export const ProfilePage: React.FC = () => {
                   {...field}
                   value={field.value || ''}
                   onValueChange={field.onChange}
-                  options={localizedLanguageOptions} 
+                  options={localizedLanguageOptions}
                   placeholder={t('languageSelectPlaceholder')}
                 />
               )}
@@ -108,7 +106,7 @@ export const ProfilePage: React.FC = () => {
                   {...field}
                   value={field.value || ''}
                   onValueChange={field.onChange}
-                  options={localizedLanguageOptions} 
+                  options={localizedLanguageOptions}
                   placeholder={t('languageSelectPlaceholder')}
                 />
               )}
@@ -156,7 +154,7 @@ export const ProfilePage: React.FC = () => {
                   {...field}
                   value={field.value || ''}
                   onValueChange={field.onChange}
-                  options={localizedCountryOptions} 
+                  options={localizedCountryOptions}
                   placeholder={t('countryPlaceholder')}
                 />
               )}
@@ -174,7 +172,7 @@ export const ProfilePage: React.FC = () => {
               type="text"
               {...register('timezone')}
               readOnly
-              className="h-12 w-full cursor-not-allowed rounded-lg border border-gray-600 bg-background-dark p-3 text-gray-400 focus:outline-none"
+              className="h-12 w-full cursor-not-allowed rounded-lg border border-gray-600 bg-background-darker p-3 text-gray-400 focus:outline-none"
               placeholder={t('timezonePlaceholder')}
             />
             {errors.timezone && (
@@ -223,21 +221,48 @@ export const ProfilePage: React.FC = () => {
             {t('privacySettings')}
           </h2>
 
-          {/* Toggle */}
-          <div className="flex items-center space-x-2">
-            <input
-              id="isPublic"
-              type="checkbox"
-              {...register('isPublic')}
-              className="h-4 w-4 rounded border-gray-600 bg-background-darker text-primary focus:ring-primary"
-            />
-
-            <Label htmlFor="isPublic" className="font-regular">
-              {t('allowAnonymousCopyingLabel')}
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="allowAnonymousCopy" className="mb-0 font-medium">
+                {t('allowAnonymousCopyingLabel')}
+              </Label>
               <p className="text-gray-500 text-xs">
                 {t('allowAnonymousCopyingDescription')}
               </p>
-            </Label>
+            </div>
+            <Controller
+              name="allowAnonymousCopy"
+              control={control}
+              render={({ field }) => (
+                <Toggle
+                  id="allowAnonymousCopy"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="displayTimezone" className="mb-0 font-medium">
+                {t('displayTimezoneLabel')}
+              </Label>
+              <p className="text-gray-500 text-xs">
+                {t('displayTimezoneDescription')}
+              </p>
+            </div>
+            <Controller
+              name="displayTimezone"
+              control={control}
+              render={({ field }) => (
+                <Toggle
+                  id="displayTimezone"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
           </div>
         </div>
 
