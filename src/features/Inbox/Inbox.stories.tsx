@@ -1,11 +1,11 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { useTranslations } from 'next-intl';
+import React, { useState } from 'react';
 import { Button } from '@/components/Button';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
 import type { Notification } from '@/types';
-import type { Meta, StoryObj } from '@storybook/react';
-import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
 import { Inbox } from './Inbox';
 
 const meta: Meta<typeof Inbox> = {
@@ -98,7 +98,7 @@ const LiveUpdateStory = () => {
         : t('anonymousUserCopied');
 
     const newNotification: Notification = {
-      id: new Date().getTime().toString(),
+      id: Date.now().toString(),
       message: message,
       timestamp: t('minutesAgo', { count: 0 }),
       iconUrl: iconUrl,

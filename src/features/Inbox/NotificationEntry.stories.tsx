@@ -1,6 +1,6 @@
-import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useTranslations } from 'next-intl';
+import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { NotificationEntry } from './NotificationEntry';
 import 'src/app/globals.css';
 

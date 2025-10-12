@@ -1,7 +1,7 @@
-import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 import { useTranslations } from 'next-intl';
+import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { Navbar } from './Navbar';
 
 const meta: Meta<typeof Navbar> = {
@@ -53,7 +53,7 @@ export const LoggedIn: Story = {
 
 export const LoggedOut: Story = {
   render: (args) => {
-    const t = useTranslations();
+    const _t = useTranslations();
     return <Navbar {...args} notifications={[]} iconUrl={undefined} />;
   },
 };

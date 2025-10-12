@@ -83,7 +83,7 @@ export const useToastStack = () => {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((toast: Omit<ToastData, 'id'>) => {
-    const newId = new Date().getTime();
+    const newId = Date.now();
     const newToast = { ...toast, id: newId };
     setToasts((prev) => [...prev, newToast]);
   }, []);
