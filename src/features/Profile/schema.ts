@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 export const profileSchema = z.object({
-  isPublic: z.boolean(),
+  allowAnonymousCopy: z.boolean(),
+  displayTimezone: z.boolean(),
 
   primaryLanguage: z.string().min(1, 'Please select your primary language.'),
 

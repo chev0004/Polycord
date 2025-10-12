@@ -42,9 +42,9 @@
     "proficiencyOptionBeginner": "初心者",
     "proficiencyOptionIntermediate": "中級者",
     "proficiencyOptionAdvanced": "上級者",
-    "countryLabel": "出身国 (任意)",
+    "countryLabel": "出身国",
     "countryPlaceholder": "国を選択...",
-    "timezoneLabel": "タイムゾーン (任意)",
+    "timezoneLabel": "タイムゾーン",
     "timezonePlaceholder": "タイムゾーンを選択...",
     "aboutMe": "自己紹介",
     "bioLabel": "自己紹介",
@@ -53,6 +53,8 @@
     "interestsPlaceholder": "例: K-pop, ゲーム, アニメ, 料理",
     "privacySettings": "プライバシー設定",
     "allowAnonymousCopyingLabel": "匿名コピーを許可",
-    "allowAnonymousCopyingDescription": "ログインしていないユーザーが、接続のためにあなたのDiscordユーザー名をコピーすることを許可します。"
+    "allowAnonymousCopyingDescription": "ログインしていないユーザーがあなたのDiscordユーザー名をコピーすることを許可します。",
+    "displayTimezoneLabel": "タイムゾーンの表示",
+    "displayTimezoneDescription": "あなたのタイムゾーンを公開プロフィールに表示します。"
   }
 }
