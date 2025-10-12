@@ -8,7 +8,7 @@ export const profileSchema = z.object({
 
   targetLanguage: z.string().min(1, 'Please select your target language.'),
 
-  proficiencyLevel: z.enum(['Beginner', 'Intermediate', 'Advanced']).optional(),
+  proficiencyLevel: z.string().min(1, 'Please select your proficiency level.'),
 
   bio: z.string().max(500, 'Bio must be 500 characters or less.').optional(),
 

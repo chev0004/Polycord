@@ -18,9 +18,8 @@ const defaultValues: ProfileFormValues = {
   tags: [],
   country: '',
   timezone: '',
-  proficiencyLevel: undefined,
+  proficiencyLevel: '',
 };
-
 export const ProfilePage: React.FC = () => {
   const t = useTranslations('Profile');
   const locale = useLocale();
@@ -133,7 +132,7 @@ export const ProfilePage: React.FC = () => {
 
           {/* Proficiency Level Dropdown */}
           <FormGroup>
-            <Label htmlFor="proficiencyLevel">
+            <Label htmlFor="proficiencyLevel" required>
               {t('proficiencyLevelLabel')}
             </Label>
             <Controller
@@ -206,7 +205,7 @@ export const ProfilePage: React.FC = () => {
               rows={4}
               {...register('bio')}
               placeholder={t('bioPlaceholder')}
-              className="rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 focus:border-primary focus:ring-primary"
+              className="min-h-[104px] resize-y rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 focus:border-primary focus:ring-primary"
             />
             {errors.bio && (
               <p className="text-red-500 text-xs">{errors.bio.message}</p>
