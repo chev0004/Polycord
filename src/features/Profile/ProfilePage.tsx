@@ -4,8 +4,9 @@ import { countryOptions, languageOptions } from '@/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { MdAdd, MdClose } from 'react-icons/md';
 import { type ProfileFormValues, profileSchema } from './schema';
 
 const defaultValues: ProfileFormValues = {
@@ -14,7 +15,7 @@ const defaultValues: ProfileFormValues = {
   allowAnonymousCopy: true,
   displayTimezone: true,
   bio: '',
-  interests: '',
+  tags: [],
   country: '',
   timezone: '',
   proficiencyLevel: undefined,
@@ -23,6 +24,8 @@ const defaultValues: ProfileFormValues = {
 export const ProfilePage: React.FC = () => {
   const t = useTranslations('Profile');
   const locale = useLocale();
+  const [tagInput, setTagInput] = useState('');
+  const [tagError, setTagError] = useState<string | null>(null);
 
   const {
     register,
@@ -64,6 +67,16 @@ export const ProfilePage: React.FC = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-6 rounded-lg bg-background-dark p-6 shadow-xl"
       >
+        {/* Error Message Display */}
+        {tagError && (
+          <div
+            className="rounded-md border border-red-800 bg-red-950/50 p-3 text-red-400 text-sm"
+            role="alert"
+          >
+            {tagError}
+          </div>
+        )}
+
         {/* Language Section */}
         <div className="flex flex-col gap-4">
           <h2 className="font-figtree font-semibold text-primary text-xl">
@@ -200,19 +213,97 @@ export const ProfilePage: React.FC = () => {
             )}
           </FormGroup>
 
-          <FormGroup>
-            <Label htmlFor="interests">{t('interestsLabel')}</Label>
-            <input
-              id="interests"
-              type="text"
-              {...register('interests')}
-              placeholder={t('interestsPlaceholder')}
-              className="rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 focus:border-primary focus:ring-primary"
-            />
-            {errors.interests && (
-              <p className="text-red-500 text-xs">{errors.interests.message}</p>
-            )}
-          </FormGroup>
+          <Controller
+            name="tags"
+            control={control}
+            render={({ field }) => {
+              const handleAddTag = () => {
+                const newTag = tagInput.trim();
+                const currentTags = field.value || [];
+                setTagError(null);
+
+                if (!newTag) return;
+                if (newTag.length < 2) return setTagError(t('tagTooShort'));
+                if (newTag.length > 20) return setTagError(t('tagTooLong'));
+                if (currentTags.length >= 6) return setTagError(t('maxTags'));
+                if (
+                  currentTags
+                    .map((t) => t.toLowerCase())
+                    .includes(newTag.toLowerCase())
+                ) {
+                  return setTagError(t('duplicateTag'));
+                }
+
+                field.onChange([...currentTags, newTag]);
+                setTagInput('');
+              };
+
+              const handleRemoveTag = (indexToRemove: number) => {
+                const currentTags = field.value || [];
+                field.onChange(
+                  currentTags.filter((_, index) => index !== indexToRemove),
+                );
+              };
+
+              return (
+                <FormGroup>
+                  <Label htmlFor="tags">{t('tagsLabel')}</Label>
+                  {(field.value ?? []).length > 0 && (
+                    <div className="mb-2 flex flex-wrap items-center gap-2 rounded-lg bg-background-dark p-2">
+                      {(field.value || []).map((tag, index) => (
+                        <div
+                          key={tag}
+                          className="flex items-center gap-2 rounded-md bg-primary-darker px-2 py-1"
+                        >
+                          <span className="h-2 w-2 rounded-full bg-primary-dark" />
+                          <span className="text-primary-light text-sm">
+                            {tag}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(index)}
+                            className="text-primary-light hover:text-white"
+                            aria-label={`Remove ${tag}`}
+                          >
+                            <MdClose size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      id="tags"
+                      type="text"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      placeholder={t('tagsPlaceholder')}
+                      className="h-12 flex-grow rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 focus:border-primary focus:ring-primary"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddTag}
+                      className="h-12 w-12 flex-shrink-0 px-3"
+                      aria-label={t('addTag')}
+                    >
+                      <MdAdd size={20} />
+                    </Button>
+                  </div>
+                  {errors.tags?.message && (
+                    <p className="text-red-500 text-xs">
+                      {t(errors.tags.message)}
+                    </p>
+                  )}
+                </FormGroup>
+              );
+            }}
+          />
         </div>
 
         {/* Privacy/Settings Section */}
