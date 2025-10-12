@@ -5,19 +5,17 @@ export const profileSchema = z.object({
   allowAnonymousCopy: z.boolean(),
   displayTimezone: z.boolean(),
 
-  primaryLanguage: z.string().min(1, 'Please select your primary language.'),
+  primaryLanguage: z.string().min(1, { message: 'primaryLanguageRequired' }),
 
-  targetLanguage: z.string().min(1, 'Please select your target language.'),
+  targetLanguage: z.string().min(1, { message: 'targetLanguageRequired' }),
 
-  proficiencyLevel: z.string().min(1, 'Please select your proficiency level.'),
+  proficiencyLevel: z.string().min(1, { message: 'proficiencyLevelRequired' }),
 
   bio: z
     .string()
-    .max(500, { message: 'bioTooLong' })
-    .refine((val) => val.length === 0 || val.length >= 10, {
-      message: 'bioTooShort',
-    })
-    .optional(),
+    .min(1, { message: 'bioRequired' })
+    .min(10, { message: 'bioTooShort' })
+    .max(500, { message: 'bioTooLong' }),
 
   tags: z
     .array(
@@ -36,15 +34,9 @@ export const profileSchema = z.object({
     )
     .optional(),
 
-  country: z
-    .string()
-    .max(50, 'Country must be 50 characters or less.')
-    .optional(),
+  country: z.string().optional(),
 
-  timezone: z
-    .string()
-    .max(100, 'Timezone must be 100 characters or less.')
-    .optional(),
+  timezone: z.string().optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
