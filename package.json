@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "format": "biome format --write .",
-    "lint": "biome lint .",
-    "check": "biome check --apply .",
+    "lint": "eslint . --ext .ts,.tsx",
+    "check": "biome format --write . && eslint . --ext .ts,.tsx",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "prepare": "husky"
