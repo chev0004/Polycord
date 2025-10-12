@@ -34,15 +34,23 @@ export type SelectProps = SelectPrimitive.SelectProps & {
   options: { label: string; value: string }[];
   className?: string;
   onBlur?: React.FocusEventHandler<HTMLButtonElement>;
+  error?: boolean;
 };
 
 export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
-  ({ placeholder, options, className, onBlur, ...props }, forwardedRef) => {
+  (
+    { placeholder, options, className, onBlur, error, ...props },
+    forwardedRef,
+  ) => {
     return (
       <SelectPrimitive.Root {...props}>
         <SelectPrimitive.Trigger
           ref={forwardedRef}
-          className={`flex h-12 w-full items-center justify-between rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:border-primary focus:ring-primary data-[placeholder]:text-gray-500 ${className}`}
+          className={`flex h-12 w-full items-center justify-between rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker data-[placeholder]:text-gray-500 ${
+            error
+              ? 'border-red-500 focus:ring-red-500'
+              : 'border-gray-600 focus:ring-primary'
+          } ${className ?? ''}`}
           aria-label="Selection"
           onBlur={onBlur}
         >

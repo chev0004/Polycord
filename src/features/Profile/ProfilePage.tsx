@@ -202,6 +202,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   onValueChange={field.onChange}
                   options={localizedLanguageOptions}
                   placeholder={t('languageSelectPlaceholder')}
+                  error={!!errors.primaryLanguage}
                 />
               )}
             />
@@ -226,6 +227,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   onValueChange={field.onChange}
                   options={localizedLanguageOptions}
                   placeholder={t('languageSelectPlaceholder')}
+                  error={!!errors.targetLanguage}
                 />
               )}
             />
@@ -251,6 +253,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   placeholder={t('proficiencyLevelPlaceholder')}
                   onValueChange={field.onChange}
                   value={field.value}
+                  error={!!errors.proficiencyLevel}
                 />
               )}
             />
@@ -274,6 +277,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   onValueChange={field.onChange}
                   options={localizedCountryOptions}
                   placeholder={t('countryPlaceholder')}
+                  error={!!errors.country}
                 />
               )}
             />
@@ -310,7 +314,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               rows={4}
               {...register('bio')}
               placeholder={t('bioPlaceholder')}
-              className="min-h-[104px] resize-y rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 focus:border-primary focus:ring-primary"
+              className={`min-h-[104px] resize-y rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker ${
+                errors.bio
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-600 focus:ring-primary'
+              }`}
             />
             {errors.bio && (
               <p className="text-red-500 text-xs">
@@ -390,7 +398,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         }
                       }}
                       placeholder={t('tagsPlaceholder')}
-                      className="h-12 flex-grow rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 focus:border-primary focus:ring-primary"
+                      className={`h-12 flex-grow rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker ${
+                        errors.tags
+                          ? 'border-red-500 focus:ring-red-500'
+                          : 'border-gray-600 focus:ring-primary'
+                      }`}
                     />
                     <Button
                       type="button"

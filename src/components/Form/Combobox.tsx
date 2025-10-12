@@ -18,11 +18,21 @@ export type ComboboxProps = {
   onValueChange: (value: string) => void;
   value: string;
   name?: string;
+  error?: boolean;
 };
 
 export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
   (
-    { placeholder, options, className, onBlur, onValueChange, value, name },
+    {
+      placeholder,
+      options,
+      className,
+      onBlur,
+      onValueChange,
+      value,
+      name,
+      error,
+    },
     forwardedRef,
   ) => {
     const t = useTranslations('Combobox');
@@ -171,12 +181,15 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         event.preventDefault();
       }
     };
-
     return (
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Anchor asChild>
           <div
-            className={`flex h-12 w-full items-center justify-between rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus-within:border-primary focus-within:ring-primary data-[placeholder]:text-gray-500 ${className}`}
+            className={`flex h-12 w-full items-center justify-between rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-background-darker data-[placeholder]:text-gray-500 ${
+              error
+                ? 'border-red-500 focus-within:ring-red-500'
+                : 'border-gray-600 focus-within:ring-primary'
+            } ${className ?? ''}`}
           >
             <input
               ref={forwardedRef}
