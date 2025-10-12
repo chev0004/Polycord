@@ -11,7 +11,13 @@ export const profileSchema = z.object({
 
   proficiencyLevel: z.string().min(1, 'Please select your proficiency level.'),
 
-  bio: z.string().max(500, 'Bio must be 500 characters or less.').optional(),
+  bio: z
+    .string()
+    .max(500, { message: 'bioTooLong' })
+    .refine((val) => val.length === 0 || val.length >= 10, {
+      message: 'bioTooShort',
+    })
+    .optional(),
 
   tags: z
     .array(

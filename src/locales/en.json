@@ -54,6 +54,8 @@
     "aboutMe": "About Me",
     "bioLabel": "Bio",
     "bioPlaceholder": "Tell us a bit about yourself and your language goals.",
+    "bioTooShort": "Please enter at least 10 characters for your bio.",
+    "bioTooLong": "Please keep your bio within 500 characters.",
     "tagsLabel": "Interests & Topics",
     "tagsPlaceholder": "Type a tag and press Enter",
     "addTag": "Add Tag",
