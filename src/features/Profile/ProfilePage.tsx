@@ -1,12 +1,24 @@
+import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
-import { countryOptions, languageOptions } from '@/constants';
+import {
+  MOCK_USER_AVATAR_URL,
+  countryOptions,
+  languageOptions,
+} from '@/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { MdAdd, MdClose } from 'react-icons/md';
+import {
+  MdAdd,
+  MdClose,
+  MdMoreVert,
+  MdOutlineDelete,
+  MdOutlineVisibility,
+} from 'react-icons/md';
 import { type ProfileFormValues, profileSchema } from './schema';
 
 const defaultValues: ProfileFormValues = {
@@ -14,12 +26,35 @@ const defaultValues: ProfileFormValues = {
   targetLanguage: '',
   allowAnonymousCopy: true,
   displayTimezone: true,
+  isPublic: true,
   bio: '',
   tags: [],
   country: '',
   timezone: '',
   proficiencyLevel: '',
 };
+
+const MenuItem = ({
+  icon: Icon,
+  onClick,
+  children,
+  className,
+}: {
+  icon: React.ElementType;
+  onClick?: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 ${className}`}
+  >
+    <Icon size={20} />
+    {children}
+  </button>
+);
+
 export const ProfilePage: React.FC = () => {
   const t = useTranslations('Profile');
   const locale = useLocale();
@@ -31,17 +66,25 @@ export const ProfilePage: React.FC = () => {
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues,
   });
 
+  const displayTimezone = watch('displayTimezone');
+  const isPublic = watch('isPublic');
+
   useEffect(() => {
     // Automatically detect and set the user's timezone
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setValue('timezone', userTimezone, { shouldValidate: true });
-  }, [setValue]);
+    if (displayTimezone) {
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      setValue('timezone', userTimezone, { shouldValidate: true });
+    } else {
+      setValue('timezone', '', { shouldValidate: true });
+    }
+  }, [setValue, displayTimezone]);
 
   const onSubmit = (data: ProfileFormValues) => {
     console.log('Profile Data Submitted', data);
@@ -59,13 +102,66 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="mx-auto w-full max-w-4xl p-8">
-      <h1 className="mb-8 font-bold font-figtree text-3xl text-white">
-        {t('editProfile')}
-      </h1>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col gap-6 rounded-lg bg-background-dark p-6 shadow-xl"
+        className="flex flex-col gap-6 rounded-3xl bg-background-dark p-6 shadow-xl"
       >
+        <div className="mb-2 flex items-start justify-between">
+          <div className="flex items-center gap-6">
+            <Avatar avatarUrl={MOCK_USER_AVATAR_URL} size="lg" />
+            <div>
+              <h1 className="font-bold font-figtree text-3xl text-white">
+                {t('editProfile')}
+              </h1>
+              <span
+                className={`mt-1 inline-block rounded-md px-2 py-0.5 font-semibold text-xs ${
+                  isPublic
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-gray-500/20 text-gray-400'
+                }`}
+              >
+                {isPublic ? t('statusPublic') : t('statusUnlisted')}
+              </span>
+            </div>
+          </div>
+
+          <Popover.Root>
+            <Popover.Trigger asChild>
+              <button
+                type="button"
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-background-main/50 hover:text-white focus:outline-none"
+                aria-label="Profile options"
+              >
+                <MdMoreVert size={24} />
+              </button>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content
+                className="PopoverContent z-50 w-[220px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                side="bottom"
+                align="end"
+                sideOffset={5}
+              >
+                <div className="flex flex-col">
+                  <MenuItem
+                    icon={MdOutlineVisibility}
+                    onClick={() => console.log('View profile clicked')} // TODO: Display profile
+                    className="hover:!text-green-300 text-green-400"
+                  >
+                    {t('viewPublicProfile')}
+                  </MenuItem>
+                  <MenuItem
+                    icon={MdOutlineDelete}
+                    onClick={() => console.log('Delete profile clicked')} // TODO: Delete profile
+                    className="hover:!text-red-300 text-red-400"
+                  >
+                    {t('deleteProfile')}
+                  </MenuItem>
+                </div>
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+        </div>
         {/* Error Message Display */}
         {tagError && (
           <div
@@ -310,6 +406,28 @@ export const ProfilePage: React.FC = () => {
           <h2 className="font-figtree font-semibold text-primary text-xl">
             {t('privacySettings')}
           </h2>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="isPublic" className="mb-0 font-medium">
+                {t('makeProfilePublicLabel')}
+              </Label>
+              <p className="text-gray-500 text-xs">
+                {t('makeProfilePublicDescription')}
+              </p>
+            </div>
+            <Controller
+              name="isPublic"
+              control={control}
+              render={({ field }) => (
+                <Toggle
+                  id="isPublic"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+          </div>
 
           <div className="flex items-center justify-between">
             <div>

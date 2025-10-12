@@ -60,6 +60,12 @@
     "allowAnonymousCopyingLabel": "匿名コピーを許可",
     "allowAnonymousCopyingDescription": "ログインしていないユーザーがあなたのDiscordユーザー名をコピーできるようにする。",
     "displayTimezoneLabel": "タイムゾーンを表示",
-    "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。"
+    "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。",
+    "statusPublic": "公開",
+    "statusUnlisted": "未掲載",
+    "makeProfilePublicLabel": "プロフィールを公開する",
+    "makeProfilePublicDescription": "他のユーザーが検索結果であなたのプロフィールを見つけられるようにします。",
+    "viewPublicProfile": "掲載ページを見る",
+    "deleteProfile": "プロフィール削除"
   }
 }

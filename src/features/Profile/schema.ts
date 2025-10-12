@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const profileSchema = z.object({
+  isPublic: z.boolean(),
   allowAnonymousCopy: z.boolean(),
   displayTimezone: z.boolean(),
 
