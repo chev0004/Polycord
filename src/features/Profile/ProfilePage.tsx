@@ -314,7 +314,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               className="min-h-[104px] resize-y rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 focus:border-primary focus:ring-primary"
             />
             {errors.bio && (
-              <p className="text-red-500 text-xs">{errors.bio.message}</p>
+              <p className="text-red-500 text-xs">
+                {t(errors.bio.message as string)}
+              </p>
             )}
           </FormGroup>
 

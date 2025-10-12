@@ -53,6 +53,8 @@
     "aboutMe": "自己紹介",
     "bioLabel": "自己紹介",
     "bioPlaceholder": "ご自身についてと、語学学習の目標をお聞かせください。",
+    "bioTooShort": "自己紹介は10文字以上で入力してください。",
+    "bioTooLong": "自己紹介は500文字以内で入力してください。",
     "tagsLabel": "興味・トピック",
     "tagsPlaceholder": "タグを入力して Enter を押してください",
     "addTag": "タグを追加",
