@@ -21,6 +21,10 @@ import {
 } from 'react-icons/md';
 import { type ProfileFormValues, profileSchema } from './schema';
 
+type ProfilePageProps = {
+  onSubmit?: (data: ProfileFormValues) => void;
+};
+
 const defaultValues: ProfileFormValues = {
   primaryLanguage: '',
   targetLanguage: '',
@@ -55,7 +59,9 @@ const MenuItem = ({
   </button>
 );
 
-export const ProfilePage: React.FC = () => {
+export const ProfilePage: React.FC<ProfilePageProps> = ({
+  onSubmit: onSubmitProp,
+}) => {
   const t = useTranslations('Profile');
   const locale = useLocale();
   const [tagInput, setTagInput] = useState('');
@@ -87,8 +93,12 @@ export const ProfilePage: React.FC = () => {
   }, [setValue, displayTimezone]);
 
   const onSubmit = (data: ProfileFormValues) => {
-    console.log('Profile Data Submitted', data);
-    // TODO: API call to save profile data
+    if (onSubmitProp) {
+      onSubmitProp(data);
+    } else {
+      console.log('Profile Data Submitted', data);
+      // TODO: API call to save profile data
+    }
   };
 
   const translatedProficiencyOptions = [

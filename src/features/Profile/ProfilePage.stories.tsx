@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { fn } from '@storybook/test';
 import { ProfilePage } from './ProfilePage';
 
 const meta: Meta<typeof ProfilePage> = {
@@ -14,6 +15,9 @@ const meta: Meta<typeof ProfilePage> = {
       </div>
     ),
   ],
+  args: {
+    onSubmit: fn(),
+  },
 };
 
 export default meta;
