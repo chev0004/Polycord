@@ -37,7 +37,7 @@ This project is currently in the initial development phase. All features listed 
     ```
 2.  **Install dependencies:**
     ```
-    npm install
+    bun install
     ```
 3.  **Configure environment variables:**
     Copy the example file and configure necessary API keys and settings.
@@ -46,18 +46,18 @@ This project is currently in the initial development phase. All features listed 
     ```
 4.  **Build and Run:**
     ```
-    npm run build
-    npm run start
+    bun run build
+    bun run start
     ```
 
 ### Scripts
 
 | Script | Description |
 | :--- | :--- |
-| `npm run dev` | Starts the local development server. |
-| `npm run build` | Creates an optimized production build. |
-| `npm run start` | Starts the production-ready server. |
-| `npm run format` | Runs code formatting across the project. |
-| `npm run lint` | Analyzes code for errors and quality issues. |
-| `npm run storybook` | Starts the Storybook development server. |
-| `npm run build-storybook` | Builds the static Storybook documentation. |
+| `bun run dev` | Starts the local development server. |
+| `bun run build` | Creates an optimized production build. |
+| `bun run start` | Starts the production-ready server. |
+| `bun run format` | Runs code formatting across the project. |
+| `bun run lint` | Analyzes code for errors and quality issues. |
+| `bun run storybook` | Starts the Storybook development server. |
+| `bun run build-storybook` | Builds the static Storybook documentation. |
