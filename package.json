@@ -9,8 +9,9 @@
     "format": "biome format --write .",
     "check": "biome check --write .",
     "fix:all": "bun run check",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "gen:locales": "node generate-locales.mjs",
+    "storybook": "bun run gen:locales && storybook dev -p 6006",
+    "build-storybook": "bun run gen:locales && storybook build",
     "prepare": "husky"
   },
   "dependencies": {
