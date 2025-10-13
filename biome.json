@@ -13,7 +13,6 @@
   "linter": {
     "enabled": true,
     "domains": {
-      "react": "all",
       "next": "all"
     },
     "rules": {
