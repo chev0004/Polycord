@@ -1,8 +1,9 @@
 import type { NextConfig } from 'next';
+import { locales } from '@/utils/locales';
 
 const nextConfig: NextConfig = {
   i18n: {
-    locales: ['en', 'ja'],
+    locales: locales as string[],
     defaultLocale: 'en',
   },
 };
