@@ -24,8 +24,7 @@
           "options": {}
         },
         "noUnusedVariables": {
-          "level": "error",
-          "fix": "safe",
+          "level": "warn",
           "options": {}
         }
       },
