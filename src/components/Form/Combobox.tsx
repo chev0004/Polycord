@@ -76,7 +76,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
           option.label.toLowerCase().includes(lowerSearch),
         );
       },
-      [value, options.find],
+      [value, options],
     );
 
     const filteredOptions = useMemo(
