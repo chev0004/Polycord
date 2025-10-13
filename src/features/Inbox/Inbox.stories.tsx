@@ -1,11 +1,11 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { useTranslations } from 'next-intl';
+import React, { useState } from 'react';
 import { Button } from '@/components/Button';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
 import type { Notification } from '@/types';
-import type { Meta, StoryObj } from '@storybook/react';
-import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
 import { Inbox } from './Inbox';
 
 const meta: Meta<typeof Inbox> = {
@@ -23,32 +23,34 @@ const meta: Meta<typeof Inbox> = {
 export default meta;
 type Story = StoryObj<typeof Inbox>;
 
+const NotificationsStory = () => {
+  const t = useTranslations('Inbox');
+  return (
+    <Inbox
+      notifications={[
+        {
+          id: '1',
+          message: t('anonymousUserCopied'),
+          timestamp: t('minutesAgo', { count: 2 }),
+        },
+        {
+          id: '2',
+          message: t('userCopied', { user: 'xhev' }),
+          timestamp: t('hoursAgo', { count: 1 }),
+          iconUrl: MOCK_USER_AVATAR_URL,
+        },
+        {
+          id: '3',
+          message: t('anonymousUserCopied'),
+          timestamp: t('hoursAgo', { count: 2 }),
+        },
+      ]}
+    />
+  );
+};
+
 export const WithNotifications: Story = {
-  render: () => {
-    const t = useTranslations('Inbox');
-    return (
-      <Inbox
-        notifications={[
-          {
-            id: '1',
-            message: t('anonymousUserCopied'),
-            timestamp: t('minutesAgo', { count: 2 }),
-          },
-          {
-            id: '2',
-            message: t('userCopied', { user: 'xhev' }),
-            timestamp: t('hoursAgo', { count: 1 }),
-            iconUrl: MOCK_USER_AVATAR_URL,
-          },
-          {
-            id: '3',
-            message: t('anonymousUserCopied'),
-            timestamp: t('hoursAgo', { count: 2 }),
-          },
-        ]}
-      />
-    );
-  },
+  render: () => <NotificationsStory />,
 };
 
 export const Empty: Story = {
@@ -57,7 +59,7 @@ export const Empty: Story = {
   },
 };
 
-const ToastItem = React.memo(
+const ToastComponent = React.memo(
   ({
     toast,
     onDismiss,
@@ -83,6 +85,8 @@ const ToastItem = React.memo(
   },
 );
 
+ToastComponent.displayName = 'ToastComponent';
+
 const LiveUpdateStory = () => {
   const t = useTranslations('Inbox');
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -98,7 +102,7 @@ const LiveUpdateStory = () => {
         : t('anonymousUserCopied');
 
     const newNotification: Notification = {
-      id: new Date().getTime().toString(),
+      id: Date.now().toString(),
       message: message,
       timestamp: t('minutesAgo', { count: 0 }),
       iconUrl: iconUrl,
@@ -145,7 +149,7 @@ const LiveUpdateStory = () => {
       </div>
 
       {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onDismiss={dismissToast} />
+        <ToastComponent key={toast.id} toast={toast} onDismiss={dismissToast} />
       ))}
     </>
   );
