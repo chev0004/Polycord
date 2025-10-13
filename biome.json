@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
   "files": {
     "includes": ["**", "!.next", "!**/dist", "!**/build", "!**/node_modules"]
   },
@@ -72,7 +72,12 @@
         "**/app/**",
         "**/*.config.js",
         "**/*.config.mjs",
-        "**/*.config.ts"
+        "**/*.config.ts",
+        "**/middleware.ts",
+        "**/*.stories.tsx",
+        "**/*.stories.ts",
+        "**/.storybook/*.tsx",
+        "**/.storybook/*.ts"
       ],
       "linter": {
         "rules": {
