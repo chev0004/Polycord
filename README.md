@@ -58,6 +58,8 @@ This project is currently in the initial development phase. All features listed 
 | `bun run build` | Creates an optimized production build. |
 | `bun run start` | Starts the production-ready server. |
 | `bun run format` | Runs code formatting across the project. |
-| `bun run lint` | Analyzes code for errors and quality issues. |
+| `bun run check` | Analyzes code for errors and quality issues. |
+| `bun run fix:all` | Lints and fixes all auto-fixable code issues. |
 | `bun run storybook` | Starts the Storybook development server. |
 | `bun run build-storybook` | Builds the static Storybook documentation. |
+| `bun run prepare` | Installs git hooks (run once after clone/install). |
