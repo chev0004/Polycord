@@ -30,21 +30,23 @@ const meta: Meta<typeof NotificationEntry> = {
 export default meta;
 type Story = StoryObj<typeof NotificationEntry>;
 
+const DefaultNotificationStory = () => {
+  const t = useTranslations('Inbox');
+  return (
+    <NotificationEntry
+      notification={{
+        id: '1',
+        message: t('anonymousUserCopied'),
+        timestamp: t('minutesAgo', { count: 2 }),
+        iconUrl: MOCK_USER_AVATAR_URL,
+        read: false,
+      }}
+      onMarkAsRead={() => {}}
+      onDelete={() => {}}
+    />
+  );
+};
+
 export const Default: Story = {
-  render: () => {
-    const t = useTranslations('Inbox');
-    return (
-      <NotificationEntry
-        notification={{
-          id: '1',
-          message: t('anonymousUserCopied'),
-          timestamp: t('minutesAgo', { count: 2 }),
-          iconUrl: MOCK_USER_AVATAR_URL,
-          read: false,
-        }}
-        onMarkAsRead={() => {}}
-        onDelete={() => {}}
-      />
-    );
-  },
+  render: () => <DefaultNotificationStory />,
 };

@@ -18,22 +18,26 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof Button>;
 
+const DefaultStoryComponent = () => {
+  const t = useTranslations();
+  return <Button>{t('button')}</Button>;
+};
+
 export const Default: Story = {
-  render: () => {
-    const t = useTranslations();
-    return <Button>{t('button')}</Button>;
-  },
+  render: () => <DefaultStoryComponent />,
+};
+
+const WithIconStoryComponent = () => {
+  const t = useTranslations();
+  return (
+    <Button variant="discord" weight="bold" icon={() => <FaDiscord />}>
+      {t('discordButton')}
+    </Button>
+  );
 };
 
 export const WithIcon: Story = {
-  render: () => {
-    const t = useTranslations();
-    return (
-      <Button variant="discord" weight="bold" icon={() => <FaDiscord />}>
-        {t('discordButton')}
-      </Button>
-    );
-  },
+  render: () => <WithIconStoryComponent />,
 };
 
 export const IconOnly: Story = {

@@ -18,14 +18,16 @@ const meta: Meta<typeof Toggle> = {
 export default meta;
 type Story = StoryObj<typeof Toggle>;
 
+const ToggleWithLabel = () => {
+  const id = useId();
+  return (
+    <>
+      <Toggle id={id} />
+      <Label htmlFor={id}>Toggle</Label>
+    </>
+  );
+};
+
 export const Default: Story = {
-  render: () => {
-    const id = useId();
-    return (
-      <>
-        <Toggle id={id} />
-        <Label htmlFor={id}>Toggle</Label>
-      </>
-    );
-  },
+  render: () => <ToggleWithLabel />,
 };
