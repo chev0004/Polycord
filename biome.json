@@ -1,5 +1,8 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
+  "files": {
+    "includes": ["**", "!.next", "!**/dist", "!**/build", "!**/node_modules"]
+  },
   "formatter": {
     "enabled": true,
     "formatWithErrors": true,
@@ -9,6 +12,10 @@
   },
   "linter": {
     "enabled": true,
+    "domains": {
+      "react": "all",
+      "next": "all"
+    },
     "rules": {
       "recommended": true,
       "correctness": {
@@ -24,13 +31,23 @@
         }
       },
       "style": {
+        "noHeadElement": "error",
+        "noDefaultExport": "error",
         "useNodejsImportProtocol": {
           "level": "error",
           "fix": "safe",
           "options": {}
         }
       },
+      "suspicious": {
+        "noDocumentImportInPage": "error",
+        "noHeadImportInDocument": "error"
+      },
+      "performance": {
+        "noImgElement": "error"
+      },
       "nursery": {
+        "noNextAsyncClientComponent": "error",
         "useSortedClasses": {
           "level": "error",
           "fix": "safe",
@@ -42,6 +59,28 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "single"
+    },
+    "jsxRuntime": "transparent",
+    "parser": {
+      "jsxEverywhere": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/pages/**",
+        "**/app/**",
+        "**/*.config.js",
+        "**/*.config.mjs",
+        "**/*.config.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ]
 }
