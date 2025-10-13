@@ -1,7 +1,7 @@
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import type {
-  CSSProperties,
   ComponentProps,
+  CSSProperties,
   ReactNode,
   RefObject,
 } from 'react';

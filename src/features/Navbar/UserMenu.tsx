@@ -1,4 +1,3 @@
-import { Avatar } from '@/components/Avatar';
 import * as Popover from '@radix-ui/react-popover';
 import { useTranslations } from 'next-intl';
 import {
@@ -6,6 +5,7 @@ import {
   MdOutlineSettings,
   MdPersonOutline,
 } from 'react-icons/md';
+import { Avatar } from '@/components/Avatar';
 
 type UserMenuProps = {
   iconUrl: string;

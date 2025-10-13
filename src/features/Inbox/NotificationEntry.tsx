@@ -1,11 +1,11 @@
-import { Avatar } from '@/components/Avatar';
-import type { Notification } from '@/types';
 import type { HTMLAttributes } from 'react';
 import {
   MdClose,
   MdOutlineMarkEmailRead,
   MdOutlineMarkEmailUnread,
 } from 'react-icons/md';
+import { Avatar } from '@/components/Avatar';
+import type { Notification } from '@/types';
 
 type NotificationEntryProps = {
   notification: Notification & { read: boolean; isDeleting?: boolean };

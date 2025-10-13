@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useId } from 'react';
 import { Label } from './Label';
 import { Toggle } from './Toggle';
 
@@ -17,11 +18,16 @@ const meta: Meta<typeof Toggle> = {
 export default meta;
 type Story = StoryObj<typeof Toggle>;
 
-export const Default: Story = {
-  render: () => (
+const ToggleWithLabel = () => {
+  const id = useId();
+  return (
     <>
-      <Toggle id="airplane-mode" />
-      <Label htmlFor="airplane-mode">Toggle</Label>
+      <Toggle id={id} />
+      <Label htmlFor={id}>Toggle</Label>
     </>
-  ),
+  );
+};
+
+export const Default: Story = {
+  render: () => <ToggleWithLabel />,
 };

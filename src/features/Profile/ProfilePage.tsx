@@ -1,16 +1,8 @@
-import { Avatar } from '@/components/Avatar';
-import { Button } from '@/components/Button';
-import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
-import {
-  MOCK_USER_AVATAR_URL,
-  countryOptions,
-  languageOptions,
-} from '@/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   MdAdd,
@@ -19,6 +11,14 @@ import {
   MdOutlineDelete,
   MdOutlineVisibility,
 } from 'react-icons/md';
+import { Avatar } from '@/components/Avatar';
+import { Button } from '@/components/Button';
+import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
+import {
+  countryOptions,
+  languageOptions,
+  MOCK_USER_AVATAR_URL,
+} from '@/constants';
 import { type ProfileFormValues, profileSchema } from './schema';
 
 type ProfilePageProps = {
@@ -62,6 +62,13 @@ const MenuItem = ({
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   onSubmit: onSubmitProp,
 }) => {
+  const timezoneId = useId();
+  const bioId = useId();
+  const tagsInputId = useId();
+  const isPublicToggleId = useId();
+  const allowAnonymousCopyToggleId = useId();
+  const displayTimezoneToggleId = useId();
+
   const t = useTranslations('Profile');
   const locale = useLocale();
   const [tagInput, setTagInput] = useState('');
@@ -290,7 +297,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <FormGroup>
             <Label htmlFor="timezone">{t('timezoneLabel')}</Label>
             <input
-              id="timezone"
+              id={timezoneId}
               type="text"
               {...register('timezone')}
               readOnly
@@ -310,7 +317,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <FormGroup>
             <Label htmlFor="bio">{t('bioLabel')}</Label>
             <textarea
-              id="bio"
+              id={bioId}
               rows={4}
               {...register('bio')}
               placeholder={t('bioPlaceholder')}
@@ -387,7 +394,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   )}
                   <div className="flex gap-2">
                     <input
-                      id="tags"
+                      id={tagsInputId}
                       type="text"
                       value={tagInput}
                       onChange={(e) => setTagInput(e.target.value)}
@@ -444,7 +451,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               control={control}
               render={({ field }) => (
                 <Toggle
-                  id="isPublic"
+                  id={isPublicToggleId}
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
@@ -466,7 +473,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               control={control}
               render={({ field }) => (
                 <Toggle
-                  id="allowAnonymousCopy"
+                  id={allowAnonymousCopyToggleId}
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
@@ -488,7 +495,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               control={control}
               render={({ field }) => (
                 <Toggle
-                  id="displayTimezone"
+                  id={displayTimezoneToggleId}
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
