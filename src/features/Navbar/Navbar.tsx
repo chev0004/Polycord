@@ -3,6 +3,7 @@ import { FaDiscord } from 'react-icons/fa';
 import { Button } from '@/components/Button';
 import type { Notifications } from '@/types';
 import { Inbox } from '../Inbox';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
 
 type NavbarProps = {
@@ -34,6 +35,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       <div className="flex items-center gap-4">
+        <LanguageSwitcher />
+
         {iconUrl ? (
           <>
             <Inbox notifications={notifications} />
