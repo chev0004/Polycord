@@ -2,7 +2,7 @@ import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { languages } from '@/constants/languages';
-import { locales } from '@/utils/locales';
+import { locales } from '@/middleware';
 
 const getLocaleName = (code: string) => {
   const language = languages.find((lang) => lang.code === code);
