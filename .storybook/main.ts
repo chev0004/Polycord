@@ -1,4 +1,3 @@
-import path from 'node:path';
 import type { StorybookConfig } from '@storybook/nextjs';
 
 const config: StorybookConfig = {
@@ -16,18 +15,6 @@ const config: StorybookConfig = {
   framework: {
     name: '@storybook/nextjs',
     options: {},
-  },
-  webpackFinal: async (config) => {
-    if (config.resolve) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        [path.resolve(__dirname, '../src/utils/locales.ts')]: path.resolve(
-          __dirname,
-          '../src/utils/locales.storybook.ts',
-        ),
-      };
-    }
-    return config;
   },
 };
 export default config;

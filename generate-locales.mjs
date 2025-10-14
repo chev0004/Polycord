@@ -2,10 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const localesDir = path.resolve(process.cwd(), 'src/locales');
-const outputPath = path.resolve(
-  process.cwd(),
-  'src/utils/locales.storybook.ts',
-);
+const outputPath = path.resolve(process.cwd(), 'src/utils/locales.ts');
 
 try {
   const files = fs.readdirSync(localesDir);
