@@ -8,11 +8,18 @@
     "start": "next start",
     "format": "biome format --write .",
     "check": "biome check --write .",
-    "fix:all": "bun run check",
+    "fix:all": "biome check --write --formatter-enabled=true && biome format --write",
+    "check:all": "biome check --linter-enabled=true --formatter-enabled=true",
     "gen:locales": "node generate-locales.mjs",
     "storybook": "bun run gen:locales && storybook dev -p 6006",
     "build-storybook": "bun run gen:locales && storybook build",
     "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md}": [
+      "biome format --write",
+      "biome lint --write"
+    ]
   },
   "dependencies": {
     "@commitlint/cli": "^20.1.0",
@@ -20,6 +27,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-virtual": "^3.13.12",
     "husky": "^9.1.7",
+    "lint-staged": "^16.2.4",
     "next": "^15.5.4",
     "next-intl": "^4.3.12",
     "radix-ui": "^1.1.3",

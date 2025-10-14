@@ -1,1 +1,1 @@
-bun run fix:all
+bun run check:all
