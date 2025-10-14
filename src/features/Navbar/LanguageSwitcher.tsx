@@ -1,7 +1,6 @@
 import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import { MdLanguage, MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import { languages } from '@/constants/languages';
 import { locales } from '@/utils/locales';
 
@@ -30,20 +29,10 @@ const MenuItem = ({
           : 'text-white hover:bg-background-main/50'
       }`}
     >
-      <div className="flex items-center gap-3">
-        <MdLanguage
-          size={20}
-          className={isSelected ? 'text-primary' : 'text-gray-400'}
-        />
-        <span>{name}</span>
-      </div>
-      <span className="font-semibold text-gray-400 text-xs uppercase">
-        {locale}
-      </span>
+      <span>{name}</span>
     </Link>
   );
 };
-
 export const LanguageSwitcher: React.FC = () => {
   const currentLocale = useLocale();
 
@@ -52,17 +41,21 @@ export const LanguageSwitcher: React.FC = () => {
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="flex items-center gap-1 rounded-full px-3 py-1 text-white transition-all duration-200 hover:bg-background-main focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background-darker"
+          className="relative flex h-10 w-6 select-none items-center justify-center overflow-hidden rounded-lg bg-background-darker text-white outline-none transition-all duration-200 hover:text-gray-30"
         >
-          <span className="font-semibold text-sm uppercase">
-            {currentLocale}
-          </span>
-          <MdOutlineKeyboardArrowDown size={20} className="text-gray-400" />
+          <div className="relative flex h-8 w-6 items-center justify-center">
+            <span className="absolute top-0 left-0 font-bold font-zen text-s">
+              文
+            </span>
+            <span className="absolute right-0 bottom-0 font-figtree font-semibold text-xs uppercase">
+              {currentLocale}
+            </span>
+          </div>
         </button>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
+          className="PopoverContent z-50 w-[120px] rounded-lg bg-background-dark p-1 shadow-lg"
           side="bottom"
           align="end"
           sideOffset={5}
