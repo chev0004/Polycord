@@ -1,4 +1,4 @@
-# Polycord
+ # Polycord
 
 Polycord is a Discord-based social platform that helps language learners connect through user profiles instead of servers.
 
@@ -6,13 +6,13 @@ Traditional discovery platforms focus on finding large communities, but Polycord
 
 ---
 
-## 💡 Core Concept
+## Core Concept
 
 Polycord shifts the focus from navigating and joining large communities to **discovering specific individuals** for high-quality, one-on-one or small-group language exchange.
 
 ---
 
-## 🛠️ Features
+## Features
 
 * **User Profiles:** Showcase your languages, learning goals, and personal interests.
 * **Matching System:** Find users with compatible language pairs (e.g., English $\leftrightarrow$ Japanese).
@@ -27,7 +27,7 @@ This project is currently in the initial development phase. All features listed 
 
 ---
 
-## 🧑‍💻 Development
+## Development
 
 ### Setup
 
