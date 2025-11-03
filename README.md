@@ -8,7 +8,7 @@ Traditional discovery platforms focus on finding large communities, but Polycord
 
 ## Core Concept
 
-Polycord shifts the focus from navigating and joining large communities to **discovering specific individuals** for high-quality, one-on-one or small-group language exchange.
+Polycord shifts the focus from navigating and joining large communities to discovering specific individuals for high-quality, one-on-one or small-group language exchange.
 
 ---
 
@@ -21,7 +21,7 @@ Polycord shifts the focus from navigating and joining large communities to **dis
 
 ---
 
-## 💻 Project Status: Under Development
+## Project Status: Under Development
 
 This project is currently in the initial development phase. All features listed above are pending implementation.
 
