@@ -18,6 +18,7 @@ import {
   countryOptions,
   languageOptions,
   MOCK_USER_AVATAR_URL,
+  proficiencyOptions,
 } from '@/constants';
 import { type ProfileFormValues, profileSchema } from './schema';
 
@@ -108,14 +109,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     }
   };
 
-  const translatedProficiencyOptions = [
-    { label: t('proficiencyOptionBeginner'), value: 'Beginner' },
-    { label: t('proficiencyOptionIntermediate'), value: 'Intermediate' },
-    { label: t('proficiencyOptionAdvanced'), value: 'Advanced' },
-  ];
-
   const localizedLanguageOptions = languageOptions(locale);
   const localizedCountryOptions = countryOptions(locale);
+  const localizedProficiencyOptions = proficiencyOptions(locale);
 
   return (
     <div className="mx-auto w-full max-w-4xl p-8">
@@ -256,7 +252,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               render={({ field }) => (
                 <Select
                   {...field}
-                  options={translatedProficiencyOptions}
+                  options={localizedProficiencyOptions}
                   placeholder={t('proficiencyLevelPlaceholder')}
                   onValueChange={field.onChange}
                   value={field.value}
