@@ -12,6 +12,7 @@ const defaultSettings: SettingsFormValues = {
   profileInteractionAlert: true,
   theme: 'dark',
   applicationLanguage: 'en',
+  timeFormat: '24hr',
   email: 'xhev@polycord.app',
 };
 
