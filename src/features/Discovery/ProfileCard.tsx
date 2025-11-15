@@ -388,25 +388,23 @@ export const ProfileCard = ({
                         {t('shareProfile')}
                       </MenuItem>
                     ) : null}
-                    <>
-                      <div className="my-1 h-[1px] bg-gray-500/50" />
-                      <MenuItem
-                        icon={MdFlag}
-                        onClick={handleReport}
-                        className="hover:!text-red-300 text-red-400"
-                        iconClassName="text-red-400"
-                      >
-                        {t('reportProfile')}
-                      </MenuItem>
-                      <MenuItem
-                        icon={MdBlock}
-                        onClick={handleBlock}
-                        className="hover:!text-red-300 text-red-400"
-                        iconClassName="text-red-400"
-                      >
-                        {t('blockProfile')}
-                      </MenuItem>
-                    </>
+                    <div className="my-1 h-[1px] bg-gray-500/50" />
+                    <MenuItem
+                      icon={MdFlag}
+                      onClick={handleReport}
+                      className="hover:!text-red-300 text-red-400"
+                      iconClassName="text-red-400"
+                    >
+                      {t('reportProfile')}
+                    </MenuItem>
+                    <MenuItem
+                      icon={MdBlock}
+                      onClick={handleBlock}
+                      className="hover:!text-red-300 text-red-400"
+                      iconClassName="text-red-400"
+                    >
+                      {t('blockProfile')}
+                    </MenuItem>
                   </div>
                   <Popover.Arrow className="fill-gray-500/50" />
                 </Popover.Content>
