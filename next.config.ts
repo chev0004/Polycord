@@ -1,11 +1,21 @@
+import createNextIntlPlugin from 'next-intl/plugin';
 import type { NextConfig } from 'next';
-import { getLocalesFromDir } from '@/utils/locales.server';
+
+const withNextIntl = createNextIntlPlugin('./next-intl.config.ts');
 
 const nextConfig: NextConfig = {
-  i18n: {
-    locales: getLocalesFromDir() as string[],
-    defaultLocale: 'en',
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
