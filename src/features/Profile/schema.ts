@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  isValidProficiency,
-  isValidIANATimezone,
-} from '@/constants/languages';
+import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
 
 export const profileSchema = z.object({
   isPublic: z.boolean(),

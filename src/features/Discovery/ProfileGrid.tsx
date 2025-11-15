@@ -1,8 +1,8 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { ProfileCard, type DiscoveryProfile } from './ProfileCard';
+import type { ReactNode } from 'react';
+import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
   profiles: DiscoveryProfile[];
