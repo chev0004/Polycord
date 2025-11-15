@@ -3,6 +3,8 @@ type Language = {
   [key: `name_${string}`]: string;
 };
 
+export type LanguageCode = string & { readonly __brand: 'LanguageCode' };
+
 export const languages: Language[] = [
   { code: 'aa', name_en: 'Afar', name_ja: 'アファル語' },
   { code: 'ab', name_en: 'Abkhazian', name_ja: 'アブハズ語' },
@@ -216,4 +218,282 @@ export const languageOptions = (locale: string): LanguageOption[] => {
       value: lang.code,
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
+};
+
+export const isValidLanguageCode = (code: string): code is LanguageCode => {
+  return (
+    typeof code === 'string' &&
+    code.length === 2 &&
+    /^[a-z]{2}$/.test(code) &&
+    languages.some((lang) => lang.code === code)
+  );
+};
+
+export enum Proficiency {
+  BEGINNER = 'beginner',
+  INTERMEDIATE = 'intermediate',
+  ADVANCED = 'advanced',
+  NATIVE_LEVEL = 'native-level',
+}
+
+type ProficiencyLevel = {
+  value: Proficiency;
+  name_en: string;
+  name_ja: string;
+};
+
+const proficiencyLevels: ProficiencyLevel[] = [
+  { value: Proficiency.BEGINNER, name_en: 'Beginner', name_ja: '初級' },
+  {
+    value: Proficiency.INTERMEDIATE,
+    name_en: 'Intermediate',
+    name_ja: '中級',
+  },
+  { value: Proficiency.ADVANCED, name_en: 'Advanced', name_ja: '上級' },
+  {
+    value: Proficiency.NATIVE_LEVEL,
+    name_en: 'Native-level',
+    name_ja: 'ネイティブレベル',
+  },
+];
+
+export const proficiencyOptions = (locale: string): LanguageOption[] => {
+  const nameKey = `name_${locale}` as 'name_en' | 'name_ja';
+  const fallbackKey = 'name_en';
+
+  return proficiencyLevels.map((level) => ({
+    label: level[nameKey] ?? level[fallbackKey],
+    value: level.value,
+  }));
+};
+
+export const getAllProficiencyValues = (): Proficiency[] => {
+  return Object.values(Proficiency);
+};
+
+export const isValidProficiency = (value: string): value is Proficiency => {
+  return Object.values(Proficiency).includes(value as Proficiency);
+};
+
+export const getProficiencyTranslationKey = (
+  proficiency: Proficiency | string,
+): string => {
+  const proficiencyMap: Record<Proficiency, string> = {
+    [Proficiency.BEGINNER]: 'proficiencyOptionBeginner',
+    [Proficiency.INTERMEDIATE]: 'proficiencyOptionIntermediate',
+    [Proficiency.ADVANCED]: 'proficiencyOptionAdvanced',
+    [Proficiency.NATIVE_LEVEL]: 'proficiencyOptionNativeLevel',
+  };
+
+  if (isValidProficiency(proficiency)) {
+    return proficiencyMap[proficiency];
+  }
+
+  return 'proficiencyOptionBeginner';
+};
+
+export const capitalizeLanguageCode = (code: string): string => {
+  return code.toUpperCase();
+};
+
+export type IANATimezone = string & { readonly __brand: 'IANATimezone' };
+
+export const isValidIANATimezone = (
+  timezone: string,
+): timezone is IANATimezone => {
+  if (!timezone || typeof timezone !== 'string') return false;
+
+  const ianaPattern = /^[A-Za-z_]+\/[A-Za-z_]+(\/[A-Za-z_]+)*$/;
+  if (!ianaPattern.test(timezone)) return false;
+
+  try {
+    if (typeof Intl !== 'undefined' && 'supportedValuesOf' in Intl) {
+      const supportedTimezones = Intl.supportedValuesOf('timeZone');
+      return supportedTimezones.includes(timezone);
+    }
+    Intl.DateTimeFormat(undefined, { timeZone: timezone });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const TIMEZONE_ABBREVIATION_FALLBACK: Record<string, string> = {
+  'Asia/Tokyo': 'JST',
+  'Asia/Shanghai': 'CST',
+  'Asia/Hong_Kong': 'HKT',
+  'Asia/Singapore': 'SGT',
+  'Asia/Seoul': 'KST',
+  'Asia/Kolkata': 'IST',
+  'Asia/Dubai': 'GST',
+  'Asia/Bangkok': 'ICT',
+  'Asia/Jakarta': 'WIB',
+  'Asia/Manila': 'PHT',
+  'Asia/Kuala_Lumpur': 'MYT',
+  'Asia/Taipei': 'TST',
+  'Asia/Dhaka': 'BDT',
+  'Asia/Karachi': 'PKT',
+  'Asia/Riyadh': 'AST',
+  'Asia/Baghdad': 'AST',
+  'Asia/Jerusalem': 'IST',
+  'Europe/Moscow': 'MSK',
+  'Europe/Istanbul': 'TRT',
+  'America/Mexico_City': 'CST',
+  'America/Sao_Paulo': 'BRT',
+  'America/Argentina/Buenos_Aires': 'ART',
+  'America/Lima': 'PET',
+  'America/Bogota': 'COT',
+  'America/Santiago': 'CLT',
+  'America/Caracas': 'VET',
+  'America/Montevideo': 'UYT',
+  'Africa/Cairo': 'EET',
+  'Africa/Johannesburg': 'SAST',
+  'Africa/Lagos': 'WAT',
+  'Africa/Nairobi': 'EAT',
+  'Australia/Sydney': 'AEDT',
+  'Australia/Melbourne': 'AEDT',
+  'Australia/Brisbane': 'AEST',
+  'Australia/Perth': 'AWST',
+  'Pacific/Auckland': 'NZDT',
+  'Pacific/Honolulu': 'HST',
+};
+
+export const formatTimezone = (timezone: IANATimezone | string): string => {
+  if (!timezone || typeof timezone !== 'string') return '';
+
+  if (timezone.startsWith('GMT')) {
+    return timezone;
+  }
+
+  try {
+    const now = new Date();
+
+    let cleanedOffset = '';
+
+    try {
+      const offsetFormatter = new Intl.DateTimeFormat('en', {
+        timeZone: timezone,
+        timeZoneName: 'longOffset',
+      });
+      const offsetParts = offsetFormatter.formatToParts(now);
+      const offsetString =
+        offsetParts.find((part) => part.type === 'timeZoneName')?.value || '';
+
+      if (offsetString) {
+        cleanedOffset = offsetString.replace(':00', '');
+      }
+    } catch {}
+
+    const tzFormatter = new Intl.DateTimeFormat('en', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZoneName: 'short',
+    });
+
+    const tzParts = tzFormatter.formatToParts(now);
+
+    if (!cleanedOffset || cleanedOffset === timezone) {
+      const utcFormatter = new Intl.DateTimeFormat('en', {
+        timeZone: 'UTC',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+
+      const utcParts = utcFormatter.formatToParts(now);
+
+      const utcHour = parseInt(
+        utcParts.find((p) => p.type === 'hour')?.value || '0',
+        10,
+      );
+      const tzHour = parseInt(
+        tzParts.find((p) => p.type === 'hour')?.value || '0',
+        10,
+      );
+
+      const utcMinute = parseInt(
+        utcParts.find((p) => p.type === 'minute')?.value || '0',
+        10,
+      );
+      const tzMinute = parseInt(
+        tzParts.find((p) => p.type === 'minute')?.value || '0',
+        10,
+      );
+
+      let offsetMinutes = tzHour * 60 + tzMinute - (utcHour * 60 + utcMinute);
+
+      if (offsetMinutes > 12 * 60) offsetMinutes -= 24 * 60;
+      if (offsetMinutes < -12 * 60) offsetMinutes += 24 * 60;
+
+      const offsetHours = Math.floor(offsetMinutes / 60);
+      const remainingMinutes = offsetMinutes % 60;
+
+      const offsetSign = offsetHours >= 0 ? '+' : '';
+      if (remainingMinutes === 0) {
+        cleanedOffset = `GMT${offsetSign}${offsetHours}`;
+      } else {
+        cleanedOffset = `GMT${offsetSign}${Math.abs(offsetHours)}:${Math.abs(remainingMinutes)}`;
+      }
+    }
+
+    let abbreviation = tzParts.find(
+      (part) => part.type === 'timeZoneName',
+    )?.value;
+
+    if (
+      !abbreviation ||
+      abbreviation.startsWith('GMT') ||
+      abbreviation.length < 2 ||
+      !/^[a-zA-Z]+$/.test(abbreviation)
+    ) {
+      abbreviation = TIMEZONE_ABBREVIATION_FALLBACK[timezone];
+    }
+
+    if (
+      abbreviation &&
+      !abbreviation.startsWith('GMT') &&
+      abbreviation.length >= 2 &&
+      abbreviation.length <= 5 &&
+      /^[a-zA-Z]+$/.test(abbreviation)
+    ) {
+      return `${cleanedOffset} (${abbreviation})`;
+    }
+
+    return cleanedOffset;
+  } catch {
+    return timezone;
+  }
+};
+
+export type TimeFormat = '12hr' | '24hr';
+
+export const formatCurrentTime = (
+  timezone: IANATimezone | string,
+  format: TimeFormat = '24hr',
+): string => {
+  if (!timezone || typeof timezone !== 'string') return '';
+
+  try {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: format === '12hr',
+    });
+
+    const parts = formatter.formatToParts(now);
+    const hour = parts.find((p) => p.type === 'hour')?.value || '00';
+    const minute = parts.find((p) => p.type === 'minute')?.value || '00';
+    const dayPeriod = parts.find((p) => p.type === 'dayPeriod')?.value;
+
+    if (format === '12hr' && dayPeriod) {
+      return `${hour}:${minute} ${dayPeriod}`;
+    }
+    return `${hour}:${minute}`;
+  } catch {
+    return '';
+  }
 };

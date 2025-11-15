@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  isValidProficiency,
+  isValidIANATimezone,
+} from '@/constants/languages';
 
 export const profileSchema = z.object({
   isPublic: z.boolean(),
@@ -9,7 +13,12 @@ export const profileSchema = z.object({
 
   targetLanguage: z.string().min(1, { message: 'targetLanguageRequired' }),
 
-  proficiencyLevel: z.string().min(1, { message: 'proficiencyLevelRequired' }),
+  proficiencyLevel: z
+    .string()
+    .min(1, { message: 'proficiencyLevelRequired' })
+    .refine((val) => isValidProficiency(val), {
+      message: 'proficiencyLevelRequired',
+    }),
 
   bio: z
     .string()
@@ -36,7 +45,13 @@ export const profileSchema = z.object({
 
   country: z.string().optional(),
 
-  timezone: z.string().optional(),
+  timezone: z
+    .string()
+    .refine((val) => !val || isValidIANATimezone(val), {
+      message:
+        'Invalid timezone format. Must be a valid IANA timezone identifier.',
+    })
+    .optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
