@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { Proficiency } from '@/constants';
-import { ProfileCard, type DiscoveryProfile } from './ProfileCard';
+import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 import 'src/app/globals.css';
 
 const meta: Meta<typeof ProfileCard> = {

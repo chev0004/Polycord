@@ -1,26 +1,26 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
+import { useTranslations } from 'next-intl';
+import { Fragment, useEffect, useState } from 'react';
 import {
-  MdLocationOn,
   MdAdd,
+  MdBlock,
   MdContentCopy,
+  MdFlag,
+  MdLocationOn,
   MdMoreVert,
   MdPersonOutline,
-  MdFlag,
-  MdBlock,
   MdShare,
 } from 'react-icons/md';
-import { useTranslations } from 'next-intl';
 import { Avatar } from '@/components/Avatar';
 import {
-  getProficiencyTranslationKey,
   capitalizeLanguageCode,
   formatCurrentTime,
-  type Proficiency,
-  type LanguageCode,
+  getProficiencyTranslationKey,
   type IANATimezone,
+  type LanguageCode,
+  type Proficiency,
   type TimeFormat,
 } from '@/constants/languages';
 
