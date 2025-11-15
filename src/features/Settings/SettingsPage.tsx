@@ -6,7 +6,7 @@ import { FaDiscord } from 'react-icons/fa';
 import { z } from 'zod';
 import { Button } from '@/components/Button';
 import { FormGroup, Label, Select, Toggle } from '@/components/Form';
-import { languageOptions } from '@/constants/languages';
+import { languageOptions, type TimeFormat } from '@/constants/languages';
 
 const settingsSchema = z.object({
   isPublic: z.boolean(),
@@ -18,6 +18,7 @@ const settingsSchema = z.object({
   profileInteractionAlert: z.boolean(),
   theme: z.enum(['dark', 'light']),
   applicationLanguage: z.string().min(1),
+  timeFormat: z.enum(['12hr', '24hr']),
   email: z
     .string()
     .email({ message: 'emailInvalid' })
@@ -33,6 +34,12 @@ export type SettingsPageProps = {
   onManageSubscription: () => void;
 };
 
+const getStoredTimeFormat = (): TimeFormat => {
+  if (typeof window === 'undefined') return '24hr';
+  const stored = localStorage.getItem('polycord_timeFormat');
+  return stored === '12hr' || stored === '24hr' ? stored : '24hr';
+};
+
 export const SettingsPage: React.FC<SettingsPageProps> = ({
   defaultValues,
   onSubmit: onSubmitProp,
@@ -42,21 +49,31 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const t = useTranslations('Settings');
   const profileT = useTranslations('Profile');
   const currentLocale = useLocale();
+
+  const initialValues: SettingsFormValues = {
+    ...defaultValues,
+    timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
+  };
+
   const {
     handleSubmit,
     control,
     formState: { isSubmitting, errors },
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
-    defaultValues,
+    defaultValues: initialValues,
   });
 
   const onSubmit = (data: SettingsFormValues) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('polycord_timeFormat', data.timeFormat);
+      window.dispatchEvent(new Event('timeFormatChanged'));
+    }
+
     if (onSubmitProp) {
       onSubmitProp(data);
     } else {
       console.log('Settings Data Submitted', data);
-      // TODO: API call to save settings
     }
   };
 
@@ -70,6 +87,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const themeOptions = [
     { label: t('themeDark'), value: 'dark' },
     { label: t('themeLight'), value: 'light' },
+  ];
+
+  const timeFormatOptions = [
+    { label: t('timeFormat24hr'), value: '24hr' },
+    { label: t('timeFormat12hr'), value: '12hr' },
   ];
 
   return (
@@ -182,7 +204,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
           {/* Theme Switch */}
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-shrink-0 whitespace-nowrap">
               <Label htmlFor="theme" className="mb-0 font-medium">
                 {t('themeLabel')}
               </Label>
@@ -196,8 +218,33 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   options={themeOptions}
                   onValueChange={field.onChange}
                   value={field.value}
-                  className="w-40"
+                  className="w-auto min-w-[180px] flex-shrink-0"
                   placeholder="Select theme"
+                />
+              )}
+            />
+          </div>
+
+          {/* Time Format */}
+          <div className="flex items-center justify-between">
+            <div className="flex-shrink-0 whitespace-nowrap">
+              <Label htmlFor="timeFormat" className="mb-0 font-medium">
+                {t('timeFormatLabel')}
+              </Label>
+              <p className="text-gray-500 text-xs">
+                {t('timeFormatDescription')}
+              </p>
+            </div>
+            <Controller
+              name="timeFormat"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  options={timeFormatOptions}
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  className="w-auto min-w-[180px] flex-shrink-0"
+                  placeholder="Select format"
                 />
               )}
             />
