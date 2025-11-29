@@ -127,6 +127,7 @@
     "emptyStateDescription": "フィルターを調整するか、後でもう一度お試しください。",
     "copyUsername": "ユーザー名をコピー",
     "copied": "コピーしました！",
+    "copiedToClipboard": "{username} をクリップボードにコピーしました",
     "signInToViewUsername": "ログインしてユーザー名を表示"
   },
   "DiscoveryStories": {

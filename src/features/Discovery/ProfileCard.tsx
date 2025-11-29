@@ -6,6 +6,7 @@ import { Fragment, useEffect, useState } from 'react';
 import {
   MdAdd,
   MdBlock,
+  MdCheck,
   MdContentCopy,
   MdFlag,
   MdLocationOn,
@@ -49,7 +50,11 @@ export type DiscoveryProfile = {
 type ProfileCardProps = {
   profile: DiscoveryProfile;
   isLoggedIn?: boolean;
-  onCopyUsername?: (username: string, profileId: string) => void;
+  onCopyUsername?: (
+    username: string,
+    profileId: string,
+    avatarUrl?: string,
+  ) => void;
   onTagClick?: (tag: string, profileId: string) => void;
   onLanguageClick?: (
     language: string,
@@ -113,7 +118,7 @@ export const ProfileCard = ({
       setCopied(true);
 
       if (onCopyUsername) {
-        onCopyUsername(profile.discordUsername, profile.id);
+        onCopyUsername(profile.discordUsername, profile.id, profile.avatarUrl);
       }
 
       setTimeout(() => {
@@ -330,17 +335,30 @@ export const ProfileCard = ({
                 <button
                   type="button"
                   onClick={handleCopyUsername}
-                  className="group flex items-center gap-1.5 text-left transition-colors hover:text-primary"
+                  className="group flex items-center gap-1.5 text-left transition-colors focus:outline-none"
                   aria-label={t('copyUsername')}
                 >
-                  <MdContentCopy
-                    size={14}
-                    className={`transition-colors ${copied ? 'text-green-400' : 'text-gray-400 group-hover:text-primary'}`}
-                  />
-                  <span
-                    className={`truncate text-xs transition-colors ${copied ? 'text-green-400' : 'text-gray-400 group-hover:text-primary'}`}
+                  <div
+                    className={`flex items-center justify-center transition-all duration-200 ${
+                      copied
+                        ? 'scale-110 text-discord-blue-light'
+                        : 'text-gray-400 group-hover:text-white'
+                    }`}
                   >
-                    {copied ? t('copied') : t('copyUsername')}
+                    {copied ? (
+                      <MdCheck size={14} />
+                    ) : (
+                      <MdContentCopy size={14} />
+                    )}
+                  </div>
+                  <span
+                    className={`truncate text-xs transition-colors duration-200 ${
+                      copied
+                        ? 'font-medium text-discord-blue-light'
+                        : 'text-gray-400 group-hover:text-white'
+                    }`}
+                  >
+                    {t('copyUsername')}
                   </span>
                 </button>
               ) : (

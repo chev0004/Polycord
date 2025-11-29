@@ -128,6 +128,7 @@
     "emptyStateDescription": "Try adjusting your filters or check back soon to discover new language partners.",
     "copyUsername": "Copy username",
     "copied": "Copied!",
+    "copiedToClipboard": "{username} copied to clipboard",
     "signInToViewUsername": "Sign in to view username",
     "cardMenu": "Card menu",
     "shareProfile": "Share profile",
