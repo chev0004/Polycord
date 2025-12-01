@@ -216,7 +216,7 @@
 .SelectContent[data-state="open"] [role="option"]:nth-child(6) {
   animation-delay: 0.13s;
 }
-.SelectContent[data-state="open"] [role="option"]:nth-child(n+7) {
+.SelectContent[data-state="open"] [role="option"]:nth-child(n + 7) {
   animation-delay: 0.15s;
 }
 
@@ -249,7 +249,7 @@
 .dropdown-menu-animated .dropdown-item:nth-child(6) {
   animation-delay: 0.13s;
 }
-.dropdown-menu-animated .dropdown-item:nth-child(n+7) {
+.dropdown-menu-animated .dropdown-item:nth-child(n + 7) {
   animation-delay: 0.15s;
 }
 
@@ -267,7 +267,9 @@
 .PopoverContent {
   animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: top center;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: width, height, transform, opacity;
 }
 
