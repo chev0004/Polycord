@@ -2,12 +2,23 @@
 
 import * as Popover from '@radix-ui/react-popover';
 import { useTranslations } from 'next-intl';
-import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { IconType } from 'react-icons';
-import { MdCheck, MdKeyboardArrowDown, MdKeyboardArrowUp, MdOutlineKeyboardArrowDown } from 'react-icons/md';
+import {
+  MdCheck,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp,
+  MdOutlineKeyboardArrowDown,
+} from 'react-icons/md';
+import { Tooltip } from '@/components/Tooltip';
 import { Button } from '../Button';
 import { Dropdown } from '../Form/Dropdown';
-import { Tooltip } from '@/components/Tooltip';
 
 export type FilterButtonProps = {
   icon: IconType;
@@ -25,7 +36,10 @@ const INITIAL_BATCH = 20;
 const CHUNK_SIZE = 50;
 const CHUNK_INTERVAL_MS = 16;
 
-export const FilterButton = React.forwardRef<HTMLButtonElement, FilterButtonProps>(
+export const FilterButton = React.forwardRef<
+  HTMLButtonElement,
+  FilterButtonProps
+>(
   (
     {
       icon: Icon,
@@ -44,7 +58,9 @@ export const FilterButton = React.forwardRef<HTMLButtonElement, FilterButtonProp
     const label = t(labelKey);
     const placeholder = placeholderKey ? t(placeholderKey) : undefined;
     const [open, setOpen] = useState(false);
-    const [tempValue, setTempValue] = useState<string | string[]>(value || (multiple ? [] : ''));
+    const [tempValue, setTempValue] = useState<string | string[]>(
+      value || (multiple ? [] : ''),
+    );
 
     useEffect(() => {
       if (open) {
@@ -88,8 +104,13 @@ export const FilterButton = React.forwardRef<HTMLButtonElement, FilterButtonProp
             {...props}
           >
             <Icon size={18} className="flex-shrink-0 text-white" />
-            <span className="text-sm font-medium text-white">{getDisplayText()}</span>
-            <MdOutlineKeyboardArrowDown size={12} className="flex-shrink-0 text-white ml-0.5" />
+            <span className="font-medium text-sm text-white">
+              {getDisplayText()}
+            </span>
+            <MdOutlineKeyboardArrowDown
+              size={12}
+              className="ml-0.5 flex-shrink-0 text-white"
+            />
           </button>
         </Popover.Trigger>
         <Popover.Portal>
@@ -100,9 +121,11 @@ export const FilterButton = React.forwardRef<HTMLButtonElement, FilterButtonProp
             sideOffset={5}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <div className="mb-3 text-sm font-medium text-gray-300">{label}</div>
+            <div className="mb-3 font-medium text-gray-300 text-sm">
+              {label}
+            </div>
 
-            <div className="mb-4 relative"> 
+            <div className="relative mb-4">
               {multiple ? (
                 <MultiSelectDropdown
                   options={options}
@@ -194,7 +217,7 @@ const MultiSelectItem = ({
       <div
         ref={onRef}
         onClick={onToggle}
-        className={`dropdown-item relative flex min-h-8 w-full cursor-pointer select-none items-center overflow-hidden rounded pl-4 pr-4 text-sm text-white transition-colors hover:bg-primary-darker ${
+        className={`dropdown-item relative flex min-h-8 w-full cursor-pointer select-none items-center overflow-hidden rounded pr-4 pl-4 text-sm text-white transition-colors hover:bg-primary-darker ${
           isTabSelected ? 'bg-primary-darker' : ''
         } ${isSelected ? 'bg-background-main text-primary-light' : ''}`}
       >
@@ -377,7 +400,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         (
           item,
         ): item is {
-          option: typeof options[0];
+          option: (typeof options)[0];
           score: number;
           searchIndex: number;
         } => item !== null,
@@ -447,7 +470,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         }}
         className="flex h-12 w-full items-center justify-between whitespace-nowrap rounded-lg border border-gray-600 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors"
       >
-        <span className="flex-1 truncate text-left min-w-0">{getDisplayText()}</span>
+        <span className="min-w-0 flex-1 truncate text-left">
+          {getDisplayText()}
+        </span>
         <MdOutlineKeyboardArrowDown
           size={20}
           className={`ml-2 flex-shrink-0 text-white transition-transform ${open ? 'rotate-180' : ''}`}
@@ -527,7 +552,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     }
                   }}
                   placeholder="Search..."
-                  className="h-8 w-full rounded bg-background-darker pl-2 pr-2 text-sm text-white placeholder-gray-500"
+                  className="h-8 w-full rounded bg-background-darker pr-2 pl-2 text-sm text-white placeholder-gray-500"
                   autoFocus
                 />
               </div>
@@ -537,7 +562,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           {/* Up Chevron */}
           {canScrollUp && (
             <div
-              className="pointer-events-auto absolute left-0 right-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pb-2 pt-2 text-white"
+              className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pt-2 pb-2 text-white"
               style={{ top: `${searchBoxHeight}px` }}
               onClick={(e) => {
                 e.preventDefault();
@@ -548,8 +573,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             </div>
           )}
 
-          <div 
-            className="max-h-[250px] overflow-y-auto p-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          <div
+            className="max-h-[250px] overflow-y-auto p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             ref={listRef}
           >
             {visibleOptions.length > 0 ? (
@@ -584,7 +609,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           {/* Down Chevron */}
           {canScrollDown && (
             <div
-              className="pointer-events-auto absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-white"
+              className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-white"
               onClick={(e) => {
                 e.preventDefault();
                 listRef.current?.scrollBy({ top: 100, behavior: 'smooth' });

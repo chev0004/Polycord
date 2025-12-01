@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import type { FilterButtonProps } from './FilterButton';
 import { FilterButton } from './FilterButton';
 
@@ -43,4 +42,3 @@ export const FilterBar = ({
     </div>
   );
 };
-
