@@ -50,7 +50,7 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         // A small buffer (0.5) handles sub-pixel rounding differences
         setIsTruncated(el.scrollWidth > el.clientWidth + 0.5);
       }
-    }, [children, className]);
+    });
 
     return (
       <Tooltip

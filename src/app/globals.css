@@ -159,12 +159,12 @@
 
 /* Animate closing when data-state is closed */
 .SelectContent[data-side="bottom"][data-state="closed"] {
-  animation: shrinkUp 200ms ease-in forwards !important;
+  animation: shrinkUp 200ms ease-in forwards;
 }
 
 /* Use standard ease-out for opening */
 .SelectContent[data-side="bottom"][data-state="open"] {
-  animation: growDown 300ms ease-out forwards !important;
+  animation: growDown 300ms ease-out forwards;
 }
 
 /* Items slide DOWN when menu opens DOWN */
@@ -182,12 +182,12 @@
 
 /* Animate closing for top side */
 .SelectContent[data-side="top"][data-state="closed"] {
-  animation: shrinkUp 200ms ease-in forwards !important;
+  animation: shrinkUp 200ms ease-in forwards;
 }
 
 /* Use same grow animation */
 .SelectContent[data-side="top"][data-state="open"] {
-  animation: growDown 300ms ease-out forwards !important;
+  animation: growDown 300ms ease-out forwards;
 }
 
 /* Items slide UP when menu opens UP */
@@ -344,6 +344,6 @@
 *:focus,
 *:focus-visible,
 *:focus-within {
-  outline: none !important;
-  box-shadow: none !important;
+  outline: none;
+  box-shadow: none;
 }

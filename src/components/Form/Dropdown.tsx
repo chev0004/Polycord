@@ -147,7 +147,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
           viewportRef.current.scrollTop = 0;
         }
       }
-    }, [visibleCount, open]);
+    }, [open]);
 
     // Filter and sort options
     const filteredOptions = useMemo(() => {
@@ -240,7 +240,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
           viewport.removeEventListener('scroll', checkScroll);
         }
       };
-    }, [open, visibleOptions.length]);
+    }, [open]);
 
     // Measure search box height
     useEffect(() => {
@@ -249,14 +249,14 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       } else {
         setSearchBoxHeight(0);
       }
-    }, [searchable, open]);
+    }, [searchable]);
 
     // Reset selected index when search term changes
     useEffect(() => {
       if (searchable) {
         setSelectedIndex(null);
       }
-    }, [searchTerm, searchable]);
+    }, [searchable]);
 
     // Scroll selected item into view (only for keyboard navigation)
     useEffect(() => {
@@ -378,15 +378,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             }}
           >
             {searchable && (
-              <div
-                ref={searchBoxRef}
-                className="border-gray-700 border-b p-2"
-                onKeyDown={(e) => {
-                  if (document.activeElement === searchInputRef.current) {
-                    e.stopPropagation();
-                  }
-                }}
-              >
+              <div ref={searchBoxRef} className="border-gray-700 border-b p-2">
                 <div className="relative">
                   <MdSearch
                     size={18}
@@ -401,6 +393,9 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                       setSearchTerm(e.target.value);
                     }}
                     onKeyDown={(e) => {
+                      if (document.activeElement === searchInputRef.current) {
+                        e.stopPropagation();
+                      }
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         if (visibleOptions.length > 0) {
@@ -412,14 +407,14 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                     }}
                     placeholder="Search..."
                     className="h-8 w-full rounded bg-background-darker pr-2 pl-8 text-sm text-white placeholder-gray-500"
-                    autoFocus
                   />
                 </div>
               </div>
             )}
 
             {canScrollUp && (
-              <div
+              <button
+                type="button"
                 className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pt-2 pb-2 text-white"
                 style={{ top: `${searchBoxHeight - 8}px` }}
                 onClick={(e) => {
@@ -431,7 +426,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                 }}
               >
                 <ChevronUp size={20} />
-              </div>
+              </button>
             )}
 
             <SelectPrimitive.Viewport
@@ -486,7 +481,8 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             </SelectPrimitive.Viewport>
 
             {canScrollDown && (
-              <div
+              <button
+                type="button"
                 className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-white"
                 onClick={(e) => {
                   e.preventDefault();
@@ -497,7 +493,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                 }}
               >
                 <ChevronDown size={20} />
-              </div>
+              </button>
             )}
           </SelectPrimitive.Content>
         </SelectPrimitive.Portal>
