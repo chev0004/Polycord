@@ -27,9 +27,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         <SelectPrimitive.Trigger
           ref={forwardedRef}
           className={`flex h-12 ${widthClass} items-center justify-between whitespace-nowrap rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors data-[placeholder]:text-gray-500 ${
-            error
-              ? 'border-red-500'
-              : 'border-gray-600'
+            error ? 'border-red-500' : 'border-gray-600'
           } ${className ?? ''}`}
           aria-label="Selection"
           onBlur={onBlur}
@@ -54,7 +52,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               <MdOutlineKeyboardArrowUp size={20} />
             </SelectPrimitive.ScrollUpButton>
 
-            <SelectPrimitive.Viewport className="w-full max-h-[400px] overflow-y-auto p-1">
+            <SelectPrimitive.Viewport className="max-h-[400px] w-full overflow-y-auto p-1">
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

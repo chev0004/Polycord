@@ -186,9 +186,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         <PopoverPrimitive.Anchor asChild>
           <div
             className={`flex h-12 w-full items-center justify-between rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors data-[placeholder]:text-gray-500 ${
-              error
-                ? 'border-red-500'
-                : 'border-gray-600'
+              error ? 'border-red-500' : 'border-gray-600'
             } ${className ?? ''}`}
           >
             <input

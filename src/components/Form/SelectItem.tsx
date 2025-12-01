@@ -66,7 +66,7 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
           ref={handleRef}
         >
           <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-          
+
           {/* Checkmark Rendering Logic */}
           {showCheckmark && (
             <>
