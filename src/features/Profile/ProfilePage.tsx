@@ -13,7 +13,7 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { FormGroup, Label, Dropdown, Toggle } from '@/components/Form';
+import { Dropdown, FormGroup, Label, Toggle } from '@/components/Form';
 import {
   countryOptions,
   languageOptions,
@@ -311,10 +311,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 readOnly
                 disabled
                 tabIndex={-1}
-                className="h-12 w-full cursor-not-allowed rounded-lg border border-gray-600 bg-background-darker p-3 text-gray-400 select-none"
+                className="h-12 w-full cursor-not-allowed select-none rounded-lg border border-gray-600 bg-background-darker p-3 text-gray-400"
               />
               {errors.timezone && (
-                <p className="text-red-500 text-xs">{errors.timezone.message}</p>
+                <p className="text-red-500 text-xs">
+                  {errors.timezone.message}
+                </p>
               )}
             </FormGroup>
           )}
@@ -333,9 +335,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {...register('bio')}
               placeholder={t('bioPlaceholder')}
               className={`min-h-[104px] resize-y rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
-                errors.bio
-                  ? 'border-red-500'
-                  : 'border-gray-600'
+                errors.bio ? 'border-red-500' : 'border-gray-600'
               }`}
             />
             {errors.bio && (
@@ -385,7 +385,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       {(field.value || []).map((tag, index) => (
                         <div
                           key={tag}
-                          className="animate-popIn flex items-center gap-2 rounded-md bg-primary-darker px-2 py-1"
+                          className="flex animate-popIn items-center gap-2 rounded-md bg-primary-darker px-2 py-1"
                         >
                           <span className="h-2 w-2 rounded-full bg-primary-dark" />
                           <span className="text-primary-light text-sm">
@@ -417,9 +417,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       }}
                       placeholder={t('tagsPlaceholder')}
                       className={`h-12 flex-grow rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
-                        errors.tags
-                          ? 'border-red-500'
-                          : 'border-gray-600'
+                        errors.tags ? 'border-red-500' : 'border-gray-600'
                       }`}
                     />
                     <Button
