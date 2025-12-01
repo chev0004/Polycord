@@ -63,9 +63,285 @@
   }
 }
 
-.SelectContent[data-side="top"] {
-  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* Explicit Keyframe Bounce */
+@keyframes growDown {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  60% {
+    opacity: 1;
+    transform: scaleY(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }
+
+/* Closing Animation - Simple shrink to zero */
+@keyframes shrinkUp {
+  from {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  to {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+@keyframes dropdownItemSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdownItemSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* NEW: Pop In animation for Tags */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-popIn {
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* NEW: Slide Out Right for Notifications */
+@keyframes slideOutRight {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.animate-slideOutRight {
+  animation: slideOutRight 0.4s ease-in forwards;
+}
+
+/* =========================================
+   BOTTOM Opening (Default) 
+   ========================================= */
 .SelectContent[data-side="bottom"] {
-  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+/* Animate closing when data-state is closed */
+.SelectContent[data-side="bottom"][data-state="closed"] {
+  animation: shrinkUp 200ms ease-in forwards !important;
+}
+
+/* Use standard ease-out for opening */
+.SelectContent[data-side="bottom"][data-state="open"] {
+  animation: growDown 300ms ease-out forwards !important;
+}
+
+/* Items slide DOWN when menu opens DOWN */
+.SelectContent[data-side="bottom"][data-state="open"] [role="option"] {
+  animation: dropdownItemSlideDown 0.2s ease-in-out backwards;
+}
+
+/* =========================================
+   TOP Opening (When collision happens)
+   ========================================= */
+.SelectContent[data-side="top"] {
+  transform-origin: bottom center; /* Grow from bottom upwards */
+  will-change: transform, opacity;
+}
+
+/* Animate closing for top side */
+.SelectContent[data-side="top"][data-state="closed"] {
+  animation: shrinkUp 200ms ease-in forwards !important;
+}
+
+/* Use same grow animation */
+.SelectContent[data-side="top"][data-state="open"] {
+  animation: growDown 300ms ease-out forwards !important;
+}
+
+/* Items slide UP when menu opens UP */
+.SelectContent[data-side="top"][data-state="open"] [role="option"] {
+  animation: dropdownItemSlideUp 0.2s ease-in-out backwards;
+}
+
+/* =========================================
+   Staggered Animation Delays (Universal)
+   ========================================= */
+.SelectContent[data-state="open"] [role="option"]:nth-child(1) {
+  animation-delay: 0.03s;
+}
+.SelectContent[data-state="open"] [role="option"]:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.SelectContent[data-state="open"] [role="option"]:nth-child(3) {
+  animation-delay: 0.07s;
+}
+.SelectContent[data-state="open"] [role="option"]:nth-child(4) {
+  animation-delay: 0.09s;
+}
+.SelectContent[data-state="open"] [role="option"]:nth-child(5) {
+  animation-delay: 0.11s;
+}
+.SelectContent[data-state="open"] [role="option"]:nth-child(6) {
+  animation-delay: 0.13s;
+}
+.SelectContent[data-state="open"] [role="option"]:nth-child(n+7) {
+  animation-delay: 0.15s;
+}
+
+/* Multi-select dropdown animation */
+.dropdown-menu-animated {
+  transform-origin: top center;
+  will-change: transform, opacity;
+  animation: growDown 300ms ease-out forwards;
+}
+
+.dropdown-menu-animated .dropdown-item {
+  animation: dropdownItemSlideDown 0.2s ease-in-out backwards;
+}
+
+.dropdown-menu-animated .dropdown-item:nth-child(1) {
+  animation-delay: 0.03s;
+}
+.dropdown-menu-animated .dropdown-item:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.dropdown-menu-animated .dropdown-item:nth-child(3) {
+  animation-delay: 0.07s;
+}
+.dropdown-menu-animated .dropdown-item:nth-child(4) {
+  animation-delay: 0.09s;
+}
+.dropdown-menu-animated .dropdown-item:nth-child(5) {
+  animation-delay: 0.11s;
+}
+.dropdown-menu-animated .dropdown-item:nth-child(6) {
+  animation-delay: 0.13s;
+}
+.dropdown-menu-animated .dropdown-item:nth-child(n+7) {
+  animation-delay: 0.15s;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.PopoverContent {
+  animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: width, height, transform, opacity;
+}
+
+/* =========================================
+   Tooltip Animations
+   ========================================= */
+
+@keyframes slideLeftAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideRightAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideDownAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.TooltipContent {
+  animation-duration: 0.2s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.TooltipContent[data-state="delayed-open"][data-side="top"] {
+  animation-name: slideDownAndFade;
+}
+.TooltipContent[data-state="delayed-open"][data-side="right"] {
+  animation-name: slideLeftAndFade;
+}
+.TooltipContent[data-state="delayed-open"][data-side="bottom"] {
+  animation-name: slideUpAndFade;
+}
+.TooltipContent[data-state="delayed-open"][data-side="left"] {
+  animation-name: slideRightAndFade;
+}
+
+/* Remove all focus outlines and rings globally */
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
 }

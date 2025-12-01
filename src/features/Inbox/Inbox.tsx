@@ -33,6 +33,12 @@ export const Inbox = ({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Derived state moved up so handlers can access it
+  const totalPages = Math.ceil(notifications.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentNotifications = notifications.slice(startIndex, endIndex);
+
   const handleMarkAsRead = (id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)),
@@ -45,7 +51,7 @@ export const Inbox = ({
     );
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 300);
+    }, 400); // Matched to slideOutRight animation duration
   };
 
   const handleMarkAllAsRead = () => {
@@ -54,16 +60,28 @@ export const Inbox = ({
 
   const handleClearAll = () => {
     if (notifications.length === 0) return;
-    setNotifications((prev) => prev.map((n) => ({ ...n, isDeleting: true })));
+
+    // 1. Identify IDs of currently visible notifications on this page
+    const visibleIds = new Set(currentNotifications.map((n) => n.id));
+
+    // 2. Set isDeleting ONLY for visible notifications so only they animate
+    setNotifications((prev) =>
+      prev.map((n) => (visibleIds.has(n.id) ? { ...n, isDeleting: true } : n)),
+    );
+
+    // 3. Calculate duration based ONLY on the count of visible items
+    // 400ms (base animation) + (number of visible items * 100ms stagger)
+    const staggerDelay = 100;
+    const animationDuration = 400;
+    const totalDuration =
+      animationDuration + currentNotifications.length * staggerDelay;
+
+    // 4. Clear ALL notifications after the visible ones have finished animating
     setTimeout(() => {
       setNotifications([]);
-    }, 300);
+      setCurrentPage(1);
+    }, totalDuration);
   };
-
-  const totalPages = Math.ceil(notifications.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentNotifications = notifications.slice(startIndex, endIndex);
 
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
@@ -122,7 +140,7 @@ export const Inbox = ({
 
           {/* Body */}
           <div className="flex flex-col justify-between">
-            <div className="flex flex-col gap-1 p-2">
+            <div className="flex flex-col gap-1 p-2 overflow-hidden">
               {currentNotifications.length > 0 ? (
                 currentNotifications.map((notification, index) => (
                   <NotificationEntry
@@ -130,8 +148,19 @@ export const Inbox = ({
                     key={notification.id}
                     onMarkAsRead={() => handleMarkAsRead(notification.id)}
                     onDelete={() => handleDelete(notification.id)}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    className="animate-fadeInUp"
+                    // Logic:
+                    // If deleting, stagger the exit (100ms * index).
+                    // If appearing (on load), stagger the entry (50ms * index).
+                    style={{
+                      animationDelay: notification.isDeleting
+                        ? `${index * 100}ms`
+                        : `${index * 50}ms`,
+                    }}
+                    className={
+                      notification.isDeleting
+                        ? '' // Class added inside component based on prop
+                        : 'animate-fadeInUp'
+                    }
                   />
                 ))
               ) : (

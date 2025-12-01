@@ -111,7 +111,15 @@
     "matchAlertLabel": "新しいマッチの通知",
     "matchAlertDescription": "新しい言語パートナーが見つかったときに通知する。",
     "profileInteractionAlertLabel": "プロフィール操作の通知",
-    "profileInteractionAlertDescription": "他のユーザーが自分のDiscordユーザー名をコピーしたときに通知する。"
+    "profileInteractionAlertDescription": "他のユーザーが自分のDiscordユーザー名をコピーしたときに通知する。",
+    "saveSettings": "設定を保存",
+    "saving": "保存中...",
+    "makeProfilePublicLabel": "プロフィールを公開する",
+    "makeProfilePublicDescription": "他のユーザーが検索結果で自分のプロフィールを見つけられるようにする。",
+    "allowAnonymousCopyingLabel": "匿名コピーを許可",
+    "allowAnonymousCopyingDescription": "ログインしていないユーザーが自分のDiscordユーザー名をコピーできるようにする。",
+    "displayTimezoneLabel": "タイムゾーンを表示",
+    "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。"
   },
   "Discovery": {
     "connectOnDiscord": "Discordでつながる",
@@ -128,7 +136,20 @@
     "copyUsername": "ユーザー名をコピー",
     "copied": "コピーしました！",
     "copiedToClipboard": "{username} をクリップボードにコピーしました",
-    "signInToViewUsername": "ログインしてユーザー名を表示"
+    "signInToViewUsername": "ログインしてユーザー名を表示",
+    "filterPrimaryLanguage": "主要言語",
+    "filterTargetLanguage": "学習言語",
+    "filterCountry": "国",
+    "filterTags": "タグ",
+    "filterProficiency": "習熟度",
+    "filterTimezone": "タイムゾーン",
+    "filterSelectLanguage": "言語を選択",
+    "filterSelectCountry": "国を選択",
+    "filterCancel": "キャンセル",
+    "filterApply": "適用",
+    "filterSelectTag": "タグを選択",
+    "filterSelectLevel": "レベルを選択",
+    "filterSelectTimezone": "タイムゾーンを選択"
   },
   "DiscoveryStories": {
     "gridTitle": "次の言語パートナーを見つけよう",

@@ -112,7 +112,15 @@
     "matchAlertLabel": "New Match Alert",
     "matchAlertDescription": "Alert me when a new language partner match is found.",
     "profileInteractionAlertLabel": "Profile Interaction Alert",
-    "profileInteractionAlertDescription": "Alert me when another user copies my Discord username."
+    "profileInteractionAlertDescription": "Alert me when another user copies my Discord username.",
+    "saveSettings": "Save Settings",
+    "saving": "Saving...",
+    "makeProfilePublicLabel": "Make Profile Public",
+    "makeProfilePublicDescription": "Allow other users to find your profile in search results.",
+    "allowAnonymousCopyingLabel": "Allow anonymous copying",
+    "allowAnonymousCopyingDescription": "Let users who aren't logged in copy your Discord username.",
+    "displayTimezoneLabel": "Display timezone",
+    "displayTimezoneDescription": "Show your timezone on your public profile."
   },
   "Discovery": {
     "connectOnDiscord": "Connect on Discord",
@@ -133,7 +141,20 @@
     "cardMenu": "Card menu",
     "shareProfile": "Share profile",
     "reportProfile": "Report profile",
-    "blockProfile": "Block user"
+    "blockProfile": "Block user",
+    "filterPrimaryLanguage": "Primary Language",
+    "filterTargetLanguage": "Target Language",
+    "filterCountry": "Country",
+    "filterTags": "Tags",
+    "filterProficiency": "Proficiency",
+    "filterTimezone": "Timezone",
+    "filterSelectLanguage": "Select language",
+    "filterSelectCountry": "Select country",
+    "filterCancel": "Cancel",
+    "filterApply": "Apply",
+    "filterSelectTag": "Select tag",
+    "filterSelectLevel": "Select level",
+    "filterSelectTimezone": "Select timezone"
   },
   "DiscoveryStories": {
     "gridTitle": "Find your next language partner",

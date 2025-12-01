@@ -46,7 +46,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="rounded-full transition-all duration-200 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background-darker"
+          className="rounded-full transition-all duration-200 hover:opacity-80"
         >
           <Avatar avatarUrl={iconUrl} size="sm" />
         </button>

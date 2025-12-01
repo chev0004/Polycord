@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
+import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaDiscord } from 'react-icons/fa';
 import { z } from 'zod';
 import { Button } from '@/components/Button';
-import { FormGroup, Label, Select, Toggle } from '@/components/Form';
+import { FormGroup, Label, Dropdown, Toggle } from '@/components/Form';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
 
 const settingsSchema = z.object({
@@ -47,13 +48,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onManageSubscription,
 }) => {
   const t = useTranslations('Settings');
-  const profileT = useTranslations('Profile');
   const currentLocale = useLocale();
 
-  const initialValues: SettingsFormValues = {
-    ...defaultValues,
-    timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
-  };
+  const initialValues: SettingsFormValues = useMemo(
+    () => ({
+      ...defaultValues,
+      timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
+    }),
+    [defaultValues],
+  );
 
   const {
     handleSubmit,
@@ -77,11 +80,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     }
   };
 
-  const localizedLanguageOptions = languageOptions(currentLocale).map(
-    (option) => ({
-      ...option,
-      label: `${option.label} (${option.value.toUpperCase()})`,
-    }),
+  const localizedLanguageOptions = useMemo(
+    () =>
+      languageOptions(currentLocale).map((option) => ({
+        ...option,
+        label: `${option.label} (${option.value.toUpperCase()})`,
+      })),
+    [currentLocale],
+  );
+
+  const hasApplicationLanguageError = useMemo(
+    () => !!errors.applicationLanguage,
+    [errors.applicationLanguage],
   );
 
   const themeOptions = [
@@ -120,10 +130,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               type="email"
               {...control.register('email')}
               placeholder={t('emailPlaceholder')}
-              className={`h-12 w-full rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker ${
+              className={`h-12 w-full rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
                 errors.email
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-600 focus:ring-primary'
+                  ? 'border-red-500'
+                  : 'border-gray-600'
               }`}
             />
             {errors.email && (
@@ -190,12 +200,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               name="applicationLanguage"
               control={control}
               render={({ field }) => (
-                <Select
-                  {...field}
+                <Dropdown
+                  variant="default"
+                  fullWidth
+                  searchable
                   options={localizedLanguageOptions}
                   onValueChange={field.onChange}
                   value={field.value}
-                  error={!!errors.applicationLanguage}
+                  error={hasApplicationLanguageError}
                   placeholder="Select app language"
                 />
               )}
@@ -214,7 +226,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               name="theme"
               control={control}
               render={({ field }) => (
-                <Select
+                <Dropdown
+                  variant="default"
                   options={themeOptions}
                   onValueChange={field.onChange}
                   value={field.value}
@@ -239,7 +252,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               name="timeFormat"
               control={control}
               render={({ field }) => (
-                <Select
+                <Dropdown
+                  variant="default"
                   options={timeFormatOptions}
                   onValueChange={field.onChange}
                   value={field.value}
@@ -261,10 +275,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="isPublic" className="mb-0 font-medium">
-                {profileT('makeProfilePublicLabel')}
+                {t('makeProfilePublicLabel')}
               </Label>
               <p className="text-gray-500 text-xs">
-                {profileT('makeProfilePublicDescription')}
+                {t('makeProfilePublicDescription')}
               </p>
             </div>
             <Controller
@@ -307,10 +321,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="allowAnonymousCopy" className="mb-0 font-medium">
-                {profileT('allowAnonymousCopyingLabel')}
+                {t('allowAnonymousCopyingLabel')}
               </Label>
               <p className="text-gray-500 text-xs">
-                {profileT('allowAnonymousCopyingDescription')}
+                {t('allowAnonymousCopyingDescription')}
               </p>
             </div>
             <Controller
@@ -330,10 +344,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="displayTimezone" className="mb-0 font-medium">
-                {profileT('displayTimezoneLabel')}
+                {t('displayTimezoneLabel')}
               </Label>
               <p className="text-gray-500 text-xs">
-                {profileT('displayTimezoneDescription')}
+                {t('displayTimezoneDescription')}
               </p>
             </div>
             <Controller
@@ -430,7 +444,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
 
         <Button type="submit" disabled={isSubmitting} className="mt-4">
-          {isSubmitting ? profileT('saving') : profileT('saveProfile')}
+          {isSubmitting ? t('saving') : t('saveSettings')}
         </Button>
       </form>
     </div>

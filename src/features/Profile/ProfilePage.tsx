@@ -13,7 +13,7 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
+import { FormGroup, Label, Dropdown, Toggle } from '@/components/Form';
 import {
   countryOptions,
   languageOptions,
@@ -142,7 +142,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <Popover.Trigger asChild>
               <button
                 type="button"
-                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-background-main/50 hover:text-white focus:outline-none"
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-background-main/50 hover:text-white"
                 aria-label="Profile options"
               >
                 <MdMoreVert size={24} />
@@ -199,11 +199,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               name="primaryLanguage"
               control={control}
               render={({ field }) => (
-                <Combobox
+                <Dropdown
                   {...field}
-                  value={field.value || ''}
-                  onValueChange={field.onChange}
+                  variant="default"
+                  fullWidth
+                  searchable
                   options={localizedLanguageOptions}
+                  onValueChange={field.onChange}
+                  value={field.value}
                   placeholder={t('languageSelectPlaceholder')}
                   error={!!errors.primaryLanguage}
                 />
@@ -224,11 +227,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               name="targetLanguage"
               control={control}
               render={({ field }) => (
-                <Combobox
+                <Dropdown
                   {...field}
-                  value={field.value || ''}
-                  onValueChange={field.onChange}
+                  variant="default"
+                  fullWidth
+                  searchable
                   options={localizedLanguageOptions}
+                  onValueChange={field.onChange}
+                  value={field.value}
                   placeholder={t('languageSelectPlaceholder')}
                   error={!!errors.targetLanguage}
                 />
@@ -250,8 +256,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               name="proficiencyLevel"
               control={control}
               render={({ field }) => (
-                <Select
+                <Dropdown
                   {...field}
+                  variant="default"
+                  fullWidth
                   options={localizedProficiencyOptions}
                   placeholder={t('proficiencyLevelPlaceholder')}
                   onValueChange={field.onChange}
@@ -274,11 +282,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               name="country"
               control={control}
               render={({ field }) => (
-                <Combobox
+                <Dropdown
                   {...field}
-                  value={field.value || ''}
-                  onValueChange={field.onChange}
+                  variant="default"
+                  fullWidth
+                  searchable
                   options={localizedCountryOptions}
+                  onValueChange={field.onChange}
+                  value={field.value || ''}
                   placeholder={t('countryPlaceholder')}
                   error={!!errors.country}
                 />
@@ -290,19 +301,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </FormGroup>
 
           {/* Timezone Field */}
-          <FormGroup>
-            <Label htmlFor="timezone">{t('timezoneLabel')}</Label>
-            <input
-              id={timezoneId}
-              type="text"
-              {...register('timezone')}
-              readOnly
-              className="h-12 w-full cursor-not-allowed rounded-lg border border-gray-600 bg-background-darker p-3 text-gray-400 focus:outline-none"
-            />
-            {errors.timezone && (
-              <p className="text-red-500 text-xs">{errors.timezone.message}</p>
-            )}
-          </FormGroup>
+          {displayTimezone && (
+            <FormGroup>
+              <Label htmlFor="timezone">{t('timezoneLabel')}</Label>
+              <input
+                id={timezoneId}
+                type="text"
+                {...register('timezone')}
+                readOnly
+                disabled
+                tabIndex={-1}
+                className="h-12 w-full cursor-not-allowed rounded-lg border border-gray-600 bg-background-darker p-3 text-gray-400 select-none"
+              />
+              {errors.timezone && (
+                <p className="text-red-500 text-xs">{errors.timezone.message}</p>
+              )}
+            </FormGroup>
+          )}
         </div>
 
         {/* About Me Section */}
@@ -317,10 +332,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               rows={4}
               {...register('bio')}
               placeholder={t('bioPlaceholder')}
-              className={`min-h-[104px] resize-y rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker ${
+              className={`min-h-[104px] resize-y rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
                 errors.bio
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-600 focus:ring-primary'
+                  ? 'border-red-500'
+                  : 'border-gray-600'
               }`}
             />
             {errors.bio && (
@@ -370,7 +385,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       {(field.value || []).map((tag, index) => (
                         <div
                           key={tag}
-                          className="flex items-center gap-2 rounded-md bg-primary-darker px-2 py-1"
+                          className="animate-popIn flex items-center gap-2 rounded-md bg-primary-darker px-2 py-1"
                         >
                           <span className="h-2 w-2 rounded-full bg-primary-dark" />
                           <span className="text-primary-light text-sm">
@@ -401,10 +416,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         }
                       }}
                       placeholder={t('tagsPlaceholder')}
-                      className={`h-12 flex-grow rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker ${
+                      className={`h-12 flex-grow rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
                         errors.tags
-                          ? 'border-red-500 focus:ring-red-500'
-                          : 'border-gray-600 focus:ring-primary'
+                          ? 'border-red-500'
+                          : 'border-gray-600'
                       }`}
                     />
                     <Button
