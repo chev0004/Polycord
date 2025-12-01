@@ -1,8 +1,13 @@
 import * as SelectPrimitive from '@radix-ui/react-select';
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { IconType } from 'react-icons';
 import {
-  MdCheck,
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
   MdOutlineKeyboardArrowDown,
@@ -65,7 +70,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
     const [open, setOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-    
+
     // Incremental rendering state
     const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
 
@@ -80,7 +85,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
     // Look up the selected option object based on the current value.
     const selectedOption = useMemo(
       () => options.find((opt) => opt.value === value),
-      [options, value]
+      [options, value],
     );
 
     // Progressive Loading Logic
@@ -123,7 +128,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
         if (viewportRef.current) {
           viewportRef.current.scrollTop = 0;
         }
-        
+
         if (searchable && searchInputRef.current) {
           requestAnimationFrame(() => {
             searchInputRef.current?.focus({ preventScroll: true });
@@ -175,7 +180,15 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
           return { option, score, searchIndex };
         })
-        .filter((item): item is { option: typeof options[0]; score: number; searchIndex: number } => item !== null);
+        .filter(
+          (
+            item,
+          ): item is {
+            option: (typeof options)[0];
+            score: number;
+            searchIndex: number;
+          } => item !== null,
+        );
 
       scoredOptions.sort((a, b) => {
         if (b.score !== a.score) {
@@ -214,7 +227,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
       checkScroll();
       // Re-check after the animation/loading settles
-      const timeoutId = setTimeout(checkScroll, 350); 
+      const timeoutId = setTimeout(checkScroll, 350);
 
       const viewport = viewportRef.current;
       if (viewport) {
@@ -275,8 +288,12 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       : `flex h-12 ${widthClass} items-center justify-between whitespace-nowrap rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors data-[placeholder]:text-gray-500 ${error ? 'border-red-500' : 'border-gray-600'} ${className ?? ''}`;
 
     const chevronSize = isMinimalVariant ? 12 : 20;
-    const ChevronDown = isMinimalVariant ? MdKeyboardArrowDown : MdOutlineKeyboardArrowDown;
-    const ChevronUp = isMinimalVariant ? MdKeyboardArrowUp : MdOutlineKeyboardArrowUp;
+    const ChevronDown = isMinimalVariant
+      ? MdKeyboardArrowDown
+      : MdOutlineKeyboardArrowDown;
+    const ChevronUp = isMinimalVariant
+      ? MdKeyboardArrowUp
+      : MdOutlineKeyboardArrowUp;
     const contentWidthStyle = { width: 'var(--radix-select-trigger-width)' };
 
     return (
@@ -286,7 +303,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
         // If we pass undefined, Radix becomes "uncontrolled" and remembers internal state.
         // If we pass "", it becomes "controlled" to a value that doesn't exist.
         // This forces Radix to have total amnesia about what is selected, preventing auto-scroll.
-        value="" 
+        value=""
         defaultValue={undefined}
         open={open}
         onOpenChange={setOpen}
@@ -302,10 +319,14 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
           )}
 
           {isMinimalVariant && label ? (
-            <span className="text-sm font-medium text-white">{label}</span>
+            <span className="font-medium text-sm text-white">{label}</span>
           ) : (
-            <span className={isDefaultVariant ? 'flex-1 truncate text-left min-w-0' : ''}>
-              {selectedOption ? selectedOption.label : (placeholder || '')}
+            <span
+              className={
+                isDefaultVariant ? 'min-w-0 flex-1 truncate text-left' : ''
+              }
+            >
+              {selectedOption ? selectedOption.label : placeholder || ''}
             </span>
           )}
 
@@ -369,7 +390,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                 <div className="relative">
                   <MdSearch
                     size={18}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400"
+                    className="-translate-y-1/2 absolute top-1/2 left-2 text-gray-400"
                   />
                   <input
                     ref={searchInputRef}
@@ -390,7 +411,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                       }
                     }}
                     placeholder="Search..."
-                    className="h-8 w-full rounded bg-background-darker pl-8 pr-2 text-sm text-white placeholder-gray-500"
+                    className="h-8 w-full rounded bg-background-darker pr-2 pl-8 text-sm text-white placeholder-gray-500"
                     autoFocus
                   />
                 </div>
@@ -399,11 +420,14 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
             {canScrollUp && (
               <div
-                className="pointer-events-auto absolute left-0 right-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pb-2 pt-2 text-white"
+                className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pt-2 pb-2 text-white"
                 style={{ top: `${searchBoxHeight - 8}px` }}
                 onClick={(e) => {
                   e.preventDefault();
-                  viewportRef.current?.scrollBy({ top: -100, behavior: 'smooth' });
+                  viewportRef.current?.scrollBy({
+                    top: -100,
+                    behavior: 'smooth',
+                  });
                 }}
               >
                 <ChevronUp size={20} />
@@ -411,7 +435,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             )}
 
             <SelectPrimitive.Viewport
-              className="relative w-full max-h-[400px] overflow-y-auto p-1"
+              className="relative max-h-[400px] w-full overflow-y-auto p-1"
               ref={viewportRef}
             >
               {visibleOptions.length > 0 ? (
@@ -441,7 +465,9 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                       onFocus={(e) => {
                         if (searchable && searchInputRef.current) {
                           e.preventDefault();
-                          requestAnimationFrame(() => searchInputRef.current?.focus());
+                          requestAnimationFrame(() =>
+                            searchInputRef.current?.focus(),
+                          );
                         }
                       }}
                     >
@@ -461,10 +487,13 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
             {canScrollDown && (
               <div
-                className="pointer-events-auto absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-white"
+                className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-white"
                 onClick={(e) => {
                   e.preventDefault();
-                  viewportRef.current?.scrollBy({ top: 100, behavior: 'smooth' });
+                  viewportRef.current?.scrollBy({
+                    top: 100,
+                    behavior: 'smooth',
+                  });
                 }}
               >
                 <ChevronDown size={20} />
