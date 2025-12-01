@@ -1,15 +1,22 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React, { type ReactNode } from 'react';
+import React, { useMemo, type ReactNode } from 'react';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
 import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
+import {
+  calculateMatchScore,
+  type MatchCriteria,
+  useProfileMatching,
+} from '@/hooks/useProfileMatching';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
   profiles: DiscoveryProfile[];
   emptyState?: ReactNode;
   isLoggedIn?: boolean;
+  matchCriteria?: MatchCriteria | null;
+  sortByMatchScore?: boolean;
   onCopyUsername?: (username: string, profileId: string) => void;
   onTagClick?: (tag: string, profileId: string) => void;
   onLanguageClick?: (
@@ -57,6 +64,8 @@ export const ProfileGrid = ({
   profiles,
   emptyState,
   isLoggedIn = false,
+  matchCriteria = null,
+  sortByMatchScore = false,
   onCopyUsername,
   onTagClick,
   onLanguageClick,
@@ -67,8 +76,25 @@ export const ProfileGrid = ({
   onShare,
 }: ProfileGridProps) => {
   const t = useTranslations('Discovery');
-  const hasProfiles = profiles.length > 0;
   const { toasts, addToast, dismissToast } = useToastStack();
+
+  // Filter profiles based on match criteria
+  const filteredProfiles = useProfileMatching(profiles, matchCriteria);
+
+  // Sort by match score if criteria and sorting are enabled
+  const displayedProfiles = useMemo(() => {
+    if (!matchCriteria || !sortByMatchScore) {
+      return filteredProfiles;
+    }
+
+    return [...filteredProfiles].sort((a, b) => {
+      const scoreA = calculateMatchScore(a, matchCriteria);
+      const scoreB = calculateMatchScore(b, matchCriteria);
+      return scoreB - scoreA; // Descending order (higher scores first)
+    });
+  }, [filteredProfiles, matchCriteria, sortByMatchScore]);
+
+  const hasProfiles = displayedProfiles.length > 0;
 
   const handleCopyUsername = (
     username: string,
@@ -94,7 +120,7 @@ export const ProfileGrid = ({
       <section className="flex flex-col gap-6">
         {hasProfiles ? (
           <div className="mx-auto flex w-full max-w-7xl flex-wrap justify-center gap-8">
-            {profiles.map((profile) => (
+            {displayedProfiles.map((profile) => (
               <ProfileCard
                 key={profile.id}
                 profile={profile}

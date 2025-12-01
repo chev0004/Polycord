@@ -18,14 +18,18 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   onMarkAsRead,
   onDelete,
   className,
+  style,
   ...props
 }) => {
   return (
     <div
       {...props}
+      style={style}
       className={`group/entry relative flex items-center gap-3 rounded-md bg-background-main p-3 text-white transition-all duration-300 ease-in-out ${notification.read ? 'opacity-60' : 'opacity-100'}
       ${
-        notification.isDeleting ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+        notification.isDeleting
+          ? 'animate-slideOutRight'
+          : 'scale-100 opacity-100'
       }
       ${className}`}
     >
