@@ -140,7 +140,7 @@ export const Inbox = ({
 
           {/* Body */}
           <div className="flex flex-col justify-between">
-            <div className="flex flex-col gap-1 p-2 overflow-hidden">
+            <div className="flex flex-col gap-1 overflow-hidden p-2">
               {currentNotifications.length > 0 ? (
                 currentNotifications.map((notification, index) => (
                   <NotificationEntry
