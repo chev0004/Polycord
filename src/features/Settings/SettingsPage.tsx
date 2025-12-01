@@ -6,7 +6,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { FaDiscord } from 'react-icons/fa';
 import { z } from 'zod';
 import { Button } from '@/components/Button';
-import { FormGroup, Label, Dropdown, Toggle } from '@/components/Form';
+import { Dropdown, FormGroup, Label, Toggle } from '@/components/Form';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
 
 const settingsSchema = z.object({
@@ -131,9 +131,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               {...control.register('email')}
               placeholder={t('emailPlaceholder')}
               className={`h-12 w-full rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
-                errors.email
-                  ? 'border-red-500'
-                  : 'border-gray-600'
+                errors.email ? 'border-red-500' : 'border-gray-600'
               }`}
             />
             {errors.email && (
