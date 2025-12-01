@@ -1,7 +1,7 @@
 'use client';
 
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import React from 'react';
+import type React from 'react';
 
 type TooltipProps = {
   children: React.ReactNode;
@@ -29,7 +29,7 @@ export const Tooltip = ({
             side={side}
             align={align}
             sideOffset={5}
-            className="TooltipContent z-[100] max-w-[300px] overflow-hidden rounded-md border border-gray-500/50 bg-background-darker px-3 py-1.5 font-figtree text-xs font-medium text-white shadow-md"
+            className="TooltipContent z-[100] max-w-[300px] overflow-hidden rounded-md border border-gray-500/50 bg-background-darker px-3 py-1.5 font-figtree font-medium text-white text-xs shadow-md"
           >
             {content}
             <TooltipPrimitive.Arrow className="fill-gray-500/50" />
