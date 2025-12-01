@@ -1,14 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 import {
+  MdAccessTime,
   MdLanguage,
   MdLocationOn,
   MdSchool,
-  MdAccessTime,
 } from 'react-icons/md';
-import { FilterButton } from './FilterButton';
-import { languageOptions, proficiencyOptions, formatTimezone } from '@/constants/languages';
 import { countryOptions } from '@/constants/countries';
+import {
+  formatTimezone,
+  languageOptions,
+  proficiencyOptions,
+} from '@/constants/languages';
+import { FilterButton } from './FilterButton';
 import 'src/app/globals.css';
 
 const meta: Meta<typeof FilterButton> = {
@@ -78,4 +82,3 @@ export const Timezone: Story = {
     options: getTimezoneOptions(),
   },
 };
-
