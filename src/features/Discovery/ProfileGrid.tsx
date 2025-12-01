@@ -1,14 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React, { useMemo, type ReactNode } from 'react';
+import React, { type ReactNode, useMemo } from 'react';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
-import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
 import {
   calculateMatchScore,
   type MatchCriteria,
   useProfileMatching,
 } from '@/hooks/useProfileMatching';
+import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
