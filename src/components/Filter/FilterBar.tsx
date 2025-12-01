@@ -25,9 +25,8 @@ export const FilterBar = ({
   };
 
   return (
-    <div
-      className={`flex flex-wrap items-center gap-3 ${className ?? ''}`}
-      role="group"
+    <fieldset
+      className={`m-0 flex flex-wrap items-center gap-3 border-0 p-0 ${className ?? ''}`}
       aria-label="Filter options"
     >
       {filters.map((filter) => (
@@ -39,6 +38,6 @@ export const FilterBar = ({
           multiple={filter.multiple}
         />
       ))}
-    </div>
+    </fieldset>
   );
 };

@@ -206,7 +206,7 @@ const MultiSelectItem = ({
       // Check if the span is smaller than its scroll width (content width)
       setIsTruncated(el.scrollWidth > el.clientWidth + 0.5);
     }
-  }, [option.label]);
+  });
 
   return (
     <Tooltip
@@ -214,8 +214,9 @@ const MultiSelectItem = ({
       side="right"
       delayDuration={300}
     >
-      <div
+      <button
         ref={onRef}
+        type="button"
         onClick={onToggle}
         className={`dropdown-item relative flex min-h-8 w-full cursor-pointer select-none items-center overflow-hidden rounded pr-4 pl-4 text-sm text-white transition-colors hover:bg-primary-darker ${
           isTabSelected ? 'bg-primary-darker' : ''
@@ -230,7 +231,7 @@ const MultiSelectItem = ({
             {option.label}
           </span>
         </div>
-      </div>
+      </button>
     </Tooltip>
   );
 };
@@ -355,7 +356,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         viewport.removeEventListener('scroll', checkScroll);
       }
     };
-  }, [open, visibleCount, searchTerm]); // Re-run when list grows or filters change
+  }, [open]); // Re-run when list grows or filters change
 
   // Measure search box height
   useLayoutEffect(() => {
@@ -364,7 +365,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     } else {
       setSearchBoxHeight(0);
     }
-  }, [searchable, open]);
+  }, [searchable]);
 
   const filteredOptions = useMemo(() => {
     if (!searchable || !searchTerm) {
@@ -553,7 +554,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                   }}
                   placeholder="Search..."
                   className="h-8 w-full rounded bg-background-darker pr-2 pl-2 text-sm text-white placeholder-gray-500"
-                  autoFocus
                 />
               </div>
             </div>
@@ -561,7 +561,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
           {/* Up Chevron */}
           {canScrollUp && (
-            <div
+            <button
+              type="button"
               className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pt-2 pb-2 text-white"
               style={{ top: `${searchBoxHeight}px` }}
               onClick={(e) => {
@@ -570,7 +571,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               }}
             >
               <MdKeyboardArrowUp size={20} />
-            </div>
+            </button>
           )}
 
           <div
@@ -608,7 +609,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
           {/* Down Chevron */}
           {canScrollDown && (
-            <div
+            <button
+              type="button"
               className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-white"
               onClick={(e) => {
                 e.preventDefault();
@@ -616,7 +618,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               }}
             >
               <MdKeyboardArrowDown size={20} />
-            </div>
+            </button>
           )}
         </div>
       )}
