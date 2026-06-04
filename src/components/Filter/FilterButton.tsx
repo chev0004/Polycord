@@ -195,7 +195,7 @@ const MultiSelectItem = ({
   isSelected: boolean;
   isTabSelected: boolean;
   onToggle: () => void;
-  onRef: (node: HTMLDivElement | null) => void;
+  onRef: (node: HTMLButtonElement | null) => void;
 }) => {
   const [isTruncated, setIsTruncated] = useState(false);
   const textRef = useRef<HTMLSpanElement>(null);
@@ -266,7 +266,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchBoxRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 

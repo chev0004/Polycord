@@ -41,7 +41,7 @@ export const LanguageSwitcher: React.FC = () => {
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="relative flex h-10 w-6 select-none items-center justify-center overflow-hidden rounded-lg bg-background-darker text-white transition-all duration-200 hover:text-gray-30 active:bg-background-darker"
+          className="relative flex h-10 w-6 select-none items-center justify-center overflow-hidden rounded-lg bg-background-darker text-white outline-none transition-all duration-200 hover:text-gray-30"
         >
           <div className="relative flex h-8 w-6 items-center justify-center">
             <span className="absolute top-0 left-0 font-bold font-zen text-s">
