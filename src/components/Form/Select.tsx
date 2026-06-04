@@ -26,8 +26,10 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       <SelectPrimitive.Root {...props}>
         <SelectPrimitive.Trigger
           ref={forwardedRef}
-          className={`flex h-12 ${widthClass} items-center justify-between whitespace-nowrap rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors data-[placeholder]:text-gray-500 ${
-            error ? 'border-red-500' : 'border-gray-600'
+          className={`flex h-12 ${widthClass} items-center justify-between whitespace-nowrap rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker data-[placeholder]:text-gray-500 ${
+            error
+              ? 'border-red-500 focus:ring-red-500'
+              : 'border-gray-600 focus:ring-primary'
           } ${className ?? ''}`}
           aria-label="Selection"
           onBlur={onBlur}

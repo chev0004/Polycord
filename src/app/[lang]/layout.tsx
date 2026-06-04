@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { NextIntlClientProvider, useMessages } from 'next-intl';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -8,14 +9,15 @@ export const metadata: Metadata = {
     'Polycord is a Discord-based social platform that helps language learners connect through user profiles instead of servers. Traditional discovery platforms focus on finding large communities, but Polycord is all about individuals, helping users find friends, or study buddies who share their target languages and interests.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-  params: { lang },
+  params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }>) {
-  const messages = useMessages();
+  const { lang } = await params;
+  const messages = await getMessages({ locale: lang });
 
   return (
     <html lang={lang}>

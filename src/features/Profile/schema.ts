@@ -13,7 +13,7 @@ export const profileSchema = z.object({
   proficiencyLevel: z
     .string()
     .min(1, { message: 'proficiencyLevelRequired' })
-    .refine((val) => isValidProficiency(val), {
+    .refine((val) => Boolean(isValidProficiency(val)), {
       message: 'proficiencyLevelRequired',
     }),
 

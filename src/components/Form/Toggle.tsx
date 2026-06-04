@@ -6,7 +6,7 @@ const Toggle = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof Switch.Root>
 >(({ className, ...props }, ref) => (
   <Switch.Root
-    className={`relative h-6 w-11 cursor-pointer rounded-full bg-primary-dark transition-colors data-[state=checked]:bg-discord-blue ${className ?? ''}
+    className={`relative h-6 w-11 cursor-pointer rounded-full bg-primary-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background-dark data-[state=checked]:bg-discord-blue ${className ?? ''}
     `}
     {...props}
     ref={ref}

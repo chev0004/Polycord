@@ -185,8 +185,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Anchor asChild>
           <div
-            className={`flex h-12 w-full items-center justify-between rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors data-[placeholder]:text-gray-500 ${
-              error ? 'border-red-500' : 'border-gray-600'
+            className={`flex h-12 w-full items-center justify-between rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-background-darker data-[placeholder]:text-gray-500 ${
+              error
+                ? 'border-red-500 focus-within:ring-red-500'
+                : 'border-gray-600 focus-within:ring-primary'
             } ${className ?? ''}`}
           >
             <input
@@ -199,7 +201,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
               placeholder={placeholder}
-              className="w-full bg-transparent text-white placeholder-gray-500"
+              className="w-full bg-transparent text-white placeholder-gray-500 focus:outline-none"
               autoComplete="off"
             />
           </div>
@@ -250,7 +252,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                         onMouseEnter={() =>
                           setHighlightedIndex(virtualItem.index)
                         }
-                        className="relative flex h-8 items-center rounded px-4 pl-8 text-left text-sm text-white hover:bg-primary-darker data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
+                        className="relative flex h-8 items-center rounded px-4 pl-8 text-left text-sm text-white hover:bg-primary-darker focus:outline-none data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
                       >
                         {option.label}
                         {value === option.value && (

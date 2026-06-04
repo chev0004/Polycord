@@ -1,19 +1,14 @@
+'use client';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  MdAdd,
-  MdClose,
-  MdMoreVert,
-  MdOutlineDelete,
-  MdOutlineVisibility,
-} from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Dropdown, FormGroup, Label, Toggle } from '@/components/Form';
+import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
 import {
   countryOptions,
   languageOptions,
@@ -39,13 +34,60 @@ const defaultValues: ProfileFormValues = {
   proficiencyLevel: '',
 };
 
+const inputClasses =
+  'h-11 w-full rounded-lg border border-white/10 bg-background-darker px-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
+const textareaClasses =
+  'min-h-[132px] w-full resize-y rounded-lg border border-white/10 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
+
+const Section = ({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) => (
+  <section className="border-white/10 border-t py-6">
+    <div className="mb-5">
+      <h2 className="font-figtree font-semibold text-white text-xl">
+        {title}
+      </h2>
+      {description && (
+        <p className="mt-1 max-w-2xl text-gray-500 text-sm leading-relaxed">
+          {description}
+        </p>
+      )}
+    </div>
+    {children}
+  </section>
+);
+
+const SettingsRow = ({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description: string;
+  children: React.ReactNode;
+}) => (
+  <div className="grid gap-3 border-white/5 border-t py-4 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+    <div>
+      <h3 className="font-medium text-sm text-white">{label}</h3>
+      <p className="mt-1 max-w-xl text-gray-500 text-xs leading-relaxed">
+        {description}
+      </p>
+    </div>
+    <div className="sm:justify-self-end">{children}</div>
+  </div>
+);
+
 const MenuItem = ({
-  icon: Icon,
   onClick,
   children,
   className,
 }: {
-  icon: React.ElementType;
   onClick?: () => void;
   children: React.ReactNode;
   className?: string;
@@ -53,9 +95,8 @@ const MenuItem = ({
   <button
     type="button"
     onClick={onClick}
-    className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 ${className}`}
+    className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none ${className ?? 'text-white'}`}
   >
-    <Icon size={20} />
     {children}
   </button>
 );
@@ -66,10 +107,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const timezoneId = useId();
   const bioId = useId();
   const tagsInputId = useId();
-  const isPublicToggleId = useId();
-  const allowAnonymousCopyToggleId = useId();
-  const displayTimezoneToggleId = useId();
-
   const t = useTranslations('Profile');
   const locale = useLocale();
   const [tagInput, setTagInput] = useState('');
@@ -89,9 +126,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const displayTimezone = watch('displayTimezone');
   const isPublic = watch('isPublic');
+  const primaryLanguage = watch('primaryLanguage');
+  const targetLanguage = watch('targetLanguage');
+  const proficiencyLevel = watch('proficiencyLevel');
+  const country = watch('country');
+  const bio = watch('bio');
+  const tags = watch('tags') ?? [];
 
   useEffect(() => {
-    // Automatically detect and set the user's timezone
     if (displayTimezone) {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setValue('timezone', userTimezone, { shouldValidate: true });
@@ -105,7 +147,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       onSubmitProp(data);
     } else {
       console.log('Profile Data Submitted', data);
-      // TODO: API call to save profile data
     }
   };
 
@@ -113,409 +154,461 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const localizedCountryOptions = countryOptions(locale);
   const localizedProficiencyOptions = proficiencyOptions(locale);
 
+  const preview = useMemo(() => {
+    const getLabel = (
+      options: { label: string; value: string }[],
+      value?: string,
+    ) => options.find((option) => option.value === value)?.label ?? '';
+
+    return {
+      primaryLanguage: getLabel(localizedLanguageOptions, primaryLanguage),
+      targetLanguage: getLabel(localizedLanguageOptions, targetLanguage),
+      proficiencyLevel: getLabel(localizedProficiencyOptions, proficiencyLevel),
+      country: getLabel(localizedCountryOptions, country),
+    };
+  }, [
+    country,
+    localizedCountryOptions,
+    localizedLanguageOptions,
+    localizedProficiencyOptions,
+    primaryLanguage,
+    proficiencyLevel,
+    targetLanguage,
+  ]);
+
   return (
-    <div className="mx-auto w-full max-w-4xl p-8">
+    <div className="mx-auto w-full max-w-6xl p-4 sm:p-8">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col gap-6 rounded-3xl bg-background-dark p-6 shadow-xl"
+        className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
       >
-        <div className="mb-2 flex items-start justify-between">
-          <div className="flex items-center gap-6">
-            <Avatar avatarUrl={MOCK_USER_AVATAR_URL} size="lg" />
-            <div>
-              <h1 className="font-bold font-figtree text-3xl text-white">
-                {t('editProfile')}
-              </h1>
-              <span
-                className={`mt-1 inline-block rounded-md px-2 py-0.5 font-semibold text-xs ${
-                  isPublic
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-gray-500/20 text-gray-400'
-                }`}
-              >
-                {isPublic ? t('statusPublic') : t('statusUnlisted')}
-              </span>
+        <div className="rounded-2xl border border-white/5 bg-background-dark px-4 shadow-xl sm:px-6">
+          <header className="flex flex-col gap-4 py-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar avatarUrl={MOCK_USER_AVATAR_URL} size="lg" />
+              <div>
+                <h1 className="font-bold font-figtree text-3xl text-white">
+                  {t('editProfile')}
+                </h1>
+                <span
+                  className={`mt-2 inline-flex rounded-md px-2 py-0.5 font-semibold text-xs ${
+                    isPublic
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-gray-500/20 text-gray-400'
+                  }`}
+                >
+                  {isPublic ? t('statusPublic') : t('statusUnlisted')}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <Popover.Root>
-            <Popover.Trigger asChild>
-              <button
-                type="button"
-                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-background-main/50 hover:text-white"
-                aria-label="Profile options"
-              >
-                <MdMoreVert size={24} />
-              </button>
-            </Popover.Trigger>
-            <Popover.Portal>
-              <Popover.Content
-                className="PopoverContent z-50 w-[220px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
-                side="bottom"
-                align="end"
-                sideOffset={5}
-              >
-                <div className="flex flex-col">
-                  <MenuItem
-                    icon={MdOutlineVisibility}
-                    onClick={() => console.log('View profile clicked')} // TODO: Display profile
-                    className="hover:!text-green-300 text-green-400"
-                  >
-                    {t('viewPublicProfile')}
-                  </MenuItem>
-                  <MenuItem
-                    icon={MdOutlineDelete}
-                    onClick={() => console.log('Delete profile clicked')} // TODO: Delete profile
-                    className="hover:!text-red-300 text-red-400"
-                  >
-                    {t('deleteProfile')}
-                  </MenuItem>
-                </div>
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
-        </div>
-        {/* Error Message Display */}
-        {tagError && (
-          <div
-            className="rounded-md border border-red-800 bg-red-950/50 p-3 text-red-400 text-sm"
-            role="alert"
-          >
-            {tagError}
-          </div>
-        )}
+            <Popover.Root>
+              <Popover.Trigger asChild>
+                <button
+                  type="button"
+                  className="self-start rounded-lg border border-white/10 px-3 py-2 text-gray-400 text-sm transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label="Profile options"
+                >
+                  More
+                </button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  className="PopoverContent z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                  side="bottom"
+                  align="end"
+                  sideOffset={5}
+                >
+                  <div className="flex flex-col">
+                    <MenuItem
+                      onClick={() => console.log('View profile clicked')}
+                      className="text-green-400 hover:!text-green-300"
+                    >
+                      {t('viewPublicProfile')}
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => console.log('Delete profile clicked')}
+                      className="text-red-400 hover:!text-red-300"
+                    >
+                      {t('deleteProfile')}
+                    </MenuItem>
+                  </div>
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          </header>
 
-        {/* Language Section */}
-        <div className="flex flex-col gap-4">
-          <h2 className="font-figtree font-semibold text-primary text-xl">
-            {t('languageProfile')}
-          </h2>
-
-          <FormGroup>
-            <Label htmlFor="primaryLanguage" required>
-              {t('primaryLanguageLabel')}
-            </Label>
-            <Controller
-              name="primaryLanguage"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  {...field}
-                  variant="default"
-                  fullWidth
-                  searchable
-                  options={localizedLanguageOptions}
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  placeholder={t('languageSelectPlaceholder')}
-                  error={!!errors.primaryLanguage}
-                />
-              )}
-            />
-            {errors.primaryLanguage && (
-              <p className="text-red-500 text-xs">
-                {t(errors.primaryLanguage.message as string)}
-              </p>
-            )}
-          </FormGroup>
-
-          <FormGroup>
-            <Label htmlFor="targetLanguage" required>
-              {t('targetLanguageLabel')}
-            </Label>
-            <Controller
-              name="targetLanguage"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  {...field}
-                  variant="default"
-                  fullWidth
-                  searchable
-                  options={localizedLanguageOptions}
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  placeholder={t('languageSelectPlaceholder')}
-                  error={!!errors.targetLanguage}
-                />
-              )}
-            />
-            {errors.targetLanguage && (
-              <p className="text-red-500 text-xs">
-                {t(errors.targetLanguage.message as string)}
-              </p>
-            )}
-          </FormGroup>
-
-          {/* Proficiency Level Dropdown */}
-          <FormGroup>
-            <Label htmlFor="proficiencyLevel" required>
-              {t('proficiencyLevelLabel')}
-            </Label>
-            <Controller
-              name="proficiencyLevel"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  {...field}
-                  variant="default"
-                  fullWidth
-                  options={localizedProficiencyOptions}
-                  placeholder={t('proficiencyLevelPlaceholder')}
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  error={!!errors.proficiencyLevel}
-                />
-              )}
-            />
-            {errors.proficiencyLevel && (
-              <p className="text-red-500 text-xs">
-                {t(errors.proficiencyLevel.message as string)}
-              </p>
-            )}
-          </FormGroup>
-
-          {/* Country Field */}
-          <FormGroup>
-            <Label htmlFor="country">{t('countryLabel')}</Label>
-            <Controller
-              name="country"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  {...field}
-                  variant="default"
-                  fullWidth
-                  searchable
-                  options={localizedCountryOptions}
-                  onValueChange={field.onChange}
-                  value={field.value || ''}
-                  placeholder={t('countryPlaceholder')}
-                  error={!!errors.country}
-                />
-              )}
-            />
-            {errors.country && (
-              <p className="text-red-500 text-xs">{errors.country.message}</p>
-            )}
-          </FormGroup>
-
-          {/* Timezone Field */}
-          {displayTimezone && (
-            <FormGroup>
-              <Label htmlFor="timezone">{t('timezoneLabel')}</Label>
-              <input
-                id={timezoneId}
-                type="text"
-                {...register('timezone')}
-                readOnly
-                disabled
-                tabIndex={-1}
-                className="h-12 w-full cursor-not-allowed select-none rounded-lg border border-gray-600 bg-background-darker p-3 text-gray-400"
-              />
-              {errors.timezone && (
-                <p className="text-red-500 text-xs">
-                  {errors.timezone.message}
-                </p>
-              )}
-            </FormGroup>
+          {tagError && (
+            <div
+              className="rounded-lg border border-red-800 bg-red-950/50 p-3 text-red-400 text-sm"
+              role="alert"
+            >
+              {tagError}
+            </div>
           )}
-        </div>
 
-        {/* About Me Section */}
-        <div className="flex flex-col gap-4 border-gray-700 border-t pt-6">
-          <h2 className="font-figtree font-semibold text-primary text-xl">
-            {t('aboutMe')}
-          </h2>
-          <FormGroup>
-            <Label htmlFor="bio">{t('bioLabel')}</Label>
-            <textarea
-              id={bioId}
-              rows={4}
-              {...register('bio')}
-              placeholder={t('bioPlaceholder')}
-              className={`min-h-[104px] resize-y rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
-                errors.bio ? 'border-red-500' : 'border-gray-600'
-              }`}
-            />
-            {errors.bio && (
-              <p className="text-red-500 text-xs">
-                {t(errors.bio.message as string)}
-              </p>
-            )}
-          </FormGroup>
+          <Section
+            title={t('languageProfile')}
+            description="Describe what you speak, what you are learning, and where you are."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormGroup>
+                <Label htmlFor="primaryLanguage" required>
+                  {t('primaryLanguageLabel')}
+                </Label>
+                <Controller
+                  name="primaryLanguage"
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      {...field}
+                      value={field.value || ''}
+                      onValueChange={field.onChange}
+                      options={localizedLanguageOptions}
+                      placeholder={t('languageSelectPlaceholder')}
+                      error={!!errors.primaryLanguage}
+                    />
+                  )}
+                />
+                {errors.primaryLanguage && (
+                  <p className="text-red-500 text-xs">
+                    {t(errors.primaryLanguage.message as string)}
+                  </p>
+                )}
+              </FormGroup>
 
-          <Controller
-            name="tags"
-            control={control}
-            render={({ field }) => {
-              const handleAddTag = () => {
-                const newTag = tagInput.trim();
-                const currentTags = field.value || [];
-                setTagError(null);
+              <FormGroup>
+                <Label htmlFor="targetLanguage" required>
+                  {t('targetLanguageLabel')}
+                </Label>
+                <Controller
+                  name="targetLanguage"
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      {...field}
+                      value={field.value || ''}
+                      onValueChange={field.onChange}
+                      options={localizedLanguageOptions}
+                      placeholder={t('languageSelectPlaceholder')}
+                      error={!!errors.targetLanguage}
+                    />
+                  )}
+                />
+                {errors.targetLanguage && (
+                  <p className="text-red-500 text-xs">
+                    {t(errors.targetLanguage.message as string)}
+                  </p>
+                )}
+              </FormGroup>
 
-                if (!newTag) return;
-                if (newTag.length < 2) return setTagError(t('tagTooShort'));
-                if (newTag.length > 20) return setTagError(t('tagTooLong'));
-                if (currentTags.length >= 6) return setTagError(t('maxTags'));
-                if (
-                  currentTags
-                    .map((t) => t.toLowerCase())
-                    .includes(newTag.toLowerCase())
-                ) {
-                  return setTagError(t('duplicateTag'));
-                }
+              <FormGroup>
+                <Label htmlFor="proficiencyLevel" required>
+                  {t('proficiencyLevelLabel')}
+                </Label>
+                <Controller
+                  name="proficiencyLevel"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      options={localizedProficiencyOptions}
+                      placeholder={t('proficiencyLevelPlaceholder')}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      error={!!errors.proficiencyLevel}
+                    />
+                  )}
+                />
+                {errors.proficiencyLevel && (
+                  <p className="text-red-500 text-xs">
+                    {t(errors.proficiencyLevel.message as string)}
+                  </p>
+                )}
+              </FormGroup>
 
-                field.onChange([...currentTags, newTag]);
-                setTagInput('');
-              };
+              <FormGroup>
+                <Label htmlFor="country">{t('countryLabel')}</Label>
+                <Controller
+                  name="country"
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      {...field}
+                      value={field.value || ''}
+                      onValueChange={field.onChange}
+                      options={localizedCountryOptions}
+                      placeholder={t('countryPlaceholder')}
+                      error={!!errors.country}
+                    />
+                  )}
+                />
+                {errors.country && (
+                  <p className="text-red-500 text-xs">
+                    {errors.country.message}
+                  </p>
+                )}
+              </FormGroup>
 
-              const handleRemoveTag = (indexToRemove: number) => {
-                const currentTags = field.value || [];
-                field.onChange(
-                  currentTags.filter((_, index) => index !== indexToRemove),
-                );
-              };
+              <FormGroup className="md:col-span-2">
+                <Label htmlFor={timezoneId}>{t('timezoneLabel')}</Label>
+                <input
+                  id={timezoneId}
+                  type="text"
+                  {...register('timezone')}
+                  readOnly
+                  placeholder={t('displayTimezoneDescription')}
+                  className={`${inputClasses} cursor-not-allowed text-gray-400 ${
+                    errors.timezone ? 'border-red-500 focus:ring-red-500' : ''
+                  }`}
+                />
+                {errors.timezone && (
+                  <p className="text-red-500 text-xs">
+                    {errors.timezone.message}
+                  </p>
+                )}
+              </FormGroup>
+            </div>
+          </Section>
 
-              return (
-                <FormGroup>
-                  <Label htmlFor="tags">{t('tagsLabel')}</Label>
-                  {(field.value ?? []).length > 0 && (
-                    <div className="mb-2 flex flex-wrap items-center gap-2 rounded-lg bg-background-dark p-2">
-                      {(field.value || []).map((tag, index) => (
-                        <div
-                          key={tag}
-                          className="flex animate-popIn items-center gap-2 rounded-md bg-primary-darker px-2 py-1"
-                        >
-                          <span className="h-2 w-2 rounded-full bg-primary-dark" />
-                          <span className="text-primary-light text-sm">
-                            {tag}
-                          </span>
+          <Section
+            title={t('aboutMe')}
+            description="Keep this specific enough that someone knows why to message you."
+          >
+            <div className="grid gap-4">
+              <FormGroup>
+                <Label htmlFor={bioId}>{t('bioLabel')}</Label>
+                <textarea
+                  id={bioId}
+                  rows={4}
+                  {...register('bio')}
+                  placeholder={t('bioPlaceholder')}
+                  className={`${textareaClasses} ${
+                    errors.bio ? 'border-red-500 focus:ring-red-500' : ''
+                  }`}
+                />
+                {errors.bio && (
+                  <p className="text-red-500 text-xs">
+                    {t(errors.bio.message as string)}
+                  </p>
+                )}
+              </FormGroup>
+
+              <Controller
+                name="tags"
+                control={control}
+                render={({ field }) => {
+                  const handleAddTag = () => {
+                    const newTag = tagInput.trim();
+                    const currentTags = field.value || [];
+                    setTagError(null);
+
+                    if (!newTag) return;
+                    if (newTag.length < 2) return setTagError(t('tagTooShort'));
+                    if (newTag.length > 20) return setTagError(t('tagTooLong'));
+                    if (currentTags.length >= 6) return setTagError(t('maxTags'));
+                    if (
+                      currentTags
+                        .map((tag) => tag.toLowerCase())
+                        .includes(newTag.toLowerCase())
+                    ) {
+                      return setTagError(t('duplicateTag'));
+                    }
+
+                    field.onChange([...currentTags, newTag]);
+                    setTagInput('');
+                  };
+
+                  const handleRemoveTag = (indexToRemove: number) => {
+                    const currentTags = field.value || [];
+                    field.onChange(
+                      currentTags.filter((_, index) => index !== indexToRemove),
+                    );
+                  };
+
+                  return (
+                    <FormGroup>
+                      <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
+                      {(field.value ?? []).length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/5 bg-background-darker p-2">
+                          {(field.value || []).map((tag, index) => (
+                            <div
+                              key={tag}
+                              className="flex items-center gap-2 rounded-md bg-primary-darker px-2.5 py-1"
+                            >
+                              <span className="text-primary-light text-sm">
+                                {tag}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTag(index)}
+                                className="text-primary-light transition-colors hover:text-white focus:outline-none"
+                                aria-label={`Remove ${tag}`}
+                              >
+                                x
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <input
+                          id={tagsInputId}
+                          type="text"
+                          value={tagInput}
+                          onChange={(event) => setTagInput(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault();
+                              handleAddTag();
+                            }
+                          }}
+                          placeholder={t('tagsPlaceholder')}
+                          className={`${inputClasses} flex-grow ${
+                            errors.tags ? 'border-red-500 focus:ring-red-500' : ''
+                          }`}
+                        />
                           <button
                             type="button"
-                            onClick={() => handleRemoveTag(index)}
-                            className="text-primary-light hover:text-white"
-                            aria-label={`Remove ${tag}`}
+                            onClick={handleAddTag}
+                            className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           >
-                            <MdClose size={16} />
+                            {t('addTag')}
                           </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <input
-                      id={tagsInputId}
-                      type="text"
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                      placeholder={t('tagsPlaceholder')}
-                      className={`h-12 flex-grow rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 ${
-                        errors.tags ? 'border-red-500' : 'border-gray-600'
-                      }`}
+                      </div>
+                      {errors.tags?.message && (
+                        <p className="text-red-500 text-xs">
+                          {t(errors.tags.message)}
+                        </p>
+                      )}
+                    </FormGroup>
+                  );
+                }}
+              />
+            </div>
+          </Section>
+
+          <Section
+            title={t('privacySettings')}
+            description="These affect how the public version of your profile behaves."
+          >
+            <div className="rounded-xl border border-white/5 bg-background-darker/70 px-4">
+              <SettingsRow
+                label={t('makeProfilePublicLabel')}
+                description={t('makeProfilePublicDescription')}
+              >
+                <Controller
+                  name="isPublic"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
                     />
-                    <Button
-                      type="button"
-                      onClick={handleAddTag}
-                      className="h-12 w-12 flex-shrink-0 px-3"
-                      aria-label={t('addTag')}
-                    >
-                      <MdAdd size={20} />
-                    </Button>
-                  </div>
-                  {errors.tags?.message && (
-                    <p className="text-red-500 text-xs">
-                      {t(errors.tags.message)}
-                    </p>
                   )}
-                </FormGroup>
-              );
-            }}
-          />
-        </div>
-
-        {/* Privacy/Settings Section */}
-        <div className="flex flex-col gap-4 border-gray-700 border-t pt-6">
-          <h2 className="font-figtree font-semibold text-primary text-xl">
-            {t('privacySettings')}
-          </h2>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="isPublic" className="mb-0 font-medium">
-                {t('makeProfilePublicLabel')}
-              </Label>
-              <p className="text-gray-500 text-xs">
-                {t('makeProfilePublicDescription')}
-              </p>
-            </div>
-            <Controller
-              name="isPublic"
-              control={control}
-              render={({ field }) => (
-                <Toggle
-                  id={isPublicToggleId}
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
                 />
-              )}
-            />
-          </div>
+              </SettingsRow>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="allowAnonymousCopy" className="mb-0 font-medium">
-                {t('allowAnonymousCopyingLabel')}
-              </Label>
-              <p className="text-gray-500 text-xs">
-                {t('allowAnonymousCopyingDescription')}
-              </p>
-            </div>
-            <Controller
-              name="allowAnonymousCopy"
-              control={control}
-              render={({ field }) => (
-                <Toggle
-                  id={allowAnonymousCopyToggleId}
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
+              <SettingsRow
+                label={t('allowAnonymousCopyingLabel')}
+                description={t('allowAnonymousCopyingDescription')}
+              >
+                <Controller
+                  name="allowAnonymousCopy"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
-              )}
-            />
-          </div>
+              </SettingsRow>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="displayTimezone" className="mb-0 font-medium">
-                {t('displayTimezoneLabel')}
-              </Label>
-              <p className="text-gray-500 text-xs">
-                {t('displayTimezoneDescription')}
-              </p>
-            </div>
-            <Controller
-              name="displayTimezone"
-              control={control}
-              render={({ field }) => (
-                <Toggle
-                  id={displayTimezoneToggleId}
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
+              <SettingsRow
+                label={t('displayTimezoneLabel')}
+                description={t('displayTimezoneDescription')}
+              >
+                <Controller
+                  name="displayTimezone"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
-              )}
-            />
+              </SettingsRow>
+            </div>
+          </Section>
+
+          <div className="sticky bottom-0 -mx-4 border-white/10 border-t bg-background-dark px-4 py-4 sm:-mx-6 sm:px-6">
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSubmitting} className="h-10">
+                {isSubmitting ? t('saving') : t('saveProfile')}
+              </Button>
+            </div>
           </div>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="mt-4">
-          {isSubmitting ? t('saving') : t('saveProfile')}
-        </Button>
+        <aside>
+          <div className="sticky top-8 rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
+            <p className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
+              Public preview
+            </p>
+            <div className="rounded-xl bg-background-darker p-4">
+              <div className="flex items-center gap-3">
+                <Avatar avatarUrl={MOCK_USER_AVATAR_URL} size="md" />
+                <div>
+                  <h2 className="font-semibold text-white">Your profile</h2>
+                  <p className="text-gray-500 text-xs">
+                    {isPublic ? t('statusPublic') : t('statusUnlisted')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {preview.primaryLanguage && (
+                  <span className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs">
+                    {preview.primaryLanguage}
+                  </span>
+                )}
+                {preview.targetLanguage && (
+                  <span className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs">
+                    {preview.targetLanguage}
+                    {preview.proficiencyLevel
+                      ? ` / ${preview.proficiencyLevel}`
+                      : ''}
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
+                {bio || t('bioPlaceholder')}
+              </p>
+
+              {tags.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {tags.slice(0, 6).map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {preview.country && (
+                <p className="mt-4 text-gray-500 text-xs">
+                  {preview.country}
+                </p>
+              )}
+            </div>
+          </div>
+        </aside>
       </form>
     </div>
   );
