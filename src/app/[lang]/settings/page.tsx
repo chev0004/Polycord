@@ -1,35 +1,22 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/lib/auth';
+import { SettingsRouteClient } from './SettingsRouteClient';
 
-import {
-  type SettingsFormValues,
-  SettingsPage,
-} from '@/features/Settings/SettingsPage';
+export default async function SettingsRoute({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const user = await getCurrentUser();
 
-const defaultSettings: SettingsFormValues = {
-  isPublic: true,
-  allowAnonymousCopy: true,
-  displayTimezone: true,
-  activityStatus: true,
-  pushNotifications: true,
-  matchAlert: true,
-  profileInteractionAlert: true,
-  theme: 'dark',
-  applicationLanguage: 'en',
-  timeFormat: '24hr',
-  email: 'xhev@polycord.app',
-};
+  if (!user) {
+    redirect(`/${lang}`);
+  }
 
-export default function SettingsRoute() {
   return (
     <main className="min-h-screen bg-background-main">
-      <SettingsPage
-        defaultValues={defaultSettings}
-        onSubmit={(data) => console.log('Settings route', data)}
-        onUpdateDiscordConnection={() =>
-          console.log('Update Discord connection')
-        }
-        onManageSubscription={() => console.log('Manage subscription')}
-      />
+      <SettingsRouteClient />
     </main>
   );
 }

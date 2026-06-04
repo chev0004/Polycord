@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { locales } from '@/utils/locales';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -17,6 +19,11 @@ export default async function RootLayout({
   params: Promise<{ lang: string }>;
 }>) {
   const { lang } = await params;
+
+  if (!locales.includes(lang as (typeof locales)[number])) {
+    notFound();
+  }
+
   const messages = await getMessages({ locale: lang });
 
   return (
