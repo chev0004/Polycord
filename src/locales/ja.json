@@ -122,6 +122,9 @@
     "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。"
   },
   "Discovery": {
+    "pageEyebrow": "Discovery",
+    "pageTitle": "Discordで言語パートナーを見つける",
+    "pageDescription": "公開されているPolycordプロフィールを閲覧できます。プロフィール作成やアカウント管理はログイン後に利用できます。",
     "connectOnDiscord": "Discordでつながる",
     "viewProfile": "プロフィールを見る",
     "languagesLabel": "言語",
@@ -133,6 +136,7 @@
     "emptyStateBadge": "マッチング中",
     "emptyStateTitle": "一致するプロフィールが見つかりません",
     "emptyStateDescription": "フィルターを調整するか、後でもう一度お試しください。",
+    "emptyLoggedOutDescription": "プロフィール保存はまだ接続されていないため、公開プロフィールはありません。認証とデータベースが追加されると、最初のアカウントを表示できます。",
     "copyUsername": "ユーザー名をコピー",
     "copied": "コピーしました！",
     "copiedToClipboard": "{username} をクリップボードにコピーしました",

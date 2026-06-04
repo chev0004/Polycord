@@ -123,6 +123,9 @@
     "displayTimezoneDescription": "Show your timezone on your public profile."
   },
   "Discovery": {
+    "pageEyebrow": "Discovery",
+    "pageTitle": "Find a language partner on Discord",
+    "pageDescription": "Browse public Polycord profiles, then sign in when you are ready to create your own profile or manage your account.",
     "connectOnDiscord": "Connect on Discord",
     "viewProfile": "View profile",
     "languagesLabel": "Languages",
@@ -134,6 +137,7 @@
     "emptyStateBadge": "Matchmaking",
     "emptyStateTitle": "We couldn't find any matches yet",
     "emptyStateDescription": "Try adjusting your filters or check back soon to discover new language partners.",
+    "emptyLoggedOutDescription": "There are no public profiles yet because profile storage is not connected. Discovery is ready for the first accounts once auth and the database are added.",
     "copyUsername": "Copy username",
     "copied": "Copied!",
     "copiedToClipboard": "{username} copied to clipboard",

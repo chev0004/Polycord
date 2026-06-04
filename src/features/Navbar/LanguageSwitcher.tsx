@@ -1,8 +1,9 @@
 import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { languages } from '@/constants/languages';
-import { locales } from '@/middleware';
+import { locales } from '@/utils/locales';
 
 const getLocaleName = (code: string) => {
   const language = languages.find((lang) => lang.code === code);
@@ -12,17 +13,18 @@ const getLocaleName = (code: string) => {
 const MenuItem = ({
   locale,
   currentLocale,
+  href,
 }: {
   locale: string;
   currentLocale: string;
+  href: string;
 }) => {
   const isSelected = locale === currentLocale;
   const name = getLocaleName(locale);
 
   return (
     <Link
-      href="/"
-      locale={locale}
+      href={href}
       className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
         isSelected
           ? 'bg-background-main text-primary-light'
@@ -35,6 +37,8 @@ const MenuItem = ({
 };
 export const LanguageSwitcher: React.FC = () => {
   const currentLocale = useLocale();
+  const pathname = usePathname();
+  const pathWithoutLocale = pathname.replace(/^\/[^/]+/, '') || '';
 
   return (
     <Popover.Root>
@@ -66,6 +70,7 @@ export const LanguageSwitcher: React.FC = () => {
                 key={locale}
                 locale={locale}
                 currentLocale={currentLocale}
+                href={`/${locale}${pathWithoutLocale}`}
               />
             ))}
           </div>
