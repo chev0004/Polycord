@@ -125,6 +125,8 @@
     "pageEyebrow": "Discovery",
     "pageTitle": "Discordで言語パートナーを見つける",
     "pageDescription": "公開されているPolycordプロフィールを閲覧できます。プロフィール作成やアカウント管理はログイン後に利用できます。",
+    "authErrorTitle": "Discordログインが完了しませんでした",
+    "authErrorDescription": "もう一度ログインをお試しください。問題が続く場合は、この環境のDiscord OAuth設定を確認してください。",
     "connectOnDiscord": "Discordでつながる",
     "viewProfile": "プロフィールを見る",
     "languagesLabel": "言語",
