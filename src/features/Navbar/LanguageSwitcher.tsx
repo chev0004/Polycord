@@ -2,6 +2,7 @@ import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { languages } from '@/constants/languages';
 import { locales } from '@/utils/locales';
 
@@ -35,10 +36,40 @@ const MenuItem = ({
     </Link>
   );
 };
+
 export const LanguageSwitcher: React.FC = () => {
   const currentLocale = useLocale();
   const pathname = usePathname();
+  const [isMounted, setIsMounted] = useState(false);
   const pathWithoutLocale = pathname.replace(/^\/[^/]+/, '') || '';
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const triggerContent = (
+    <div className="relative flex h-8 w-6 items-center justify-center">
+      <span className="absolute top-0 left-0 font-bold font-zen text-s">
+        文
+      </span>
+      <span className="absolute right-0 bottom-0 font-figtree font-semibold text-xs uppercase">
+        {currentLocale}
+      </span>
+    </div>
+  );
+
+  if (!isMounted) {
+    return (
+      <button
+        type="button"
+        aria-hidden="true"
+        className="relative flex h-10 w-6 select-none items-center justify-center overflow-hidden rounded-lg bg-background-darker text-white outline-none transition-all duration-200 hover:text-gray-30"
+        tabIndex={-1}
+      >
+        {triggerContent}
+      </button>
+    );
+  }
 
   return (
     <Popover.Root>
@@ -47,14 +78,7 @@ export const LanguageSwitcher: React.FC = () => {
           type="button"
           className="relative flex h-10 w-6 select-none items-center justify-center overflow-hidden rounded-lg bg-background-darker text-white outline-none transition-all duration-200 hover:text-gray-30"
         >
-          <div className="relative flex h-8 w-6 items-center justify-center">
-            <span className="absolute top-0 left-0 font-bold font-zen text-s">
-              文
-            </span>
-            <span className="absolute right-0 bottom-0 font-figtree font-semibold text-xs uppercase">
-              {currentLocale}
-            </span>
-          </div>
+          {triggerContent}
         </button>
       </Popover.Trigger>
       <Popover.Portal>

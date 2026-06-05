@@ -126,6 +126,8 @@
     "pageEyebrow": "Discovery",
     "pageTitle": "Find a language partner on Discord",
     "pageDescription": "Browse public Polycord profiles, then sign in when you are ready to create your own profile or manage your account.",
+    "authErrorTitle": "Discord login did not finish",
+    "authErrorDescription": "Please try signing in again. If the issue continues, check that Discord OAuth is configured for this environment.",
     "connectOnDiscord": "Connect on Discord",
     "viewProfile": "View profile",
     "languagesLabel": "Languages",
