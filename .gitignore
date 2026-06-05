@@ -45,4 +45,5 @@ next-env.d.ts
 *storybook.log
 
 # local docs
+/docs/
 /local-docs/
