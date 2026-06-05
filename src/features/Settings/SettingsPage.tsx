@@ -70,9 +70,7 @@ const Section = ({
 }) => (
   <section id={id} className="scroll-mt-6 border-white/10 border-t py-6">
     <div className="mb-5">
-      <h2 className="font-figtree font-semibold text-white text-xl">
-        {title}
-      </h2>
+      <h2 className="font-figtree font-semibold text-white text-xl">{title}</h2>
       {description && (
         <p className="mt-1 max-w-2xl text-gray-500 text-sm leading-relaxed">
           {description}
@@ -363,7 +361,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 name="isPublic"
                 control={control}
                 render={({ field }) => (
-                  <Toggle checked={field.value} onCheckedChange={field.onChange} />
+                  <Toggle
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
             </SettingsRow>
@@ -376,7 +377,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 name="activityStatus"
                 control={control}
                 render={({ field }) => (
-                  <Toggle checked={field.value} onCheckedChange={field.onChange} />
+                  <Toggle
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
             </SettingsRow>
@@ -389,7 +393,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 name="allowAnonymousCopy"
                 control={control}
                 render={({ field }) => (
-                  <Toggle checked={field.value} onCheckedChange={field.onChange} />
+                  <Toggle
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
             </SettingsRow>
@@ -402,7 +409,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 name="displayTimezone"
                 control={control}
                 render={({ field }) => (
-                  <Toggle checked={field.value} onCheckedChange={field.onChange} />
+                  <Toggle
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
             </SettingsRow>
@@ -421,7 +431,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 name="pushNotifications"
                 control={control}
                 render={({ field }) => (
-                  <Toggle checked={field.value} onCheckedChange={field.onChange} />
+                  <Toggle
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
             </SettingsRow>
@@ -434,7 +447,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 name="matchAlert"
                 control={control}
                 render={({ field }) => (
-                  <Toggle checked={field.value} onCheckedChange={field.onChange} />
+                  <Toggle
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
             </SettingsRow>
@@ -447,13 +463,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 name="profileInteractionAlert"
                 control={control}
                 render={({ field }) => (
-                  <Toggle checked={field.value} onCheckedChange={field.onChange} />
+                  <Toggle
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 )}
               />
             </SettingsRow>
           </Section>
 
-          <div className="sticky bottom-0 -mx-4 border-white/10 border-t bg-background-dark px-4 py-4 sm:-mx-6 sm:px-6">
+          <div className="-mx-4 sm:-mx-6 sticky bottom-0 border-white/10 border-t bg-background-dark px-4 py-4 sm:px-6">
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting} className="h-10">
                 {isSubmitting ? t('saving') : t('saveSettings')}
