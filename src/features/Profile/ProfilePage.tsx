@@ -50,9 +50,7 @@ const Section = ({
 }) => (
   <section className="border-white/10 border-t py-6">
     <div className="mb-5">
-      <h2 className="font-figtree font-semibold text-white text-xl">
-        {title}
-      </h2>
+      <h2 className="font-figtree font-semibold text-white text-xl">{title}</h2>
       {description && (
         <p className="mt-1 max-w-2xl text-gray-500 text-sm leading-relaxed">
           {description}
@@ -222,13 +220,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <div className="flex flex-col">
                     <MenuItem
                       onClick={() => console.log('View profile clicked')}
-                      className="text-green-400 hover:!text-green-300"
+                      className="hover:!text-green-300 text-green-400"
                     >
                       {t('viewPublicProfile')}
                     </MenuItem>
                     <MenuItem
                       onClick={() => console.log('Delete profile clicked')}
-                      className="text-red-400 hover:!text-red-300"
+                      className="hover:!text-red-300 text-red-400"
                     >
                       {t('deleteProfile')}
                     </MenuItem>
@@ -406,7 +404,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     if (!newTag) return;
                     if (newTag.length < 2) return setTagError(t('tagTooShort'));
                     if (newTag.length > 20) return setTagError(t('tagTooLong'));
-                    if (currentTags.length >= 6) return setTagError(t('maxTags'));
+                    if (currentTags.length >= 6)
+                      return setTagError(t('maxTags'));
                     if (
                       currentTags
                         .map((tag) => tag.toLowerCase())
@@ -465,16 +464,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                           }}
                           placeholder={t('tagsPlaceholder')}
                           className={`${inputClasses} flex-grow ${
-                            errors.tags ? 'border-red-500 focus:ring-red-500' : ''
+                            errors.tags
+                              ? 'border-red-500 focus:ring-red-500'
+                              : ''
                           }`}
                         />
-                          <button
-                            type="button"
-                            onClick={handleAddTag}
-                            className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            {t('addTag')}
-                          </button>
+                        <button
+                          type="button"
+                          onClick={handleAddTag}
+                          className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          {t('addTag')}
+                        </button>
                       </div>
                       {errors.tags?.message && (
                         <p className="text-red-500 text-xs">
@@ -543,7 +544,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </Section>
 
-          <div className="sticky bottom-0 -mx-4 border-white/10 border-t bg-background-dark px-4 py-4 sm:-mx-6 sm:px-6">
+          <div className="-mx-4 sm:-mx-6 sticky bottom-0 border-white/10 border-t bg-background-dark px-4 py-4 sm:px-6">
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting} className="h-10">
                 {isSubmitting ? t('saving') : t('saveProfile')}
@@ -602,9 +603,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               )}
 
               {preview.country && (
-                <p className="mt-4 text-gray-500 text-xs">
-                  {preview.country}
-                </p>
+                <p className="mt-4 text-gray-500 text-xs">{preview.country}</p>
               )}
             </div>
           </div>
