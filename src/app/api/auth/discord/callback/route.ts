@@ -111,7 +111,7 @@ export const GET = async (request: NextRequest) => {
     const response = NextResponse.redirect(
       new URL(redirectTo, request.nextUrl.origin),
     );
-    setSessionCookie(response, normalizeDiscordUser(discordUser));
+    await setSessionCookie(response, normalizeDiscordUser(discordUser));
     clearOAuthStateCookie(response);
 
     return response;

@@ -1,24 +1,19 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 import type { NextResponse } from 'next/server';
-
-export type CurrentUser = {
-  id: string;
-  name: string;
-  username?: string;
-  avatarUrl?: string;
-  email?: string;
-};
-
-type SessionPayload = {
-  user: CurrentUser;
-  expiresAt: number;
-};
-
-type OAuthStatePayload = {
-  nonce: string;
-  redirectTo: string;
-};
+import {
+  AUTH_ERROR_PARAM,
+  AUTH_SESSION_COOKIE,
+  AUTH_STATE_COOKIE,
+  type CurrentUser,
+  createOAuthState,
+  createOAuthStateCookieValue,
+  createSessionCookieValue,
+  type OAuthStatePayload,
+  readOAuthStateFromCookieValue,
+  readSessionFromCookieValue,
+  SESSION_DURATION_SECONDS,
+  STATE_DURATION_SECONDS,
+} from './auth-session';
 
 type DiscordUser = {
   id: string;
@@ -28,12 +23,13 @@ type DiscordUser = {
   email?: string | null;
 };
 
-export const AUTH_SESSION_COOKIE = 'polycord_session';
-export const AUTH_STATE_COOKIE = 'polycord_oauth_state';
-export const AUTH_ERROR_PARAM = 'authError';
-
-const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30;
-const STATE_DURATION_SECONDS = 60 * 10;
+export {
+  AUTH_ERROR_PARAM,
+  AUTH_SESSION_COOKIE,
+  AUTH_STATE_COOKIE,
+  createOAuthState,
+  type CurrentUser,
+};
 
 const getCookieOptions = (maxAge: number) => ({
   httpOnly: true,
@@ -43,74 +39,24 @@ const getCookieOptions = (maxAge: number) => ({
   secure: process.env.NODE_ENV === 'production',
 });
 
-const getAuthSecret = () =>
-  process.env.AUTH_SECRET ?? process.env.DISCORD_CLIENT_SECRET;
-
-const sign = (value: string, secret: string) =>
-  createHmac('sha256', secret).update(value).digest('base64url');
-
-const signPayload = <T>(payload: T, secret: string) => {
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
-    'base64url',
-  );
-
-  return `${encodedPayload}.${sign(encodedPayload, secret)}`;
-};
-
-const verifyPayload = <T>(value: string, secret: string): T | null => {
-  const [encodedPayload, signature] = value.split('.');
-
-  if (!encodedPayload || !signature) {
-    return null;
-  }
-
-  const expectedSignature = sign(encodedPayload, secret);
-  const signatureBuffer = Buffer.from(signature);
-  const expectedSignatureBuffer = Buffer.from(expectedSignature);
-
-  if (
-    signatureBuffer.length !== expectedSignatureBuffer.length ||
-    !timingSafeEqual(signatureBuffer, expectedSignatureBuffer)
-  ) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(Buffer.from(encodedPayload, 'base64url').toString()) as T;
-  } catch {
-    return null;
-  }
-};
-
-export const createOAuthState = (redirectTo: string) => ({
-  nonce: randomBytes(24).toString('base64url'),
-  redirectTo,
-});
-
 export const setOAuthStateCookie = (
   response: NextResponse,
   state: OAuthStatePayload,
-) => {
-  const secret = getAuthSecret();
+): Promise<void> => {
+  return createOAuthStateCookieValue(state).then((value) => {
+    if (!value) {
+      return;
+    }
 
-  if (!secret) {
-    return;
-  }
-
-  response.cookies.set(
-    AUTH_STATE_COOKIE,
-    signPayload(state, secret),
-    getCookieOptions(STATE_DURATION_SECONDS),
-  );
+    response.cookies.set(
+      AUTH_STATE_COOKIE,
+      value,
+      getCookieOptions(STATE_DURATION_SECONDS),
+    );
+  });
 };
 
 export const readOAuthStateCookie = async () => {
-  const secret = getAuthSecret();
-
-  if (!secret) {
-    return null;
-  }
-
   const cookieStore = await cookies();
   const value = cookieStore.get(AUTH_STATE_COOKIE)?.value;
 
@@ -118,28 +64,26 @@ export const readOAuthStateCookie = async () => {
     return null;
   }
 
-  return verifyPayload<OAuthStatePayload>(value, secret);
+  return readOAuthStateFromCookieValue(value);
 };
 
 export const clearOAuthStateCookie = (response: NextResponse) => {
   response.cookies.set(AUTH_STATE_COOKIE, '', getCookieOptions(0));
 };
 
-export const setSessionCookie = (response: NextResponse, user: CurrentUser) => {
-  const secret = getAuthSecret();
+export const setSessionCookie = async (
+  response: NextResponse,
+  user: CurrentUser,
+) => {
+  const value = await createSessionCookieValue(user);
 
-  if (!secret) {
+  if (!value) {
     return;
   }
 
-  const session: SessionPayload = {
-    user,
-    expiresAt: Date.now() + SESSION_DURATION_SECONDS * 1000,
-  };
-
   response.cookies.set(
     AUTH_SESSION_COOKIE,
-    signPayload(session, secret),
+    value,
     getCookieOptions(SESSION_DURATION_SECONDS),
   );
 };
@@ -163,12 +107,6 @@ export const normalizeDiscordUser = (discordUser: DiscordUser): CurrentUser => {
 };
 
 export const getCurrentUser = async (): Promise<CurrentUser | null> => {
-  const secret = getAuthSecret();
-
-  if (!secret) {
-    return null;
-  }
-
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
 
@@ -176,11 +114,5 @@ export const getCurrentUser = async (): Promise<CurrentUser | null> => {
     return null;
   }
 
-  const session = verifyPayload<SessionPayload>(sessionCookie, secret);
-
-  if (!session || session.expiresAt < Date.now()) {
-    return null;
-  }
-
-  return session.user;
+  return readSessionFromCookieValue(sessionCookie);
 };

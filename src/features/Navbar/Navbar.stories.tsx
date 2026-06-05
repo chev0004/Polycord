@@ -29,6 +29,7 @@ export const LoggedIn: Story = {
         <Navbar
           {...args}
           iconUrl={MOCK_USER_AVATAR_URL}
+          isLoggedIn
           notifications={[
             {
               id: '1',
@@ -56,6 +57,13 @@ export const LoggedIn: Story = {
 
 export const LoggedOut: Story = {
   render: (args) => {
-    return <Navbar {...args} notifications={[]} iconUrl={undefined} />;
+    return (
+      <Navbar
+        {...args}
+        iconUrl={undefined}
+        isLoggedIn={false}
+        notifications={[]}
+      />
+    );
   },
 };

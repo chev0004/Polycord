@@ -28,7 +28,7 @@ const redirectToDiscovery = (
   return NextResponse.redirect(redirectUrl);
 };
 
-export const GET = (request: NextRequest) => {
+export const GET = async (request: NextRequest) => {
   const locale = getLocale(request.nextUrl.searchParams.get('locale'));
   const clientId = process.env.DISCORD_CLIENT_ID;
 
@@ -45,7 +45,7 @@ export const GET = (request: NextRequest) => {
   authorizeUrl.searchParams.set('state', state.nonce);
 
   const response = NextResponse.redirect(authorizeUrl);
-  setOAuthStateCookie(response, state);
+  await setOAuthStateCookie(response, state);
 
   return response;
 };
