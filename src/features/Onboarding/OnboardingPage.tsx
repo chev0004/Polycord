@@ -1,0 +1,577 @@
+'use client';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { Controller, type DefaultValues, useForm } from 'react-hook-form';
+import { Avatar } from '@/components/Avatar';
+import { Button } from '@/components/Button';
+import { Combobox, FormGroup, Label, Select } from '@/components/Form';
+import {
+  availabilityValues,
+  countryOptions,
+  languageOptions,
+  proficiencyOptions,
+} from '@/constants';
+import { Navbar } from '@/features/Navbar';
+import {
+  getOnboardingCompletion,
+  ONBOARDING_DRAFT_STORAGE_KEY,
+} from './completion';
+import { type OnboardingFormValues, onboardingSchema } from './schema';
+
+type OnboardingPageProps = {
+  userAvatarUrl?: string;
+  userDisplayName: string;
+};
+
+const defaultValues: DefaultValues<OnboardingFormValues> = {
+  primaryLanguage: '',
+  targetLanguage: '',
+  timezone: '',
+  availability: 'flexible',
+  bio: '',
+  country: '',
+  tags: [],
+};
+
+const inputClasses =
+  'h-11 w-full rounded-lg border border-white/10 bg-background-darker px-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
+const textareaClasses =
+  'min-h-[116px] w-full resize-y rounded-lg border border-white/10 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
+
+const availabilityLabelKeys: Record<string, string> = {
+  weeknights: 'availabilityWeeknights',
+  weekends: 'availabilityWeekends',
+  weekday_mornings: 'availabilityWeekdayMornings',
+  flexible: 'availabilityFlexible',
+};
+
+export const OnboardingPage = ({
+  userAvatarUrl,
+  userDisplayName,
+}: OnboardingPageProps) => {
+  const bioId = useId();
+  const timezoneId = useId();
+  const tagsInputId = useId();
+  const locale = useLocale();
+  const router = useRouter();
+  const t = useTranslations('Onboarding');
+  const [isDraftReady, setIsDraftReady] = useState(false);
+  const [tagInput, setTagInput] = useState('');
+  const [tagError, setTagError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const {
+    control,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+    register,
+    reset,
+    setValue,
+    watch,
+  } = useForm<OnboardingFormValues>({
+    resolver: zodResolver(onboardingSchema),
+    defaultValues,
+  });
+
+  const values = watch();
+  const tags = values.tags ?? [];
+  const localizedLanguageOptions = languageOptions(locale);
+  const localizedCountryOptions = countryOptions(locale);
+  const localizedProficiencyOptions = proficiencyOptions(locale);
+
+  useEffect(() => {
+    const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const rawDraft = localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY);
+
+    if (rawDraft) {
+      try {
+        const draft = JSON.parse(rawDraft) as Partial<OnboardingFormValues>;
+        reset({
+          ...defaultValues,
+          ...draft,
+          timezone: draft.timezone || detectedTimezone,
+        });
+        setIsDraftReady(true);
+        return;
+      } catch {
+        localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
+      }
+    }
+
+    setValue('timezone', detectedTimezone, { shouldValidate: true });
+    setIsDraftReady(true);
+  }, [reset, setValue]);
+
+  useEffect(() => {
+    if (!isDraftReady) {
+      return;
+    }
+
+    const draft = JSON.stringify(values);
+    localStorage.setItem(ONBOARDING_DRAFT_STORAGE_KEY, draft);
+  }, [isDraftReady, values]);
+
+  const completion = useMemo(() => getOnboardingCompletion(values), [values]);
+
+  const preview = useMemo(() => {
+    const getLabel = (
+      options: { label: string; value: string }[],
+      value?: string,
+    ) => options.find((option) => option.value === value)?.label ?? '';
+
+    return {
+      primaryLanguage: getLabel(
+        localizedLanguageOptions,
+        values.primaryLanguage,
+      ),
+      targetLanguage: getLabel(localizedLanguageOptions, values.targetLanguage),
+      proficiencyLevel: getLabel(
+        localizedProficiencyOptions,
+        values.proficiencyLevel,
+      ),
+      country: getLabel(localizedCountryOptions, values.country),
+    };
+  }, [
+    localizedCountryOptions,
+    localizedLanguageOptions,
+    localizedProficiencyOptions,
+    values.country,
+    values.primaryLanguage,
+    values.proficiencyLevel,
+    values.targetLanguage,
+  ]);
+
+  const addTag = () => {
+    const nextTag = tagInput.trim();
+    const currentTags = tags;
+    setTagError(null);
+
+    if (!nextTag) return;
+    if (nextTag.length < 2) return setTagError(t('tagTooShort'));
+    if (nextTag.length > 20) return setTagError(t('tagTooLong'));
+    if (currentTags.length >= 6) return setTagError(t('tagLimitReached'));
+    if (
+      currentTags
+        .map((tag) => tag.toLowerCase())
+        .includes(nextTag.toLowerCase())
+    ) {
+      return setTagError(t('tagDuplicate'));
+    }
+
+    setValue('tags', [...currentTags, nextTag], { shouldValidate: true });
+    setTagInput('');
+  };
+
+  const removeTag = (indexToRemove: number) => {
+    setValue(
+      'tags',
+      tags.filter((_, index) => index !== indexToRemove),
+      { shouldValidate: true },
+    );
+  };
+
+  const onSubmit = async (data: OnboardingFormValues) => {
+    setSubmitError(null);
+
+    const response = await fetch('/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      setSubmitError(t('submitError'));
+      return;
+    }
+
+    localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
+    router.push(`/${locale}`);
+    router.refresh();
+  };
+
+  return (
+    <div className="min-h-screen bg-background-main text-white">
+      <Navbar
+        iconUrl={userAvatarUrl}
+        isLoggedIn
+        notifications={[]}
+        onHomeClick={() => router.push(`/${locale}`)}
+        onLoginClick={() =>
+          window.location.assign(`/api/auth/discord?locale=${locale}`)
+        }
+        onProfileClick={() => router.push(`/${locale}/profile`)}
+        onSettingsClick={() => router.push(`/${locale}/settings`)}
+        onLogoutClick={() =>
+          window.location.assign(`/api/auth/logout?locale=${locale}`)
+        }
+      />
+      <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="rounded-lg border border-white/5 bg-background-dark shadow-xl"
+        >
+          <header className="border-white/10 border-b px-4 py-5 sm:px-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar avatarUrl={userAvatarUrl} size="lg" />
+                <div>
+                  <p className="font-semibold text-primary text-xs uppercase tracking-wide">
+                    {t('firstRunSetup')}
+                  </p>
+                  <h1 className="font-bold font-figtree text-2xl text-white sm:text-3xl">
+                    {t('createTitle')}
+                  </h1>
+                </div>
+              </div>
+              <div className="min-w-[160px]">
+                <div className="mb-2 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-gray-400">
+                    {t('completeness')}
+                  </span>
+                  <span className="text-primary-light">{completion}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-background-darker">
+                  <div
+                    className="h-2 rounded-full bg-primary transition-all"
+                    style={{ width: `${completion}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div className="grid gap-6 px-4 py-6 sm:px-6">
+            {submitError ? (
+              <div
+                className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 text-red-100 text-sm"
+                role="alert"
+              >
+                {submitError}
+              </div>
+            ) : null}
+
+            <section className="grid gap-4">
+              <div>
+                <h2 className="font-figtree font-semibold text-white text-xl">
+                  {t('languagesSection')}
+                </h2>
+                <p className="mt-1 text-gray-500 text-sm">
+                  {t('languagesSectionDescription')}
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormGroup>
+                  <Label required>{t('primaryLanguageLabel')}</Label>
+                  <Controller
+                    control={control}
+                    name="primaryLanguage"
+                    render={({ field }) => (
+                      <Combobox
+                        {...field}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        options={localizedLanguageOptions}
+                        placeholder={t('primaryLanguagePlaceholder')}
+                        error={!!errors.primaryLanguage}
+                      />
+                    )}
+                  />
+                  {errors.primaryLanguage ? (
+                    <p className="text-red-500 text-xs">
+                      {errors.primaryLanguage.message}
+                    </p>
+                  ) : null}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label required>{t('targetLanguageLabel')}</Label>
+                  <Controller
+                    control={control}
+                    name="targetLanguage"
+                    render={({ field }) => (
+                      <Combobox
+                        {...field}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        options={localizedLanguageOptions}
+                        placeholder={t('targetLanguagePlaceholder')}
+                        error={!!errors.targetLanguage}
+                      />
+                    )}
+                  />
+                  {errors.targetLanguage ? (
+                    <p className="text-red-500 text-xs">
+                      {errors.targetLanguage.message}
+                    </p>
+                  ) : null}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label required>{t('currentLevelLabel')}</Label>
+                  <Controller
+                    control={control}
+                    name="proficiencyLevel"
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        options={localizedProficiencyOptions}
+                        placeholder={t('currentLevelPlaceholder')}
+                        onValueChange={field.onChange}
+                        value={field.value ?? ''}
+                        error={!!errors.proficiencyLevel}
+                      />
+                    )}
+                  />
+                  {errors.proficiencyLevel ? (
+                    <p className="text-red-500 text-xs">
+                      {errors.proficiencyLevel.message}
+                    </p>
+                  ) : null}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>{t('countryLabel')}</Label>
+                  <Controller
+                    control={control}
+                    name="country"
+                    render={({ field }) => (
+                      <Combobox
+                        {...field}
+                        value={field.value ?? ''}
+                        onValueChange={field.onChange}
+                        options={localizedCountryOptions}
+                        placeholder={t('countryPlaceholder')}
+                      />
+                    )}
+                  />
+                </FormGroup>
+              </div>
+            </section>
+
+            <section className="grid gap-4 border-white/10 border-t pt-6">
+              <div>
+                <h2 className="font-figtree font-semibold text-white text-xl">
+                  {t('bioSection')}
+                </h2>
+                <p className="mt-1 text-gray-500 text-sm">
+                  {t('bioSectionDescription')}
+                </p>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormGroup>
+                  <Label htmlFor={timezoneId} required>
+                    {t('timezoneLabel')}
+                  </Label>
+                  <input
+                    id={timezoneId}
+                    type="text"
+                    {...register('timezone')}
+                    placeholder={t('timezonePlaceholder')}
+                    className={`${inputClasses} ${
+                      errors.timezone ? 'border-red-500 focus:ring-red-500' : ''
+                    }`}
+                  />
+                  {errors.timezone ? (
+                    <p className="text-red-500 text-xs">
+                      {errors.timezone.message}
+                    </p>
+                  ) : null}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label required>{t('availabilityLabel')}</Label>
+                  <Controller
+                    control={control}
+                    name="availability"
+                    render={({ field }) => (
+                      <div className="grid grid-cols-2 gap-2">
+                        {availabilityValues.map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => field.onChange(value)}
+                            className={`h-11 rounded-lg border px-3 text-sm transition-colors ${
+                              field.value === value
+                                ? 'border-primary bg-primary-darker text-primary-light'
+                                : 'border-white/10 bg-background-darker text-gray-300 hover:border-primary-dark'
+                            }`}
+                          >
+                            {t(availabilityLabelKeys[value])}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  />
+                  {errors.availability ? (
+                    <p className="text-red-500 text-xs">
+                      {errors.availability.message}
+                    </p>
+                  ) : null}
+                </FormGroup>
+              </div>
+
+              <FormGroup>
+                <Label htmlFor={bioId} required>
+                  {t('bioLabel')}
+                </Label>
+                <textarea
+                  id={bioId}
+                  rows={4}
+                  {...register('bio')}
+                  placeholder={t('bioPlaceholder')}
+                  className={`${textareaClasses} ${
+                    errors.bio ? 'border-red-500 focus:ring-red-500' : ''
+                  }`}
+                />
+                {errors.bio ? (
+                  <p className="text-red-500 text-xs">{errors.bio.message}</p>
+                ) : null}
+              </FormGroup>
+            </section>
+
+            <section className="grid gap-4 border-white/10 border-t pt-6">
+              <div>
+                <h2 className="font-figtree font-semibold text-white text-xl">
+                  {t('topicsSection')}
+                </h2>
+                <p className="mt-1 text-gray-500 text-sm">
+                  {t('topicsSectionDescription')}
+                </p>
+              </div>
+
+              <FormGroup>
+                <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
+                {tags.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/5 bg-background-darker p-2">
+                    {tags.map((tag, index) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-2 rounded-md bg-primary-darker px-2.5 py-1"
+                      >
+                        <span className="text-primary-light text-sm">
+                          {tag}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeTag(index)}
+                          className="text-primary-light transition-colors hover:text-white focus:outline-none"
+                          aria-label={t('removeTag', { tag })}
+                        >
+                          x
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="flex gap-2">
+                  <input
+                    id={tagsInputId}
+                    type="text"
+                    value={tagInput}
+                    onChange={(event) => setTagInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        addTag();
+                      }
+                    }}
+                    placeholder={t('tagsPlaceholder')}
+                    className={inputClasses}
+                  />
+                  <button
+                    type="button"
+                    onClick={addTag}
+                    className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {t('addTag')}
+                  </button>
+                </div>
+                {tagError ? (
+                  <p className="text-red-500 text-xs">{tagError}</p>
+                ) : null}
+                {errors.tags?.message ? (
+                  <p className="text-red-500 text-xs">{errors.tags.message}</p>
+                ) : null}
+              </FormGroup>
+            </section>
+          </div>
+
+          <div className="sticky bottom-0 border-white/10 border-t bg-background-dark px-4 py-4 sm:px-6">
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSubmitting} className="h-10">
+                {isSubmitting ? t('publishing') : t('publishButton')}
+              </Button>
+            </div>
+          </div>
+        </form>
+
+        <aside className="lg:pt-0">
+          <div className="sticky top-6 rounded-lg border border-white/5 bg-background-dark p-4 shadow-xl">
+            <p className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
+              {t('previewTitle')}
+            </p>
+            <div className="rounded-lg bg-background-darker p-4">
+              <div className="flex items-center gap-3">
+                <Avatar avatarUrl={userAvatarUrl} size="md" />
+                <div>
+                  <h2 className="font-semibold text-white">
+                    {userDisplayName}
+                  </h2>
+                  <p className="text-gray-500 text-xs">{t('previewPublic')}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {preview.primaryLanguage ? (
+                  <span className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs">
+                    {preview.primaryLanguage}
+                  </span>
+                ) : null}
+                {preview.targetLanguage ? (
+                  <span className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs">
+                    {preview.targetLanguage}
+                    {preview.proficiencyLevel
+                      ? ` / ${preview.proficiencyLevel}`
+                      : ''}
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
+                {values.bio || t('previewBioFallback')}
+              </p>
+
+              <p className="mt-4 text-gray-500 text-xs">
+                {values.availability
+                  ? t(availabilityLabelKeys[values.availability])
+                  : t('previewAvailabilityFallback')}
+                {values.timezone ? ` / ${values.timezone}` : ''}
+              </p>
+
+              {tags.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {tags.slice(0, 6).map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              {preview.country ? (
+                <p className="mt-4 text-gray-500 text-xs">{preview.country}</p>
+              ) : null}
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  );
+};
