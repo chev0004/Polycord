@@ -1,3 +1,4 @@
+import { getProfileByUserId, upsertDiscordUser } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -11,12 +12,20 @@ export default async function Home({
   const { lang } = await params;
   const { authError } = await searchParams;
   const user = await getCurrentUser();
+  let needsOnboarding = false;
+
+  if (user) {
+    const persistedUser = await upsertDiscordUser(user);
+    const profile = await getProfileByUserId(persistedUser.id);
+    needsOnboarding = !profile;
+  }
 
   return (
     <DiscoveryPage
       authError={authError}
       isLoggedIn={Boolean(user)}
       locale={lang}
+      needsOnboarding={needsOnboarding}
       userAvatarUrl={user?.avatarUrl}
     />
   );
