@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { upsertDiscordUser } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import { ProfileRouteClient } from './ProfileRouteClient';
 
@@ -14,9 +15,14 @@ export default async function ProfileRoute({
     redirect(`/${lang}`);
   }
 
+  await upsertDiscordUser(user);
+
   return (
     <main className="min-h-screen bg-background-main">
-      <ProfileRouteClient />
+      <ProfileRouteClient
+        userAvatarUrl={user.avatarUrl}
+        userDisplayName={user.name}
+      />
     </main>
   );
 }

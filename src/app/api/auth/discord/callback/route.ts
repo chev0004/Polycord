@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { upsertDiscordUser } from '@/db';
 import {
   AUTH_ERROR_PARAM,
   clearOAuthStateCookie,
@@ -108,10 +109,13 @@ export const GET = async (request: NextRequest) => {
       return redirectWithError(request, redirectTo, 'oauth_failed');
     }
 
+    const currentUser = normalizeDiscordUser(discordUser);
+    await upsertDiscordUser(currentUser);
+
     const response = NextResponse.redirect(
       new URL(redirectTo, request.nextUrl.origin),
     );
-    await setSessionCookie(response, normalizeDiscordUser(discordUser));
+    await setSessionCookie(response, currentUser);
     clearOAuthStateCookie(response);
 
     return response;
