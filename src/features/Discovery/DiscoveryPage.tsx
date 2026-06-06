@@ -24,7 +24,8 @@ export const DiscoveryPage = ({
   return (
     <div className="min-h-screen bg-background-main text-white">
       <Navbar
-        iconUrl={isLoggedIn ? userAvatarUrl : undefined}
+        iconUrl={userAvatarUrl}
+        isLoggedIn={isLoggedIn}
         notifications={[]}
         onLoginClick={() =>
           window.location.assign(`/api/auth/discord?locale=${locale}`)

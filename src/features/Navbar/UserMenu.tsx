@@ -8,7 +8,7 @@ import {
 import { Avatar } from '@/components/Avatar';
 
 type UserMenuProps = {
-  iconUrl: string;
+  iconUrl?: string;
   onProfileClick: () => void;
   onSettingsClick: () => void;
   onLogoutClick: () => void;

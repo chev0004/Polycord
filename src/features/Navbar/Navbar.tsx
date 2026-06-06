@@ -8,6 +8,7 @@ import { UserMenu } from './UserMenu';
 
 type NavbarProps = {
   iconUrl?: string;
+  isLoggedIn: boolean;
   notifications: Notifications;
   onLoginClick: () => void;
   onProfileClick: () => void;
@@ -17,6 +18,7 @@ type NavbarProps = {
 
 export const Navbar: React.FC<NavbarProps> = ({
   iconUrl,
+  isLoggedIn,
   onLoginClick,
   notifications,
   onProfileClick,
@@ -37,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-4">
         <LanguageSwitcher />
 
-        {iconUrl ? (
+        {isLoggedIn ? (
           <>
             <Inbox notifications={notifications} />
             <UserMenu
