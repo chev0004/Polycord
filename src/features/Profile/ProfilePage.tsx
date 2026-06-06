@@ -12,13 +12,14 @@ import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
 import {
   countryOptions,
   languageOptions,
-  MOCK_USER_AVATAR_URL,
   proficiencyOptions,
 } from '@/constants';
 import { type ProfileFormValues, profileSchema } from './schema';
 
 type ProfilePageProps = {
   onSubmit?: (data: ProfileFormValues) => void;
+  userAvatarUrl?: string;
+  userDisplayName?: string;
 };
 
 const defaultValues: ProfileFormValues = {
@@ -101,6 +102,8 @@ const MenuItem = ({
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   onSubmit: onSubmitProp,
+  userAvatarUrl,
+  userDisplayName = 'Your profile',
 }) => {
   const timezoneId = useId();
   const bioId = useId();
@@ -183,7 +186,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         <div className="rounded-2xl border border-white/5 bg-background-dark px-4 shadow-xl sm:px-6">
           <header className="flex flex-col gap-4 py-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-center gap-4">
-              <Avatar avatarUrl={MOCK_USER_AVATAR_URL} size="lg" />
+              <Avatar avatarUrl={userAvatarUrl} size="lg" />
               <div>
                 <h1 className="font-bold font-figtree text-3xl text-white">
                   {t('editProfile')}
@@ -560,9 +563,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </p>
             <div className="rounded-xl bg-background-darker p-4">
               <div className="flex items-center gap-3">
-                <Avatar avatarUrl={MOCK_USER_AVATAR_URL} size="md" />
+                <Avatar avatarUrl={userAvatarUrl} size="md" />
                 <div>
-                  <h2 className="font-semibold text-white">Your profile</h2>
+                  <h2 className="font-semibold text-white">
+                    {userDisplayName}
+                  </h2>
                   <p className="text-gray-500 text-xs">
                     {isPublic ? t('statusPublic') : t('statusUnlisted')}
                   </p>
