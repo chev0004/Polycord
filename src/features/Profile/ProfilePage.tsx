@@ -10,6 +10,7 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
 import {
+  availabilityValues,
   countryOptions,
   languageOptions,
   proficiencyOptions,
@@ -17,7 +18,8 @@ import {
 import { type ProfileFormValues, profileSchema } from './schema';
 
 type ProfilePageProps = {
-  onSubmit?: (data: ProfileFormValues) => void;
+  initialValues?: ProfileFormValues;
+  onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
   userAvatarUrl?: string;
   userDisplayName?: string;
 };
@@ -29,6 +31,7 @@ const defaultValues: ProfileFormValues = {
   displayTimezone: true,
   isPublic: true,
   bio: '',
+  availability: 'flexible',
   tags: [],
   country: '',
   timezone: '',
@@ -39,6 +42,13 @@ const inputClasses =
   'h-11 w-full rounded-lg border border-white/10 bg-background-darker px-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
 const textareaClasses =
   'min-h-[132px] w-full resize-y rounded-lg border border-white/10 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
+
+const availabilityLabelKeys: Record<string, string> = {
+  weeknights: 'availabilityOptionWeeknights',
+  weekends: 'availabilityOptionWeekends',
+  weekday_mornings: 'availabilityOptionWeekdayMornings',
+  flexible: 'availabilityOptionFlexible',
+};
 
 const Section = ({
   title,
@@ -101,6 +111,7 @@ const MenuItem = ({
 );
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
+  initialValues,
   onSubmit: onSubmitProp,
   userAvatarUrl,
   userDisplayName = 'Your profile',
@@ -112,17 +123,21 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const locale = useLocale();
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>(
+    'idle',
+  );
 
   const {
     register,
     handleSubmit,
     control,
+    reset,
     setValue,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues,
+    defaultValues: initialValues ?? defaultValues,
   });
 
   const displayTimezone = watch('displayTimezone');
@@ -133,19 +148,36 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const country = watch('country');
   const bio = watch('bio');
   const tags = watch('tags') ?? [];
+  const timezone = watch('timezone');
 
   useEffect(() => {
-    if (displayTimezone) {
+    if (initialValues) {
+      reset(initialValues);
+    }
+  }, [initialValues, reset]);
+
+  useEffect(() => {
+    if (!displayTimezone) {
+      setValue('timezone', '', { shouldValidate: true });
+      return;
+    }
+
+    if (!timezone) {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setValue('timezone', userTimezone, { shouldValidate: true });
-    } else {
-      setValue('timezone', '', { shouldValidate: true });
     }
-  }, [setValue, displayTimezone]);
+  }, [setValue, displayTimezone, timezone]);
 
-  const onSubmit = (data: ProfileFormValues) => {
+  const onSubmit = async (data: ProfileFormValues) => {
+    setSaveStatus('idle');
+
     if (onSubmitProp) {
-      onSubmitProp(data);
+      try {
+        await onSubmitProp(data);
+        setSaveStatus('success');
+      } catch {
+        setSaveStatus('error');
+      }
     } else {
       console.log('Profile Data Submitted', data);
     }
@@ -247,6 +279,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {tagError}
             </div>
           )}
+
+          {saveStatus !== 'idle' ? (
+            <output
+              className={`rounded-lg border p-3 text-sm ${
+                saveStatus === 'success'
+                  ? 'border-green-800 bg-green-950/40 text-green-300'
+                  : 'border-red-800 bg-red-950/50 text-red-400'
+              }`}
+            >
+              {saveStatus === 'success' ? t('saveSuccess') : t('saveError')}
+            </output>
+          ) : null}
 
           <Section
             title={t('languageProfile')}
@@ -357,9 +401,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   id={timezoneId}
                   type="text"
                   {...register('timezone')}
-                  readOnly
                   placeholder={t('displayTimezoneDescription')}
-                  className={`${inputClasses} cursor-not-allowed text-gray-400 ${
+                  className={`${inputClasses} ${
                     errors.timezone ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
                 />
@@ -377,6 +420,27 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             description="Keep this specific enough that someone knows why to message you."
           >
             <div className="grid gap-4">
+              <FormGroup>
+                <Label htmlFor="availability">{t('availabilityLabel')}</Label>
+                <Controller
+                  name="availability"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      options={availabilityValues.map((value) => ({
+                        label: t(availabilityLabelKeys[value]),
+                        value,
+                      }))}
+                      placeholder={t('availabilityPlaceholder')}
+                      onValueChange={field.onChange}
+                      value={field.value ?? 'flexible'}
+                      error={!!errors.availability}
+                    />
+                  )}
+                />
+              </FormGroup>
+
               <FormGroup>
                 <Label htmlFor={bioId}>{t('bioLabel')}</Label>
                 <textarea

@@ -52,6 +52,9 @@ export const profiles = pgTable(
     targetLanguage: varchar('target_language', { length: 16 }).notNull(),
     proficiencyLevel: proficiencyLevelEnum('proficiency_level').notNull(),
     bio: text('bio').notNull(),
+    availability: varchar('availability', { length: 32 })
+      .default('flexible')
+      .notNull(),
     tags: text('tags').array().default(sql`'{}'::text[]`).notNull(),
     country: varchar('country', { length: 2 }),
     timezone: varchar('timezone', { length: 64 }),
@@ -71,6 +74,10 @@ export const profiles = pgTable(
     check(
       'profiles_bio_length_check',
       sql`char_length(${table.bio}) between 10 and 500`,
+    ),
+    check(
+      'profiles_availability_check',
+      sql`${table.availability} in ('weeknights', 'weekends', 'weekday_mornings', 'flexible')`,
     ),
     check('profiles_tags_limit_check', sql`cardinality(${table.tags}) <= 6`),
   ],
