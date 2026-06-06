@@ -1,5 +1,6 @@
 import * as Popover from '@radix-ui/react-popover';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import {
   MdOutlineExitToApp,
   MdOutlineSettings,
@@ -40,17 +41,37 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   onLogoutClick,
 }) => {
   const t = useTranslations('UserMenu');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const triggerButton = (
+    <button
+      type="button"
+      className="rounded-full transition-all duration-200 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background-darker"
+    >
+      <Avatar avatarUrl={iconUrl} size="sm" />
+    </button>
+  );
+
+  if (!isMounted) {
+    return (
+      <button
+        type="button"
+        aria-hidden="true"
+        className="rounded-full"
+        tabIndex={-1}
+      >
+        <Avatar avatarUrl={iconUrl} size="sm" />
+      </button>
+    );
+  }
 
   return (
     <Popover.Root>
-      <Popover.Trigger asChild>
-        <button
-          type="button"
-          className="rounded-full transition-all duration-200 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background-darker"
-        >
-          <Avatar avatarUrl={iconUrl} size="sm" />
-        </button>
-      </Popover.Trigger>
+      <Popover.Trigger asChild>{triggerButton}</Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
           className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
