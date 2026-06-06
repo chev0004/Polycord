@@ -1,7 +1,10 @@
 ## Outline
+
 ### Summary
-<!-- One or two sentences describing what this PR introduces and the main areas or sections it touches. -->
+One or two sentences describing what this PR introduces and the main areas or sections it touches.
+
 ---
+
 ### Changes & Enhancements
 * **Type of Change:**
   * [ ] Feature
@@ -13,13 +16,18 @@
     * <!-- what changed -->
   * **(area):**
     * <!-- what changed -->
+      
 ---
+
 ### Page / App Changes
 **Affected Next.js Routes (Local):**
 <!-- List affected local routes, or remove this section if no rendered routes changed. -->
 ##### Before (Screenshot)
+
 ##### After (Screenshot)
+
 ---
+
 #### Component / Storybook Changes
 **Affected Storybook Components (Local):**
 - [Feature/Name > Default](http://localhost:6006/?path=/story/feature-name--default)
