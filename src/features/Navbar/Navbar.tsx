@@ -10,6 +10,7 @@ type NavbarProps = {
   iconUrl?: string;
   isLoggedIn: boolean;
   notifications: Notifications;
+  onHomeClick?: () => void;
   onLoginClick: () => void;
   onProfileClick: () => void;
   onSettingsClick: () => void;
@@ -19,6 +20,7 @@ type NavbarProps = {
 export const Navbar: React.FC<NavbarProps> = ({
   iconUrl,
   isLoggedIn,
+  onHomeClick,
   onLoginClick,
   notifications,
   onProfileClick,
@@ -29,11 +31,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   const loginText = t('loginWithDiscord');
 
   return (
-    <nav className="flex h-16 h-50 w-full items-center justify-between bg-background-darker px-10 font-zen">
+    <nav className="flex h-16 w-full items-center justify-between bg-background-darker px-10 font-zen">
       <div className="flex items-center gap-2">
-        <span className="font-black font-figtree text-3xl text-white">
+        <button
+          type="button"
+          onClick={onHomeClick}
+          className="font-black font-figtree text-3xl text-white transition-colors hover:text-primary-light focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
           {t('disspeak')}
-        </span>
+        </button>
       </div>
 
       <div className="flex items-center gap-4">
