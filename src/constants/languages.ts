@@ -296,6 +296,18 @@ export const capitalizeLanguageCode = (code: string): string => {
   return code.toUpperCase();
 };
 
+export const availabilityValues = [
+  'weeknights',
+  'weekends',
+  'weekday_mornings',
+  'flexible',
+] as const;
+
+export type Availability = (typeof availabilityValues)[number];
+
+export const isValidAvailability = (value: string): value is Availability =>
+  (availabilityValues as readonly string[]).includes(value);
+
 export type IANATimezone = string & { readonly __brand: 'IANATimezone' };
 
 export const isValidIANATimezone = (

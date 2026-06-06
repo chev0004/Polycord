@@ -13,7 +13,7 @@ const handleI18nRouting = createMiddleware({
   defaultLocale: 'en',
 });
 
-const protectedRouteSegments = new Set(['profile', 'settings']);
+const protectedRouteSegments = new Set(['onboarding', 'profile', 'settings']);
 
 const getProtectedRouteLocale = (pathname: string) => {
   const [, locale, segment] = pathname.split('/');

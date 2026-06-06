@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
+import {
+  type Availability,
+  availabilityValues,
+  isValidIANATimezone,
+  isValidProficiency,
+} from '@/constants/languages';
 
 export const profileSchema = z.object({
   isPublic: z.boolean(),
@@ -22,6 +27,10 @@ export const profileSchema = z.object({
     .min(1, { message: 'bioRequired' })
     .min(10, { message: 'bioTooShort' })
     .max(500, { message: 'bioTooLong' }),
+
+  availability: z
+    .enum(availabilityValues as unknown as [Availability, ...Availability[]])
+    .optional(),
 
   tags: z
     .array(

@@ -17,6 +17,7 @@ export type ProfileValues = Pick<
   NewProfile,
   | 'allowAnonymousCopy'
   | 'bio'
+  | 'availability'
   | 'country'
   | 'displayTimezone'
   | 'isPublic'
