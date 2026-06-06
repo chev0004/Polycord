@@ -24,7 +24,12 @@ export const Inbox = ({
     initializeNotifications(initialNotifications),
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMounted, setIsMounted] = useState(false);
   const itemsPerPage = 5;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setNotifications(initializeNotifications(initialNotifications));
@@ -91,19 +96,36 @@ export const Inbox = ({
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
+  const triggerContent = (
+    <>
+      <MdOutlineInbox
+        className="cursor-pointer select-none text-white text-xl transition-all duration-200 hover:text-gray-300"
+        size={24}
+      />
+      {unreadCount > 0 && (
+        <span className="-top-1 -right-1 absolute flex h-4 w-4 items-center justify-center rounded-full bg-discord-blue font-bold text-white text-xs">
+          {unreadCount}
+        </span>
+      )}
+    </>
+  );
+
+  if (!isMounted) {
+    return (
+      <button
+        type="button"
+        aria-hidden="true"
+        className="relative"
+        tabIndex={-1}
+      >
+        {triggerContent}
+      </button>
+    );
+  }
+
   return (
     <Popover.Root>
-      <Popover.Trigger className="relative">
-        <MdOutlineInbox
-          className="cursor-pointer select-none text-white text-xl transition-all duration-200 hover:text-gray-300"
-          size={24}
-        />
-        {unreadCount > 0 && (
-          <span className="-top-1 -right-1 absolute flex h-4 w-4 items-center justify-center rounded-full bg-discord-blue font-bold text-white text-xs">
-            {unreadCount}
-          </span>
-        )}
-      </Popover.Trigger>
+      <Popover.Trigger className="relative">{triggerContent}</Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
           className="PopoverContent w-[540px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark shadow-lg"
