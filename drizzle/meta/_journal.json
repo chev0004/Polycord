@@ -8,6 +8,13 @@
       "when": 1780716832661,
       "tag": "0000_profile_001",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780767969574,
+      "tag": "0001_onboarding_profile_fields",
+      "breakpoints": true
     }
   ]
 }
