@@ -31,7 +31,6 @@ export type FilterButtonProps = {
   multiple?: boolean;
 };
 
-// Batch size configuration for progressive rendering
 const INITIAL_BATCH = 20;
 const CHUNK_SIZE = 50;
 const CHUNK_INTERVAL_MS = 16;
@@ -183,7 +182,6 @@ export const FilterButton = React.forwardRef<
 
 FilterButton.displayName = 'FilterButton';
 
-// Internal component for individual multi-select items to handle truncation logic
 const MultiSelectItem = ({
   option,
   isSelected,
@@ -203,7 +201,6 @@ const MultiSelectItem = ({
   useLayoutEffect(() => {
     const el = textRef.current;
     if (el) {
-      // Check if the span is smaller than its scroll width (content width)
       setIsTruncated(el.scrollWidth > el.clientWidth + 0.5);
     }
   });
@@ -256,10 +253,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
 
-  // Incremental rendering state for smooth animations
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
 
-  // Scroll Indicators State
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(false);
   const [searchBoxHeight, setSearchBoxHeight] = useState(0);
@@ -270,14 +265,12 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Progressive Loading Effect
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     let timeoutId: NodeJS.Timeout;
 
     if (open) {
       setAnimationKey((prev) => prev + 1);
-      // Reset to small batch immediately for smooth opening animation
       setVisibleCount(INITIAL_BATCH);
 
       // Wait for the opening animation to finish (approx 300ms)
@@ -294,7 +287,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         }, CHUNK_INTERVAL_MS);
       }, 300);
     } else {
-      // Reset when closed
       setVisibleCount(INITIAL_BATCH);
     }
 
@@ -324,7 +316,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     }
   }, [open]);
 
-  // Scroll Detection Logic
   useEffect(() => {
     if (!open) {
       setCanScrollUp(false);
@@ -356,9 +347,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         viewport.removeEventListener('scroll', checkScroll);
       }
     };
-  }, [open]); // Re-run when list grows or filters change
+  }, [open]);
 
-  // Measure search box height
   useLayoutEffect(() => {
     if (searchable && searchBoxRef.current) {
       setSearchBoxHeight(searchBoxRef.current.offsetHeight);
@@ -559,7 +549,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             </div>
           )}
 
-          {/* Up Chevron */}
           {canScrollUp && (
             <button
               type="button"
@@ -607,7 +596,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             )}
           </div>
 
-          {/* Down Chevron */}
           {canScrollDown && (
             <button
               type="button"

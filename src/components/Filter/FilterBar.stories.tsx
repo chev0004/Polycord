@@ -28,7 +28,6 @@ const meta: Meta<typeof FilterBar> = {
 export default meta;
 type Story = StoryObj<typeof FilterBar>;
 
-// Helper for timezones (can remain outside or move inside if it needs locale later)
 const getTimezoneOptions = () => {
   try {
     if (typeof Intl !== 'undefined' && 'supportedValuesOf' in Intl) {
@@ -41,17 +40,15 @@ const getTimezoneOptions = () => {
         .sort((a, b) => a.label.localeCompare(b.label));
     }
   } catch {
-    // Fallback
+    return [];
   }
   return [];
 };
 
 export const Default: Story = {
   render: (args) => {
-    // 1. Hook into the current locale from Storybook's context
     const locale = useLocale();
 
-    // 2. Re-calculate options whenever 'locale' changes
     const filters = useMemo(
       () => [
         {
@@ -59,7 +56,7 @@ export const Default: Story = {
           icon: MdLanguage,
           labelKey: 'filterPrimaryLanguage',
           placeholderKey: 'filterSelectLanguage',
-          options: languageOptions(locale), // Pass dynamic locale
+          options: languageOptions(locale),
           multiple: true,
         },
         {
@@ -67,7 +64,7 @@ export const Default: Story = {
           icon: MdLanguage,
           labelKey: 'filterTargetLanguage',
           placeholderKey: 'filterSelectLanguage',
-          options: languageOptions(locale), // Pass dynamic locale
+          options: languageOptions(locale),
           multiple: true,
         },
         {
@@ -75,7 +72,7 @@ export const Default: Story = {
           icon: MdLocationOn,
           labelKey: 'filterCountry',
           placeholderKey: 'filterSelectCountry',
-          options: countryOptions(locale), // Pass dynamic locale
+          options: countryOptions(locale),
           multiple: true,
         },
         {
@@ -83,7 +80,7 @@ export const Default: Story = {
           icon: MdSchool,
           labelKey: 'filterProficiency',
           placeholderKey: 'filterSelectLevel',
-          options: proficiencyOptions(locale), // Pass dynamic locale
+          options: proficiencyOptions(locale),
           multiple: true,
         },
         {

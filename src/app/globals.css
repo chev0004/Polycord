@@ -63,7 +63,6 @@
   }
 }
 
-/* Explicit Keyframe Bounce */
 @keyframes growDown {
   0% {
     opacity: 0;
@@ -79,7 +78,6 @@
   }
 }
 
-/* Closing Animation - Simple shrink to zero */
 @keyframes shrinkUp {
   from {
     opacity: 1;
@@ -113,7 +111,6 @@
   }
 }
 
-/* NEW: Pop In animation for Tags */
 @keyframes popIn {
   0% {
     opacity: 0;
@@ -133,7 +130,6 @@
   animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-/* NEW: Slide Out Right for Notifications */
 @keyframes slideOutRight {
   0% {
     opacity: 1;
@@ -149,55 +145,40 @@
   animation: slideOutRight 0.4s ease-in forwards;
 }
 
-/* =========================================
-   BOTTOM Opening (Default) 
-   ========================================= */
 .SelectContent[data-side="bottom"] {
   transform-origin: top center;
   will-change: transform, opacity;
 }
 
-/* Animate closing when data-state is closed */
 .SelectContent[data-side="bottom"][data-state="closed"] {
   animation: shrinkUp 200ms ease-in forwards;
 }
 
-/* Use standard ease-out for opening */
 .SelectContent[data-side="bottom"][data-state="open"] {
   animation: growDown 300ms ease-out forwards;
 }
 
-/* Items slide DOWN when menu opens DOWN */
 .SelectContent[data-side="bottom"][data-state="open"] [role="option"] {
   animation: dropdownItemSlideDown 0.2s ease-in-out backwards;
 }
 
-/* =========================================
-   TOP Opening (When collision happens)
-   ========================================= */
 .SelectContent[data-side="top"] {
-  transform-origin: bottom center; /* Grow from bottom upwards */
+  transform-origin: bottom center;
   will-change: transform, opacity;
 }
 
-/* Animate closing for top side */
 .SelectContent[data-side="top"][data-state="closed"] {
   animation: shrinkUp 200ms ease-in forwards;
 }
 
-/* Use same grow animation */
 .SelectContent[data-side="top"][data-state="open"] {
   animation: growDown 300ms ease-out forwards;
 }
 
-/* Items slide UP when menu opens UP */
 .SelectContent[data-side="top"][data-state="open"] [role="option"] {
   animation: dropdownItemSlideUp 0.2s ease-in-out backwards;
 }
 
-/* =========================================
-   Staggered Animation Delays (Universal)
-   ========================================= */
 .SelectContent[data-state="open"] [role="option"]:nth-child(1) {
   animation-delay: 0.03s;
 }
@@ -220,7 +201,6 @@
   animation-delay: 0.15s;
 }
 
-/* Multi-select dropdown animation */
 .dropdown-menu-animated {
   transform-origin: top center;
   will-change: transform, opacity;
@@ -272,10 +252,6 @@
     height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: width, height, transform, opacity;
 }
-
-/* =========================================
-   Tooltip Animations
-   ========================================= */
 
 @keyframes slideLeftAndFade {
   from {
@@ -340,7 +316,6 @@
   animation-name: slideRightAndFade;
 }
 
-/* Remove all focus outlines and rings globally */
 *:focus,
 *:focus-visible,
 *:focus-within {
