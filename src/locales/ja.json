@@ -84,7 +84,10 @@
     "saveSuccess": "プロフィールを保存しました。",
     "saveError": "プロフィールの保存に失敗しました。もう一度お試しください。",
     "viewPublicProfile": "掲載ページを見る",
-    "deleteProfile": "プロフィール削除"
+    "deleteProfile": "プロフィール削除",
+    "deletingProfile": "プロフィールを削除中...",
+    "deleteProfileConfirmation": "プロフィールを削除しますか？ディスカバリーから削除され、元に戻せません。",
+    "deleteError": "プロフィールの削除に失敗しました。もう一度お試しください。"
   },
   "Settings": {
     "settingsTitle": "設定",

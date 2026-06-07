@@ -183,4 +183,13 @@ export const upsertProfileForUser = async (
   return profile;
 };
 
+export const deleteProfileForUser = async (userId: string) => {
+  const deletedProfiles = await db
+    .delete(profiles)
+    .where(eq(profiles.userId, userId))
+    .returning({ id: profiles.id });
+
+  return deletedProfiles.length > 0;
+};
+
 export const mapProfileToDiscoveryProfile = toDiscoveryProfile;

@@ -85,7 +85,10 @@
     "saveSuccess": "Profile saved.",
     "saveError": "Profile could not be saved. Please try again.",
     "viewPublicProfile": "View public profile",
-    "deleteProfile": "Delete profile"
+    "deleteProfile": "Delete profile",
+    "deletingProfile": "Deleting profile...",
+    "deleteProfileConfirmation": "Delete your profile? This removes it from discovery and cannot be undone.",
+    "deleteError": "Profile could not be deleted. Please try again."
   },
   "Settings": {
     "settingsTitle": "Settings",
