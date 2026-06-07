@@ -12,6 +12,7 @@ export type FilterBarProps = {
   values?: Record<string, string | string[]>;
   onFilterChange?: (filterId: string, value: string | string[]) => void;
   className?: string;
+  ariaLabel?: string;
 };
 
 export const FilterBar = ({
@@ -19,6 +20,7 @@ export const FilterBar = ({
   values = {},
   onFilterChange,
   className,
+  ariaLabel,
 }: FilterBarProps) => {
   const handleFilterChange = (filterId: string, value: string | string[]) => {
     onFilterChange?.(filterId, value);
@@ -27,7 +29,7 @@ export const FilterBar = ({
   return (
     <fieldset
       className={`m-0 flex flex-wrap items-center gap-3 border-0 p-0 ${className ?? ''}`}
-      aria-label="Filter options"
+      aria-label={ariaLabel}
     >
       {filters.map((filter) => (
         <FilterButton

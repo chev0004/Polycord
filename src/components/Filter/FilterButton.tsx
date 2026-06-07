@@ -552,7 +552,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                       return;
                     }
                   }}
-                  placeholder="Search..."
+                  placeholder={t('filterSearchPlaceholder')}
                   className="h-8 w-full rounded bg-background-darker pr-2 pl-2 text-sm text-white placeholder-gray-500"
                 />
               </div>

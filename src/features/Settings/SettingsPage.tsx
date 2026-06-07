@@ -306,7 +306,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       onValueChange={field.onChange}
                       value={field.value}
                       error={!!errors.applicationLanguage}
-                      placeholder="Select app language"
+                      placeholder={t('appLanguagePlaceholder')}
                     />
                   )}
                 />

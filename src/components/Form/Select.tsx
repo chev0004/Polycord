@@ -12,11 +12,12 @@ export type SelectProps = SelectPrimitive.SelectProps & {
   className?: string;
   onBlur?: React.FocusEventHandler<HTMLButtonElement>;
   error?: boolean;
+  ariaLabel?: string;
 };
 
 export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
   (
-    { placeholder, options, className, onBlur, error, ...props },
+    { placeholder, options, className, onBlur, error, ariaLabel, ...props },
     forwardedRef,
   ) => {
     const hasWidthClass = className?.match(/\bw-|min-w-|max-w-/);
@@ -31,7 +32,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               ? 'border-red-500 focus:ring-red-500'
               : 'border-gray-600 focus:ring-primary'
           } ${className ?? ''}`}
-          aria-label="Selection"
+          aria-label={ariaLabel}
           onBlur={onBlur}
         >
           <SelectPrimitive.Value
