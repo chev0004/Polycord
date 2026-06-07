@@ -60,6 +60,7 @@ async function notion(
 // ---------------------------------------------------------------------------
 
 type RichText = { plain_text: string }[];
+type RelationItem = { id: string };
 type NotionPage = {
   id: string;
   properties: {
@@ -68,7 +69,7 @@ type NotionPage = {
     Status: { status: { name: string } | null };
     Priority: { select: { name: string } | null };
     Area: { select: { name: string } | null };
-    'Depends On': { rich_text: RichText };
+    'Depends On': { relation: RelationItem[] };
   };
 };
 type QueryResult = {
@@ -199,7 +200,17 @@ async function cmdView(ticketId: string) {
   console.log(`Status:     ${p.Status.status?.name ?? 'Unknown'}`);
   console.log(`Priority:   ${p.Priority.select?.name ?? '—'}`);
   console.log(`Area:       ${p.Area.select?.name ?? '—'}`);
-  console.log(`Depends On: ${extractText(p['Depends On'].rich_text) || '—'}`);
+  const deps = p['Depends On'].relation;
+  if (deps.length > 0) {
+    const depNames: string[] = [];
+    for (const dep of deps) {
+      const depPage = (await notion('GET', `/pages/${dep.id}`)) as NotionPage;
+      depNames.push(extractText(depPage.properties.Ticket.title));
+    }
+    console.log(`Depends On: ${depNames.join(', ')}`);
+  } else {
+    console.log('Depends On: —');
+  }
   console.log('');
 
   // Fetch page content (blocks)
@@ -292,9 +303,20 @@ async function cmdUpdate(ticketId: string, args: string[]) {
         properties.Title = { rich_text: [{ text: { content: val } }] };
         break;
       case 'depends':
-      case 'depends-on':
-        properties['Depends On'] = { rich_text: [{ text: { content: val } }] };
+      case 'depends-on': {
+        const depIds = val.split(',').map((s) => s.trim().toUpperCase());
+        const relations: RelationItem[] = [];
+        for (const depId of depIds) {
+          const depPage = await findTicket(depId);
+          if (!depPage) {
+            console.error(`Dependency ticket ${depId} not found.`);
+            process.exit(1);
+          }
+          relations.push({ id: depPage.id });
+        }
+        properties['Depends On'] = { relation: relations };
         break;
+      }
       default:
         console.warn(`Unknown property: ${key}`);
     }
@@ -318,6 +340,11 @@ async function cmdCreate(args: string[]) {
   let area = '';
   let dependsOn = '';
   let summary = '';
+  let currentState = '';
+  let scope = '';
+  let acceptanceCriteria = '';
+  let outOfScope = '';
+  let implNotes = '';
 
   for (const arg of args) {
     const [key, ...rest] = arg.replace(/^--/, '').split('=');
@@ -343,6 +370,23 @@ async function cmdCreate(args: string[]) {
       case 'summary':
         summary = val;
         break;
+      case 'current-state':
+        currentState = val;
+        break;
+      case 'scope':
+        scope = val;
+        break;
+      case 'acceptance-criteria':
+      case 'criteria':
+        acceptanceCriteria = val;
+        break;
+      case 'out-of-scope':
+        outOfScope = val;
+        break;
+      case 'notes':
+      case 'implementation-notes':
+        implNotes = val;
+        break;
       default:
         console.warn(`Unknown option: ${key}`);
     }
@@ -351,7 +395,13 @@ async function cmdCreate(args: string[]) {
   if (!ticketId || !title) {
     console.error('Required: --id=TICKET-ID --title="Ticket title"');
     console.error(
-      'Optional: --priority=P0 --area=Discovery --depends-on=AUTH-001 --summary="..."',
+      'Optional: --priority=P0 --area=Discovery --depends-on=AUTH-001',
+    );
+    console.error(
+      '  Body:   --summary="..." --current-state="..." --scope="..."',
+    );
+    console.error(
+      '          --acceptance-criteria="..." --out-of-scope="..." --notes="..."',
     );
     process.exit(1);
   }
@@ -371,31 +421,52 @@ async function cmdCreate(args: string[]) {
   };
 
   if (area) properties.Area = { select: { name: area } };
-  if (dependsOn)
-    properties['Depends On'] = {
-      rich_text: [{ text: { content: dependsOn } }],
-    };
+  if (dependsOn) {
+    const depIds = dependsOn.split(',').map((s) => s.trim().toUpperCase());
+    const relations: RelationItem[] = [];
+    for (const depId of depIds) {
+      const depPage = await findTicket(depId);
+      if (!depPage) {
+        console.error(`Dependency ticket ${depId} not found.`);
+        process.exit(1);
+      }
+      relations.push({ id: depPage.id });
+    }
+    properties['Depends On'] = { relation: relations };
+  }
+
+  // Always scaffold all standard sections so tickets have consistent structure
+  const sections: [string, string][] = [
+    ['Summary', summary],
+    ['Current State', currentState],
+    ['Scope', scope],
+    ['Acceptance Criteria', acceptanceCriteria],
+    ['Out of Scope', outOfScope],
+    ['Implementation Notes', implNotes],
+  ];
 
   const children: unknown[] = [];
-  if (summary) {
+  for (const [heading, content] of sections) {
     children.push({
       object: 'block',
       type: 'heading_2',
       heading_2: {
-        rich_text: [{ type: 'text', text: { content: 'Summary' } }],
+        rich_text: [{ type: 'text', text: { content: heading } }],
       },
     });
     children.push({
       object: 'block',
       type: 'paragraph',
-      paragraph: { rich_text: [{ type: 'text', text: { content: summary } }] },
+      paragraph: {
+        rich_text: content ? [{ type: 'text', text: { content } }] : [],
+      },
     });
   }
 
   const page = (await notion('POST', '/pages', {
     parent: { database_id: NOTION_DB_ID },
     properties,
-    ...(children.length > 0 ? { children } : {}),
+    children,
   })) as { id: string };
 
   console.log(`Created ${ticketId}: ${title}`);
@@ -448,19 +519,23 @@ async function main() {
       console.log(`Polycord Ticket CLI
 
 Commands:
-  list   [--status=todo|inprogress|done] [--priority=P0|P1|P2]
-  view   <TICKET-ID>
-  start  <TICKET-ID>          Set status to In Progress
-  complete <TICKET-ID>        Set status to Done
-  update <TICKET-ID> --key=value  Update properties
-  create --id=ID --title="..." [--priority=P0] [--area=...] [--summary="..."]
+  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]
+  view     <TICKET-ID>
+  start    <TICKET-ID>            Set status to In Progress
+  complete <TICKET-ID>            Set status to Done
+  update   <TICKET-ID> --key=val  Update properties
+  create   --id=ID --title="..."  Create with all standard sections
+
+Create options:
+  --id, --title, --priority, --area, --depends-on
+  --summary, --current-state, --scope, --acceptance-criteria
+  --out-of-scope, --notes
 
 Examples:
   bun run tickets list
   bun run tickets list --status=todo --priority=P0
   bun run tickets view DISC-001
   bun run tickets start DISC-001
-  bun run tickets complete DISC-001
   bun run tickets create --id=FEAT-001 --title="New feature" --priority=P1 --area=Core
 `);
   }
