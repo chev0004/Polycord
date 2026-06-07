@@ -30,6 +30,7 @@ export type DropdownProps = Omit<
   error?: boolean;
   fullWidth?: boolean;
   searchable?: boolean;
+  searchPlaceholder?: string;
   icon?: IconType;
   label?: string;
   showCheckmark?: boolean;
@@ -54,6 +55,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       error,
       fullWidth = false,
       searchable = false,
+      searchPlaceholder,
       icon: Icon,
       label,
       showCheckmark = true,
@@ -405,7 +407,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                         }
                       }
                     }}
-                    placeholder="Search..."
+                    placeholder={searchPlaceholder}
                     className="h-8 w-full rounded bg-background-darker pr-2 pl-8 text-sm text-white placeholder-gray-500"
                   />
                 </div>
