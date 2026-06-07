@@ -26,10 +26,8 @@ const meta: Meta<typeof FilterButton> = {
 export default meta;
 type Story = StoryObj<typeof FilterButton>;
 
-// Use 'en' as default locale for stories
 const defaultLocale = 'en';
 
-// Get timezone options
 const getTimezoneOptions = () => {
   try {
     if (typeof Intl !== 'undefined' && 'supportedValuesOf' in Intl) {
@@ -42,7 +40,7 @@ const getTimezoneOptions = () => {
         .sort((a, b) => a.label.localeCompare(b.label));
     }
   } catch {
-    // Fallback if Intl.supportedValuesOf is not available
+    return [];
   }
   return [];
 };

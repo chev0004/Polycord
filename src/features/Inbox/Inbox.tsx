@@ -38,7 +38,6 @@ export const Inbox = ({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Derived state moved up so handlers can access it
   const totalPages = Math.ceil(notifications.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -66,22 +65,17 @@ export const Inbox = ({
   const handleClearAll = () => {
     if (notifications.length === 0) return;
 
-    // 1. Identify IDs of currently visible notifications on this page
     const visibleIds = new Set(currentNotifications.map((n) => n.id));
 
-    // 2. Set isDeleting ONLY for visible notifications so only they animate
     setNotifications((prev) =>
       prev.map((n) => (visibleIds.has(n.id) ? { ...n, isDeleting: true } : n)),
     );
 
-    // 3. Calculate duration based ONLY on the count of visible items
-    // 400ms (base animation) + (number of visible items * 100ms stagger)
     const staggerDelay = 100;
     const animationDuration = 400;
     const totalDuration =
       animationDuration + currentNotifications.length * staggerDelay;
 
-    // 4. Clear ALL notifications after the visible ones have finished animating
     setTimeout(() => {
       setNotifications([]);
       setCurrentPage(1);
@@ -134,7 +128,6 @@ export const Inbox = ({
           sideOffset={5}
           collisionPadding={10}
         >
-          {/* Header */}
           <div className="flex items-center justify-between border-gray-500/50 border-b p-3">
             <h3 className="font-bold font-figtree text-lg text-white">
               {t('notifications')}
@@ -160,7 +153,6 @@ export const Inbox = ({
             )}
           </div>
 
-          {/* Body */}
           <div className="flex flex-col justify-between">
             <div className="flex flex-col gap-1 overflow-hidden p-2">
               {currentNotifications.length > 0 ? (
@@ -170,18 +162,13 @@ export const Inbox = ({
                     key={notification.id}
                     onMarkAsRead={() => handleMarkAsRead(notification.id)}
                     onDelete={() => handleDelete(notification.id)}
-                    // Logic:
-                    // If deleting, stagger the exit (100ms * index).
-                    // If appearing (on load), stagger the entry (50ms * index).
                     style={{
                       animationDelay: notification.isDeleting
                         ? `${index * 100}ms`
                         : `${index * 50}ms`,
                     }}
                     className={
-                      notification.isDeleting
-                        ? '' // Class added inside component based on prop
-                        : 'animate-fadeInUp'
+                      notification.isDeleting ? '' : 'animate-fadeInUp'
                     }
                   />
                 ))
@@ -199,7 +186,6 @@ export const Inbox = ({
               )}
             </div>
 
-            {/* Pagination Footer */}
             {totalPages > 1 && (
               <div className="flex h-[41px] items-center justify-center gap-4 border-gray-500/50 border-t">
                 <button

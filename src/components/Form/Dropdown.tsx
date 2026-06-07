@@ -39,7 +39,6 @@ export type DropdownProps = Omit<
   onValueChange?: (value: string) => void;
 };
 
-// Batch configuration for progressive rendering
 const INITIAL_BATCH = 20;
 const CHUNK_SIZE = 50;
 const CHUNK_INTERVAL_MS = 16;
@@ -73,7 +72,6 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-    // Incremental rendering state
     const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
 
     const viewportRef = useRef<HTMLDivElement>(null);
@@ -84,24 +82,20 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
     const [canScrollDown, setCanScrollDown] = useState(false);
     const [searchBoxHeight, setSearchBoxHeight] = useState(0);
 
-    // Look up the selected option object based on the current value.
     const selectedOption = useMemo(
       () => options.find((opt) => opt.value === value),
       [options, value],
     );
 
-    // Progressive Loading Logic
     useEffect(() => {
       let intervalId: NodeJS.Timeout;
       let timeoutId: NodeJS.Timeout;
 
       if (open) {
-        // Reset to initial batch on open
         setVisibleCount(INITIAL_BATCH);
 
         // Wait for opening animation to complete (300ms)
         timeoutId = setTimeout(() => {
-          // Stream remaining items in chunks to avoid blocking main thread
           intervalId = setInterval(() => {
             setVisibleCount((prev) => {
               if (prev >= options.length) {
@@ -122,9 +116,6 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       };
     }, [open, options.length]);
 
-    // FOCUS SEARCH & RESET SCROLL:
-    // This runs ONCE when the dropdown opens.
-    // It forces the scroll to 0 and locks focus to the search bar.
     useLayoutEffect(() => {
       if (open) {
         if (viewportRef.current) {
@@ -139,19 +130,14 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       }
     }, [open, searchable]);
 
-    // FORCE TOP POSITION (Safety Net):
-    // This runs every time the list grows (chunks load).
-    // If the browser tries to be "smart" and scroll down as new items appear, we slap it back to 0.
     useLayoutEffect(() => {
       if (open && viewportRef.current) {
-        // Only force if we are near the top. This allows user to scroll down manually if they are fast.
         if (viewportRef.current.scrollTop < 20) {
           viewportRef.current.scrollTop = 0;
         }
       }
     }, [open]);
 
-    // Filter and sort options
     const filteredOptions = useMemo(() => {
       if (!searchable || !searchTerm) {
         return options;
@@ -202,7 +188,6 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       return scoredOptions.map((item) => item.option);
     }, [options, searchTerm, searchable]);
 
-    // Derived visible options
     const visibleOptions = useMemo(() => {
       if (searchable && searchTerm) {
         return filteredOptions;
@@ -210,7 +195,6 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       return filteredOptions.slice(0, visibleCount);
     }, [filteredOptions, visibleCount, searchable, searchTerm]);
 
-    // Check scroll position
     useEffect(() => {
       if (!open) {
         setCanScrollUp(false);
@@ -244,7 +228,6 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       };
     }, [open]);
 
-    // Measure search box height
     useEffect(() => {
       if (searchable && searchBoxRef.current) {
         setSearchBoxHeight(searchBoxRef.current.offsetHeight);
@@ -253,14 +236,12 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
       }
     }, [searchable]);
 
-    // Reset selected index when search term changes
     useEffect(() => {
       if (searchable) {
         setSelectedIndex(null);
       }
     }, [searchable]);
 
-    // Scroll selected item into view (only for keyboard navigation)
     useEffect(() => {
       if (
         selectedIndex !== null &&
@@ -301,10 +282,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
     return (
       <SelectPrimitive.Root
         {...props}
-        // CRITICAL FIX: We must pass an empty string here.
-        // If we pass undefined, Radix becomes "uncontrolled" and remembers internal state.
-        // If we pass "", it becomes "controlled" to a value that doesn't exist.
-        // This forces Radix to have total amnesia about what is selected, preventing auto-scroll.
+        // Keep Radix controlled without selecting an item so it cannot restore stale internal selection.
         value=""
         defaultValue={undefined}
         open={open}
@@ -443,10 +421,8 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                       value={option.value}
                       title={option.label}
                       showCheckmark={showCheckmark}
-                      // Manually handle visual selection
                       isSelected={value === option.value}
                       tabSelected={selectedIndex === index}
-                      // Manually handle logic since Root is oblivious
                       onPointerUp={() => {
                         onValueChange?.(option.value);
                         setOpen(false);

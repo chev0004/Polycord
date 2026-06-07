@@ -32,7 +32,6 @@ type ProfileGridProps = {
   onShare?: (profileId: string) => void;
 };
 
-// Helper component for rendering individual toasts
 const ToastComponent = React.memo(
   ({
     toast,
@@ -78,10 +77,8 @@ export const ProfileGrid = ({
   const t = useTranslations('Discovery');
   const { toasts, addToast, dismissToast } = useToastStack();
 
-  // Filter profiles based on match criteria
   const filteredProfiles = useProfileMatching(profiles, matchCriteria);
 
-  // Sort by match score if criteria and sorting are enabled
   const displayedProfiles = useMemo(() => {
     if (!matchCriteria || !sortByMatchScore) {
       return filteredProfiles;
@@ -90,7 +87,7 @@ export const ProfileGrid = ({
     return [...filteredProfiles].sort((a, b) => {
       const scoreA = calculateMatchScore(a, matchCriteria);
       const scoreB = calculateMatchScore(b, matchCriteria);
-      return scoreB - scoreA; // Descending order (higher scores first)
+      return scoreB - scoreA;
     });
   }, [filteredProfiles, matchCriteria, sortByMatchScore]);
 
@@ -101,7 +98,6 @@ export const ProfileGrid = ({
     profileId: string,
     avatarUrl?: string,
   ) => {
-    // Trigger the Toast
     addToast({
       title: t('copied'),
       description: t('copiedToClipboard', { username }),
@@ -109,7 +105,6 @@ export const ProfileGrid = ({
       duration: 4000,
     });
 
-    // Fire original callback if provided
     if (onCopyUsername) {
       onCopyUsername(username, profileId);
     }
@@ -151,7 +146,6 @@ export const ProfileGrid = ({
         )}
       </section>
 
-      {/* Render Toast Stack */}
       {toasts.map((toast) => (
         <ToastComponent key={toast.id} toast={toast} onDismiss={dismissToast} />
       ))}
