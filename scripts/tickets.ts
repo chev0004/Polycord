@@ -60,6 +60,7 @@ async function notion(
 // ---------------------------------------------------------------------------
 
 type RichText = { plain_text: string }[];
+type RelationItem = { id: string };
 type NotionPage = {
   id: string;
   properties: {
@@ -68,7 +69,7 @@ type NotionPage = {
     Status: { status: { name: string } | null };
     Priority: { select: { name: string } | null };
     Area: { select: { name: string } | null };
-    'Depends On': { rich_text: RichText };
+    'Depends On': { relation: RelationItem[] };
   };
 };
 type QueryResult = {
@@ -199,7 +200,17 @@ async function cmdView(ticketId: string) {
   console.log(`Status:     ${p.Status.status?.name ?? 'Unknown'}`);
   console.log(`Priority:   ${p.Priority.select?.name ?? '—'}`);
   console.log(`Area:       ${p.Area.select?.name ?? '—'}`);
-  console.log(`Depends On: ${extractText(p['Depends On'].rich_text) || '—'}`);
+  const deps = p['Depends On'].relation;
+  if (deps.length > 0) {
+    const depNames: string[] = [];
+    for (const dep of deps) {
+      const depPage = (await notion('GET', `/pages/${dep.id}`)) as NotionPage;
+      depNames.push(extractText(depPage.properties.Ticket.title));
+    }
+    console.log(`Depends On: ${depNames.join(', ')}`);
+  } else {
+    console.log('Depends On: —');
+  }
   console.log('');
 
   // Fetch page content (blocks)
@@ -292,9 +303,20 @@ async function cmdUpdate(ticketId: string, args: string[]) {
         properties.Title = { rich_text: [{ text: { content: val } }] };
         break;
       case 'depends':
-      case 'depends-on':
-        properties['Depends On'] = { rich_text: [{ text: { content: val } }] };
+      case 'depends-on': {
+        const depIds = val.split(',').map((s) => s.trim().toUpperCase());
+        const relations: RelationItem[] = [];
+        for (const depId of depIds) {
+          const depPage = await findTicket(depId);
+          if (!depPage) {
+            console.error(`Dependency ticket ${depId} not found.`);
+            process.exit(1);
+          }
+          relations.push({ id: depPage.id });
+        }
+        properties['Depends On'] = { relation: relations };
         break;
+      }
       default:
         console.warn(`Unknown property: ${key}`);
     }
@@ -399,10 +421,19 @@ async function cmdCreate(args: string[]) {
   };
 
   if (area) properties.Area = { select: { name: area } };
-  if (dependsOn)
-    properties['Depends On'] = {
-      rich_text: [{ text: { content: dependsOn } }],
-    };
+  if (dependsOn) {
+    const depIds = dependsOn.split(',').map((s) => s.trim().toUpperCase());
+    const relations: RelationItem[] = [];
+    for (const depId of depIds) {
+      const depPage = await findTicket(depId);
+      if (!depPage) {
+        console.error(`Dependency ticket ${depId} not found.`);
+        process.exit(1);
+      }
+      relations.push({ id: depPage.id });
+    }
+    properties['Depends On'] = { relation: relations };
+  }
 
   // Always scaffold all standard sections so tickets have consistent structure
   const sections: [string, string][] = [
