@@ -85,7 +85,8 @@
     "saveSuccess": "Profile saved.",
     "saveError": "Profile could not be saved. Please try again.",
     "viewPublicProfile": "View public profile",
-    "deleteProfile": "Delete profile"
+    "deleteProfile": "Delete profile",
+    "profileOptionsLabel": "Profile options"
   },
   "Settings": {
     "settingsTitle": "Settings",
@@ -128,7 +129,8 @@
     "allowAnonymousCopyingLabel": "Allow anonymous copying",
     "allowAnonymousCopyingDescription": "Let users who aren't logged in copy your Discord username.",
     "displayTimezoneLabel": "Display timezone",
-    "displayTimezoneDescription": "Show your timezone on your public profile."
+    "displayTimezoneDescription": "Show your timezone on your public profile.",
+    "appLanguagePlaceholder": "Select app language"
   },
   "Discovery": {
     "pageEyebrow": "Discovery",
@@ -181,7 +183,8 @@
     "filterApply": "Apply",
     "filterSelectTag": "Select tag",
     "filterSelectLevel": "Select level",
-    "filterSelectTimezone": "Select timezone"
+    "filterSelectTimezone": "Select timezone",
+    "filterSearchPlaceholder": "Search..."
   },
   "Onboarding": {
     "firstRunSetup": "First-run setup",

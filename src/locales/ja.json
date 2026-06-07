@@ -84,7 +84,8 @@
     "saveSuccess": "プロフィールを保存しました。",
     "saveError": "プロフィールの保存に失敗しました。もう一度お試しください。",
     "viewPublicProfile": "掲載ページを見る",
-    "deleteProfile": "プロフィール削除"
+    "deleteProfile": "プロフィール削除",
+    "profileOptionsLabel": "プロフィールオプション"
   },
   "Settings": {
     "settingsTitle": "設定",
@@ -127,7 +128,8 @@
     "allowAnonymousCopyingLabel": "匿名コピーを許可",
     "allowAnonymousCopyingDescription": "ログインしていないユーザーが自分のDiscordユーザー名をコピーできるようにする。",
     "displayTimezoneLabel": "タイムゾーンを表示",
-    "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。"
+    "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。",
+    "appLanguagePlaceholder": "アプリの言語を選択"
   },
   "Discovery": {
     "pageEyebrow": "Discovery",
@@ -176,7 +178,8 @@
     "filterApply": "適用",
     "filterSelectTag": "タグを選択",
     "filterSelectLevel": "レベルを選択",
-    "filterSelectTimezone": "タイムゾーンを選択"
+    "filterSelectTimezone": "タイムゾーンを選択",
+    "filterSearchPlaceholder": "検索..."
   },
   "Onboarding": {
     "firstRunSetup": "初回セットアップ",
