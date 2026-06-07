@@ -44,10 +44,6 @@ next-env.d.ts
 
 *storybook.log
 
-# local docs
-/docs/
-/local-docs/
-
 # LLM/agent config (local only)
 CLAUDE.md
 AGENTS.md
