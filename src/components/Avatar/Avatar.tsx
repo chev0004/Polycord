@@ -10,9 +10,10 @@ const sizeMap = {
 type AvatarProps = {
   avatarUrl?: string;
   size: keyof typeof sizeMap;
+  alt?: string;
 };
 
-export const Avatar = ({ avatarUrl, size }: AvatarProps) => {
+export const Avatar = ({ avatarUrl, size, alt = '' }: AvatarProps) => {
   const pixelSize = sizeMap[size];
   const style: CSSProperties = {
     width: `${pixelSize}px`,
@@ -26,7 +27,7 @@ export const Avatar = ({ avatarUrl, size }: AvatarProps) => {
       {avatarUrl ? (
         <Image
           src={avatarUrl}
-          alt="User avatar"
+          alt={alt}
           className="flex-shrink-0 rounded-full object-cover"
           style={style}
           width={pixelSize}
