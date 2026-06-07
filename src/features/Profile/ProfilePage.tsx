@@ -19,7 +19,9 @@ import { type ProfileFormValues, profileSchema } from './schema';
 
 type ProfilePageProps = {
   initialValues?: ProfileFormValues;
+  onDeleteProfile?: () => Promise<void> | void;
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
+  onViewPublicProfile?: () => void;
   userAvatarUrl?: string;
   userDisplayName?: string;
 };
@@ -94,16 +96,19 @@ const SettingsRow = ({
 
 const MenuItem = ({
   onClick,
+  disabled,
   children,
   className,
 }: {
   onClick?: () => void;
+  disabled?: boolean;
   children: React.ReactNode;
   className?: string;
 }) => (
   <button
     type="button"
     onClick={onClick}
+    disabled={disabled}
     className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none ${className ?? 'text-white'}`}
   >
     {children}
@@ -113,8 +118,10 @@ const MenuItem = ({
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   initialValues,
   onSubmit: onSubmitProp,
+  onDeleteProfile,
+  onViewPublicProfile,
   userAvatarUrl,
-  userDisplayName = 'Your profile',
+  userDisplayName,
 }) => {
   const timezoneId = useId();
   const bioId = useId();
@@ -126,6 +133,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>(
     'idle',
   );
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'error'>('idle');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     register,
@@ -170,10 +179,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const onSubmit = async (data: ProfileFormValues) => {
     setSaveStatus('idle');
+    setDeleteStatus('idle');
 
     if (onSubmitProp) {
       try {
         await onSubmitProp(data);
+        reset(data);
         setSaveStatus('success');
       } catch {
         setSaveStatus('error');
@@ -183,9 +194,35 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     }
   };
 
+  const handleDeleteProfile = async () => {
+    if (!onDeleteProfile || isDeleting) {
+      return;
+    }
+
+    const confirmed = window.confirm(t('deleteProfileConfirmation'));
+
+    if (!confirmed) {
+      return;
+    }
+
+    setSaveStatus('idle');
+    setDeleteStatus('idle');
+    setIsDeleting(true);
+
+    try {
+      await onDeleteProfile();
+    } catch {
+      setDeleteStatus('error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const localizedLanguageOptions = languageOptions(locale);
   const localizedCountryOptions = countryOptions(locale);
   const localizedProficiencyOptions = proficiencyOptions(locale);
+  const hasProfileMenu = Boolean(onViewPublicProfile || onDeleteProfile);
+  const displayName = userDisplayName ?? t('defaultDisplayName');
 
   const preview = useMemo(() => {
     const getLabel = (
@@ -235,40 +272,49 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
             </div>
 
-            <Popover.Root>
-              <Popover.Trigger asChild>
-                <button
-                  type="button"
-                  className="self-start rounded-lg border border-white/10 px-3 py-2 text-gray-400 text-sm transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  aria-label="Profile options"
-                >
-                  More
-                </button>
-              </Popover.Trigger>
-              <Popover.Portal>
-                <Popover.Content
-                  className="PopoverContent z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
-                  side="bottom"
-                  align="end"
-                  sideOffset={5}
-                >
-                  <div className="flex flex-col">
-                    <MenuItem
-                      onClick={() => console.log('View profile clicked')}
-                      className="hover:!text-green-300 text-green-400"
-                    >
-                      {t('viewPublicProfile')}
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => console.log('Delete profile clicked')}
-                      className="hover:!text-red-300 text-red-400"
-                    >
-                      {t('deleteProfile')}
-                    </MenuItem>
-                  </div>
-                </Popover.Content>
-              </Popover.Portal>
-            </Popover.Root>
+            {hasProfileMenu ? (
+              <Popover.Root>
+                <Popover.Trigger asChild>
+                  <button
+                    type="button"
+                    className="self-start rounded-lg border border-white/10 px-3 py-2 text-gray-400 text-sm transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    aria-label={t('profileOptions')}
+                  >
+                    {t('profileOptionsButton')}
+                  </button>
+                </Popover.Trigger>
+                <Popover.Portal>
+                  <Popover.Content
+                    className="PopoverContent z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                    side="bottom"
+                    align="end"
+                    sideOffset={5}
+                  >
+                    <div className="flex flex-col">
+                      {onViewPublicProfile ? (
+                        <MenuItem
+                          onClick={onViewPublicProfile}
+                          className="hover:!text-green-300 text-green-400"
+                        >
+                          {t('viewPublicProfile')}
+                        </MenuItem>
+                      ) : null}
+                      {onDeleteProfile ? (
+                        <MenuItem
+                          onClick={handleDeleteProfile}
+                          className="hover:!text-red-300 text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting
+                            ? t('deletingProfile')
+                            : t('deleteProfile')}
+                        </MenuItem>
+                      ) : null}
+                    </div>
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
+            ) : null}
           </header>
 
           {tagError && (
@@ -292,9 +338,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </output>
           ) : null}
 
+          {deleteStatus === 'error' ? (
+            <div
+              className="rounded-lg border border-red-800 bg-red-950/50 p-3 text-red-400 text-sm"
+              role="alert"
+            >
+              {t('deleteError')}
+            </div>
+          ) : null}
+
           <Section
             title={t('languageProfile')}
-            description="Describe what you speak, what you are learning, and where you are."
+            description={t('languageProfileDescription')}
           >
             <div className="grid gap-4 md:grid-cols-2">
               <FormGroup>
@@ -415,10 +470,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </Section>
 
-          <Section
-            title={t('aboutMe')}
-            description="Keep this specific enough that someone knows why to message you."
-          >
+          <Section title={t('aboutMe')} description={t('aboutMeDescription')}>
             <div className="grid gap-4">
               <FormGroup>
                 <Label htmlFor="availability">{t('availabilityLabel')}</Label>
@@ -509,7 +561,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                                 type="button"
                                 onClick={() => handleRemoveTag(index)}
                                 className="text-primary-light transition-colors hover:text-white focus:outline-none"
-                                aria-label={`Remove ${tag}`}
+                                aria-label={t('removeTag', { tag })}
                               >
                                 x
                               </button>
@@ -558,7 +610,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
           <Section
             title={t('privacySettings')}
-            description="These affect how the public version of your profile behaves."
+            description={t('privacySettingsDescription')}
           >
             <div className="rounded-xl border border-white/5 bg-background-darker/70 px-4">
               <SettingsRow
@@ -623,15 +675,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         <aside>
           <div className="sticky top-8 rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
             <p className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
-              Public preview
+              {t('publicPreview')}
             </p>
             <div className="rounded-xl bg-background-darker p-4">
               <div className="flex items-center gap-3">
                 <Avatar avatarUrl={userAvatarUrl} size="md" />
                 <div>
-                  <h2 className="font-semibold text-white">
-                    {userDisplayName}
-                  </h2>
+                  <h2 className="font-semibold text-white">{displayName}</h2>
                   <p className="text-gray-500 text-xs">
                     {isPublic ? t('statusPublic') : t('statusUnlisted')}
                   </p>
