@@ -14,7 +14,6 @@
  * Requires NOTION_API_KEY and NOTION_DB_ID in .env.local
  */
 
-
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
@@ -124,7 +123,6 @@ function formatTicket(page: NotionPage): string {
   const status = p.Status.status?.name ?? 'Unknown';
   const priority = p.Priority.select?.name ?? '—';
   const area = p.Area.select?.name ?? '—';
-  const deps = extractText(p['Depends On'].rich_text) || '—';
 
   return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
@@ -134,7 +132,7 @@ function formatTicket(page: NotionPage): string {
 // ---------------------------------------------------------------------------
 
 async function cmdList(args: string[]) {
-  let filter: unknown ;
+  let filter: unknown;
 
   const statusArg = args.find((a) => a.startsWith('--status='));
   const prioArg = args.find((a) => a.startsWith('--priority='));
