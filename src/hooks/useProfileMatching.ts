@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 
 export type MatchCriteria = {
-  myNative: string; // The language I speak (e.g., 'en')
-  myTarget: string; // The language I want to learn (e.g., 'ja')
+  myNative: string;
+  myTarget: string;
 };
 
 /**
@@ -25,16 +25,13 @@ export const useProfileMatching = (
     }
 
     return profiles.filter((profile) => {
-      // 1. Does the partner speak my target language natively?
       const partnerSpeaksMyTarget =
         profile.primaryLanguage === criteria.myTarget;
 
-      // 2. Is the partner learning my native language?
       const partnerLearningMyNative = profile.targetLanguages.some(
         (t) => t.language === criteria.myNative,
       );
 
-      // Strict Match: Perfect exchange partner
       return partnerSpeaksMyTarget && partnerLearningMyNative;
     });
   }, [profiles, criteria]);
@@ -54,19 +51,13 @@ export const calculateMatchScore = (
 ) => {
   let score = 0;
 
-  // Huge points for perfect language swap (Primary == Target)
   if (profile.primaryLanguage === criteria.myTarget) {
     score += 50;
   }
 
-  // Points if they are learning your language
   if (profile.targetLanguages.some((t) => t.language === criteria.myNative)) {
     score += 30;
   }
-
-  // Small points if they are in a "Native Level" proficiency for your target language
-  // (Assuming you pass proficiency data later, this is a placeholder for logic expansion)
-  // if (profile.primaryLanguageLevel === 'native-level') score += 10;
 
   return score;
 };

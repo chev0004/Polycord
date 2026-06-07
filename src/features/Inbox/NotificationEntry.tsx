@@ -35,23 +35,19 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
       }
       ${className}`}
     >
-      {/* Unread Indicator Dot */}
       <span
         className={`-left-1 absolute h-2 w-2 flex-shrink-0 rounded-full bg-primary transition-opacity duration-300 ${
           notification.read ? 'opacity-0' : 'opacity-100'
         }`}
       />
 
-      {/* Icon */}
       <Avatar avatarUrl={notification.iconUrl} size="sm" />
 
-      {/* Text block */}
       <div className="flex-grow overflow-hidden">
         <p className="truncate text-sm">{notification.message}</p>
         <span className="text-gray-400 text-xs">{notification.timestamp}</span>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex flex-shrink-0 items-center opacity-0 transition-opacity group-hover/entry:opacity-100">
         <button
           type="button"
