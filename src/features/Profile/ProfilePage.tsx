@@ -240,7 +240,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <button
                   type="button"
                   className="self-start rounded-lg border border-white/10 px-3 py-2 text-gray-400 text-sm transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  aria-label="Profile options"
+                  aria-label={t('profileOptionsLabel')}
                 >
                   More
                 </button>

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import type { HTMLAttributes } from 'react';
 import {
   MdClose,
@@ -21,6 +22,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   style,
   ...props
 }) => {
+  const t = useTranslations('Inbox');
   return (
     <div
       {...props}
@@ -55,7 +57,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
           type="button"
           onClick={onMarkAsRead}
           className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white"
-          title={notification.read ? 'Mark as unread' : 'Mark as read'}
+          title={notification.read ? t('markAsUnread') : t('markAsRead')}
         >
           {notification.read ? (
             <MdOutlineMarkEmailRead size={18} />
@@ -67,7 +69,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
           type="button"
           onClick={onDelete}
           className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white"
-          title="Delete"
+          title={t('delete')}
         >
           <MdClose size={18} />
         </button>
