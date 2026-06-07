@@ -44,10 +44,6 @@ next-env.d.ts
 
 *storybook.log
 
-# local docs
-/docs/
-/local-docs/
-
 
 # Notion sync cache
 .notion-db-id
