@@ -16,7 +16,8 @@
     "gen:locales": "node generate-locales.mjs",
     "storybook": "bun run gen:locales && storybook dev -p 6006",
     "build-storybook": "bun run gen:locales && storybook build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "tickets": "bun --env-file=.env.local tsx scripts/tickets.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css}": [
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.5",
     "@chromatic-com/storybook": "^3.2.4",
+    "@notionhq/client": "^5.22.0",
     "@storybook/addon-essentials": "^8.5.3",
     "@storybook/addon-interactions": "^8.5.3",
     "@storybook/addon-onboarding": "^8.5.3",
