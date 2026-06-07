@@ -318,6 +318,11 @@ async function cmdCreate(args: string[]) {
   let area = '';
   let dependsOn = '';
   let summary = '';
+  let currentState = '';
+  let scope = '';
+  let acceptanceCriteria = '';
+  let outOfScope = '';
+  let implNotes = '';
 
   for (const arg of args) {
     const [key, ...rest] = arg.replace(/^--/, '').split('=');
@@ -343,6 +348,23 @@ async function cmdCreate(args: string[]) {
       case 'summary':
         summary = val;
         break;
+      case 'current-state':
+        currentState = val;
+        break;
+      case 'scope':
+        scope = val;
+        break;
+      case 'acceptance-criteria':
+      case 'criteria':
+        acceptanceCriteria = val;
+        break;
+      case 'out-of-scope':
+        outOfScope = val;
+        break;
+      case 'notes':
+      case 'implementation-notes':
+        implNotes = val;
+        break;
       default:
         console.warn(`Unknown option: ${key}`);
     }
@@ -351,7 +373,13 @@ async function cmdCreate(args: string[]) {
   if (!ticketId || !title) {
     console.error('Required: --id=TICKET-ID --title="Ticket title"');
     console.error(
-      'Optional: --priority=P0 --area=Discovery --depends-on=AUTH-001 --summary="..."',
+      'Optional: --priority=P0 --area=Discovery --depends-on=AUTH-001',
+    );
+    console.error(
+      '  Body:   --summary="..." --current-state="..." --scope="..."',
+    );
+    console.error(
+      '          --acceptance-criteria="..." --out-of-scope="..." --notes="..."',
     );
     process.exit(1);
   }
@@ -376,26 +404,38 @@ async function cmdCreate(args: string[]) {
       rich_text: [{ text: { content: dependsOn } }],
     };
 
+  // Always scaffold all standard sections so tickets have consistent structure
+  const sections: [string, string][] = [
+    ['Summary', summary],
+    ['Current State', currentState],
+    ['Scope', scope],
+    ['Acceptance Criteria', acceptanceCriteria],
+    ['Out of Scope', outOfScope],
+    ['Implementation Notes', implNotes],
+  ];
+
   const children: unknown[] = [];
-  if (summary) {
+  for (const [heading, content] of sections) {
     children.push({
       object: 'block',
       type: 'heading_2',
       heading_2: {
-        rich_text: [{ type: 'text', text: { content: 'Summary' } }],
+        rich_text: [{ type: 'text', text: { content: heading } }],
       },
     });
     children.push({
       object: 'block',
       type: 'paragraph',
-      paragraph: { rich_text: [{ type: 'text', text: { content: summary } }] },
+      paragraph: {
+        rich_text: content ? [{ type: 'text', text: { content } }] : [],
+      },
     });
   }
 
   const page = (await notion('POST', '/pages', {
     parent: { database_id: NOTION_DB_ID },
     properties,
-    ...(children.length > 0 ? { children } : {}),
+    children,
   })) as { id: string };
 
   console.log(`Created ${ticketId}: ${title}`);
@@ -448,19 +488,23 @@ async function main() {
       console.log(`Polycord Ticket CLI
 
 Commands:
-  list   [--status=todo|inprogress|done] [--priority=P0|P1|P2]
-  view   <TICKET-ID>
-  start  <TICKET-ID>          Set status to In Progress
-  complete <TICKET-ID>        Set status to Done
-  update <TICKET-ID> --key=value  Update properties
-  create --id=ID --title="..." [--priority=P0] [--area=...] [--summary="..."]
+  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]
+  view     <TICKET-ID>
+  start    <TICKET-ID>            Set status to In Progress
+  complete <TICKET-ID>            Set status to Done
+  update   <TICKET-ID> --key=val  Update properties
+  create   --id=ID --title="..."  Create with all standard sections
+
+Create options:
+  --id, --title, --priority, --area, --depends-on
+  --summary, --current-state, --scope, --acceptance-criteria
+  --out-of-scope, --notes
 
 Examples:
   bun run tickets list
   bun run tickets list --status=todo --priority=P0
   bun run tickets view DISC-001
   bun run tickets start DISC-001
-  bun run tickets complete DISC-001
   bun run tickets create --id=FEAT-001 --title="New feature" --priority=P1 --area=Core
 `);
   }
