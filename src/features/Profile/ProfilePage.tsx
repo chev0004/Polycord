@@ -121,7 +121,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onDeleteProfile,
   onViewPublicProfile,
   userAvatarUrl,
-  userDisplayName = 'Your profile',
+  userDisplayName,
 }) => {
   const timezoneId = useId();
   const bioId = useId();
@@ -222,6 +222,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const localizedCountryOptions = countryOptions(locale);
   const localizedProficiencyOptions = proficiencyOptions(locale);
   const hasProfileMenu = Boolean(onViewPublicProfile || onDeleteProfile);
+  const displayName = userDisplayName ?? t('defaultDisplayName');
 
   const preview = useMemo(() => {
     const getLabel = (
@@ -277,9 +278,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <button
                     type="button"
                     className="self-start rounded-lg border border-white/10 px-3 py-2 text-gray-400 text-sm transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    aria-label="Profile options"
+                    aria-label={t('profileOptions')}
                   >
-                    More
+                    {t('profileOptionsButton')}
                   </button>
                 </Popover.Trigger>
                 <Popover.Portal>
@@ -348,7 +349,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
           <Section
             title={t('languageProfile')}
-            description="Describe what you speak, what you are learning, and where you are."
+            description={t('languageProfileDescription')}
           >
             <div className="grid gap-4 md:grid-cols-2">
               <FormGroup>
@@ -469,10 +470,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </Section>
 
-          <Section
-            title={t('aboutMe')}
-            description="Keep this specific enough that someone knows why to message you."
-          >
+          <Section title={t('aboutMe')} description={t('aboutMeDescription')}>
             <div className="grid gap-4">
               <FormGroup>
                 <Label htmlFor="availability">{t('availabilityLabel')}</Label>
@@ -563,7 +561,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                                 type="button"
                                 onClick={() => handleRemoveTag(index)}
                                 className="text-primary-light transition-colors hover:text-white focus:outline-none"
-                                aria-label={`Remove ${tag}`}
+                                aria-label={t('removeTag', { tag })}
                               >
                                 x
                               </button>
@@ -612,7 +610,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
           <Section
             title={t('privacySettings')}
-            description="These affect how the public version of your profile behaves."
+            description={t('privacySettingsDescription')}
           >
             <div className="rounded-xl border border-white/5 bg-background-darker/70 px-4">
               <SettingsRow
@@ -677,15 +675,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         <aside>
           <div className="sticky top-8 rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
             <p className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
-              Public preview
+              {t('publicPreview')}
             </p>
             <div className="rounded-xl bg-background-darker p-4">
               <div className="flex items-center gap-3">
                 <Avatar avatarUrl={userAvatarUrl} size="md" />
                 <div>
-                  <h2 className="font-semibold text-white">
-                    {userDisplayName}
-                  </h2>
+                  <h2 className="font-semibold text-white">{displayName}</h2>
                   <p className="text-gray-500 text-xs">
                     {isPublic ? t('statusPublic') : t('statusUnlisted')}
                   </p>

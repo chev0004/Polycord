@@ -35,10 +35,12 @@
   },
   "Profile": {
     "editProfile": "Edit Profile",
+    "defaultDisplayName": "Your profile",
     "saveProfile": "Save Profile",
     "saving": "Saving...",
     "identity": "Identity",
     "languageProfile": "Language Profile",
+    "languageProfileDescription": "Describe what you speak, what you are learning, and where you are.",
     "primaryLanguageLabel": "Primary Language",
     "targetLanguageLabel": "Target Language",
     "languageSelectPlaceholder": "Enter a language...",
@@ -55,6 +57,7 @@
     "countryPlaceholder": "Enter a country...",
     "timezoneLabel": "Timezone",
     "aboutMe": "About Me",
+    "aboutMeDescription": "Keep this specific enough that someone knows why to message you.",
     "availabilityLabel": "Availability",
     "availabilityPlaceholder": "Select when you are usually available",
     "availabilityOptionWeeknights": "Weeknights",
@@ -74,6 +77,7 @@
     "duplicateTag": "This tag has already been added.",
     "maxTags": "You can add up to 6 tags.",
     "privacySettings": "Privacy Settings",
+    "privacySettingsDescription": "These affect how the public version of your profile behaves.",
     "allowAnonymousCopyingLabel": "Allow anonymous copying",
     "allowAnonymousCopyingDescription": "Let users who aren't logged in copy your Discord username.",
     "displayTimezoneLabel": "Display timezone",
@@ -88,7 +92,11 @@
     "deleteProfile": "Delete profile",
     "deletingProfile": "Deleting profile...",
     "deleteProfileConfirmation": "Delete your profile? This removes it from discovery and cannot be undone.",
-    "deleteError": "Profile could not be deleted. Please try again."
+    "deleteError": "Profile could not be deleted. Please try again.",
+    "profileOptions": "Profile options",
+    "profileOptionsButton": "More",
+    "removeTag": "Remove {tag}",
+    "publicPreview": "Public preview"
   },
   "Settings": {
     "settingsTitle": "Settings",
