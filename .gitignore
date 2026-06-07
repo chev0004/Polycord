@@ -52,3 +52,6 @@ next-env.d.ts
 CLAUDE.md
 AGENTS.md
 .claude/settings.local.json
+
+# Notion sync cache
+.notion-db-id
