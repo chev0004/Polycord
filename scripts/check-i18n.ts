@@ -1,19 +1,8 @@
-/**
- * i18n lint — catches hardcoded user-facing strings in TSX components.
- *
- * Any text visible to users should go through next-intl's t() function
- * so both locales (en + ja) stay in sync. This script flags English
- * strings that bypass the translation layer.
- *
- * Run: bun run check:i18n
- */
-
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const SRC_DIR = join(process.cwd(), 'src');
 
-// Props that hold user-facing text and must use translation keys
 const I18N_PROPS = [
   'placeholder',
   'title',
@@ -22,16 +11,15 @@ const I18N_PROPS = [
   'alt',
 ];
 
-// Lines matching any of these are skipped entirely
 const SKIP_LINE_PATTERNS = [
-  /^\s*\/\//, // single-line comment
-  /^\s*\*/, // block-comment body
-  /^\s*import\s/, // import statement
-  /className[=]/, // className prop (CSS, not user-facing)
-  /console\.(log|error|warn|info)/, // dev-only logging
-  /<(path|svg|circle|rect|line|polygon|polyline|ellipse)\b/, // SVG elements
-  /viewBox[=]/, // SVG viewBox attribute
-  /data-testid[=]/, // test IDs
+  /^\s*\/\//,
+  /^\s*\*/,
+  /^\s*import\s/,
+  /className[=]/,
+  /console\.(log|error|warn|info)/,
+  /<(path|svg|circle|rect|line|polygon|polyline|ellipse)\b/,
+  /viewBox[=]/,
+  /data-testid[=]/,
 ];
 
 type Violation = {
@@ -41,7 +29,6 @@ type Violation = {
   reason: string;
 };
 
-/** Recursively collect .tsx files, skipping stories and node_modules. */
 function findTsxFiles(dir: string): string[] {
   const files: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -55,7 +42,6 @@ function findTsxFiles(dir: string): string[] {
   return files;
 }
 
-/** Check one file for hardcoded user-facing strings. */
 function checkFile(filePath: string): Violation[] {
   const violations: Violation[] = [];
   const content = readFileSync(filePath, 'utf-8');
@@ -68,27 +54,20 @@ function checkFile(filePath: string): Violation[] {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // Track block comments
     if (trimmed.includes('/*')) inBlockComment = true;
     if (inBlockComment) {
       if (trimmed.includes('*/')) inBlockComment = false;
       continue;
     }
 
-    // Skip non-relevant lines
     if (SKIP_LINE_PATTERNS.some((p) => p.test(line))) continue;
 
-    // ---- Check 1: JSX text content between > and </ ----
-    // Matches text on a single line like: >Some text</tag>
-    // The <\/ ensures we match JSX closing tags, not TypeScript generics
+    // <\/ instead of < avoids matching TypeScript generics like Promise<void>
     const jsxTextMatch = line.match(/>([^<]+)<\//);
     if (jsxTextMatch) {
       const rawText = jsxTextMatch[1];
-      // Strip {expression} blocks — those use t() or variables
       const stripped = rawText.replace(/\{[^}]*\}/g, '');
-      // Strip HTML entities like &nbsp; &mdash; etc.
       const withoutEntities = stripped.replace(/&[a-zA-Z]+;/g, '').trim();
-      // Flag if remaining text has 2+ consecutive alphabetic characters
       if (/[a-zA-Z]{2,}/.test(withoutEntities)) {
         violations.push({
           file: rel,
@@ -99,8 +78,6 @@ function checkFile(filePath: string): Violation[] {
       }
     }
 
-    // ---- Check 2: i18n-sensitive props with hardcoded strings ----
-    // Catches: placeholder="Enter email" but not placeholder={t('key')}
     for (const prop of I18N_PROPS) {
       const propRegex = new RegExp(`${prop}="([^"]*[a-zA-Z]{3,}[^"]*)"`, 'g');
       const matches = line.matchAll(propRegex);
@@ -117,10 +94,6 @@ function checkFile(filePath: string): Violation[] {
 
   return violations;
 }
-
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 
 const files = findTsxFiles(SRC_DIR);
 const allViolations: Violation[] = [];
