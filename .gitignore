@@ -48,3 +48,6 @@ next-env.d.ts
 /docs/
 /local-docs/
 
+
+# Notion sync cache
+.notion-db-id
