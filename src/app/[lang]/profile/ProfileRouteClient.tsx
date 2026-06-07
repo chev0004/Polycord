@@ -6,7 +6,7 @@ import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 
 type ProfileRouteClientProps = {
-  initialValues: ProfileFormValues;
+  initialValues?: ProfileFormValues;
   locale: string;
   userAvatarUrl?: string;
   userDisplayName: string;
@@ -53,6 +53,22 @@ export const ProfileRouteClient = ({
 
           router.refresh();
         }}
+        onDeleteProfile={
+          initialValues
+            ? async () => {
+                const response = await fetch('/api/profile', {
+                  method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                  throw new Error('Profile delete failed');
+                }
+
+                router.push(`/${locale}/onboarding`);
+                router.refresh();
+              }
+            : undefined
+        }
       />
     </>
   );

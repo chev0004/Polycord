@@ -40,15 +40,11 @@ export default async function ProfileRoute({
   const persistedUser = await upsertDiscordUser(user);
   const profile = await getProfileByUserId(persistedUser.id);
 
-  if (!profile) {
-    redirect(`/${lang}/onboarding`);
-  }
-
   return (
     <main className="min-h-screen bg-background-main">
       <ProfileRouteClient
         locale={lang}
-        initialValues={toProfileFormValues(profile)}
+        initialValues={profile ? toProfileFormValues(profile) : undefined}
         userAvatarUrl={user.avatarUrl}
         userDisplayName={user.name}
       />

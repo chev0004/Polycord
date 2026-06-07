@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
+  deleteProfileForUser,
+  getUserByDiscordId,
   type ProfileValues,
   upsertDiscordUser,
   upsertProfileForUser,
@@ -49,4 +51,22 @@ export const POST = async (request: Request) => {
   });
 
   return NextResponse.json({ profileId: profile.id });
+};
+
+export const DELETE = async () => {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const user = await getUserByDiscordId(currentUser.id);
+
+  if (!user) {
+    return NextResponse.json({ deleted: false });
+  }
+
+  const deleted = await deleteProfileForUser(user.id);
+
+  return NextResponse.json({ deleted });
 };
