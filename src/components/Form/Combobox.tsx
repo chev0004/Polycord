@@ -57,7 +57,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       }
       const timer = setTimeout(() => {
         setSearchTerm(inputValue);
-        setLoading(false); // Turn off loading after search term is updated
+        setLoading(false);
       }, 200);
 
       return () => clearTimeout(timer);
@@ -106,7 +106,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       setInputValue(newValue);
       setOpen(!!newValue);
       if (newValue) {
-        setLoading(true); // Turn on loading immediately on input
+        setLoading(true);
       } else {
         setLoading(false);
         onValueChange('');

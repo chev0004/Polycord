@@ -32,7 +32,6 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
     const [isTruncated, setIsTruncated] = useState(false);
     const localRef = useRef<HTMLDivElement>(null);
 
-    // Merge refs to allow Radix to function while we also measure the element
     const handleRef = (node: HTMLDivElement | null) => {
       localRef.current = node;
 
@@ -46,7 +45,6 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
     useLayoutEffect(() => {
       const el = localRef.current;
       if (el) {
-        // Check if the scroll width is greater than the client width
         // A small buffer (0.5) handles sub-pixel rounding differences
         setIsTruncated(el.scrollWidth > el.clientWidth + 0.5);
       }
@@ -67,17 +65,14 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         >
           <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
 
-          {/* Checkmark Rendering Logic */}
           {showCheckmark && (
             <>
-              {/* Manual Selection Mode (used by Dropdown to prevent auto-scroll) */}
               {isSelected !== undefined && isSelected && (
                 <span className="absolute left-1 inline-flex w-5 items-center justify-center">
                   <MdCheck size={18} className="text-primary" />
                 </span>
               )}
 
-              {/* Radix Context Mode (Standard behavior for Select) */}
               {isSelected === undefined && (
                 <SelectPrimitive.ItemIndicator className="absolute left-1 inline-flex w-5 items-center justify-center">
                   <MdCheck size={18} className="text-primary" />

@@ -14,10 +14,6 @@
  * Requires NOTION_API_KEY and NOTION_DB_ID in .env.local
  */
 
-// ---------------------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------------------
-
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_DB_ID = process.env.NOTION_DB_ID;
 const API_BASE = 'https://api.notion.com/v1';
@@ -27,10 +23,6 @@ if (!NOTION_API_KEY || !NOTION_DB_ID) {
   console.error('Missing NOTION_API_KEY or NOTION_DB_ID in .env.local');
   process.exit(1);
 }
-
-// ---------------------------------------------------------------------------
-// API helpers
-// ---------------------------------------------------------------------------
 
 type ApiMethod = 'GET' | 'POST' | 'PATCH';
 
@@ -55,10 +47,6 @@ async function notion(
   return res.json();
 }
 
-// ---------------------------------------------------------------------------
-// Types for Notion responses (minimal)
-// ---------------------------------------------------------------------------
-
 type RichText = { plain_text: string }[];
 type RelationItem = { id: string };
 type NotionPage = {
@@ -77,10 +65,6 @@ type QueryResult = {
   has_more: boolean;
   next_cursor: string | null;
 };
-
-// ---------------------------------------------------------------------------
-// Query helpers
-// ---------------------------------------------------------------------------
 
 async function queryAllTickets(filter?: unknown): Promise<NotionPage[]> {
   const pages: NotionPage[] = [];
@@ -128,10 +112,6 @@ function formatTicket(page: NotionPage): string {
   return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
 
-// ---------------------------------------------------------------------------
-// Commands
-// ---------------------------------------------------------------------------
-
 async function cmdList(args: string[]) {
   let filter: unknown;
 
@@ -165,7 +145,6 @@ async function cmdList(args: string[]) {
 
   const pages = await queryAllTickets(filter);
 
-  // Sort: P0 first, then P1, then P2; within priority, alphabetical by ticket ID
   const prioOrder: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
   pages.sort((a, b) => {
     const pa = prioOrder[a.properties.Priority.select?.name ?? 'P2'] ?? 9;
@@ -213,7 +192,6 @@ async function cmdView(ticketId: string) {
   }
   console.log('');
 
-  // Fetch page content (blocks)
   const blocks = (await notion(
     'GET',
     `/blocks/${page.id}/children?page_size=100`,
@@ -406,7 +384,6 @@ async function cmdCreate(args: string[]) {
     process.exit(1);
   }
 
-  // Check for duplicates
   const existing = await findTicket(ticketId);
   if (existing) {
     console.error(`Ticket ${ticketId} already exists.`);
@@ -435,7 +412,6 @@ async function cmdCreate(args: string[]) {
     properties['Depends On'] = { relation: relations };
   }
 
-  // Always scaffold all standard sections so tickets have consistent structure
   const sections: [string, string][] = [
     ['Summary', summary],
     ['Current State', currentState],
@@ -472,10 +448,6 @@ async function cmdCreate(args: string[]) {
   console.log(`Created ${ticketId}: ${title}`);
   console.log(`https://notion.so/${page.id.replace(/-/g, '')}`);
 }
-
-// ---------------------------------------------------------------------------
-// Main — route subcommand
-// ---------------------------------------------------------------------------
 
 async function main() {
   const [subcommand, ...args] = process.argv.slice(2);
