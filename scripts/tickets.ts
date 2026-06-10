@@ -150,12 +150,7 @@ async function cmdList(args: string[]) {
 
   const pages = await queryAllTickets(filter);
 
-  const pending = pages.filter(
-    (p) =>
-      p.properties.PR?.rich_text?.[0]?.href &&
-      p.properties.Status.status?.name !== 'Done',
-  );
-  if (pending.length > 0) {
+  if (pages.length > 0) {
     try {
       const merged = new Set<number>(
         JSON.parse(
@@ -164,19 +159,24 @@ async function cmdList(args: string[]) {
           ).toString(),
         ).map((pr: { number: number }) => pr.number),
       );
-      for (const page of pending) {
-        const href = page.properties.PR?.rich_text?.[0]?.href ?? '';
-        if (!merged.has(Number(href.split('/').pop()))) continue;
+      for (const page of pages) {
+        const href = page.properties.PR?.rich_text?.[0]?.href;
+        const prMerged = href
+          ? merged.has(Number(href.split('/').pop()))
+          : false;
+        const done = page.properties.Status.status?.name === 'Done';
+        if (prMerged === done) continue;
+        const target = prMerged ? 'Done' : 'In progress';
         await notion('PATCH', `/pages/${page.id}`, {
-          properties: { Status: { status: { name: 'Done' } } },
+          properties: { Status: { status: { name: target } } },
         });
-        page.properties.Status.status = { name: 'Done' };
+        page.properties.Status.status = { name: target };
         console.log(
-          `${extractText(page.properties.Ticket.title)} → Done (PR merged)`,
+          `${extractText(page.properties.Ticket.title)} → ${target} ${prMerged ? '(PR merged)' : href ? '(PR not merged)' : '(no linked PR)'}`,
         );
       }
     } catch {
-      console.warn('Skipped merged-PR sync (gh unavailable).');
+      console.warn('Skipped PR status sync (gh unavailable).');
     }
   }
 
@@ -268,13 +268,7 @@ async function cmdStart(ticketId: string) {
   console.log(`${ticketId.toUpperCase()} → In progress`);
 }
 
-async function cmdComplete(ticketId: string) {
-  const page = await findTicket(ticketId);
-  if (!page) {
-    console.error(`Ticket ${ticketId.toUpperCase()} not found.`);
-    process.exit(1);
-  }
-
+function assertMergedPr(page: NotionPage, ticketId: string) {
   const prUrl = page.properties.PR?.rich_text?.[0]?.href;
   if (!prUrl) {
     console.error(
@@ -291,6 +285,16 @@ async function cmdComplete(ticketId: string) {
     );
     process.exit(1);
   }
+}
+
+async function cmdComplete(ticketId: string) {
+  const page = await findTicket(ticketId);
+  if (!page) {
+    console.error(`Ticket ${ticketId.toUpperCase()} not found.`);
+    process.exit(1);
+  }
+
+  assertMergedPr(page, ticketId);
 
   await notion('PATCH', `/pages/${page.id}`, {
     properties: { Status: { status: { name: 'Done' } } },
@@ -322,9 +326,9 @@ async function cmdUpdate(ticketId: string, args: string[]) {
           done: 'Done',
           completed: 'Done',
         };
-        properties.Status = {
-          status: { name: statusMap[val.toLowerCase()] ?? val },
-        };
+        const name = statusMap[val.toLowerCase()] ?? val;
+        if (name === 'Done') assertMergedPr(page, ticketId);
+        properties.Status = { status: { name } };
         break;
       }
       case 'priority':
@@ -567,7 +571,7 @@ async function main() {
       console.log(`Polycord Ticket CLI
 
 Commands:
-  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]  (auto-completes tickets whose linked PR merged)
+  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]  (syncs status both ways with PR merge state)
   view     <TICKET-ID>
   start    <TICKET-ID>            Set status to In Progress
   complete <TICKET-ID>            Set status to Done (requires linked PR to be merged)
