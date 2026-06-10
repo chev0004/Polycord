@@ -14,6 +14,8 @@
  * Requires NOTION_API_KEY and NOTION_DB_ID in .env.local
  */
 
+import { execSync } from 'node:child_process';
+
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_DB_ID = process.env.NOTION_DB_ID;
 const API_BASE = 'https://api.notion.com/v1';
@@ -58,6 +60,7 @@ type NotionPage = {
     Priority: { select: { name: string } | null };
     Area: { select: { name: string } | null };
     'Depends On': { relation: RelationItem[] };
+    PR?: { rich_text: { plain_text: string; href: string | null }[] };
   };
 };
 type QueryResult = {
@@ -108,8 +111,10 @@ function formatTicket(page: NotionPage): string {
   const status = p.Status.status?.name ?? 'Unknown';
   const priority = p.Priority.select?.name ?? '—';
   const area = p.Area.select?.name ?? '—';
+  const prHref = p.PR?.rich_text?.[0]?.href;
+  const pr = prHref ? `#${prHref.split('/').pop()}` : '—';
 
-  return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${area.padEnd(14)} ${title}`;
+  return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${pr.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
 
 async function cmdList(args: string[]) {
@@ -145,6 +150,36 @@ async function cmdList(args: string[]) {
 
   const pages = await queryAllTickets(filter);
 
+  if (pages.length > 0) {
+    try {
+      const merged = new Set<number>(
+        JSON.parse(
+          execSync(
+            'gh pr list --state merged --json number --limit 1000',
+          ).toString(),
+        ).map((pr: { number: number }) => pr.number),
+      );
+      for (const page of pages) {
+        const href = page.properties.PR?.rich_text?.[0]?.href;
+        const prMerged = href
+          ? merged.has(Number(href.split('/').pop()))
+          : false;
+        const done = page.properties.Status.status?.name === 'Done';
+        if (prMerged === done) continue;
+        const target = prMerged ? 'Done' : 'In progress';
+        await notion('PATCH', `/pages/${page.id}`, {
+          properties: { Status: { status: { name: target } } },
+        });
+        page.properties.Status.status = { name: target };
+        console.log(
+          `${extractText(page.properties.Ticket.title)} → ${target} ${prMerged ? '(PR merged)' : href ? '(PR not merged)' : '(no linked PR)'}`,
+        );
+      }
+    } catch {
+      console.warn('Skipped PR status sync (gh unavailable).');
+    }
+  }
+
   const prioOrder: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
   pages.sort((a, b) => {
     const pa = prioOrder[a.properties.Priority.select?.name ?? 'P2'] ?? 9;
@@ -156,7 +191,7 @@ async function cmdList(args: string[]) {
   });
 
   console.log(
-    `${'TICKET'.padEnd(14)} ${'STATUS'.padEnd(14)} ${'PRI'.padEnd(5)} ${'AREA'.padEnd(14)} TITLE`,
+    `${'TICKET'.padEnd(14)} ${'STATUS'.padEnd(14)} ${'PRI'.padEnd(5)} ${'PR'.padEnd(5)} ${'AREA'.padEnd(14)} TITLE`,
   );
   console.log('-'.repeat(90));
   for (const page of pages) {
@@ -179,6 +214,10 @@ async function cmdView(ticketId: string) {
   console.log(`Status:     ${p.Status.status?.name ?? 'Unknown'}`);
   console.log(`Priority:   ${p.Priority.select?.name ?? '—'}`);
   console.log(`Area:       ${p.Area.select?.name ?? '—'}`);
+  const prLink = p.PR?.rich_text?.[0];
+  console.log(
+    `PR:         ${prLink ? `${prLink.plain_text} (${prLink.href})` : '—'}`,
+  );
   const deps = p['Depends On'].relation;
   if (deps.length > 0) {
     const depNames: string[] = [];
@@ -229,12 +268,33 @@ async function cmdStart(ticketId: string) {
   console.log(`${ticketId.toUpperCase()} → In progress`);
 }
 
+function assertMergedPr(page: NotionPage, ticketId: string) {
+  const prUrl = page.properties.PR?.rich_text?.[0]?.href;
+  if (!prUrl) {
+    console.error(
+      `${ticketId.toUpperCase()} has no linked PR. Link it first: bun run tickets update ${ticketId.toUpperCase()} --pr=<url>`,
+    );
+    process.exit(1);
+  }
+  const prState = execSync(`gh pr view "${prUrl}" --json state --jq .state`)
+    .toString()
+    .trim();
+  if (prState !== 'MERGED') {
+    console.error(
+      `PR ${prUrl} is ${prState}. Tickets are only completed after the owner merges the PR.`,
+    );
+    process.exit(1);
+  }
+}
+
 async function cmdComplete(ticketId: string) {
   const page = await findTicket(ticketId);
   if (!page) {
     console.error(`Ticket ${ticketId.toUpperCase()} not found.`);
     process.exit(1);
   }
+
+  assertMergedPr(page, ticketId);
 
   await notion('PATCH', `/pages/${page.id}`, {
     properties: { Status: { status: { name: 'Done' } } },
@@ -266,9 +326,9 @@ async function cmdUpdate(ticketId: string, args: string[]) {
           done: 'Done',
           completed: 'Done',
         };
-        properties.Status = {
-          status: { name: statusMap[val.toLowerCase()] ?? val },
-        };
+        const name = statusMap[val.toLowerCase()] ?? val;
+        if (name === 'Done') assertMergedPr(page, ticketId);
+        properties.Status = { status: { name } };
         break;
       }
       case 'priority':
@@ -280,6 +340,26 @@ async function cmdUpdate(ticketId: string, args: string[]) {
       case 'title':
         properties.Title = { rich_text: [{ text: { content: val } }] };
         break;
+      case 'pr': {
+        const title = val
+          ? execSync(`gh pr view "${val}" --json title --jq .title`)
+              .toString()
+              .trim()
+          : '';
+        properties.PR = {
+          rich_text: val
+            ? [
+                {
+                  text: {
+                    content: `#${val.split('/').pop()} ${title}`,
+                    link: { url: val },
+                  },
+                },
+              ]
+            : [],
+        };
+        break;
+      }
       case 'depends':
       case 'depends-on': {
         const depIds = val.split(',').map((s) => s.trim().toUpperCase());
@@ -302,7 +382,7 @@ async function cmdUpdate(ticketId: string, args: string[]) {
 
   if (Object.keys(properties).length === 0) {
     console.error(
-      'No properties to update. Use --status=, --priority=, --area=, --title=, --depends-on=',
+      'No properties to update. Use --status=, --priority=, --area=, --title=, --pr=, --depends-on=',
     );
     process.exit(1);
   }
@@ -491,11 +571,11 @@ async function main() {
       console.log(`Polycord Ticket CLI
 
 Commands:
-  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]
+  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]  (syncs status both ways with PR merge state)
   view     <TICKET-ID>
   start    <TICKET-ID>            Set status to In Progress
-  complete <TICKET-ID>            Set status to Done
-  update   <TICKET-ID> --key=val  Update properties
+  complete <TICKET-ID>            Set status to Done (requires linked PR to be merged)
+  update   <TICKET-ID> --key=val  Update properties (--pr=<url> links a PR)
   create   --id=ID --title="..."  Create with all standard sections
 
 Create options:
