@@ -2,14 +2,15 @@
  * Notion ticket CLI — the single interface for managing Polycord tickets.
  *
  * Usage:
- *   bun run tickets:list                          List all tickets
- *   bun run tickets:list --status=todo            Filter by status
- *   bun run tickets:list --priority=P0            Filter by priority
- *   bun run tickets:view DISC-001                 View a ticket's full details
- *   bun run tickets:start DISC-001                Set status to In Progress
- *   bun run tickets:complete DISC-001             Set status to Done
- *   bun run tickets:update DISC-001 --priority=P0 Update properties
- *   bun run tickets:create                        Create a ticket (interactive args)
+ *   bun run tickets list                          List all tickets
+ *   bun run tickets list --status=todo            Filter by status
+ *   bun run tickets list --priority=P0            Filter by priority
+ *   bun run tickets sync                          Reconcile statuses with PR merge state
+ *   bun run tickets view DISC-001                 View a ticket's full details
+ *   bun run tickets start DISC-001                Set status to In Progress
+ *   bun run tickets complete DISC-001             Set status to Done
+ *   bun run tickets update DISC-001 --priority=P0 Update properties
+ *   bun run tickets create                        Create a ticket (interactive args)
  *
  * Requires NOTION_API_KEY and NOTION_DB_ID in .env.local
  */
@@ -542,28 +543,28 @@ async function main() {
       break;
     case 'view':
       if (!args[0]) {
-        console.error('Usage: tickets:view TICKET-ID');
+        console.error('Usage: tickets view TICKET-ID');
         process.exit(1);
       }
       await cmdView(args[0]);
       break;
     case 'start':
       if (!args[0]) {
-        console.error('Usage: tickets:start TICKET-ID');
+        console.error('Usage: tickets start TICKET-ID');
         process.exit(1);
       }
       await cmdStart(args[0]);
       break;
     case 'complete':
       if (!args[0]) {
-        console.error('Usage: tickets:complete TICKET-ID');
+        console.error('Usage: tickets complete TICKET-ID');
         process.exit(1);
       }
       await cmdComplete(args[0]);
       break;
     case 'update':
       if (!args[0]) {
-        console.error('Usage: tickets:update TICKET-ID --key=value');
+        console.error('Usage: tickets update TICKET-ID --key=value');
         process.exit(1);
       }
       await cmdUpdate(args[0], args.slice(1));
