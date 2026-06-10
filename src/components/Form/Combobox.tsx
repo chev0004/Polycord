@@ -49,6 +49,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     useEffect(() => {
       if (inputValue === searchTerm) {
+        setLoading(false);
         return;
       }
       const timer = setTimeout(() => {
