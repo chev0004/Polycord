@@ -156,6 +156,7 @@
     "locationValue": "{location}",
     "currentlyTime": "Currently {time}",
     "descriptionLabel": "Description",
+    "feedLoadingLabel": "Loading profiles",
     "emptyStateBadge": "Matchmaking",
     "emptyStateTitle": "We couldn't find any matches yet",
     "emptyStateDescription": "Try adjusting your filters or check back soon to discover new language partners.",
