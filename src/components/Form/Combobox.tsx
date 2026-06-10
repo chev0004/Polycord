@@ -1,13 +1,7 @@
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslations } from 'next-intl';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 
 export type ComboboxProps = {
@@ -42,7 +36,9 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [loading, setLoading] = useState(false);
 
-    const listRef = useRef<HTMLDivElement>(null);
+    const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(
+      null,
+    );
 
     useEffect(() => {
       const selectedOption = options.find((option) => option.value === value);
@@ -90,16 +86,16 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     const rowVirtualizer = useVirtualizer({
       count: filteredOptions.length,
-      getScrollElement: () => listRef.current,
+      getScrollElement: () => scrollElement,
       estimateSize: () => 32,
       overscan: 5,
     });
 
     useEffect(() => {
-      if (open && highlightedIndex >= 0) {
+      if (open && scrollElement && highlightedIndex >= 0) {
         rowVirtualizer.scrollToIndex(highlightedIndex, { align: 'auto' });
       }
-    }, [highlightedIndex, open, rowVirtualizer]);
+    }, [highlightedIndex, open, rowVirtualizer, scrollElement]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = event.target.value;
@@ -213,7 +209,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <div ref={listRef} className="max-h-64 overflow-y-auto p-1">
+            <div
+              ref={setScrollElement}
+              className="max-h-64 overflow-y-auto p-1"
+            >
               {loading ? (
                 <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
                   {t('loading')}
