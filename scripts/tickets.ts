@@ -150,6 +150,36 @@ async function cmdList(args: string[]) {
 
   const pages = await queryAllTickets(filter);
 
+  const pending = pages.filter(
+    (p) =>
+      p.properties.PR?.rich_text?.[0]?.href &&
+      p.properties.Status.status?.name !== 'Done',
+  );
+  if (pending.length > 0) {
+    try {
+      const merged = new Set<number>(
+        JSON.parse(
+          execSync(
+            'gh pr list --state merged --json number --limit 1000',
+          ).toString(),
+        ).map((pr: { number: number }) => pr.number),
+      );
+      for (const page of pending) {
+        const href = page.properties.PR?.rich_text?.[0]?.href ?? '';
+        if (!merged.has(Number(href.split('/').pop()))) continue;
+        await notion('PATCH', `/pages/${page.id}`, {
+          properties: { Status: { status: { name: 'Done' } } },
+        });
+        page.properties.Status.status = { name: 'Done' };
+        console.log(
+          `${extractText(page.properties.Ticket.title)} → Done (PR merged)`,
+        );
+      }
+    } catch {
+      console.warn('Skipped merged-PR sync (gh unavailable).');
+    }
+  }
+
   const prioOrder: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
   pages.sort((a, b) => {
     const pa = prioOrder[a.properties.Priority.select?.name ?? 'P2'] ?? 9;
@@ -537,7 +567,7 @@ async function main() {
       console.log(`Polycord Ticket CLI
 
 Commands:
-  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]
+  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]  (auto-completes tickets whose linked PR merged)
   view     <TICKET-ID>
   start    <TICKET-ID>            Set status to In Progress
   complete <TICKET-ID>            Set status to Done (requires linked PR to be merged)
