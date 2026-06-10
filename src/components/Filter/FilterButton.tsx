@@ -248,6 +248,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   placeholder,
   searchable = false,
 }) => {
+  const t = useTranslations('Discovery');
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
