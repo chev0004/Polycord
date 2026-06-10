@@ -60,7 +60,7 @@ type NotionPage = {
     Priority: { select: { name: string } | null };
     Area: { select: { name: string } | null };
     'Depends On': { relation: RelationItem[] };
-    PR?: { url: string | null };
+    PR?: { rich_text: { plain_text: string; href: string | null }[] };
   };
 };
 type QueryResult = {
@@ -111,7 +111,8 @@ function formatTicket(page: NotionPage): string {
   const status = p.Status.status?.name ?? 'Unknown';
   const priority = p.Priority.select?.name ?? '—';
   const area = p.Area.select?.name ?? '—';
-  const pr = p.PR?.url ? `#${p.PR.url.split('/').pop()}` : '—';
+  const prHref = p.PR?.rich_text?.[0]?.href;
+  const pr = prHref ? `#${prHref.split('/').pop()}` : '—';
 
   return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${pr.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
@@ -183,7 +184,10 @@ async function cmdView(ticketId: string) {
   console.log(`Status:     ${p.Status.status?.name ?? 'Unknown'}`);
   console.log(`Priority:   ${p.Priority.select?.name ?? '—'}`);
   console.log(`Area:       ${p.Area.select?.name ?? '—'}`);
-  console.log(`PR:         ${p.PR?.url ?? '—'}`);
+  const prLink = p.PR?.rich_text?.[0];
+  console.log(
+    `PR:         ${prLink ? `${prLink.plain_text} (${prLink.href})` : '—'}`,
+  );
   const deps = p['Depends On'].relation;
   if (deps.length > 0) {
     const depNames: string[] = [];
@@ -241,7 +245,7 @@ async function cmdComplete(ticketId: string) {
     process.exit(1);
   }
 
-  const prUrl = page.properties.PR?.url;
+  const prUrl = page.properties.PR?.rich_text?.[0]?.href;
   if (!prUrl) {
     console.error(
       `${ticketId.toUpperCase()} has no linked PR. Link it first: bun run tickets update ${ticketId.toUpperCase()} --pr=<url>`,
@@ -302,9 +306,26 @@ async function cmdUpdate(ticketId: string, args: string[]) {
       case 'title':
         properties.Title = { rich_text: [{ text: { content: val } }] };
         break;
-      case 'pr':
-        properties.PR = { url: val || null };
+      case 'pr': {
+        const title = val
+          ? execSync(`gh pr view "${val}" --json title --jq .title`)
+              .toString()
+              .trim()
+          : '';
+        properties.PR = {
+          rich_text: val
+            ? [
+                {
+                  text: {
+                    content: `#${val.split('/').pop()} ${title}`,
+                    link: { url: val },
+                  },
+                },
+              ]
+            : [],
+        };
         break;
+      }
       case 'depends':
       case 'depends-on': {
         const depIds = val.split(',').map((s) => s.trim().toUpperCase());
