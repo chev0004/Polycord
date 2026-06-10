@@ -117,6 +117,36 @@ function formatTicket(page: NotionPage): string {
   return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${pr.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
 
+async function syncPrStatuses(pages: NotionPage[]) {
+  if (pages.length === 0) return;
+  try {
+    const merged = new Set<number>(
+      JSON.parse(
+        execSync(
+          'gh pr list --state merged --json number --limit 1000',
+        ).toString(),
+      ).map((pr: { number: number }) => pr.number),
+    );
+    for (const page of pages) {
+      const href = page.properties.PR?.rich_text?.[0]?.href;
+      const prMerged = href ? merged.has(Number(href.split('/').pop())) : false;
+      const done = page.properties.Status.status?.name === 'Done';
+      if (prMerged === done) continue;
+      const target = prMerged ? 'Done' : 'In progress';
+      await notion('PATCH', `/pages/${page.id}`, {
+        properties: { Status: { status: { name: target } } },
+      });
+      page.properties.Status.status = { name: target };
+      console.log(
+        `${extractText(page.properties.Ticket.title)} → ${target} ${prMerged ? '(PR merged)' : href ? '(PR not merged)' : '(no linked PR)'}`,
+      );
+    }
+  } catch {
+    console.warn('Skipped PR status sync (gh unavailable).');
+    if (process.env.CI) process.exitCode = 1;
+  }
+}
+
 async function cmdList(args: string[]) {
   let filter: unknown;
 
@@ -149,36 +179,7 @@ async function cmdList(args: string[]) {
   else if (filters.length > 1) filter = { and: filters };
 
   const pages = await queryAllTickets(filter);
-
-  if (pages.length > 0) {
-    try {
-      const merged = new Set<number>(
-        JSON.parse(
-          execSync(
-            'gh pr list --state merged --json number --limit 1000',
-          ).toString(),
-        ).map((pr: { number: number }) => pr.number),
-      );
-      for (const page of pages) {
-        const href = page.properties.PR?.rich_text?.[0]?.href;
-        const prMerged = href
-          ? merged.has(Number(href.split('/').pop()))
-          : false;
-        const done = page.properties.Status.status?.name === 'Done';
-        if (prMerged === done) continue;
-        const target = prMerged ? 'Done' : 'In progress';
-        await notion('PATCH', `/pages/${page.id}`, {
-          properties: { Status: { status: { name: target } } },
-        });
-        page.properties.Status.status = { name: target };
-        console.log(
-          `${extractText(page.properties.Ticket.title)} → ${target} ${prMerged ? '(PR merged)' : href ? '(PR not merged)' : '(no linked PR)'}`,
-        );
-      }
-    } catch {
-      console.warn('Skipped PR status sync (gh unavailable).');
-    }
-  }
+  await syncPrStatuses(pages);
 
   const prioOrder: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
   pages.sort((a, b) => {
@@ -536,6 +537,9 @@ async function main() {
     case 'list':
       await cmdList(args);
       break;
+    case 'sync':
+      await syncPrStatuses(await queryAllTickets());
+      break;
     case 'view':
       if (!args[0]) {
         console.error('Usage: tickets:view TICKET-ID');
@@ -572,6 +576,7 @@ async function main() {
 
 Commands:
   list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]  (syncs status both ways with PR merge state)
+  sync                            Reconcile all ticket statuses with PR merge state (used by CI)
   view     <TICKET-ID>
   start    <TICKET-ID>            Set status to In Progress
   complete <TICKET-ID>            Set status to Done (requires linked PR to be merged)
