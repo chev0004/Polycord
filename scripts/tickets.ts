@@ -14,6 +14,8 @@
  * Requires NOTION_API_KEY and NOTION_DB_ID in .env.local
  */
 
+import { execSync } from 'node:child_process';
+
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_DB_ID = process.env.NOTION_DB_ID;
 const API_BASE = 'https://api.notion.com/v1';
@@ -58,6 +60,7 @@ type NotionPage = {
     Priority: { select: { name: string } | null };
     Area: { select: { name: string } | null };
     'Depends On': { relation: RelationItem[] };
+    PR?: { url: string | null };
   };
 };
 type QueryResult = {
@@ -108,8 +111,9 @@ function formatTicket(page: NotionPage): string {
   const status = p.Status.status?.name ?? 'Unknown';
   const priority = p.Priority.select?.name ?? '—';
   const area = p.Area.select?.name ?? '—';
+  const pr = p.PR?.url ? `#${p.PR.url.split('/').pop()}` : '—';
 
-  return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${area.padEnd(14)} ${title}`;
+  return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${pr.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
 
 async function cmdList(args: string[]) {
@@ -156,7 +160,7 @@ async function cmdList(args: string[]) {
   });
 
   console.log(
-    `${'TICKET'.padEnd(14)} ${'STATUS'.padEnd(14)} ${'PRI'.padEnd(5)} ${'AREA'.padEnd(14)} TITLE`,
+    `${'TICKET'.padEnd(14)} ${'STATUS'.padEnd(14)} ${'PRI'.padEnd(5)} ${'PR'.padEnd(5)} ${'AREA'.padEnd(14)} TITLE`,
   );
   console.log('-'.repeat(90));
   for (const page of pages) {
@@ -179,6 +183,7 @@ async function cmdView(ticketId: string) {
   console.log(`Status:     ${p.Status.status?.name ?? 'Unknown'}`);
   console.log(`Priority:   ${p.Priority.select?.name ?? '—'}`);
   console.log(`Area:       ${p.Area.select?.name ?? '—'}`);
+  console.log(`PR:         ${p.PR?.url ?? '—'}`);
   const deps = p['Depends On'].relation;
   if (deps.length > 0) {
     const depNames: string[] = [];
@@ -236,6 +241,23 @@ async function cmdComplete(ticketId: string) {
     process.exit(1);
   }
 
+  const prUrl = page.properties.PR?.url;
+  if (!prUrl) {
+    console.error(
+      `${ticketId.toUpperCase()} has no linked PR. Link it first: bun run tickets update ${ticketId.toUpperCase()} --pr=<url>`,
+    );
+    process.exit(1);
+  }
+  const prState = execSync(`gh pr view "${prUrl}" --json state --jq .state`)
+    .toString()
+    .trim();
+  if (prState !== 'MERGED') {
+    console.error(
+      `PR ${prUrl} is ${prState}. Tickets are only completed after the owner merges the PR.`,
+    );
+    process.exit(1);
+  }
+
   await notion('PATCH', `/pages/${page.id}`, {
     properties: { Status: { status: { name: 'Done' } } },
   });
@@ -280,6 +302,9 @@ async function cmdUpdate(ticketId: string, args: string[]) {
       case 'title':
         properties.Title = { rich_text: [{ text: { content: val } }] };
         break;
+      case 'pr':
+        properties.PR = { url: val || null };
+        break;
       case 'depends':
       case 'depends-on': {
         const depIds = val.split(',').map((s) => s.trim().toUpperCase());
@@ -302,7 +327,7 @@ async function cmdUpdate(ticketId: string, args: string[]) {
 
   if (Object.keys(properties).length === 0) {
     console.error(
-      'No properties to update. Use --status=, --priority=, --area=, --title=, --depends-on=',
+      'No properties to update. Use --status=, --priority=, --area=, --title=, --pr=, --depends-on=',
     );
     process.exit(1);
   }
@@ -494,8 +519,8 @@ Commands:
   list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]
   view     <TICKET-ID>
   start    <TICKET-ID>            Set status to In Progress
-  complete <TICKET-ID>            Set status to Done
-  update   <TICKET-ID> --key=val  Update properties
+  complete <TICKET-ID>            Set status to Done (requires linked PR to be merged)
+  update   <TICKET-ID> --key=val  Update properties (--pr=<url> links a PR)
   create   --id=ID --title="..."  Create with all standard sections
 
 Create options:
