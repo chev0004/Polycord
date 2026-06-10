@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { Navbar } from '@/features/Navbar';
 import {
@@ -11,10 +11,10 @@ import {
   ONBOARDING_DRAFT_STORAGE_KEY,
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
-import { ProfileGrid } from './ProfileGrid';
 
 type DiscoveryPageProps = {
   authError?: string;
+  feed: ReactNode;
   isLoggedIn: boolean;
   locale: string;
   needsOnboarding?: boolean;
@@ -34,6 +34,7 @@ const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
 
 export const DiscoveryPage = ({
   authError,
+  feed,
   isLoggedIn,
   locale,
   needsOnboarding = false,
@@ -111,11 +112,7 @@ export const DiscoveryPage = ({
           </p>
         </header>
 
-        <ProfileGrid
-          profiles={[]}
-          isLoggedIn={isLoggedIn}
-          emptyState={t('emptyLoggedOutDescription')}
-        />
+        {feed}
       </main>
 
       {needsOnboarding && !isPromptDismissed ? (
