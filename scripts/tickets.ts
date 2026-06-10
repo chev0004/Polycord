@@ -2,14 +2,15 @@
  * Notion ticket CLI — the single interface for managing Polycord tickets.
  *
  * Usage:
- *   bun run tickets:list                          List all tickets
- *   bun run tickets:list --status=todo            Filter by status
- *   bun run tickets:list --priority=P0            Filter by priority
- *   bun run tickets:view DISC-001                 View a ticket's full details
- *   bun run tickets:start DISC-001                Set status to In Progress
- *   bun run tickets:complete DISC-001             Set status to Done
- *   bun run tickets:update DISC-001 --priority=P0 Update properties
- *   bun run tickets:create                        Create a ticket (interactive args)
+ *   bun run tickets list                          List all tickets
+ *   bun run tickets list --status=todo            Filter by status
+ *   bun run tickets list --priority=P0            Filter by priority
+ *   bun run tickets sync                          Reconcile statuses with PR merge state
+ *   bun run tickets view DISC-001                 View a ticket's full details
+ *   bun run tickets start DISC-001                Set status to In Progress
+ *   bun run tickets complete DISC-001             Set status to Done
+ *   bun run tickets update DISC-001 --priority=P0 Update properties
+ *   bun run tickets create                        Create a ticket (interactive args)
  *
  * Requires NOTION_API_KEY and NOTION_DB_ID in .env.local
  */
@@ -117,6 +118,36 @@ function formatTicket(page: NotionPage): string {
   return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${pr.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
 
+async function syncPrStatuses(pages: NotionPage[]) {
+  if (pages.length === 0) return;
+  try {
+    const merged = new Set<number>(
+      JSON.parse(
+        execSync(
+          'gh pr list --state merged --json number --limit 1000',
+        ).toString(),
+      ).map((pr: { number: number }) => pr.number),
+    );
+    for (const page of pages) {
+      const href = page.properties.PR?.rich_text?.[0]?.href;
+      const prMerged = href ? merged.has(Number(href.split('/').pop())) : false;
+      const done = page.properties.Status.status?.name === 'Done';
+      if (prMerged === done) continue;
+      const target = prMerged ? 'Done' : 'In progress';
+      await notion('PATCH', `/pages/${page.id}`, {
+        properties: { Status: { status: { name: target } } },
+      });
+      page.properties.Status.status = { name: target };
+      console.log(
+        `${extractText(page.properties.Ticket.title)} → ${target} ${prMerged ? '(PR merged)' : href ? '(PR not merged)' : '(no linked PR)'}`,
+      );
+    }
+  } catch {
+    console.warn('Skipped PR status sync (gh unavailable).');
+    if (process.env.CI) process.exitCode = 1;
+  }
+}
+
 async function cmdList(args: string[]) {
   let filter: unknown;
 
@@ -149,36 +180,7 @@ async function cmdList(args: string[]) {
   else if (filters.length > 1) filter = { and: filters };
 
   const pages = await queryAllTickets(filter);
-
-  if (pages.length > 0) {
-    try {
-      const merged = new Set<number>(
-        JSON.parse(
-          execSync(
-            'gh pr list --state merged --json number --limit 1000',
-          ).toString(),
-        ).map((pr: { number: number }) => pr.number),
-      );
-      for (const page of pages) {
-        const href = page.properties.PR?.rich_text?.[0]?.href;
-        const prMerged = href
-          ? merged.has(Number(href.split('/').pop()))
-          : false;
-        const done = page.properties.Status.status?.name === 'Done';
-        if (prMerged === done) continue;
-        const target = prMerged ? 'Done' : 'In progress';
-        await notion('PATCH', `/pages/${page.id}`, {
-          properties: { Status: { status: { name: target } } },
-        });
-        page.properties.Status.status = { name: target };
-        console.log(
-          `${extractText(page.properties.Ticket.title)} → ${target} ${prMerged ? '(PR merged)' : href ? '(PR not merged)' : '(no linked PR)'}`,
-        );
-      }
-    } catch {
-      console.warn('Skipped PR status sync (gh unavailable).');
-    }
-  }
+  await syncPrStatuses(pages);
 
   const prioOrder: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
   pages.sort((a, b) => {
@@ -536,30 +538,33 @@ async function main() {
     case 'list':
       await cmdList(args);
       break;
+    case 'sync':
+      await syncPrStatuses(await queryAllTickets());
+      break;
     case 'view':
       if (!args[0]) {
-        console.error('Usage: tickets:view TICKET-ID');
+        console.error('Usage: tickets view TICKET-ID');
         process.exit(1);
       }
       await cmdView(args[0]);
       break;
     case 'start':
       if (!args[0]) {
-        console.error('Usage: tickets:start TICKET-ID');
+        console.error('Usage: tickets start TICKET-ID');
         process.exit(1);
       }
       await cmdStart(args[0]);
       break;
     case 'complete':
       if (!args[0]) {
-        console.error('Usage: tickets:complete TICKET-ID');
+        console.error('Usage: tickets complete TICKET-ID');
         process.exit(1);
       }
       await cmdComplete(args[0]);
       break;
     case 'update':
       if (!args[0]) {
-        console.error('Usage: tickets:update TICKET-ID --key=value');
+        console.error('Usage: tickets update TICKET-ID --key=value');
         process.exit(1);
       }
       await cmdUpdate(args[0], args.slice(1));
@@ -572,6 +577,7 @@ async function main() {
 
 Commands:
   list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]  (syncs status both ways with PR merge state)
+  sync                            Reconcile all ticket statuses with PR merge state (used by CI)
   view     <TICKET-ID>
   start    <TICKET-ID>            Set status to In Progress
   complete <TICKET-ID>            Set status to Done (requires linked PR to be merged)
