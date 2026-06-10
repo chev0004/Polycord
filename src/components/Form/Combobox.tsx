@@ -1,7 +1,7 @@
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 
 export type ComboboxProps = {
@@ -40,12 +40,15 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       null,
     );
 
+    const selectedLabel = useMemo(
+      () => options.find((option) => option.value === value)?.label ?? '',
+      [options, value],
+    );
+
     useEffect(() => {
-      const selectedOption = options.find((option) => option.value === value);
-      const newLabel = selectedOption?.label || '';
-      setInputValue(newLabel);
-      setSearchTerm(newLabel);
-    }, [value, options]);
+      setInputValue(selectedLabel);
+      setSearchTerm(selectedLabel);
+    }, [selectedLabel]);
 
     useEffect(() => {
       if (inputValue === searchTerm) {
@@ -60,26 +63,15 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       return () => clearTimeout(timer);
     }, [inputValue, searchTerm]);
 
-    const filterOptions = useCallback(
-      (search: string, opts: typeof options) => {
-        if (
-          !search ||
-          search === options.find((opt) => opt.value === value)?.label
-        ) {
-          return opts;
-        }
-        const lowerSearch = search.toLowerCase();
-        return opts.filter((option) =>
-          option.label.toLowerCase().includes(lowerSearch),
-        );
-      },
-      [value, options],
-    );
-
-    const filteredOptions = useMemo(
-      () => filterOptions(searchTerm, options),
-      [searchTerm, options, filterOptions],
-    );
+    const filteredOptions = useMemo(() => {
+      if (!searchTerm || searchTerm === selectedLabel) {
+        return options;
+      }
+      const lowerSearch = searchTerm.toLowerCase();
+      return options.filter((option) =>
+        option.label.toLowerCase().includes(lowerSearch),
+      );
+    }, [searchTerm, selectedLabel, options]);
 
     useEffect(() => {
       setHighlightedIndex(0);
@@ -118,9 +110,9 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     const handleSelect = (selectedValue: string) => {
       onValueChange(selectedValue);
-      const selectedLabel =
+      const selectedOptionLabel =
         options.find((option) => option.value === selectedValue)?.label || '';
-      setInputValue(selectedLabel);
+      setInputValue(selectedOptionLabel);
       setOpen(false);
     };
 
@@ -136,8 +128,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         }
         setInputValue(match.label);
       } else {
-        const selectedOption = options.find((option) => option.value === value);
-        setInputValue(selectedOption?.label || '');
+        setInputValue(selectedLabel);
       }
 
       onBlur?.(event);
