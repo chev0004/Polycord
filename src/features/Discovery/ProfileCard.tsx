@@ -378,6 +378,7 @@ export const ProfileCard = ({
               <Popover.Trigger asChild>
                 <button
                   type="button"
+                  suppressHydrationWarning
                   className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-main/50 hover:text-white"
                   aria-label={t('cardMenu')}
                 >
@@ -445,6 +446,7 @@ export const ProfileCard = ({
               <Popover.Trigger asChild>
                 <button
                   type="button"
+                  suppressHydrationWarning
                   className="inline-flex items-center gap-1 rounded-md bg-background-darker px-2.5 py-1 font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white"
                   aria-label={`Show ${remainingLanguagesCount} more languages`}
                 >
