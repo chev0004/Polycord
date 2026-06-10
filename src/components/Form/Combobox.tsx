@@ -57,6 +57,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       }
       const timer = setTimeout(() => {
         setSearchTerm(inputValue);
+        setHighlightedIndex(0);
         setLoading(false);
       }, 200);
 
@@ -72,10 +73,6 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         option.label.toLowerCase().includes(lowerSearch),
       );
     }, [searchTerm, selectedLabel, options]);
-
-    useEffect(() => {
-      setHighlightedIndex(0);
-    }, []);
 
     const rowVirtualizer = useVirtualizer({
       count: filteredOptions.length,
@@ -104,6 +101,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     const handleInputFocus = () => {
       if (inputValue) {
+        const selectedIndex = filteredOptions.findIndex(
+          (option) => option.value === value,
+        );
+        setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
         setOpen(true);
       }
     };
@@ -160,10 +161,14 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             );
             break;
           case 'Enter':
-          case 'Tab':
+          case 'Tab': {
             event.preventDefault();
-            handleSelect(filteredOptions[highlightedIndex].value);
+            const highlightedOption = filteredOptions[highlightedIndex];
+            if (highlightedOption) {
+              handleSelect(highlightedOption.value);
+            }
             break;
+          }
         }
       } else if (key === 'Enter') {
         event.preventDefault();
