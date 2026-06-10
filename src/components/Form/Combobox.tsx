@@ -1,13 +1,7 @@
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslations } from 'next-intl';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 
 export type ComboboxProps = {
@@ -42,64 +36,56 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [loading, setLoading] = useState(false);
 
-    const listRef = useRef<HTMLDivElement>(null);
+    const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(
+      null,
+    );
+
+    const selectedLabel = useMemo(
+      () => options.find((option) => option.value === value)?.label ?? '',
+      [options, value],
+    );
 
     useEffect(() => {
-      const selectedOption = options.find((option) => option.value === value);
-      const newLabel = selectedOption?.label || '';
-      setInputValue(newLabel);
-      setSearchTerm(newLabel);
-    }, [value, options]);
+      setInputValue(selectedLabel);
+      setSearchTerm(selectedLabel);
+    }, [selectedLabel]);
 
     useEffect(() => {
       if (inputValue === searchTerm) {
+        setLoading(false);
         return;
       }
       const timer = setTimeout(() => {
         setSearchTerm(inputValue);
+        setHighlightedIndex(0);
         setLoading(false);
       }, 200);
 
       return () => clearTimeout(timer);
     }, [inputValue, searchTerm]);
 
-    const filterOptions = useCallback(
-      (search: string, opts: typeof options) => {
-        if (
-          !search ||
-          search === options.find((opt) => opt.value === value)?.label
-        ) {
-          return opts;
-        }
-        const lowerSearch = search.toLowerCase();
-        return opts.filter((option) =>
-          option.label.toLowerCase().includes(lowerSearch),
-        );
-      },
-      [value, options],
-    );
-
-    const filteredOptions = useMemo(
-      () => filterOptions(searchTerm, options),
-      [searchTerm, options, filterOptions],
-    );
-
-    useEffect(() => {
-      setHighlightedIndex(0);
-    }, []);
+    const filteredOptions = useMemo(() => {
+      if (!searchTerm || searchTerm === selectedLabel) {
+        return options;
+      }
+      const lowerSearch = searchTerm.toLowerCase();
+      return options.filter((option) =>
+        option.label.toLowerCase().includes(lowerSearch),
+      );
+    }, [searchTerm, selectedLabel, options]);
 
     const rowVirtualizer = useVirtualizer({
       count: filteredOptions.length,
-      getScrollElement: () => listRef.current,
+      getScrollElement: () => scrollElement,
       estimateSize: () => 32,
       overscan: 5,
     });
 
     useEffect(() => {
-      if (open && highlightedIndex >= 0) {
+      if (open && scrollElement && highlightedIndex >= 0) {
         rowVirtualizer.scrollToIndex(highlightedIndex, { align: 'auto' });
       }
-    }, [highlightedIndex, open, rowVirtualizer]);
+    }, [highlightedIndex, open, rowVirtualizer, scrollElement]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = event.target.value;
@@ -115,15 +101,19 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     const handleInputFocus = () => {
       if (inputValue) {
+        const selectedIndex = filteredOptions.findIndex(
+          (option) => option.value === value,
+        );
+        setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
         setOpen(true);
       }
     };
 
     const handleSelect = (selectedValue: string) => {
       onValueChange(selectedValue);
-      const selectedLabel =
+      const selectedOptionLabel =
         options.find((option) => option.value === selectedValue)?.label || '';
-      setInputValue(selectedLabel);
+      setInputValue(selectedOptionLabel);
       setOpen(false);
     };
 
@@ -139,8 +129,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         }
         setInputValue(match.label);
       } else {
-        const selectedOption = options.find((option) => option.value === value);
-        setInputValue(selectedOption?.label || '');
+        setInputValue(selectedLabel);
       }
 
       onBlur?.(event);
@@ -172,10 +161,14 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             );
             break;
           case 'Enter':
-          case 'Tab':
+          case 'Tab': {
             event.preventDefault();
-            handleSelect(filteredOptions[highlightedIndex].value);
+            const highlightedOption = filteredOptions[highlightedIndex];
+            if (highlightedOption) {
+              handleSelect(highlightedOption.value);
+            }
             break;
+          }
         }
       } else if (key === 'Enter') {
         event.preventDefault();
@@ -213,7 +206,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <div ref={listRef} className="max-h-64 overflow-y-auto p-1">
+            <div
+              ref={setScrollElement}
+              className="max-h-64 overflow-y-auto p-1"
+            >
               {loading ? (
                 <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
                   {t('loading')}
