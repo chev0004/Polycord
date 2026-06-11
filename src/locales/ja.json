@@ -140,7 +140,22 @@
     "allowAnonymousCopyingDescription": "ログインしていないユーザーが自分のDiscordユーザー名をコピーできるようにする。",
     "displayTimezoneLabel": "タイムゾーンを表示",
     "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。",
-    "appLanguagePlaceholder": "アプリの言語を選択"
+    "appLanguagePlaceholder": "アプリの言語を選択",
+    "exportDataLabel": "アカウントデータをエクスポート",
+    "exportDataDescription": "アカウント、プロフィール、保存済みのプライバシー設定をJSONとしてダウンロードします。",
+    "exportDataButton": "データをダウンロード",
+    "exportingData": "エクスポートを準備中...",
+    "exportDataSuccess": "アカウントデータをダウンロードしました。",
+    "exportDataError": "アカウントデータのエクスポートに失敗しました。もう一度お試しください。",
+    "deleteAccountLabel": "アカウントを削除",
+    "deleteAccountDescription": "Polycordからアカウントとプロフィールを削除します。削除されたプロフィールはディスカバリーに表示されません。",
+    "deleteAccountButton": "アカウントを削除",
+    "deletingAccount": "アカウントを削除中...",
+    "cancelDeleteAccount": "キャンセル",
+    "deleteAccountConfirmationLabel": "確認のため DELETE と入力してください",
+    "deleteAccountConfirmationPlaceholder": "DELETE",
+    "deleteAccountRetentionNote": "プロフィールとアカウントの行は削除されます。安全対策、通報、モデレーション、請求、法的記録は、該当する仕組みが存在する場合に保持されることがあります。",
+    "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。"
   },
   "Discovery": {
     "pageEyebrow": "Discovery",

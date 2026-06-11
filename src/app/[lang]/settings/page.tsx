@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getProfileByDiscordUserId } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import { SettingsRouteClient } from './SettingsRouteClient';
 
@@ -14,9 +15,23 @@ export default async function SettingsRoute({
     redirect(`/${lang}`);
   }
 
+  const profile = await getProfileByDiscordUserId(user.id);
+
   return (
     <main className="min-h-screen bg-background-main">
-      <SettingsRouteClient />
+      <SettingsRouteClient
+        defaultEmail={user.email ?? ''}
+        initialPrivacySettings={
+          profile
+            ? {
+                allowAnonymousCopy: profile.profile.allowAnonymousCopy,
+                displayTimezone: profile.profile.displayTimezone,
+                isPublic: profile.profile.isPublic,
+              }
+            : undefined
+        }
+        locale={lang}
+      />
     </main>
   );
 }

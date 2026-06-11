@@ -31,6 +31,8 @@ const meta: Meta<typeof SettingsPage> = {
   ],
   args: {
     defaultValues: defaultSettings,
+    onDeleteAccount: fn(),
+    onExportData: fn(),
     onSubmit: fn(),
     onUpdateDiscordConnection: fn(),
     onManageSubscription: fn(),
