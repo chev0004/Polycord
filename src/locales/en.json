@@ -140,7 +140,22 @@
     "allowAnonymousCopyingDescription": "Let users who aren't logged in copy your Discord username.",
     "displayTimezoneLabel": "Display timezone",
     "displayTimezoneDescription": "Show your timezone on your public profile.",
-    "appLanguagePlaceholder": "Select app language"
+    "appLanguagePlaceholder": "Select app language",
+    "exportDataLabel": "Export account data",
+    "exportDataDescription": "Download your account, profile, and saved privacy settings as JSON.",
+    "exportDataButton": "Download data",
+    "exportingData": "Preparing export...",
+    "exportDataSuccess": "Account export downloaded.",
+    "exportDataError": "Account export failed. Please try again.",
+    "deleteAccountLabel": "Delete account",
+    "deleteAccountDescription": "Remove your account and profile from Polycord. Deleted profiles are removed from discovery.",
+    "deleteAccountButton": "Delete account",
+    "deletingAccount": "Deleting account...",
+    "cancelDeleteAccount": "Cancel",
+    "deleteAccountConfirmationLabel": "Type DELETE to confirm",
+    "deleteAccountConfirmationPlaceholder": "DELETE",
+    "deleteAccountRetentionNote": "Profile and account rows are deleted. Safety, report, moderation, billing, and legal records may be retained when those systems exist.",
+    "deleteAccountError": "Account could not be deleted. Please try again."
   },
   "Discovery": {
     "pageEyebrow": "Discovery",

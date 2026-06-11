@@ -1,29 +1,81 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   type SettingsFormValues,
   SettingsPage,
 } from '@/features/Settings/SettingsPage';
 
-const defaultSettings: SettingsFormValues = {
-  isPublic: true,
-  allowAnonymousCopy: true,
-  displayTimezone: true,
-  activityStatus: true,
-  pushNotifications: true,
-  matchAlert: true,
-  profileInteractionAlert: true,
-  theme: 'dark',
-  applicationLanguage: 'en',
-  timeFormat: '24hr',
-  email: 'xhev@polycord.app',
+type SettingsRouteClientProps = {
+  defaultEmail: string;
+  initialPrivacySettings?: Pick<
+    SettingsFormValues,
+    'allowAnonymousCopy' | 'displayTimezone' | 'isPublic'
+  >;
+  locale: string;
 };
 
-export const SettingsRouteClient = () => (
-  <SettingsPage
-    defaultValues={defaultSettings}
-    onSubmit={(data) => console.log('Settings route', data)}
-    onUpdateDiscordConnection={() => console.log('Update Discord connection')}
-    onManageSubscription={() => console.log('Manage subscription')}
-  />
-);
+const downloadAccountData = async () => {
+  const response = await fetch('/api/account/export');
+
+  if (!response.ok) {
+    throw new Error('Account export failed');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'polycord-account-export.json';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+export const SettingsRouteClient = ({
+  defaultEmail,
+  initialPrivacySettings,
+  locale,
+}: SettingsRouteClientProps) => {
+  const router = useRouter();
+  const defaultSettings: SettingsFormValues = {
+    isPublic: initialPrivacySettings?.isPublic ?? true,
+    allowAnonymousCopy: initialPrivacySettings?.allowAnonymousCopy ?? true,
+    displayTimezone: initialPrivacySettings?.displayTimezone ?? true,
+    activityStatus: true,
+    pushNotifications: true,
+    matchAlert: true,
+    profileInteractionAlert: true,
+    theme: 'dark',
+    applicationLanguage: locale,
+    timeFormat: '24hr',
+    email: defaultEmail,
+  };
+
+  return (
+    <SettingsPage
+      defaultValues={defaultSettings}
+      onDeleteAccount={async () => {
+        const response = await fetch('/api/account', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirmation: 'DELETE' }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Account delete failed');
+        }
+
+        router.push(`/${locale}`);
+        router.refresh();
+      }}
+      onExportData={downloadAccountData}
+      onSubmit={() => undefined}
+      onUpdateDiscordConnection={() =>
+        window.location.assign(`/api/auth/discord?locale=${locale}`)
+      }
+      onManageSubscription={() => undefined}
+    />
+  );
+};

@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/Button';
@@ -31,6 +31,8 @@ export type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export type SettingsPageProps = {
   defaultValues: SettingsFormValues;
+  onDeleteAccount: () => Promise<void> | void;
+  onExportData: () => Promise<void> | void;
   onSubmit?: (data: SettingsFormValues) => void;
   onUpdateDiscordConnection: () => void;
   onManageSubscription: () => void;
@@ -137,12 +139,21 @@ const SegmentedControl = <T extends string>({
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({
   defaultValues,
+  onDeleteAccount,
+  onExportData,
   onSubmit: onSubmitProp,
   onUpdateDiscordConnection,
   onManageSubscription,
 }) => {
   const t = useTranslations('Settings');
   const currentLocale = useLocale();
+  const [exportStatus, setExportStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle');
+  const [deleteStatus, setDeleteStatus] = useState<
+    'idle' | 'confirming' | 'loading' | 'error'
+  >('idle');
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
   const initialValues: SettingsFormValues = useMemo(
     () => ({
@@ -170,8 +181,33 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
     if (onSubmitProp) {
       onSubmitProp(data);
-    } else {
-      console.log('Settings Data Submitted', data);
+    }
+  };
+
+  const handleExportData = async () => {
+    setExportStatus('loading');
+    setDeleteStatus('idle');
+
+    try {
+      await onExportData();
+      setExportStatus('success');
+    } catch {
+      setExportStatus('error');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== 'DELETE' || deleteStatus === 'loading') {
+      return;
+    }
+
+    setExportStatus('idle');
+    setDeleteStatus('loading');
+
+    try {
+      await onDeleteAccount();
+    } catch {
+      setDeleteStatus('error');
     }
   };
 
@@ -283,6 +319,111 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               >
                 {t('manageSubscriptionButton')}
               </Button>
+            </SettingsRow>
+
+            <SettingsRow
+              label={t('exportDataLabel')}
+              description={t('exportDataDescription')}
+            >
+              <div className="flex flex-col items-start gap-2 sm:items-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleExportData}
+                  disabled={exportStatus === 'loading'}
+                  className="h-9 whitespace-nowrap px-3 py-1.5"
+                >
+                  {exportStatus === 'loading'
+                    ? t('exportingData')
+                    : t('exportDataButton')}
+                </Button>
+                {exportStatus !== 'idle' && exportStatus !== 'loading' ? (
+                  <output
+                    className={`text-xs ${
+                      exportStatus === 'success'
+                        ? 'text-green-400'
+                        : 'text-red-400'
+                    }`}
+                  >
+                    {exportStatus === 'success'
+                      ? t('exportDataSuccess')
+                      : t('exportDataError')}
+                  </output>
+                ) : null}
+              </div>
+            </SettingsRow>
+
+            <SettingsRow
+              label={t('deleteAccountLabel')}
+              description={t('deleteAccountDescription')}
+            >
+              <div className="flex w-full max-w-sm flex-col gap-3 sm:items-end">
+                {deleteStatus === 'confirming' ||
+                deleteStatus === 'loading' ||
+                deleteStatus === 'error' ? (
+                  <div className="w-full space-y-2">
+                    <Label htmlFor="deleteAccountConfirmation">
+                      {t('deleteAccountConfirmationLabel')}
+                    </Label>
+                    <input
+                      id="deleteAccountConfirmation"
+                      type="text"
+                      value={deleteConfirmation}
+                      onChange={(event) =>
+                        setDeleteConfirmation(event.target.value)
+                      }
+                      placeholder={t('deleteAccountConfirmationPlaceholder')}
+                      className={inputClasses}
+                      disabled={deleteStatus === 'loading'}
+                    />
+                    <p className="text-gray-500 text-xs leading-relaxed">
+                      {t('deleteAccountRetentionNote')}
+                    </p>
+                    {deleteStatus === 'error' ? (
+                      <p className="text-red-400 text-xs">
+                        {t('deleteAccountError')}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+                <div className="flex gap-2">
+                  {deleteStatus === 'confirming' ||
+                  deleteStatus === 'loading' ||
+                  deleteStatus === 'error' ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setDeleteStatus('idle');
+                        setDeleteConfirmation('');
+                      }}
+                      disabled={deleteStatus === 'loading'}
+                      className="h-9 whitespace-nowrap px-3 py-1.5"
+                    >
+                      {t('cancelDeleteAccount')}
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={
+                      deleteStatus === 'idle'
+                        ? () => setDeleteStatus('confirming')
+                        : handleDeleteAccount
+                    }
+                    disabled={
+                      deleteStatus === 'loading' ||
+                      (deleteStatus !== 'idle' &&
+                        deleteConfirmation !== 'DELETE')
+                    }
+                    className="h-9 whitespace-nowrap border-red-500/60 px-3 py-1.5 text-red-300 hover:bg-red-950/40"
+                  >
+                    {deleteStatus === 'loading'
+                      ? t('deletingAccount')
+                      : t('deleteAccountButton')}
+                  </Button>
+                </div>
+              </div>
             </SettingsRow>
           </Section>
 
