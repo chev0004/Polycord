@@ -27,35 +27,35 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       <SelectPrimitive.Root {...props}>
         <SelectPrimitive.Trigger
           ref={forwardedRef}
-          className={`flex h-12 ${widthClass} items-center justify-between whitespace-nowrap rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-darker data-[placeholder]:text-gray-500 ${
+          className={`group flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-left text-[15px] text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-gray-500 ${
             error
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-gray-600 focus:ring-primary'
+              ? 'border-red-500'
+              : 'border-white/[0.07] hover:border-white/[0.14] data-[state=open]:border-white/[0.14]'
           } ${className ?? ''}`}
           aria-label={ariaLabel}
           onBlur={onBlur}
         >
           <SelectPrimitive.Value
             placeholder={placeholder}
-            className="flex-1 whitespace-nowrap"
+            className="min-w-0 flex-1 truncate"
           />
-          <SelectPrimitive.Icon className="ml-2 flex-shrink-0 text-white">
+          <SelectPrimitive.Icon className="flex-shrink-0 text-gray-500 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[state=open]:rotate-180">
             <MdOutlineKeyboardArrowDown size={20} />
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
 
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
-            className="SelectContent z-50 overflow-hidden rounded-md bg-background-dark shadow-xl"
+            className="SelectContent z-50 overflow-hidden rounded-2xl border border-gray-500/50 bg-background-dark shadow-lg"
             position="popper"
-            sideOffset={5}
+            sideOffset={6}
             style={{ width: 'var(--radix-select-trigger-width)' }}
           >
             <SelectPrimitive.ScrollUpButton className="flex items-center justify-center bg-background-dark text-white">
               <MdOutlineKeyboardArrowUp size={20} />
             </SelectPrimitive.ScrollUpButton>
 
-            <SelectPrimitive.Viewport className="max-h-[400px] w-full overflow-y-auto p-1">
+            <SelectPrimitive.Viewport className="flex max-h-60 w-full flex-col gap-0.5 overflow-y-auto p-1.5">
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

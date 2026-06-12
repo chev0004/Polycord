@@ -28,22 +28,11 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
     },
     forwardedRef,
   ) => {
-    const paddingClass = showCheckmark ? 'pl-6' : 'pl-4';
     const [isTruncated, setIsTruncated] = useState(false);
-    const localRef = useRef<HTMLDivElement>(null);
-
-    const handleRef = (node: HTMLDivElement | null) => {
-      localRef.current = node;
-
-      if (typeof forwardedRef === 'function') {
-        forwardedRef(node);
-      } else if (forwardedRef) {
-        forwardedRef.current = node;
-      }
-    };
+    const textRef = useRef<HTMLSpanElement>(null);
 
     useLayoutEffect(() => {
-      const el = localRef.current;
+      const el = textRef.current;
       if (el) {
         // A small buffer (0.5) handles sub-pixel rounding differences
         setIsTruncated(el.scrollWidth > el.clientWidth + 0.5);
@@ -58,23 +47,25 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         delayDuration={300}
       >
         <SelectPrimitive.Item
-          className={`relative flex min-h-8 w-full cursor-pointer select-none items-center truncate rounded ${paddingClass} pr-4 text-sm text-white hover:bg-primary-darker data-[disabled]:pointer-events-none data-[highlighted]:bg-background-main data-[disabled]:text-gray-500 data-[highlighted]:text-primary-light ${tabSelected ? 'bg-primary-darker' : ''} ${className ?? ''}`}
+          className={`flex min-h-10 w-full cursor-pointer select-none items-center justify-between gap-2 rounded-full px-3 text-sm text-white transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-main hover:text-primary-light data-[disabled]:pointer-events-none data-[highlighted]:bg-background-main data-[disabled]:text-gray-500 data-[highlighted]:text-primary-light ${tabSelected ? 'bg-background-main text-primary-light' : ''} ${className ?? ''}`}
           data-tab-selected={tabSelected}
           {...props}
-          ref={handleRef}
+          ref={forwardedRef}
         >
-          <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+          <span ref={textRef} className="min-w-0 flex-1 truncate">
+            <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+          </span>
 
           {showCheckmark && (
             <>
               {isSelected !== undefined && isSelected && (
-                <span className="absolute left-1 inline-flex w-5 items-center justify-center">
+                <span className="inline-flex flex-shrink-0 items-center justify-center">
                   <MdCheck size={18} className="text-primary" />
                 </span>
               )}
 
               {isSelected === undefined && (
-                <SelectPrimitive.ItemIndicator className="absolute left-1 inline-flex w-5 items-center justify-center">
+                <SelectPrimitive.ItemIndicator className="inline-flex flex-shrink-0 items-center justify-center">
                   <MdCheck size={18} className="text-primary" />
                 </SelectPrimitive.ItemIndicator>
               )}
