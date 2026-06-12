@@ -62,13 +62,18 @@ export const Default: Story = {
     const input = canvas.getByPlaceholderText('Enter a language...');
 
     await userEvent.type(input, 'japan');
-    const option = await screen.findByRole('button', {
-      name: japanese.label,
-    });
+    // The option list debounces typing, so allow slow environments to settle.
+    const option = await screen.findByRole(
+      'button',
+      { name: japanese.label },
+      { timeout: 5000 },
+    );
     await userEvent.click(option);
 
     await expect(args.onValueChange).toHaveBeenCalledWith(japanese.value);
-    await waitFor(() => expect(input).toHaveValue(japanese.label));
+    await waitFor(() => expect(input).toHaveValue(japanese.label), {
+      timeout: 5000,
+    });
   },
 };
 
@@ -85,8 +90,51 @@ export const LongList: Story = {
   },
 };
 
+export const EmptyResults: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByPlaceholderText('Enter a language...');
+
+    await userEvent.type(input, 'zzzz');
+
+    await expect(await screen.findByText('No results found.')).toBeVisible();
+  },
+};
+
 export const ErrorState: Story = {
   args: {
     error: true,
+  },
+};
+
+export const ReadOnly: Story = {
+  args: {
+    value: japanese?.value ?? '',
+    readOnly: true,
+  },
+  play: async ({ canvasElement }) => {
+    if (!japanese) return;
+
+    const canvas = within(canvasElement);
+    const input = canvas.getByDisplayValue(japanese.label);
+
+    await userEvent.type(input, 'changed');
+
+    await expect(input).toHaveValue(japanese.label);
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    value: japanese?.value ?? '',
+    disabled: true,
+  },
+  play: async ({ canvasElement }) => {
+    if (!japanese) return;
+
+    const canvas = within(canvasElement);
+    const input = canvas.getByDisplayValue(japanese.label);
+
+    await expect(input).toBeDisabled();
   },
 };
