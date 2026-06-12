@@ -13,6 +13,8 @@ export type ComboboxProps = {
   value: string;
   name?: string;
   error?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
 };
 
 export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
@@ -26,6 +28,8 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       value,
       name,
       error,
+      disabled = false,
+      readOnly = false,
     },
     forwardedRef,
   ) => {
@@ -77,7 +81,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     const rowVirtualizer = useVirtualizer({
       count: filteredOptions.length,
       getScrollElement: () => scrollElement,
-      estimateSize: () => 32,
+      estimateSize: () => 40,
       overscan: 5,
     });
 
@@ -88,6 +92,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     }, [highlightedIndex, open, rowVirtualizer, scrollElement]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (disabled || readOnly) return;
       const newValue = event.target.value;
       setInputValue(newValue);
       setOpen(!!newValue);
@@ -100,6 +105,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleInputFocus = () => {
+      if (disabled || readOnly) return;
       if (inputValue) {
         const selectedIndex = filteredOptions.findIndex(
           (option) => option.value === value,
@@ -110,6 +116,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleSelect = (selectedValue: string) => {
+      if (disabled || readOnly) return;
       onValueChange(selectedValue);
       const selectedOptionLabel =
         options.find((option) => option.value === selectedValue)?.label || '';
@@ -118,6 +125,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+      if (disabled || readOnly) {
+        onBlur?.(event);
+        return;
+      }
       setOpen(false);
       const match = options.find(
         (option) => option.label.toLowerCase() === inputValue.toLowerCase(),
@@ -136,6 +147,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (disabled || readOnly) return;
       if (!open) return;
 
       const { key } = event;
@@ -178,37 +190,41 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Anchor asChild>
           <div
-            className={`flex h-12 w-full items-center justify-between rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-background-darker data-[placeholder]:text-gray-500 ${
+            className={`flex h-12 w-full items-center justify-between rounded-xl border bg-background-darker px-4 text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               error
-                ? 'border-red-500 focus-within:ring-red-500'
-                : 'border-gray-600 focus-within:ring-primary'
-            } ${className ?? ''}`}
+                ? 'border-red-500'
+                : readOnly || disabled
+                  ? 'border-white/[0.07]'
+                  : 'border-white/[0.07] focus-within:border-white/[0.14] hover:border-white/[0.14]'
+            } ${disabled ? 'opacity-50' : ''} ${className ?? ''}`}
           >
             <input
               ref={forwardedRef}
               name={name}
               type="text"
               value={inputValue}
+              disabled={disabled}
+              readOnly={readOnly}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
               placeholder={placeholder}
-              className="w-full bg-transparent text-white placeholder-gray-500 focus:outline-none"
+              className="w-full bg-transparent text-[15px] text-white placeholder-gray-500 outline-none focus:outline-none disabled:cursor-not-allowed disabled:text-gray-400"
               autoComplete="off"
             />
           </div>
         </PopoverPrimitive.Anchor>
         <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content
-            className="z-50 mt-1 w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-md bg-background-dark shadow-xl"
-            sideOffset={5}
+            className="z-50 mt-1 w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-2xl border border-gray-500/50 bg-background-dark shadow-lg"
+            sideOffset={6}
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <div
               ref={setScrollElement}
-              className="max-h-64 overflow-y-auto p-1"
+              className="max-h-60 overflow-y-auto p-1.5"
             >
               {loading ? (
                 <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
@@ -248,11 +264,13 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                         onMouseEnter={() =>
                           setHighlightedIndex(virtualItem.index)
                         }
-                        className="relative flex h-8 items-center rounded px-4 pl-8 text-left text-sm text-white hover:bg-primary-darker focus:outline-none data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
+                        className="flex h-10 items-center justify-between gap-2 rounded-full px-3 text-left text-sm text-white transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-main hover:text-primary-light focus:outline-none data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
                       >
-                        {option.label}
+                        <span className="min-w-0 flex-1 truncate">
+                          {option.label}
+                        </span>
                         {value === option.value && (
-                          <span className="absolute left-0 inline-flex w-8 items-center justify-center">
+                          <span className="inline-flex flex-shrink-0 items-center justify-center">
                             <MdCheck size={18} className="text-primary" />
                           </span>
                         )}

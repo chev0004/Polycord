@@ -268,7 +268,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
     const triggerClasses = isMinimalVariant
       ? `flex h-10 items-center gap-2 whitespace-nowrap bg-transparent px-3 py-2 text-white transition-colors hover:opacity-80 ${className ?? ''}`
-      : `flex h-12 ${widthClass} items-center justify-between whitespace-nowrap rounded-lg border bg-background-darker p-3 text-white placeholder-gray-500 transition-colors data-[placeholder]:text-gray-500 ${error ? 'border-red-500' : 'border-gray-600'} ${className ?? ''}`;
+      : `flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-[15px] text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-gray-500 ${error ? 'border-red-500' : 'border-white/[0.07] hover:border-white/[0.14] data-[state=open]:border-white/[0.14]'} ${className ?? ''}`;
 
     const chevronSize = isMinimalVariant ? 12 : 20;
     const ChevronDown = isMinimalVariant
@@ -311,7 +311,11 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
           )}
 
           <SelectPrimitive.Icon
-            className={`flex-shrink-0 text-white ${isMinimalVariant ? 'ml-0.5' : 'ml-2'}`}
+            className={
+              isMinimalVariant
+                ? 'ml-0.5 flex-shrink-0 text-white'
+                : `flex-shrink-0 text-gray-500 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'rotate-180' : ''}`
+            }
           >
             <ChevronDown size={chevronSize} />
           </SelectPrimitive.Icon>
@@ -319,7 +323,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
-            className="SelectContent relative z-50 overflow-hidden rounded-md bg-background-dark shadow-xl"
+            className="SelectContent relative z-50 overflow-hidden rounded-2xl border border-gray-500/50 bg-background-dark shadow-lg"
             position="popper"
             align={align}
             sideOffset={sideOffset}
@@ -358,11 +362,11 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             }}
           >
             {searchable && (
-              <div ref={searchBoxRef} className="border-gray-700 border-b p-2">
+              <div ref={searchBoxRef} className="p-1.5">
                 <div className="relative">
                   <MdSearch
                     size={18}
-                    className="-translate-y-1/2 absolute top-1/2 left-2 text-gray-400"
+                    className="-translate-y-1/2 absolute top-1/2 left-3 text-gray-500"
                   />
                   <input
                     ref={searchInputRef}
@@ -386,7 +390,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                       }
                     }}
                     placeholder={searchPlaceholder}
-                    className="h-8 w-full rounded bg-background-darker pr-2 pl-8 text-sm text-white placeholder-gray-500"
+                    className="h-[38px] w-full rounded-full border border-white/[0.07] bg-background-darker pr-3.5 pl-[34px] text-sm text-white placeholder-gray-500 outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-white/[0.14] focus:border-white/[0.14] focus:outline-none"
                   />
                 </div>
               </div>
@@ -410,7 +414,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             )}
 
             <SelectPrimitive.Viewport
-              className="relative max-h-[400px] w-full overflow-y-auto p-1"
+              className={`relative flex max-h-60 w-full flex-col gap-0.5 overflow-y-auto p-1.5 ${searchable ? 'pt-0' : ''}`}
               ref={viewportRef}
             >
               {visibleOptions.length > 0 ? (
