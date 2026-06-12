@@ -13,6 +13,8 @@ export type ComboboxProps = {
   value: string;
   name?: string;
   error?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
 };
 
 export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
@@ -26,6 +28,8 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       value,
       name,
       error,
+      disabled = false,
+      readOnly = false,
     },
     forwardedRef,
   ) => {
@@ -88,6 +92,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     }, [highlightedIndex, open, rowVirtualizer, scrollElement]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (disabled || readOnly) return;
       const newValue = event.target.value;
       setInputValue(newValue);
       setOpen(!!newValue);
@@ -100,6 +105,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleInputFocus = () => {
+      if (disabled || readOnly) return;
       if (inputValue) {
         const selectedIndex = filteredOptions.findIndex(
           (option) => option.value === value,
@@ -110,6 +116,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleSelect = (selectedValue: string) => {
+      if (disabled || readOnly) return;
       onValueChange(selectedValue);
       const selectedOptionLabel =
         options.find((option) => option.value === selectedValue)?.label || '';
@@ -118,6 +125,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+      if (disabled || readOnly) {
+        onBlur?.(event);
+        return;
+      }
       setOpen(false);
       const match = options.find(
         (option) => option.label.toLowerCase() === inputValue.toLowerCase(),
@@ -136,6 +147,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (disabled || readOnly) return;
       if (!open) return;
 
       const { key } = event;
@@ -181,20 +193,24 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             className={`flex h-12 w-full items-center justify-between rounded-xl border bg-background-darker px-4 text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               error
                 ? 'border-red-500'
-                : 'border-white/[0.07] focus-within:border-white/[0.14] hover:border-white/[0.14]'
-            } ${className ?? ''}`}
+                : readOnly || disabled
+                  ? 'border-white/[0.07]'
+                  : 'border-white/[0.07] focus-within:border-white/[0.14] hover:border-white/[0.14]'
+            } ${disabled ? 'opacity-50' : ''} ${className ?? ''}`}
           >
             <input
               ref={forwardedRef}
               name={name}
               type="text"
               value={inputValue}
+              disabled={disabled}
+              readOnly={readOnly}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
               placeholder={placeholder}
-              className="w-full bg-transparent text-[15px] text-white placeholder-gray-500 outline-none focus:outline-none"
+              className="w-full bg-transparent text-[15px] text-white placeholder-gray-500 outline-none focus:outline-none disabled:cursor-not-allowed disabled:text-gray-400"
               autoComplete="off"
             />
           </div>

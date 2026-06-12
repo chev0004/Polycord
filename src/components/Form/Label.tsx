@@ -1,8 +1,6 @@
 import type React from 'react';
 
 type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
-  // Kept for API compatibility: validation messages communicate
-  // requirements instead of an asterisk.
   required?: boolean;
 };
 
