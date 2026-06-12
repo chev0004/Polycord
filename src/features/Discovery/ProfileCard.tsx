@@ -15,6 +15,7 @@ import {
   MdShare,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { Chip } from '@/components/Chip';
 import {
   capitalizeLanguageCode,
   formatCurrentTime,
@@ -69,8 +70,6 @@ type ProfileCardProps = {
   onShare?: (profileId: string) => void;
 };
 
-const tagPillClasses =
-  'inline-flex items-center gap-1.5 rounded-md bg-primary-darker px-2 py-0.5';
 const baseLanguagePillClasses =
   'rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap flex-shrink-0';
 const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-gray-200`;
@@ -262,15 +261,7 @@ export const ProfileCard = ({
   };
 
   const renderTag = (value: string, key?: string) => (
-    <button
-      key={key}
-      type="button"
-      onClick={() => handleTagClick(value)}
-      className={`${tagPillClasses} cursor-pointer transition-opacity hover:opacity-80 active:opacity-60`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-primary-dark" />
-      <span className="font-medium text-primary-light text-xs">{value}</span>
-    </button>
+    <Chip key={key} label={value} onClick={() => handleTagClick(value)} />
   );
 
   const renderLanguagePill = (
