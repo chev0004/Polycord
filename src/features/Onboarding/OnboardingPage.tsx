@@ -7,7 +7,15 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { Controller, type DefaultValues, useForm } from 'react-hook-form';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Combobox, FormGroup, Label, Select } from '@/components/Form';
+import {
+  Combobox,
+  FieldError,
+  FormGroup,
+  Label,
+  Select,
+  TextArea,
+  TextInput,
+} from '@/components/Form';
 import {
   availabilityValues,
   countryOptions,
@@ -35,11 +43,6 @@ const defaultValues: DefaultValues<OnboardingFormValues> = {
   country: '',
   tags: [],
 };
-
-const inputClasses =
-  'h-11 w-full rounded-lg border border-white/10 bg-background-darker px-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
-const textareaClasses =
-  'min-h-[116px] w-full resize-y rounded-lg border border-white/10 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
 
 const availabilityLabelKeys: Record<string, string> = {
   weeknights: 'availabilityWeeknights',
@@ -280,9 +283,7 @@ export const OnboardingPage = ({
                     )}
                   />
                   {errors.primaryLanguage ? (
-                    <p className="text-red-500 text-xs">
-                      {errors.primaryLanguage.message}
-                    </p>
+                    <FieldError>{errors.primaryLanguage.message}</FieldError>
                   ) : null}
                 </FormGroup>
 
@@ -303,9 +304,7 @@ export const OnboardingPage = ({
                     )}
                   />
                   {errors.targetLanguage ? (
-                    <p className="text-red-500 text-xs">
-                      {errors.targetLanguage.message}
-                    </p>
+                    <FieldError>{errors.targetLanguage.message}</FieldError>
                   ) : null}
                 </FormGroup>
 
@@ -326,9 +325,7 @@ export const OnboardingPage = ({
                     )}
                   />
                   {errors.proficiencyLevel ? (
-                    <p className="text-red-500 text-xs">
-                      {errors.proficiencyLevel.message}
-                    </p>
+                    <FieldError>{errors.proficiencyLevel.message}</FieldError>
                   ) : null}
                 </FormGroup>
 
@@ -366,19 +363,14 @@ export const OnboardingPage = ({
                   <Label htmlFor={timezoneId} required>
                     {t('timezoneLabel')}
                   </Label>
-                  <input
+                  <TextInput
                     id={timezoneId}
-                    type="text"
                     {...register('timezone')}
                     placeholder={t('timezonePlaceholder')}
-                    className={`${inputClasses} ${
-                      errors.timezone ? 'border-red-500 focus:ring-red-500' : ''
-                    }`}
+                    error={!!errors.timezone}
                   />
                   {errors.timezone ? (
-                    <p className="text-red-500 text-xs">
-                      {errors.timezone.message}
-                    </p>
+                    <FieldError>{errors.timezone.message}</FieldError>
                   ) : null}
                 </FormGroup>
 
@@ -407,9 +399,7 @@ export const OnboardingPage = ({
                     )}
                   />
                   {errors.availability ? (
-                    <p className="text-red-500 text-xs">
-                      {errors.availability.message}
-                    </p>
+                    <FieldError>{errors.availability.message}</FieldError>
                   ) : null}
                 </FormGroup>
               </div>
@@ -418,17 +408,15 @@ export const OnboardingPage = ({
                 <Label htmlFor={bioId} required>
                   {t('bioLabel')}
                 </Label>
-                <textarea
+                <TextArea
                   id={bioId}
                   rows={4}
                   {...register('bio')}
                   placeholder={t('bioPlaceholder')}
-                  className={`${textareaClasses} ${
-                    errors.bio ? 'border-red-500 focus:ring-red-500' : ''
-                  }`}
+                  error={!!errors.bio}
                 />
                 {errors.bio ? (
-                  <p className="text-red-500 text-xs">{errors.bio.message}</p>
+                  <FieldError>{errors.bio.message}</FieldError>
                 ) : null}
               </FormGroup>
             </section>
@@ -468,9 +456,8 @@ export const OnboardingPage = ({
                   </div>
                 ) : null}
                 <div className="flex gap-2">
-                  <input
+                  <TextInput
                     id={tagsInputId}
-                    type="text"
                     value={tagInput}
                     onChange={(event) => setTagInput(event.target.value)}
                     onKeyDown={(event) => {
@@ -480,7 +467,6 @@ export const OnboardingPage = ({
                       }
                     }}
                     placeholder={t('tagsPlaceholder')}
-                    className={inputClasses}
                   />
                   <button
                     type="button"
@@ -490,11 +476,9 @@ export const OnboardingPage = ({
                     {t('addTag')}
                   </button>
                 </div>
-                {tagError ? (
-                  <p className="text-red-500 text-xs">{tagError}</p>
-                ) : null}
+                {tagError ? <FieldError>{tagError}</FieldError> : null}
                 {errors.tags?.message ? (
-                  <p className="text-red-500 text-xs">{errors.tags.message}</p>
+                  <FieldError>{errors.tags.message}</FieldError>
                 ) : null}
               </FormGroup>
             </section>
