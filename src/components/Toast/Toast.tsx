@@ -55,14 +55,14 @@ export const Toast = ({
         )}
 
         <div>
-          <ToastPrimitive.Title className="mb-1 font-figtree font-medium text-white">
+          <ToastPrimitive.Title className="mb-0.5 font-figtree font-medium text-sm text-white">
             {title}
           </ToastPrimitive.Title>
-          <ToastPrimitive.Description className="font-figtree text-gray-400 text-sm">
+          <ToastPrimitive.Description className="font-figtree text-[13px] text-gray-400">
             {description}
           </ToastPrimitive.Description>
         </div>
-        <ToastPrimitive.Close className="text-gray-400 hover:text-white">
+        <ToastPrimitive.Close className="flex text-gray-400 transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-white">
           <MdClose />
         </ToastPrimitive.Close>
       </div>
