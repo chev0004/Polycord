@@ -17,10 +17,11 @@ export const Button = ({
   weight = 'light',
   icon: Icon,
   onClick,
+  className,
   type = 'button',
   ...props
 }: ButtonProps) => {
-  const baseClasses = `flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`;
+  const baseClasses = `inline-flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`;
 
   const variants = {
     primary:
@@ -38,9 +39,9 @@ export const Button = ({
       {...props}
       type={type}
       onClick={onClick}
-      className={`${baseClasses} ${variants[variant]} ${props.className ?? ''}`}
+      className={`${baseClasses} ${variants[variant]} ${className ?? ''}`}
     >
-      {Icon && <Icon />}
+      {Icon && <Icon className="h-[18px] w-[18px]" aria-hidden="true" />}
       {children}
     </button>
   );

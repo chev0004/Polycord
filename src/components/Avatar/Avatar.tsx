@@ -2,9 +2,9 @@ import Image from 'next/image';
 import type { CSSProperties } from 'react';
 
 const sizeMap = {
-  sm: 32,
-  md: 56,
-  lg: 96,
+  sm: { pixels: 32, textClassName: 'text-[13px]' },
+  md: { pixels: 56, textClassName: 'text-xl' },
+  lg: { pixels: 96, textClassName: 'text-[34px]' },
 };
 
 type AvatarProps = {
@@ -14,13 +14,11 @@ type AvatarProps = {
 };
 
 export const Avatar = ({ avatarUrl, size, alt = '' }: AvatarProps) => {
-  const pixelSize = sizeMap[size];
+  const { pixels: pixelSize, textClassName } = sizeMap[size];
   const style: CSSProperties = {
     width: `${pixelSize}px`,
     height: `${pixelSize}px`,
   };
-  const fontSizeClass =
-    pixelSize >= 96 ? 'text-3xl' : pixelSize >= 56 ? 'text-xl' : 'text-xs';
 
   return (
     <>
@@ -40,7 +38,9 @@ export const Avatar = ({ avatarUrl, size, alt = '' }: AvatarProps) => {
           className="flex flex-shrink-0 select-none items-center justify-center rounded-full bg-primary-dark"
           style={style}
         >
-          <span className={`text-gray-400 ${fontSizeClass}`}>?</span>
+          <span className={`font-semibold text-gray-400 ${textClassName}`}>
+            ?
+          </span>
         </div>
       )}
     </>

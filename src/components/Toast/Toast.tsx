@@ -27,6 +27,7 @@ type ToastProps = {
   timerRef?: RefObject<HTMLDivElement | null>;
   duration?: number;
   iconUrl?: string;
+  closeLabel?: string;
 } & ToastRootProps;
 
 export const Toast = ({
@@ -35,6 +36,8 @@ export const Toast = ({
   duration = 5000,
   timerRef,
   iconUrl,
+  closeLabel = 'Close notification',
+  className,
   ...props
 }: ToastProps) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -43,7 +46,7 @@ export const Toast = ({
     <ToastPrimitive.Root
       {...props}
       duration={Number.POSITIVE_INFINITY}
-      className="ToastRoot relative grid grid-cols-[auto_1fr_max-content] items-center gap-x-4 overflow-hidden rounded-md bg-background-darker shadow-lg data-[state=closed]:animate-hide data-[state=open]:animate-slideIn"
+      className={`ToastRoot pointer-events-auto relative grid grid-cols-[auto_1fr_max-content] items-center gap-x-4 overflow-hidden rounded-md bg-background-darker shadow-lg data-[state=closed]:animate-hide data-[state=open]:animate-slideIn ${className ?? ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -62,8 +65,11 @@ export const Toast = ({
             {description}
           </ToastPrimitive.Description>
         </div>
-        <ToastPrimitive.Close className="text-gray-400 hover:text-white">
-          <MdClose />
+        <ToastPrimitive.Close
+          className="text-gray-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label={closeLabel}
+        >
+          <MdClose aria-hidden="true" />
         </ToastPrimitive.Close>
       </div>
 
