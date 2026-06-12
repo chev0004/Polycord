@@ -45,6 +45,11 @@ export const Checked: Story = {
   args: {
     defaultChecked: true,
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByRole('switch')).toBeChecked();
+  },
 };
 
 export const Disabled: Story = {
