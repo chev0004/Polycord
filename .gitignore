@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/storybook-static/
 
 # next.js
 /.next/
@@ -47,6 +48,7 @@ next-env.d.ts
 # LLM/agent config (local only)
 CLAUDE.md
 AGENTS.md
+.claude/
 .claude/settings.local.json
 
 # Notion sync cache
