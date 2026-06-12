@@ -46,3 +46,29 @@ export const ErrorState: Story = {
     error: true,
   },
 };
+
+export const ReadOnly: Story = {
+  args: {
+    defaultValue: 'I can read this, but I cannot edit it.',
+    readOnly: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const textarea = canvas.getByDisplayValue(
+      'I can read this, but I cannot edit it.',
+    );
+
+    await userEvent.type(textarea, 'changed');
+
+    await expect(textarea).toHaveValue(
+      'I can read this, but I cannot edit it.',
+    );
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    placeholder: 'Disabled bio field',
+    disabled: true,
+  },
+};

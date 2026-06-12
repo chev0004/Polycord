@@ -71,9 +71,39 @@ export const Searchable: Story = {
   },
 };
 
+export const EmptySearch: Story = {
+  args: {
+    options: countries,
+    placeholder: 'Select a country',
+    searchable: true,
+    searchPlaceholder: 'Search countries',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('combobox');
+
+    await userEvent.click(trigger);
+    const search = await screen.findByPlaceholderText('Search countries');
+    await userEvent.type(search, 'zzzz');
+
+    await expect(await screen.findByText('No results found')).toBeVisible();
+  },
+};
+
 export const ErrorState: Story = {
   args: {
     error: true,
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByRole('combobox')).toBeDisabled();
   },
 };
 
