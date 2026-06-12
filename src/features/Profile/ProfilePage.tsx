@@ -7,7 +7,9 @@ import type React from 'react';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Avatar } from '@/components/Avatar';
+import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
+import { Chip } from '@/components/Chip';
 import {
   Combobox,
   FieldError,
@@ -264,15 +266,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <h1 className="font-bold font-figtree text-3xl text-white">
                   {t('editProfile')}
                 </h1>
-                <span
-                  className={`mt-2 inline-flex rounded-md px-2 py-0.5 font-semibold text-xs ${
-                    isPublic
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-gray-500/20 text-gray-400'
-                  }`}
+                <Badge
+                  variant={isPublic ? 'positive' : 'neutral'}
+                  className="mt-2"
                 >
                   {isPublic ? t('statusPublic') : t('statusUnlisted')}
-                </span>
+                </Badge>
               </div>
             </div>
 
@@ -543,22 +542,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       {(field.value ?? []).length > 0 && (
                         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/5 bg-background-darker p-2">
                           {(field.value || []).map((tag, index) => (
-                            <div
+                            <Chip
                               key={tag}
-                              className="flex items-center gap-2 rounded-md bg-primary-darker px-2.5 py-1"
-                            >
-                              <span className="text-primary-light text-sm">
-                                {tag}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveTag(index)}
-                                className="text-primary-light transition-colors hover:text-white focus:outline-none"
-                                aria-label={t('removeTag', { tag })}
-                              >
-                                x
-                              </button>
-                            </div>
+                              label={tag}
+                              onRemove={() => handleRemoveTag(index)}
+                              removeLabel={t('removeTag', { tag })}
+                            />
                           ))}
                         </div>
                       )}
