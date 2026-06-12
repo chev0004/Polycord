@@ -7,7 +7,14 @@ import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/Button';
-import { FormGroup, Label, Select, Toggle } from '@/components/Form';
+import {
+  FieldError,
+  FormGroup,
+  Label,
+  Select,
+  TextInput,
+  Toggle,
+} from '@/components/Form';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
 
 const settingsSchema = z.object({
@@ -48,9 +55,6 @@ const getStoredTimeFormat = (): TimeFormat => {
   const stored = localStorage.getItem('polycord_timeFormat');
   return stored === '12hr' || stored === '24hr' ? stored : '24hr';
 };
-
-const inputClasses =
-  'h-11 w-full rounded-lg border border-white/10 bg-background-darker px-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
 
 const sectionNav = [
   { id: 'account', label: 'Account' },
@@ -276,19 +280,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <Label htmlFor="email" required>
                   {t('emailLabel')}
                 </Label>
-                <input
+                <TextInput
                   id="email"
                   type="email"
                   {...register('email')}
                   placeholder={t('emailPlaceholder')}
-                  className={`${inputClasses} ${
-                    errors.email ? 'border-red-500 focus:ring-red-500' : ''
-                  }`}
+                  error={!!errors.email}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-xs">
-                    {t(errors.email.message as string)}
-                  </p>
+                  <FieldError>{t(errors.email.message as string)}</FieldError>
                 )}
               </FormGroup>
             </div>
@@ -365,15 +365,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <Label htmlFor="deleteAccountConfirmation">
                       {t('deleteAccountConfirmationLabel')}
                     </Label>
-                    <input
+                    <TextInput
                       id="deleteAccountConfirmation"
-                      type="text"
                       value={deleteConfirmation}
                       onChange={(event) =>
                         setDeleteConfirmation(event.target.value)
                       }
                       placeholder={t('deleteAccountConfirmationPlaceholder')}
-                      className={inputClasses}
                       disabled={deleteStatus === 'loading'}
                     />
                     <p className="text-gray-500 text-xs leading-relaxed">

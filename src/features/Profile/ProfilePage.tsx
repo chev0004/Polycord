@@ -8,7 +8,16 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Combobox, FormGroup, Label, Select, Toggle } from '@/components/Form';
+import {
+  Combobox,
+  FieldError,
+  FormGroup,
+  Label,
+  Select,
+  TextArea,
+  TextInput,
+  Toggle,
+} from '@/components/Form';
 import {
   availabilityValues,
   countryOptions,
@@ -39,11 +48,6 @@ const defaultValues: ProfileFormValues = {
   timezone: '',
   proficiencyLevel: '',
 };
-
-const inputClasses =
-  'h-11 w-full rounded-lg border border-white/10 bg-background-darker px-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
-const textareaClasses =
-  'min-h-[132px] w-full resize-y rounded-lg border border-white/10 bg-background-darker p-3 text-white placeholder-gray-500 transition-colors focus:border-primary-dark focus:outline-none focus:ring-1 focus:ring-primary-dark';
 
 const availabilityLabelKeys: Record<string, string> = {
   weeknights: 'availabilityOptionWeeknights',
@@ -371,9 +375,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   )}
                 />
                 {errors.primaryLanguage && (
-                  <p className="text-red-500 text-xs">
+                  <FieldError>
                     {t(errors.primaryLanguage.message as string)}
-                  </p>
+                  </FieldError>
                 )}
               </FormGroup>
 
@@ -396,9 +400,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   )}
                 />
                 {errors.targetLanguage && (
-                  <p className="text-red-500 text-xs">
+                  <FieldError>
                     {t(errors.targetLanguage.message as string)}
-                  </p>
+                  </FieldError>
                 )}
               </FormGroup>
 
@@ -421,9 +425,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   )}
                 />
                 {errors.proficiencyLevel && (
-                  <p className="text-red-500 text-xs">
+                  <FieldError>
                     {t(errors.proficiencyLevel.message as string)}
-                  </p>
+                  </FieldError>
                 )}
               </FormGroup>
 
@@ -444,27 +448,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   )}
                 />
                 {errors.country && (
-                  <p className="text-red-500 text-xs">
-                    {errors.country.message}
-                  </p>
+                  <FieldError>{errors.country.message}</FieldError>
                 )}
               </FormGroup>
 
               <FormGroup className="md:col-span-2">
                 <Label htmlFor={timezoneId}>{t('timezoneLabel')}</Label>
-                <input
+                <TextInput
                   id={timezoneId}
-                  type="text"
                   {...register('timezone')}
                   placeholder={t('displayTimezoneDescription')}
-                  className={`${inputClasses} ${
-                    errors.timezone ? 'border-red-500 focus:ring-red-500' : ''
-                  }`}
+                  error={!!errors.timezone}
                 />
                 {errors.timezone && (
-                  <p className="text-red-500 text-xs">
-                    {errors.timezone.message}
-                  </p>
+                  <FieldError>{errors.timezone.message}</FieldError>
                 )}
               </FormGroup>
             </div>
@@ -495,19 +492,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
               <FormGroup>
                 <Label htmlFor={bioId}>{t('bioLabel')}</Label>
-                <textarea
+                <TextArea
                   id={bioId}
                   rows={4}
                   {...register('bio')}
                   placeholder={t('bioPlaceholder')}
-                  className={`${textareaClasses} ${
-                    errors.bio ? 'border-red-500 focus:ring-red-500' : ''
-                  }`}
+                  error={!!errors.bio}
                 />
                 {errors.bio && (
-                  <p className="text-red-500 text-xs">
-                    {t(errors.bio.message as string)}
-                  </p>
+                  <FieldError>{t(errors.bio.message as string)}</FieldError>
                 )}
               </FormGroup>
 
@@ -570,9 +563,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         </div>
                       )}
                       <div className="flex gap-2">
-                        <input
+                        <TextInput
                           id={tagsInputId}
-                          type="text"
                           value={tagInput}
                           onChange={(event) => setTagInput(event.target.value)}
                           onKeyDown={(event) => {
@@ -582,11 +574,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                             }
                           }}
                           placeholder={t('tagsPlaceholder')}
-                          className={`${inputClasses} flex-grow ${
-                            errors.tags
-                              ? 'border-red-500 focus:ring-red-500'
-                              : ''
-                          }`}
+                          className="flex-grow"
+                          error={!!errors.tags}
                         />
                         <button
                           type="button"
@@ -597,9 +586,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         </button>
                       </div>
                       {errors.tags?.message && (
-                        <p className="text-red-500 text-xs">
-                          {t(errors.tags.message)}
-                        </p>
+                        <FieldError>{t(errors.tags.message)}</FieldError>
                       )}
                     </FormGroup>
                   );
