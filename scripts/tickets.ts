@@ -3,7 +3,7 @@
  *
  * Usage:
  *   bun run tickets list                          List all tickets
- *   bun run tickets list --status=todo            Filter by status
+ *   bun run tickets list --status=aborted         Filter by status
  *   bun run tickets list --priority=P0            Filter by priority
  *   bun run tickets sync                          Reconcile statuses with PR merge state
  *   bun run tickets view DISC-001                 View a ticket's full details
@@ -118,6 +118,22 @@ function formatTicket(page: NotionPage): string {
   return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${pr.padEnd(5)} ${area.padEnd(14)} ${title}`;
 }
 
+const statusMap: Record<string, string> = {
+  todo: 'Not started',
+  'not started': 'Not started',
+  'in progress': 'In progress',
+  inprogress: 'In progress',
+  started: 'In progress',
+  done: 'Done',
+  completed: 'Done',
+  abort: 'Aborted',
+  aborted: 'Aborted',
+};
+
+function normalizeStatus(value: string): string {
+  return statusMap[value.toLowerCase()] ?? value;
+}
+
 async function syncPrStatuses(pages: NotionPage[]) {
   if (pages.length === 0) return;
   try {
@@ -131,6 +147,7 @@ async function syncPrStatuses(pages: NotionPage[]) {
     for (const page of pages) {
       const href = page.properties.PR?.rich_text?.[0]?.href;
       const prMerged = href ? merged.has(Number(href.split('/').pop())) : false;
+      if (page.properties.Status.status?.name === 'Aborted') continue;
       const done = page.properties.Status.status?.name === 'Done';
       if (prMerged === done) continue;
       const target = prMerged ? 'Done' : 'In progress';
@@ -157,17 +174,7 @@ async function cmdList(args: string[]) {
   const filters: unknown[] = [];
 
   if (statusArg) {
-    const val = statusArg.split('=')[1].toLowerCase();
-    const statusMap: Record<string, string> = {
-      todo: 'Not started',
-      'not started': 'Not started',
-      'in progress': 'In progress',
-      inprogress: 'In progress',
-      started: 'In progress',
-      done: 'Done',
-      completed: 'Done',
-    };
-    const mapped = statusMap[val] ?? val;
+    const mapped = normalizeStatus(statusArg.split('=')[1]);
     filters.push({ property: 'Status', status: { equals: mapped } });
   }
 
@@ -319,16 +326,7 @@ async function cmdUpdate(ticketId: string, args: string[]) {
 
     switch (key.toLowerCase()) {
       case 'status': {
-        const statusMap: Record<string, string> = {
-          todo: 'Not started',
-          'not started': 'Not started',
-          'in progress': 'In progress',
-          inprogress: 'In progress',
-          started: 'In progress',
-          done: 'Done',
-          completed: 'Done',
-        };
-        const name = statusMap[val.toLowerCase()] ?? val;
+        const name = normalizeStatus(val);
         if (name === 'Done') assertMergedPr(page, ticketId);
         properties.Status = { status: { name } };
         break;
@@ -576,12 +574,12 @@ async function main() {
       console.log(`Polycord Ticket CLI
 
 Commands:
-  list     [--status=todo|inprogress|done] [--priority=P0|P1|P2]  (syncs status both ways with PR merge state)
+  list     [--status=todo|inprogress|done|aborted] [--priority=P0|P1|P2]  (syncs status both ways with PR merge state)
   sync                            Reconcile all ticket statuses with PR merge state (used by CI)
   view     <TICKET-ID>
   start    <TICKET-ID>            Set status to In Progress
   complete <TICKET-ID>            Set status to Done (requires linked PR to be merged)
-  update   <TICKET-ID> --key=val  Update properties (--pr=<url> links a PR)
+  update   <TICKET-ID> --key=val  Update properties (--status=aborted, --pr=<url>)
   create   --id=ID --title="..."  Create with all standard sections
 
 Create options:
@@ -591,7 +589,7 @@ Create options:
 
 Examples:
   bun run tickets list
-  bun run tickets list --status=todo --priority=P0
+  bun run tickets list --status=aborted --priority=P1
   bun run tickets view DISC-001
   bun run tickets start DISC-001
   bun run tickets create --id=FEAT-001 --title="New feature" --priority=P1 --area=Core
