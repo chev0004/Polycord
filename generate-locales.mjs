@@ -12,7 +12,8 @@ try {
     .map((file) => file.replace('.json', ''))
     .sort();
 
-  const fileContent = `export const locales = ${JSON.stringify(locales)} as const;\n`;
+  const localeList = locales.map((locale) => `'${locale}'`).join(', ');
+  const fileContent = `export const locales = [${localeList}] as const;\n`;
 
   fs.writeFileSync(outputPath, fileContent, 'utf8');
 
