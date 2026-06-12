@@ -20,17 +20,14 @@ export const Button = ({
   type = 'button',
   ...props
 }: ButtonProps) => {
-  const baseClasses = `flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`;
+  const baseClasses = `flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`;
 
   const variants = {
-    primary:
-      'bg-primary text-black hover:bg-primary-light focus-visible:ring-primary',
+    primary: 'bg-primary text-black hover:bg-primary-light',
     outline:
-      'border border-primary-dark bg-transparent text-primary-light hover:bg-primary-darker focus-visible:ring-primary-dark',
-    discord:
-      'bg-discord-blue text-white hover:bg-discord-blue-light focus-visible:ring-discord-blue',
-    white:
-      'bg-white text-black transition-all duration-200 hover:bg-gray-200 focus-visible:ring-white',
+      'border border-primary-dark bg-transparent text-primary-light hover:bg-primary-darker',
+    discord: 'bg-discord-blue text-white hover:bg-discord-blue-light',
+    white: 'bg-white text-black hover:bg-gray-200',
   };
 
   return (
@@ -40,7 +37,7 @@ export const Button = ({
       onClick={onClick}
       className={`${baseClasses} ${variants[variant]} ${props.className ?? ''}`}
     >
-      {Icon && <Icon />}
+      {Icon && <Icon size={18} />}
       {children}
     </button>
   );
