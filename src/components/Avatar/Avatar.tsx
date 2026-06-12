@@ -20,7 +20,11 @@ export const Avatar = ({ avatarUrl, size, alt = '' }: AvatarProps) => {
     height: `${pixelSize}px`,
   };
   const fontSizeClass =
-    pixelSize >= 96 ? 'text-3xl' : pixelSize >= 56 ? 'text-xl' : 'text-xs';
+    pixelSize >= 96
+      ? 'text-[34px]'
+      : pixelSize >= 56
+        ? 'text-xl'
+        : 'text-[13px]';
 
   return (
     <>
