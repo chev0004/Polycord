@@ -212,7 +212,9 @@
     "filterSelectTag": "Select tag",
     "filterSelectLevel": "Select level",
     "filterSelectTimezone": "Select timezone",
-    "filterSearchPlaceholder": "Search..."
+    "filterSearchPlaceholder": "Search...",
+    "filterClear": "Clear filters",
+    "filterNoResults": "No results found"
   },
   "Onboarding": {
     "firstRunSetup": "First-run setup",
