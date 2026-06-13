@@ -213,7 +213,6 @@
     "filterSelectLevel": "Select level",
     "filterSelectTimezone": "Select timezone",
     "filterSearchPlaceholder": "Search...",
-    "filterSelected": "{count} selected",
     "filterClear": "Clear filters",
     "filterNoResults": "No results found"
   },
