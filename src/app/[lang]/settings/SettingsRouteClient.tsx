@@ -13,6 +13,8 @@ type SettingsRouteClientProps = {
     'allowAnonymousCopy' | 'displayTimezone' | 'isPublic'
   >;
   locale: string;
+  userAvatarUrl?: string;
+  userDisplayName: string;
 };
 
 const downloadAccountData = async () => {
@@ -37,6 +39,8 @@ export const SettingsRouteClient = ({
   defaultEmail,
   initialPrivacySettings,
   locale,
+  userAvatarUrl,
+  userDisplayName,
 }: SettingsRouteClientProps) => {
   const router = useRouter();
   const defaultSettings: SettingsFormValues = {
@@ -56,6 +60,8 @@ export const SettingsRouteClient = ({
   return (
     <SettingsPage
       defaultValues={defaultSettings}
+      userAvatarUrl={userAvatarUrl}
+      userDisplayName={userDisplayName}
       onDeleteAccount={async () => {
         const response = await fetch('/api/account', {
           method: 'DELETE',

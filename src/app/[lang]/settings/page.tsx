@@ -31,6 +31,8 @@ export default async function SettingsRoute({
             : undefined
         }
         locale={lang}
+        userAvatarUrl={user.avatarUrl}
+        userDisplayName={user.name}
       />
     </main>
   );
