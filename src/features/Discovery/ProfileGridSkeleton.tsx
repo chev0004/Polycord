@@ -9,8 +9,16 @@ const skeletonCardKeys = Array.from(
   (_, index) => `profile-card-skeleton-${index}`,
 );
 
+const splitIntoColumns = <T,>(items: T[], columnCount: number) => {
+  const columnSize = Math.ceil(items.length / columnCount);
+
+  return Array.from({ length: columnCount }, (_, columnIndex) =>
+    items.slice(columnIndex * columnSize, (columnIndex + 1) * columnSize),
+  ).filter((column) => column.length > 0);
+};
+
 const SkeletonCard = () => (
-  <article className="mb-6 flex w-full break-inside-avoid flex-col gap-4 rounded-2xl bg-background-dark shadow-lg">
+  <article className="mb-6 flex w-full flex-col gap-4 rounded-2xl bg-background-dark shadow-lg">
     <div className="-mb-2 h-16 rounded-t-2xl bg-primary-darker" />
     <div className="-mt-10 flex flex-col gap-4 px-5 pb-5">
       <div className="flex items-end justify-between">
@@ -55,13 +63,26 @@ const SkeletonCard = () => (
 export const ProfileGridSkeleton = () => {
   const t = useTranslations('Discovery');
 
+  const renderSkeletonColumns = (columnCount: number, className: string) => (
+    <div className={`mx-auto w-full max-w-[1180px] gap-6 ${className}`}>
+      {splitIntoColumns(skeletonCardKeys, columnCount).map((column) => (
+        <div
+          key={`profile-skeleton-column-${columnCount}-${column[0]}`}
+          className="flex min-w-0 flex-col"
+        >
+          {column.map((key) => (
+            <SkeletonCard key={key} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <output aria-label={t('feedLoadingLabel')} className="flex flex-col gap-6">
-      <div className="mx-auto w-full max-w-[1180px] columns-1 gap-6 md:columns-2 lg:columns-3">
-        {skeletonCardKeys.map((key) => (
-          <SkeletonCard key={key} />
-        ))}
-      </div>
+      {renderSkeletonColumns(1, 'grid grid-cols-1 md:hidden')}
+      {renderSkeletonColumns(2, 'hidden md:grid md:grid-cols-2 lg:hidden')}
+      {renderSkeletonColumns(3, 'hidden lg:grid lg:grid-cols-3')}
     </output>
   );
 };
