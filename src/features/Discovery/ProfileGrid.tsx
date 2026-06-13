@@ -115,7 +115,7 @@ export const ProfileGrid = ({
     <ToastProvider>
       <section className="flex flex-col gap-6">
         {hasProfiles ? (
-          <div className="mx-auto flex w-full max-w-7xl flex-wrap justify-center gap-8">
+          <div className="mx-auto w-full max-w-[1180px] columns-1 gap-6 md:columns-2 lg:columns-3">
             {displayedProfiles.map((profile, index) => (
               <ProfileCard
                 key={profile.id}
@@ -136,14 +136,14 @@ export const ProfileGrid = ({
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-primary/30 border-dashed bg-background-darker/60 p-10 text-center">
+          <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary/30 border-dashed bg-background-darker/60 px-6 py-12 text-center">
             <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary text-xs uppercase tracking-wide">
               {t('emptyStateBadge')}
             </span>
             <h3 className="font-figtree font-semibold text-2xl text-white">
               {t('emptyStateTitle')}
             </h3>
-            <p className="max-w-md text-gray-400 text-sm">
+            <p className="max-w-[440px] text-gray-400 text-sm">
               {emptyState ?? t('emptyStateDescription')}
             </p>
           </div>
