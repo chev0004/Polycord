@@ -9,30 +9,57 @@ const skeletonCardKeys = Array.from(
   (_, index) => `profile-card-skeleton-${index}`,
 );
 
+const SkeletonCard = () => (
+  <article className="mb-6 flex w-full break-inside-avoid flex-col gap-4 rounded-2xl bg-background-dark shadow-lg">
+    <div className="-mb-2 h-16 rounded-t-2xl bg-primary-darker" />
+    <div className="-mt-10 flex flex-col gap-4 px-5 pb-5">
+      <div className="flex items-end justify-between">
+        <div className="rounded-full bg-background-dark p-[7px]">
+          <div className="skeleton-shimmer h-14 w-14 rounded-full" />
+        </div>
+        <div className="flex items-center gap-1.5 pb-1">
+          <div className="skeleton-shimmer h-6 w-16 rounded-full" />
+          <div className="skeleton-shimmer h-[26px] w-[26px] rounded-full" />
+        </div>
+      </div>
+      <div className="-mt-1 flex flex-col gap-1">
+        <div className="skeleton-shimmer h-4 w-[120px] rounded" />
+        <div className="skeleton-shimmer h-3 w-[90px] rounded" />
+      </div>
+      <div className="flex gap-2">
+        <div className="skeleton-shimmer h-7 w-[72px] rounded-md" />
+        <div className="skeleton-shimmer h-7 w-[104px] rounded-md" />
+      </div>
+      <div className="flex flex-col gap-4 rounded-2xl bg-background-darker p-4">
+        <div className="flex flex-col gap-2">
+          <div className="skeleton-shimmer h-2.5 w-10 rounded" />
+          <div className="flex gap-2">
+            <div className="skeleton-shimmer h-6 w-16 rounded-md" />
+            <div className="skeleton-shimmer h-6 w-[78px] rounded-md" />
+            <div className="skeleton-shimmer h-6 w-14 rounded-md" />
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="skeleton-shimmer h-2.5 w-10 rounded" />
+          <div className="flex flex-col gap-1.5">
+            <div className="skeleton-shimmer h-3 w-full rounded" />
+            <div className="skeleton-shimmer h-3 w-[90%] rounded" />
+            <div className="skeleton-shimmer h-3 w-[60%] rounded" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+);
+
 export const ProfileGridSkeleton = () => {
   const t = useTranslations('Discovery');
 
   return (
     <output aria-label={t('feedLoadingLabel')} className="flex flex-col gap-6">
-      <div className="mx-auto flex w-full max-w-7xl flex-wrap justify-center gap-8">
+      <div className="mx-auto w-full max-w-[1180px] columns-1 gap-6 md:columns-2 lg:columns-3">
         {skeletonCardKeys.map((key) => (
-          <div
-            key={key}
-            className="flex w-full max-w-sm animate-pulse flex-col gap-4 rounded-2xl bg-background-dark p-4 shadow-lg"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-background-darker" />
-              <div className="flex flex-col gap-2">
-                <div className="h-4 w-32 rounded bg-background-darker" />
-                <div className="h-3 w-24 rounded bg-background-darker" />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="h-6 w-24 rounded-md bg-background-darker" />
-              <div className="h-6 w-24 rounded-md bg-background-darker" />
-            </div>
-            <div className="h-44 rounded-2xl bg-background-darker" />
-          </div>
+          <SkeletonCard key={key} />
         ))}
       </div>
     </output>
