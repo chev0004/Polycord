@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { FaDiscord } from 'react-icons/fa';
 import { Button } from '@/components/Button';
@@ -36,13 +37,20 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={onHomeClick}
-          className="font-black font-figtree text-3xl text-white transition-colors hover:text-primary-light focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex select-none items-center gap-2.5 font-black font-figtree text-[28px] text-white tracking-[-0.01em] no-underline focus:outline-none"
         >
+          <Image
+            src="/polycord-logo.svg"
+            alt=""
+            width={28}
+            height={28}
+            className="block"
+          />
           {t('disspeak')}
         </button>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-[18px]">
         <LanguageSwitcher />
 
         {isLoggedIn ? (
