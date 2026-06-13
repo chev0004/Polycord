@@ -1,7 +1,7 @@
 import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { languages } from '@/constants/languages';
 import { locales } from '@/utils/locales';
@@ -26,10 +26,10 @@ const MenuItem = ({
   return (
     <Link
       href={href}
-      className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors ${
         isSelected
           ? 'bg-background-main text-primary-light'
-          : 'text-white hover:bg-background-main/50'
+          : 'text-white hover:bg-background-main'
       }`}
     >
       <span>{name}</span>
@@ -38,6 +38,7 @@ const MenuItem = ({
 };
 
 export const LanguageSwitcher: React.FC = () => {
+  const t = useTranslations('LanguageSwitcher');
   const currentLocale = useLocale();
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
@@ -48,11 +49,11 @@ export const LanguageSwitcher: React.FC = () => {
   }, []);
 
   const triggerContent = (
-    <div className="relative flex h-8 w-6 items-center justify-center">
-      <span className="absolute top-0 left-0 font-bold font-zen text-s">
+    <div className="relative h-10 w-[26px]">
+      <span className="absolute top-0.5 left-0 font-bold font-zen text-[15px] leading-none">
         文
       </span>
-      <span className="absolute right-0 bottom-0 font-figtree font-semibold text-xs uppercase">
+      <span className="absolute right-0 bottom-0.5 font-figtree font-semibold text-[11px] uppercase leading-none">
         {currentLocale}
       </span>
     </div>
@@ -63,7 +64,7 @@ export const LanguageSwitcher: React.FC = () => {
       <button
         type="button"
         aria-hidden="true"
-        className="relative flex h-10 w-6 select-none items-center justify-center overflow-hidden rounded-lg bg-background-darker text-white outline-none transition-all duration-200 hover:text-gray-30"
+        className="relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 hover:text-gray-400"
         tabIndex={-1}
       >
         {triggerContent}
@@ -76,19 +77,20 @@ export const LanguageSwitcher: React.FC = () => {
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="relative flex h-10 w-6 select-none items-center justify-center overflow-hidden rounded-lg bg-background-darker text-white outline-none transition-all duration-200 hover:text-gray-30"
+          aria-label={t('changeLanguage')}
+          className="relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 hover:text-gray-400"
         >
           {triggerContent}
         </button>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent z-50 w-[120px] rounded-lg bg-background-dark p-1 shadow-lg"
+          className="PopoverContent z-50 w-[120px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 shadow-lg"
           side="bottom"
           align="end"
-          sideOffset={5}
+          sideOffset={8}
         >
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col">
             {locales.map((locale) => (
               <MenuItem
                 key={locale}
@@ -98,7 +100,6 @@ export const LanguageSwitcher: React.FC = () => {
               />
             ))}
           </div>
-          <Popover.Arrow className="fill-gray-500/50" />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
