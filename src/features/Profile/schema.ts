@@ -39,7 +39,7 @@ export const profileSchema = z.object({
         .min(2, { message: 'tagTooShort' })
         .max(20, { message: 'tagTooLong' }),
     )
-    .max(6, { message: 'maxTags' })
+    .max(8, { message: 'maxTags' })
     .refine(
       (items) =>
         new Set(items.map((item) => item.toLowerCase())).size === items.length,
