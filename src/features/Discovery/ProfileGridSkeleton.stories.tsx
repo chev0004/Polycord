@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
+import 'src/app/globals.css';
 
 const meta: Meta<typeof ProfileGridSkeleton> = {
   title: 'Discovery/ProfileGridSkeleton',
