@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, screen, userEvent, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { Button } from '@/components/Button';
@@ -51,6 +52,20 @@ const NotificationsStory = () => {
 
 export const WithNotifications: Story = {
   render: () => <NotificationsStory />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = await canvas.findByRole('button', {
+      name: 'Notifications',
+    });
+
+    await expect(canvas.getByText('3')).toBeInTheDocument();
+
+    await userEvent.click(trigger);
+
+    await expect(
+      await screen.findByRole('heading', { name: 'Notifications' }),
+    ).toBeInTheDocument();
+  },
 };
 
 export const Empty: Story = {
