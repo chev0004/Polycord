@@ -299,83 +299,83 @@ export const ProfileCard = ({
   return (
     <article
       style={themeStyle}
-      className={`flex h-full w-full max-w-sm flex-col gap-4 rounded-3xl bg-background-dark p-5 shadow-lg transition-transform duration-200 ${
+      className={`relative mb-6 flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 shadow-lg transition-transform duration-200 ${
         isPopoverOpen || isMenuOpen
           ? '-translate-y-1 shadow-xl'
           : 'hover:-translate-y-1 hover:shadow-xl'
       }`}
     >
-      <div
-        className="-mx-5 -mt-5 flex h-16 flex-shrink-0 items-center justify-end rounded-t-3xl px-2.5"
-        style={{ background: theme.banner }}
-      >
-        <div className="flex items-center gap-1.5">
-          {profile.lastBumpRelative && (
-            <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
-              {profile.lastBumpRelative}
-            </span>
-          )}
-          <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <Popover.Trigger asChild>
-              <button
-                type="button"
-                suppressHydrationWarning
-                className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
-                aria-label={t('cardMenu')}
-              >
-                <MdMoreVert size={17} />
-              </button>
-            </Popover.Trigger>
-            <Popover.Portal>
-              <Popover.Content
-                className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
-                side="bottom"
-                align="end"
-                sideOffset={5}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-              >
-                <div className="flex flex-col gap-1">
-                  <MenuItem icon={MdPersonOutline} onClick={handleViewProfile}>
-                    {t('viewProfile')}
-                  </MenuItem>
-                  {(typeof navigator !== 'undefined' &&
-                    typeof navigator.share === 'function') ||
-                  !!onShare ? (
-                    <MenuItem icon={MdShare} onClick={handleShare}>
-                      {t('shareProfile')}
-                    </MenuItem>
-                  ) : null}
-                  <div className="my-1 h-[1px] bg-gray-500/50" />
-                  <MenuItem
-                    icon={MdFlag}
-                    onClick={handleReport}
-                    className="hover:!text-red-300 text-red-400"
-                    iconClassName="text-red-400"
-                  >
-                    {t('reportProfile')}
-                  </MenuItem>
-                  <MenuItem
-                    icon={MdBlock}
-                    onClick={handleBlock}
-                    className="hover:!text-red-300 text-red-400"
-                    iconClassName="text-red-400"
-                  >
-                    {t('blockProfile')}
-                  </MenuItem>
-                </div>
-                <Popover.Arrow className="fill-gray-500/50" />
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
-        </div>
-      </div>
-
-      {/* -mt pulls the ring up so its centre lands on the banner's bottom
-          edge; -mb cancels the ring's bottom padding so the avatar-to-name
-          gap equals the card's 16px rhythm. */}
-      <div className="-mt-[51px] -mb-[7px] self-start">
+      <div className="-mx-5 -mt-5 relative h-[99px] flex-shrink-0">
         <div
-          className="rounded-full bg-background-dark p-[7px]"
+          className="flex h-16 items-center justify-end rounded-t-3xl px-2.5"
+          style={{ background: theme.banner }}
+        >
+          <div className="flex items-center gap-1.5">
+            {profile.lastBumpRelative && (
+              <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
+                {profile.lastBumpRelative}
+              </span>
+            )}
+            <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <Popover.Trigger asChild>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
+                  aria-label={t('cardMenu')}
+                >
+                  <MdMoreVert size={17} />
+                </button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                  side="bottom"
+                  align="end"
+                  sideOffset={5}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                  <div className="flex flex-col gap-1">
+                    <MenuItem
+                      icon={MdPersonOutline}
+                      onClick={handleViewProfile}
+                    >
+                      {t('viewProfile')}
+                    </MenuItem>
+                    {(typeof navigator !== 'undefined' &&
+                      typeof navigator.share === 'function') ||
+                    !!onShare ? (
+                      <MenuItem icon={MdShare} onClick={handleShare}>
+                        {t('shareProfile')}
+                      </MenuItem>
+                    ) : null}
+                    <div className="my-1 h-[1px] bg-gray-500/50" />
+                    <MenuItem
+                      icon={MdFlag}
+                      onClick={handleReport}
+                      className="hover:!text-red-300 text-red-400"
+                      iconClassName="text-red-400"
+                    >
+                      {t('reportProfile')}
+                    </MenuItem>
+                    <MenuItem
+                      icon={MdBlock}
+                      onClick={handleBlock}
+                      className="hover:!text-red-300 text-red-400"
+                      iconClassName="text-red-400"
+                    >
+                      {t('blockProfile')}
+                    </MenuItem>
+                  </div>
+                  <Popover.Arrow className="fill-gray-500/50" />
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          </div>
+        </div>
+
+        <div
+          className="absolute top-[29px] left-5 rounded-full bg-background-dark p-[7px]"
           style={
             profile.premium && theme.tint
               ? { background: tintedSurface }
