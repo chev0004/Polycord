@@ -12,7 +12,7 @@ type ChipProps = {
 } & ChipRemoveProps;
 
 const baseClasses =
-  'inline-flex items-center gap-1.5 rounded-md bg-primary-darker px-[9px] py-[3px]';
+  'inline-flex items-center gap-1.5 rounded-md bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-[9px] py-[3px]';
 
 export const Chip = ({
   label,
@@ -25,9 +25,11 @@ export const Chip = ({
   const content = (
     <>
       {withDot && (
-        <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary-dark" />
+        <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--ct-chip-dot,var(--color-primary-dark))]" />
       )}
-      <span className="font-medium text-primary-light text-xs">{label}</span>
+      <span className="font-medium text-[var(--ct-chip-text,var(--color-primary-light))] text-xs">
+        {label}
+      </span>
     </>
   );
 
