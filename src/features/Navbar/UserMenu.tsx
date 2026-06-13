@@ -2,6 +2,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import {
+  MdArrowUpward,
   MdOutlineExitToApp,
   MdOutlineSettings,
   MdPersonOutline,
@@ -11,6 +12,7 @@ import { Avatar } from '@/components/Avatar';
 type UserMenuProps = {
   iconUrl?: string;
   onProfileClick: () => void;
+  onBumpProfileClick?: () => void;
   onSettingsClick: () => void;
   onLogoutClick: () => void;
 };
@@ -21,13 +23,13 @@ const MenuItem = ({
   children,
 }: {
   icon: React.ElementType;
-  onClick: () => void;
+  onClick?: () => void;
   children: React.ReactNode;
 }) => (
   <button
     type="button"
     onClick={onClick}
-    className="flex w-full items-center gap-3 px-4 py-2 text-sm text-white transition-colors hover:bg-background-main/50"
+    className="flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors hover:bg-background-main"
   >
     <Icon size={20} className="text-gray-400" />
     {children}
@@ -37,6 +39,7 @@ const MenuItem = ({
 export const UserMenu: React.FC<UserMenuProps> = ({
   iconUrl,
   onProfileClick,
+  onBumpProfileClick,
   onSettingsClick,
   onLogoutClick,
 }) => {
@@ -50,7 +53,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   const triggerButton = (
     <button
       type="button"
-      className="rounded-full transition-all duration-200 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background-darker"
+      className="rounded-full transition-opacity duration-200 hover:opacity-80 focus:outline-none"
     >
       <Avatar avatarUrl={iconUrl} size="sm" />
     </button>
@@ -74,14 +77,17 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       <Popover.Trigger asChild>{triggerButton}</Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
+          className="PopoverContent z-50 w-[200px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 shadow-lg"
           side="bottom"
           align="end"
-          sideOffset={5}
+          sideOffset={8}
         >
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col">
             <MenuItem icon={MdPersonOutline} onClick={onProfileClick}>
               {t('profile')}
+            </MenuItem>
+            <MenuItem icon={MdArrowUpward} onClick={onBumpProfileClick}>
+              {t('bumpProfile')}
             </MenuItem>
             <MenuItem icon={MdOutlineSettings} onClick={onSettingsClick}>
               {t('settings')}
@@ -91,7 +97,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               {t('logout')}
             </MenuItem>
           </div>
-          <Popover.Arrow className="fill-gray-500/50" />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
