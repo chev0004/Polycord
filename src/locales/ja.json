@@ -30,6 +30,7 @@
   },
   "UserMenu": {
     "profile": "プロフィール",
+    "bumpProfile": "プロフィールをバンプ",
     "settings": "設定",
     "logout": "ログアウト"
   },

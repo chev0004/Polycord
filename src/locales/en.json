@@ -30,6 +30,7 @@
   },
   "UserMenu": {
     "profile": "Profile",
+    "bumpProfile": "Bump profile",
     "settings": "Settings",
     "logout": "Logout"
   },
