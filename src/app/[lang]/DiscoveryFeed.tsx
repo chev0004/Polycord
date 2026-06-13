@@ -1,39 +1,41 @@
-import { getTranslations } from 'next-intl/server';
 import { listPublicProfiles } from '@/db';
-import { ProfileGrid } from '@/features/Discovery/ProfileGrid';
+import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
+import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 
 type DiscoveryFeedProps = {
+  authError?: string;
   isLoggedIn: boolean;
   locale: string;
+  needsOnboarding: boolean;
+  userAvatarUrl?: string;
 };
 
 export const DiscoveryFeed = async ({
+  authError,
   isLoggedIn,
   locale,
+  needsOnboarding,
+  userAvatarUrl,
 }: DiscoveryFeedProps) => {
-  const t = await getTranslations({ locale, namespace: 'Discovery' });
+  let profiles: DiscoveryProfile[] = [];
+  let feedError = false;
 
   try {
-    const profiles = await listPublicProfiles();
-
-    return (
-      <ProfileGrid
-        profiles={profiles}
-        isLoggedIn={isLoggedIn}
-        emptyState={t('emptyFeedDescription')}
-      />
-    );
+    profiles = await listPublicProfiles();
   } catch (error) {
     console.error('Failed to load public profiles:', error);
-
-    return (
-      <div
-        className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
-        role="alert"
-      >
-        <p className="font-semibold">{t('feedErrorTitle')}</p>
-        <p className="mt-1 text-red-100/80">{t('feedErrorDescription')}</p>
-      </div>
-    );
+    feedError = true;
   }
+
+  return (
+    <DiscoveryPage
+      authError={authError}
+      feedError={feedError}
+      isLoggedIn={isLoggedIn}
+      locale={locale}
+      needsOnboarding={needsOnboarding}
+      profiles={profiles}
+      userAvatarUrl={userAvatarUrl}
+    />
+  );
 };
