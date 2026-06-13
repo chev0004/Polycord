@@ -89,12 +89,11 @@ export const FilterButton = React.forwardRef<
     }, [options, search, searchable]);
 
     const getDisplayText = () => {
-      if (applied.length === 0) return label;
       if (applied.length === 1) {
         const option = options.find((opt) => opt.value === applied[0]);
         return option?.label ?? label;
       }
-      return t('filterSelected', { count: applied.length });
+      return label;
     };
 
     return (
