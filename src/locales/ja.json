@@ -212,7 +212,10 @@
     "filterSelectTag": "タグを選択",
     "filterSelectLevel": "レベルを選択",
     "filterSelectTimezone": "タイムゾーンを選択",
-    "filterSearchPlaceholder": "検索..."
+    "filterSearchPlaceholder": "検索...",
+    "filterSelected": "{count}件選択中",
+    "filterClear": "フィルターをクリア",
+    "filterNoResults": "結果が見つかりません"
   },
   "Onboarding": {
     "firstRunSetup": "初回セットアップ",
