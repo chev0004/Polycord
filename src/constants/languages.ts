@@ -220,6 +220,14 @@ export const languageOptions = (locale: string): LanguageOption[] => {
     .sort((a, b) => a.label.localeCompare(b.label));
 };
 
+// Resolve a language code to its localized full name (e.g. 'en' -> 'English').
+// Strings that are not known codes are returned unchanged, so values that are
+// already full names pass through.
+export const getLanguageName = (code: string, locale: string): string => {
+  const lang = languages.find((l) => l.code === code);
+  return lang ? getLocalizedName(lang, locale) : code;
+};
+
 export const isValidLanguageCode = (code: string): code is LanguageCode => {
   return (
     typeof code === 'string' &&
