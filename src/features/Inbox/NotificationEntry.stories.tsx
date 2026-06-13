@@ -50,3 +50,24 @@ const DefaultNotificationStory = () => {
 export const Default: Story = {
   render: () => <DefaultNotificationStory />,
 };
+
+const ReadNotificationStory = () => {
+  const t = useTranslations('Inbox');
+  return (
+    <NotificationEntry
+      notification={{
+        id: '2',
+        message: t('userCopied', { user: 'xhev' }),
+        timestamp: t('hoursAgo', { count: 1 }),
+        iconUrl: MOCK_USER_AVATAR_URL,
+        read: true,
+      }}
+      onMarkAsRead={() => {}}
+      onDelete={() => {}}
+    />
+  );
+};
+
+export const Read: Story = {
+  render: () => <ReadNotificationStory />,
+};

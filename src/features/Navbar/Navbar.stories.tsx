@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { expect, fn, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { Navbar } from './Navbar';
@@ -9,10 +9,17 @@ const meta: Meta<typeof Navbar> = {
   component: Navbar,
   parameters: {
     layout: 'fullscreen',
+    nextjs: {
+      appDirectory: true,
+      navigation: {
+        pathname: '/en',
+      },
+    },
   },
   args: {
     onLoginClick: fn(),
     onProfileClick: fn(),
+    onBumpProfileClick: fn(),
     onSettingsClick: fn(),
     onLogoutClick: fn(),
   },
@@ -53,6 +60,13 @@ export const LoggedIn: Story = {
     };
     return <LoggedInStory />;
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const logo = canvasElement.querySelector('img[src*="polycord-logo"]');
+    await expect(logo).toBeInTheDocument();
+    await expect(canvas.getByText('Polycord')).toBeInTheDocument();
+  },
 };
 
 export const LoggedOut: Story = {
@@ -65,5 +79,12 @@ export const LoggedOut: Story = {
         notifications={[]}
       />
     );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByRole('button', { name: /discord/i }),
+    ).toBeInTheDocument();
   },
 };
