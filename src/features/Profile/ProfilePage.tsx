@@ -707,7 +707,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <MdVisibility size={15} className="text-primary" />
               {t('livePreview')}
             </span>
-            {/* UIR-024 replaces this with the discovery-card live preview */}
             <div className="rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
               <div className="rounded-xl bg-background-darker p-4">
                 <div className="flex items-center gap-3">
