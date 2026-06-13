@@ -6,8 +6,16 @@ import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import type { IconType } from 'react-icons';
+import {
+  MdAdd,
+  MdArrowUpward,
+  MdDeleteOutline,
+  MdErrorOutline,
+  MdMoreVert,
+  MdVisibility,
+} from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
-import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import {
@@ -30,12 +38,17 @@ import { type ProfileFormValues, profileSchema } from './schema';
 
 type ProfilePageProps = {
   initialValues?: ProfileFormValues;
+  onBumpProfile?: () => void;
   onDeleteProfile?: () => Promise<void> | void;
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
   onViewPublicProfile?: () => void;
+  premium?: boolean;
   userAvatarUrl?: string;
   userDisplayName?: string;
 };
+
+const FREE_TAG_CAP = 5;
+const PREMIUM_TAG_CAP = 8;
 
 const defaultValues: ProfileFormValues = {
   primaryLanguage: '',
@@ -58,7 +71,7 @@ const availabilityLabelKeys: Record<string, string> = {
   flexible: 'availabilityOptionFlexible',
 };
 
-const Section = ({
+const SectionCard = ({
   title,
   description,
   children,
@@ -67,16 +80,16 @@ const Section = ({
   description?: string;
   children: React.ReactNode;
 }) => (
-  <section className="border-white/10 border-t py-6">
-    <div className="mb-5">
-      <h2 className="font-figtree font-semibold text-white text-xl">{title}</h2>
+  <section className="flex flex-col gap-5 rounded-3xl bg-background-dark p-6 shadow-xl">
+    <div className="flex flex-col gap-[3px] border-white/10 border-b pb-3.5">
+      <h2 className="font-figtree font-semibold text-[19px] text-primary leading-[1.2]">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-1 max-w-2xl text-gray-500 text-sm leading-relaxed">
-          {description}
-        </p>
+        <p className="text-[13px] text-gray-500">{description}</p>
       )}
     </div>
-    {children}
+    <div className="flex flex-col gap-[18px]">{children}</div>
   </section>
 );
 
@@ -89,34 +102,37 @@ const SettingsRow = ({
   description: string;
   children: React.ReactNode;
 }) => (
-  <div className="grid gap-3 border-white/5 border-t py-4 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-    <div>
-      <h3 className="font-medium text-sm text-white">{label}</h3>
-      <p className="mt-1 max-w-xl text-gray-500 text-xs leading-relaxed">
-        {description}
-      </p>
+  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+    <div className="min-w-0">
+      <p className="font-medium text-[15px] text-white">{label}</p>
+      <p className="mt-0.5 text-[12px] text-gray-500">{description}</p>
     </div>
-    <div className="sm:justify-self-end">{children}</div>
+    <div className="shrink-0">{children}</div>
   </div>
 );
 
 const MenuItem = ({
+  icon: Icon,
   onClick,
   disabled,
+  danger,
   children,
-  className,
 }: {
+  icon: IconType;
   onClick?: () => void;
   disabled?: boolean;
+  danger?: boolean;
   children: React.ReactNode;
-  className?: string;
 }) => (
   <button
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none ${className ?? 'text-white'}`}
+    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${
+      danger ? 'hover:!text-red-300 text-red-400' : 'text-white'
+    }`}
   >
+    <Icon size={20} />
     {children}
   </button>
 );
@@ -124,8 +140,10 @@ const MenuItem = ({
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   initialValues,
   onSubmit: onSubmitProp,
+  onBumpProfile,
   onDeleteProfile,
   onViewPublicProfile,
+  premium = false,
   userAvatarUrl,
   userDisplayName,
 }) => {
@@ -136,11 +154,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const locale = useLocale();
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>(
-    'idle',
-  );
-  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'error'>('idle');
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const tagCap = premium ? PREMIUM_TAG_CAP : FREE_TAG_CAP;
 
   const {
     register,
@@ -149,7 +167,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     reset,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: initialValues ?? defaultValues,
@@ -184,20 +202,28 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   }, [setValue, displayTimezone, timezone]);
 
   const onSubmit = async (data: ProfileFormValues) => {
-    setSaveStatus('idle');
-    setDeleteStatus('idle');
+    setTagError(null);
+    setSaveFailed(false);
+    setDeleteFailed(false);
 
     if (onSubmitProp) {
       try {
         await onSubmitProp(data);
         reset(data);
-        setSaveStatus('success');
       } catch {
-        setSaveStatus('error');
+        setSaveFailed(true);
       }
     } else {
-      console.log('Profile Data Submitted', data);
+      reset(data);
     }
+  };
+
+  const handleDiscard = () => {
+    reset();
+    setTagInput('');
+    setTagError(null);
+    setSaveFailed(false);
+    setDeleteFailed(false);
   };
 
   const handleDeleteProfile = async () => {
@@ -211,14 +237,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       return;
     }
 
-    setSaveStatus('idle');
-    setDeleteStatus('idle');
+    setTagError(null);
+    setSaveFailed(false);
+    setDeleteFailed(false);
     setIsDeleting(true);
 
     try {
       await onDeleteProfile();
     } catch {
-      setDeleteStatus('error');
+      setDeleteFailed(true);
     } finally {
       setIsDeleting(false);
     }
@@ -227,7 +254,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const localizedLanguageOptions = languageOptions(locale);
   const localizedCountryOptions = countryOptions(locale);
   const localizedProficiencyOptions = proficiencyOptions(locale);
-  const hasProfileMenu = Boolean(onViewPublicProfile || onDeleteProfile);
   const displayName = userDisplayName ?? t('defaultDisplayName');
 
   const preview = useMemo(() => {
@@ -252,105 +278,88 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     targetLanguage,
   ]);
 
+  const tagsSchemaError = errors.tags?.message
+    ? t(errors.tags.message as string, { cap: tagCap })
+    : null;
+  const bannerError =
+    tagError ??
+    tagsSchemaError ??
+    (saveFailed ? t('saveError') : null) ??
+    (deleteFailed ? t('deleteError') : null);
+
   return (
-    <div className="mx-auto w-full max-w-6xl p-4 sm:p-8">
+    <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
+      <div className="mb-6 flex items-end justify-between gap-5">
+        <div className="min-w-0">
+          <h1 className="font-bold font-figtree text-[30px] text-white leading-[1.1]">
+            {t('editProfile')}
+          </h1>
+          <p className="mt-1.5 font-light text-[15px] text-gray-400">
+            {t('editProfileSubtitle')}
+          </p>
+        </div>
+
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <button
+              type="button"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-gray-300 transition-colors hover:bg-background-darker hover:text-white focus:outline-none"
+              aria-label={t('profileOptions')}
+            >
+              <MdMoreVert size={20} />
+            </button>
+          </Popover.Trigger>
+          <Popover.Portal>
+            <Popover.Content
+              className="z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
+              side="bottom"
+              align="end"
+              sideOffset={6}
+            >
+              <div className="flex flex-col">
+                <MenuItem icon={MdArrowUpward} onClick={onBumpProfile}>
+                  {t('bumpProfile')}
+                </MenuItem>
+                {onViewPublicProfile ? (
+                  <MenuItem icon={MdVisibility} onClick={onViewPublicProfile}>
+                    {t('viewPublicProfile')}
+                  </MenuItem>
+                ) : null}
+                {onDeleteProfile ? (
+                  <>
+                    <div className="my-1 h-px bg-white/10" />
+                    <MenuItem
+                      icon={MdDeleteOutline}
+                      danger
+                      disabled={isDeleting}
+                      onClick={handleDeleteProfile}
+                    >
+                      {isDeleting ? t('deletingProfile') : t('deleteProfile')}
+                    </MenuItem>
+                  </>
+                ) : null}
+              </div>
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+      </div>
+
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
+        className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
       >
-        <div className="rounded-2xl border border-white/5 bg-background-dark px-4 shadow-xl sm:px-6">
-          <header className="flex flex-col gap-4 py-6 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar avatarUrl={userAvatarUrl} size="lg" />
-              <div>
-                <h1 className="font-bold font-figtree text-3xl text-white">
-                  {t('editProfile')}
-                </h1>
-                <Badge
-                  variant={isPublic ? 'positive' : 'neutral'}
-                  className="mt-2"
-                >
-                  {isPublic ? t('statusPublic') : t('statusUnlisted')}
-                </Badge>
-              </div>
-            </div>
-
-            {hasProfileMenu ? (
-              <Popover.Root>
-                <Popover.Trigger asChild>
-                  <button
-                    type="button"
-                    className="self-start rounded-lg border border-white/10 px-3 py-2 text-gray-400 text-sm transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    aria-label={t('profileOptions')}
-                  >
-                    {t('profileOptionsButton')}
-                  </button>
-                </Popover.Trigger>
-                <Popover.Portal>
-                  <Popover.Content
-                    className="PopoverContent z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
-                    side="bottom"
-                    align="end"
-                    sideOffset={5}
-                  >
-                    <div className="flex flex-col">
-                      {onViewPublicProfile ? (
-                        <MenuItem
-                          onClick={onViewPublicProfile}
-                          className="hover:!text-green-300 text-green-400"
-                        >
-                          {t('viewPublicProfile')}
-                        </MenuItem>
-                      ) : null}
-                      {onDeleteProfile ? (
-                        <MenuItem
-                          onClick={handleDeleteProfile}
-                          className="hover:!text-red-300 text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
-                          disabled={isDeleting}
-                        >
-                          {isDeleting
-                            ? t('deletingProfile')
-                            : t('deleteProfile')}
-                        </MenuItem>
-                      ) : null}
-                    </div>
-                  </Popover.Content>
-                </Popover.Portal>
-              </Popover.Root>
-            ) : null}
-          </header>
-
-          {tagError && (
+        <div className="flex min-w-0 flex-col gap-5">
+          {bannerError ? (
             <div
-              className="rounded-lg border border-red-800 bg-red-950/50 p-3 text-red-400 text-sm"
               role="alert"
+              className="flex items-center gap-2 rounded-md border border-red-800 bg-red-950/50 px-3.5 py-3 text-[14px] text-red-400"
             >
-              {tagError}
-            </div>
-          )}
-
-          {saveStatus !== 'idle' ? (
-            <output
-              className={`rounded-lg border p-3 text-sm ${
-                saveStatus === 'success'
-                  ? 'border-green-800 bg-green-950/40 text-green-300'
-                  : 'border-red-800 bg-red-950/50 text-red-400'
-              }`}
-            >
-              {saveStatus === 'success' ? t('saveSuccess') : t('saveError')}
-            </output>
-          ) : null}
-
-          {deleteStatus === 'error' ? (
-            <div
-              className="rounded-lg border border-red-800 bg-red-950/50 p-3 text-red-400 text-sm"
-              role="alert"
-            >
-              {t('deleteError')}
+              <MdErrorOutline size={18} className="shrink-0" />
+              {bannerError}
             </div>
           ) : null}
 
-          <Section
+          <SectionCard
             title={t('languageProfile')}
             description={t('languageProfileDescription')}
           >
@@ -464,131 +473,158 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 )}
               </FormGroup>
             </div>
-          </Section>
+          </SectionCard>
 
-          <Section title={t('aboutMe')} description={t('aboutMeDescription')}>
-            <div className="grid gap-4">
-              <FormGroup>
-                <Label htmlFor="availability">{t('availabilityLabel')}</Label>
-                <Controller
-                  name="availability"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      options={availabilityValues.map((value) => ({
-                        label: t(availabilityLabelKeys[value]),
-                        value,
-                      }))}
-                      placeholder={t('availabilityPlaceholder')}
-                      onValueChange={field.onChange}
-                      value={field.value ?? 'flexible'}
-                      error={!!errors.availability}
-                    />
-                  )}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor={bioId}>{t('bioLabel')}</Label>
-                <TextArea
-                  id={bioId}
-                  rows={4}
-                  {...register('bio')}
-                  placeholder={t('bioPlaceholder')}
-                  error={!!errors.bio}
-                />
-                {errors.bio && (
-                  <FieldError>{t(errors.bio.message as string)}</FieldError>
-                )}
-              </FormGroup>
-
+          <SectionCard
+            title={t('aboutMe')}
+            description={t('aboutMeDescription')}
+          >
+            <FormGroup>
+              <Label htmlFor="availability">{t('availabilityLabel')}</Label>
               <Controller
-                name="tags"
+                name="availability"
                 control={control}
-                render={({ field }) => {
-                  const handleAddTag = () => {
-                    const newTag = tagInput.trim();
-                    const currentTags = field.value || [];
-                    setTagError(null);
-
-                    if (!newTag) return;
-                    if (newTag.length < 2) return setTagError(t('tagTooShort'));
-                    if (newTag.length > 20) return setTagError(t('tagTooLong'));
-                    if (currentTags.length >= 6)
-                      return setTagError(t('maxTags'));
-                    if (
-                      currentTags
-                        .map((tag) => tag.toLowerCase())
-                        .includes(newTag.toLowerCase())
-                    ) {
-                      return setTagError(t('duplicateTag'));
-                    }
-
-                    field.onChange([...currentTags, newTag]);
-                    setTagInput('');
-                  };
-
-                  const handleRemoveTag = (indexToRemove: number) => {
-                    const currentTags = field.value || [];
-                    field.onChange(
-                      currentTags.filter((_, index) => index !== indexToRemove),
-                    );
-                  };
-
-                  return (
-                    <FormGroup>
-                      <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
-                      {(field.value ?? []).length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/5 bg-background-darker p-2">
-                          {(field.value || []).map((tag, index) => (
-                            <Chip
-                              key={tag}
-                              label={tag}
-                              onRemove={() => handleRemoveTag(index)}
-                              removeLabel={t('removeTag', { tag })}
-                            />
-                          ))}
-                        </div>
-                      )}
-                      <div className="flex gap-2">
-                        <TextInput
-                          id={tagsInputId}
-                          value={tagInput}
-                          onChange={(event) => setTagInput(event.target.value)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                              event.preventDefault();
-                              handleAddTag();
-                            }
-                          }}
-                          placeholder={t('tagsPlaceholder')}
-                          className="flex-grow"
-                          error={!!errors.tags}
-                        />
-                        <button
-                          type="button"
-                          onClick={handleAddTag}
-                          className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        >
-                          {t('addTag')}
-                        </button>
-                      </div>
-                      {errors.tags?.message && (
-                        <FieldError>{t(errors.tags.message)}</FieldError>
-                      )}
-                    </FormGroup>
-                  );
-                }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={availabilityValues.map((value) => ({
+                      label: t(availabilityLabelKeys[value]),
+                      value,
+                    }))}
+                    placeholder={t('availabilityPlaceholder')}
+                    onValueChange={field.onChange}
+                    value={field.value ?? 'flexible'}
+                    error={!!errors.availability}
+                  />
+                )}
               />
-            </div>
-          </Section>
+            </FormGroup>
 
-          <Section
+            <FormGroup>
+              <Label htmlFor={bioId}>{t('bioLabel')}</Label>
+              <TextArea
+                id={bioId}
+                rows={4}
+                {...register('bio')}
+                placeholder={t('bioPlaceholder')}
+                error={!!errors.bio}
+              />
+              {errors.bio && (
+                <FieldError>{t(errors.bio.message as string)}</FieldError>
+              )}
+            </FormGroup>
+
+            <Controller
+              name="tags"
+              control={control}
+              render={({ field }) => {
+                const currentTags = field.value ?? [];
+
+                const handleAddTag = () => {
+                  const newTag = tagInput.trim();
+
+                  if (!newTag) return;
+                  if (newTag.length < 2) {
+                    setTagError(t('tagTooShort'));
+                    return;
+                  }
+                  if (newTag.length > 20) {
+                    setTagError(t('tagTooLong'));
+                    return;
+                  }
+                  if (currentTags.length >= tagCap) {
+                    setTagError(t('maxTags', { cap: tagCap }));
+                    return;
+                  }
+                  if (
+                    currentTags.some(
+                      (tag) => tag.toLowerCase() === newTag.toLowerCase(),
+                    )
+                  ) {
+                    setTagError(t('duplicateTag'));
+                    return;
+                  }
+
+                  setTagError(null);
+                  field.onChange([...currentTags, newTag]);
+                  setTagInput('');
+                };
+
+                const handleRemoveTag = (indexToRemove: number) => {
+                  field.onChange(
+                    currentTags.filter((_, index) => index !== indexToRemove),
+                  );
+                };
+
+                return (
+                  <FormGroup>
+                    <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
+                    {currentTags.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/5 bg-background-darker p-2.5">
+                        {currentTags.map((tag, index) => (
+                          <Chip
+                            key={tag}
+                            label={tag}
+                            onRemove={() => handleRemoveTag(index)}
+                            removeLabel={t('removeTag', { tag })}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <TextInput
+                        id={tagsInputId}
+                        value={tagInput}
+                        onChange={(event) => setTagInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault();
+                            handleAddTag();
+                          }
+                        }}
+                        placeholder={t('tagsPlaceholder')}
+                        className="flex-1"
+                        error={!!errors.tags}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddTag}
+                        aria-label={t('addTag')}
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-black transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none active:scale-[0.98]"
+                      >
+                        <MdAdd size={20} />
+                      </button>
+                    </div>
+                    <p className="text-[12px] text-gray-500">
+                      {t('tagCounterHint', {
+                        count: currentTags.length,
+                        cap: tagCap,
+                      })}
+                    </p>
+                    {!premium && currentTags.length >= FREE_TAG_CAP && (
+                      <p className="text-[13px] text-gray-400 leading-relaxed">
+                        {t.rich('tagCapUpsell', {
+                          freeCap: FREE_TAG_CAP,
+                          premiumCap: PREMIUM_TAG_CAP,
+                          strong: (chunks) => (
+                            <strong className="font-semibold text-white">
+                              {chunks}
+                            </strong>
+                          ),
+                        })}
+                      </p>
+                    )}
+                  </FormGroup>
+                );
+              }}
+            />
+          </SectionCard>
+
+          <SectionCard
             title={t('privacySettings')}
             description={t('privacySettingsDescription')}
           >
-            <div className="rounded-xl border border-white/5 bg-background-darker/70 px-4">
+            <div className="flex flex-col gap-2.5">
               <SettingsRow
                 label={t('makeProfilePublicLabel')}
                 description={t('makeProfilePublicDescription')}
@@ -637,69 +673,92 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 />
               </SettingsRow>
             </div>
-          </Section>
+          </SectionCard>
 
-          <div className="-mx-4 sm:-mx-6 sticky bottom-0 border-white/10 border-t bg-background-dark px-4 py-4 sm:px-6">
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting} className="h-10">
+          <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
+            <span
+              className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
+            >
+              {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleDiscard}
+                disabled={!isDirty || isSubmitting}
+                className="h-10"
+              >
+                {t('discard')}
+              </Button>
+              <Button
+                type="submit"
+                disabled={!isDirty || isSubmitting}
+                className="h-10"
+              >
                 {isSubmitting ? t('saving') : t('saveProfile')}
               </Button>
             </div>
           </div>
         </div>
 
-        <aside>
-          <div className="sticky top-8 rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
-            <p className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
-              {t('publicPreview')}
-            </p>
-            <div className="rounded-xl bg-background-darker p-4">
-              <div className="flex items-center gap-3">
-                <Avatar avatarUrl={userAvatarUrl} size="md" />
-                <div>
-                  <h2 className="font-semibold text-white">{displayName}</h2>
-                  <p className="text-gray-500 text-xs">
-                    {isPublic ? t('statusPublic') : t('statusUnlisted')}
-                  </p>
+        <aside className="lg:sticky lg:top-6">
+          <div className="flex flex-col gap-2.5">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+              <MdVisibility size={15} className="text-primary" />
+              {t('livePreview')}
+            </span>
+            {/* UIR-024 replaces this with the discovery-card live preview */}
+            <div className="rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
+              <div className="rounded-xl bg-background-darker p-4">
+                <div className="flex items-center gap-3">
+                  <Avatar avatarUrl={userAvatarUrl} size="md" />
+                  <div>
+                    <h2 className="font-semibold text-white">{displayName}</h2>
+                    <p className="text-gray-500 text-xs">
+                      {isPublic ? t('statusPublic') : t('statusUnlisted')}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {preview.primaryLanguage && (
-                  <span className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs">
-                    {preview.primaryLanguage}
-                  </span>
-                )}
-                {preview.targetLanguage && (
-                  <span className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs">
-                    {preview.targetLanguage}
-                    {preview.proficiencyLevel
-                      ? ` / ${preview.proficiencyLevel}`
-                      : ''}
-                  </span>
-                )}
-              </div>
-
-              <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
-                {bio || t('bioPlaceholder')}
-              </p>
-
-              {tags.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {tags.slice(0, 6).map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs"
-                    >
-                      {tag}
+                  {preview.primaryLanguage && (
+                    <span className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs">
+                      {preview.primaryLanguage}
                     </span>
-                  ))}
+                  )}
+                  {preview.targetLanguage && (
+                    <span className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs">
+                      {preview.targetLanguage}
+                      {preview.proficiencyLevel
+                        ? ` / ${preview.proficiencyLevel}`
+                        : ''}
+                    </span>
+                  )}
                 </div>
-              )}
 
-              {preview.country && (
-                <p className="mt-4 text-gray-500 text-xs">{preview.country}</p>
-              )}
+                <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
+                  {bio || t('bioPlaceholder')}
+                </p>
+
+                {tags.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {tags.slice(0, tagCap).map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {preview.country && (
+                  <p className="mt-4 text-gray-500 text-xs">
+                    {preview.country}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </aside>
