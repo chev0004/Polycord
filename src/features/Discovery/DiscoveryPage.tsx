@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MdClose } from 'react-icons/md';
+import { FilterBar } from '@/components/Filter';
 import { Navbar } from '@/features/Navbar';
 import {
   getMissingRequiredFields,
@@ -11,13 +12,23 @@ import {
   ONBOARDING_DRAFT_STORAGE_KEY,
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
+import {
+  applyDiscoveryFilters,
+  type DiscoveryFilterValues,
+  useDiscoveryFilterDefs,
+} from './discoveryFilters';
+import type { DiscoveryProfile } from './ProfileCard';
+import { ProfileGrid } from './ProfileGrid';
+import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 
 type DiscoveryPageProps = {
   authError?: string;
-  feed: ReactNode;
+  feedError?: boolean;
+  isLoading?: boolean;
   isLoggedIn: boolean;
   locale: string;
   needsOnboarding?: boolean;
+  profiles?: DiscoveryProfile[];
   userAvatarUrl?: string;
 };
 
@@ -34,14 +45,18 @@ const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
 
 export const DiscoveryPage = ({
   authError,
-  feed,
+  feedError = false,
+  isLoading = false,
   isLoggedIn,
   locale,
   needsOnboarding = false,
+  profiles = [],
   userAvatarUrl,
 }: DiscoveryPageProps) => {
   const router = useRouter();
   const t = useTranslations('Discovery');
+  const filterDefs = useDiscoveryFilterDefs();
+  const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>({});
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
 
@@ -72,6 +87,27 @@ export const DiscoveryPage = ({
 
   const completion = useMemo(() => getOnboardingCompletion(draft), [draft]);
 
+  const hasActiveFilters = useMemo(
+    () =>
+      Object.values(filterValues).some((value) =>
+        Array.isArray(value) ? value.length > 0 : Boolean(value),
+      ),
+    [filterValues],
+  );
+
+  const filteredProfiles = useMemo(
+    () => applyDiscoveryFilters(profiles, filterValues),
+    [profiles, filterValues],
+  );
+
+  const handleFilterChange = (filterId: string, value: string | string[]) => {
+    setFilterValues((previous) => ({ ...previous, [filterId]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilterValues({});
+  };
+
   return (
     <div className="min-h-screen bg-background-main text-white">
       <Navbar
@@ -89,10 +125,10 @@ export const DiscoveryPage = ({
         }
       />
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
         {authError ? (
           <div
-            className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
+            className="mb-6 rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
             role="alert"
           >
             <p className="font-semibold">{t('authErrorTitle')}</p>
@@ -100,19 +136,52 @@ export const DiscoveryPage = ({
           </div>
         ) : null}
 
-        <header className="flex max-w-3xl flex-col gap-3">
-          <p className="font-semibold text-primary text-xs uppercase tracking-wide">
-            {t('pageEyebrow')}
-          </p>
-          <h1 className="font-bold font-figtree text-3xl text-white sm:text-4xl">
-            {t('pageTitle')}
-          </h1>
-          <p className="text-gray-400 text-sm leading-relaxed sm:text-base">
-            {t('pageDescription')}
-          </p>
-        </header>
+        <div className="mb-[26px] flex flex-col gap-[14px]">
+          {/* Search bar mounts here (UIR-017) */}
+          {/* Popular tags cloud mounts here (UIR-018) */}
+          {/* FilterBar's sortControl slot is reserved for the sort menu (UIR-019) */}
+          <FilterBar
+            filters={filterDefs}
+            values={filterValues}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
 
-        {feed}
+        {feedError ? (
+          <div
+            className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
+            role="alert"
+          >
+            <p className="font-semibold">{t('feedErrorTitle')}</p>
+            <p className="mt-1 text-red-100/80">{t('feedErrorDescription')}</p>
+          </div>
+        ) : (
+          <>
+            <div className="mb-[18px] flex items-center">
+              <span
+                aria-live="polite"
+                className="font-semibold text-[15px] text-primary"
+              >
+                {isLoading
+                  ? t('resultsSearching')
+                  : t('resultsCount', { count: filteredProfiles.length })}
+              </span>
+            </div>
+
+            {isLoading ? (
+              <ProfileGridSkeleton />
+            ) : (
+              <ProfileGrid
+                profiles={filteredProfiles}
+                isLoggedIn={isLoggedIn}
+                emptyState={
+                  hasActiveFilters ? undefined : t('emptyFeedDescription')
+                }
+              />
+            )}
+          </>
+        )}
       </main>
 
       {needsOnboarding && !isPromptDismissed ? (
