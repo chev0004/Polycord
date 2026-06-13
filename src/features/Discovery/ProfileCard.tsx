@@ -299,7 +299,7 @@ export const ProfileCard = ({
   return (
     <article
       style={themeStyle}
-      className={`flex h-full w-full max-w-sm flex-col gap-4 rounded-3xl bg-background-dark p-5 shadow-lg transition-transform duration-200 ${
+      className={`mb-6 flex w-full break-inside-avoid flex-col gap-4 rounded-3xl bg-background-dark p-5 shadow-lg transition-transform duration-200 ${
         isPopoverOpen || isMenuOpen
           ? '-translate-y-1 shadow-xl'
           : 'hover:-translate-y-1 hover:shadow-xl'
