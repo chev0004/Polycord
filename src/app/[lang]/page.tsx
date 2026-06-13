@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import { getProfileByUserId, upsertDiscordUser } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
-import { ProfileGridSkeleton } from '@/features/Discovery/ProfileGridSkeleton';
 import { getCurrentUser } from '@/lib/auth';
 import { DiscoveryFeed } from './DiscoveryFeed';
 
@@ -23,18 +22,28 @@ export default async function Home({
     needsOnboarding = !profile;
   }
 
+  const isLoggedIn = Boolean(user);
+
   return (
-    <DiscoveryPage
-      authError={authError}
-      isLoggedIn={Boolean(user)}
-      locale={lang}
-      needsOnboarding={needsOnboarding}
-      userAvatarUrl={user?.avatarUrl}
-      feed={
-        <Suspense fallback={<ProfileGridSkeleton />}>
-          <DiscoveryFeed isLoggedIn={Boolean(user)} locale={lang} />
-        </Suspense>
+    <Suspense
+      fallback={
+        <DiscoveryPage
+          authError={authError}
+          isLoading
+          isLoggedIn={isLoggedIn}
+          locale={lang}
+          needsOnboarding={needsOnboarding}
+          userAvatarUrl={user?.avatarUrl}
+        />
       }
-    />
+    >
+      <DiscoveryFeed
+        authError={authError}
+        isLoggedIn={isLoggedIn}
+        locale={lang}
+        needsOnboarding={needsOnboarding}
+        userAvatarUrl={user?.avatarUrl}
+      />
+    </Suspense>
   );
 }
