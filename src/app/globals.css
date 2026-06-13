@@ -322,3 +322,27 @@
   outline: none;
   box-shadow: none;
 }
+
+.skeleton-shimmer {
+  background: var(--color-primary-darker);
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(193, 213, 233, 0.06),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.4s ease-out infinite;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
