@@ -1,7 +1,7 @@
 'use client';
 
 import * as Popover from '@radix-ui/react-popover';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Fragment, useEffect, useState } from 'react';
 import {
   MdAdd,
@@ -17,8 +17,8 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
 import {
-  capitalizeLanguageCode,
   formatCurrentTime,
+  getLanguageName,
   getProficiencyTranslationKey,
   type IANATimezone,
   type LanguageCode,
@@ -110,6 +110,7 @@ export const ProfileCard = ({
 }: ProfileCardProps) => {
   const t = useTranslations('Discovery');
   const tProfile = useTranslations('Profile');
+  const locale = useLocale();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
@@ -267,7 +268,7 @@ export const ProfileCard = ({
       onClick={() => handleLanguageClick(language, level, isPrimary)}
       className={`${isPrimary ? primaryLanguagePillClasses : languagePillClasses} cursor-pointer transition-opacity hover:opacity-80 active:opacity-60`}
     >
-      {capitalizeLanguageCode(language)}
+      {getLanguageName(language, locale)}
       {level ? ` · ${tProfile(getProficiencyTranslationKey(level))}` : ''}
     </button>
   );
