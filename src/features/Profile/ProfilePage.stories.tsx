@@ -39,9 +39,6 @@ const sampleProfile: ProfileFormValues = {
   tags: ['Anime', 'Cooking', 'Photography'],
 };
 
-// Set a field value through React's value tracker so react-hook-form and
-// controlled inputs both register the change. Plain keystroke simulation is
-// unreliable in the throttled story renderer, so dispatch the input event.
 const setFieldValue = (
   field: HTMLInputElement | HTMLTextAreaElement,
   value: string,
@@ -54,8 +51,6 @@ const setFieldValue = (
   field.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
-// Type a tag and commit it with the Add Tag button. The button click runs
-// against the latest render, so wait for the input to reflect the value first.
 const addTag = async (canvas: ReturnType<typeof within>, value: string) => {
   const input = canvas.getByPlaceholderText(
     'Type a tag and press Enter',
@@ -65,7 +60,6 @@ const addTag = async (canvas: ReturnType<typeof within>, value: string) => {
   fireEvent.click(canvas.getByRole('button', { name: 'Add Tag' }));
 };
 
-// New profile: empty form with the full header menu (bump, view, delete) wired.
 export const Default: Story = {
   args: {
     onBumpProfile: fn(),
@@ -74,7 +68,6 @@ export const Default: Story = {
   },
 };
 
-// Existing profile loaded into the editor, starting from a saved (clean) state.
 export const WithProfile: Story = {
   args: {
     initialValues: sampleProfile,
@@ -84,8 +77,6 @@ export const WithProfile: Story = {
   },
 };
 
-// Free plan at the 5-tag cap: counter reads 5/5, the premium upsell shows, and
-// a sixth tag is rejected with the plan-aware cap message.
 export const FreeTagCap: Story = {
   args: {
     premium: false,
@@ -114,7 +105,6 @@ export const FreeTagCap: Story = {
   },
 };
 
-// Premium plan: cap rises to 8 tags and the free-limit upsell is gone.
 export const PremiumTagCap: Story = {
   args: {
     premium: true,
@@ -142,7 +132,6 @@ export const PremiumTagCap: Story = {
   },
 };
 
-// Tag validation copy surfaces in the error banner above the form.
 export const ValidationErrors: Story = {
   args: {
     initialValues: sampleProfile,
@@ -170,8 +159,6 @@ export const ValidationErrors: Story = {
   },
 };
 
-// The sticky save bar tracks dirty state: clean on load, dirty after an edit,
-// and back to clean once the existing save flow resolves.
 export const DirtySaveFlow: Story = {
   args: {
     initialValues: sampleProfile,
