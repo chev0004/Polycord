@@ -97,7 +97,7 @@ export const Inbox = ({
         size={24}
       />
       {unreadCount > 0 && (
-        <span className="-top-1 -right-1 absolute flex h-4 w-4 items-center justify-center rounded-full bg-discord-blue font-bold text-white text-xs">
+        <span className="-top-[5px] -right-1.5 absolute flex h-4 min-w-4 items-center justify-center rounded-full bg-discord-blue px-1 font-bold text-[11px] text-white">
           {unreadCount}
         </span>
       )}
@@ -119,17 +119,19 @@ export const Inbox = ({
 
   return (
     <Popover.Root>
-      <Popover.Trigger className="relative">{triggerContent}</Popover.Trigger>
+      <Popover.Trigger className="relative" aria-label={t('notifications')}>
+        {triggerContent}
+      </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent w-[540px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark shadow-lg"
+          className="PopoverContent w-[420px] overflow-hidden rounded-[18px] border border-gray-500/50 bg-background-dark shadow-lg"
           side="bottom"
           align="end"
           sideOffset={5}
           collisionPadding={10}
         >
           <div className="flex items-center justify-between border-gray-500/50 border-b p-3">
-            <h3 className="font-bold font-figtree text-lg text-white">
+            <h3 className="font-bold text-base text-white">
               {t('notifications')}
             </h3>
             {notifications.length > 0 && (
