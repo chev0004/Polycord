@@ -9,6 +9,7 @@ import {
   useProfileMatching,
 } from '@/hooks/useProfileMatching';
 import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
+import { getFreeCardTheme } from './cardTheme';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
@@ -115,10 +116,13 @@ export const ProfileGrid = ({
       <section className="flex flex-col gap-6">
         {hasProfiles ? (
           <div className="mx-auto flex w-full max-w-7xl flex-wrap justify-center gap-8">
-            {displayedProfiles.map((profile) => (
+            {displayedProfiles.map((profile, index) => (
               <ProfileCard
                 key={profile.id}
-                profile={profile}
+                profile={{
+                  ...profile,
+                  cardTheme: profile.cardTheme ?? getFreeCardTheme(index),
+                }}
                 isLoggedIn={isLoggedIn}
                 onCopyUsername={handleCopyUsername}
                 onTagClick={onTagClick}
