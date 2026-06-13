@@ -196,6 +196,7 @@
     "copiedToClipboard": "{username} をクリップボードにコピーしました",
     "signInToViewUsername": "ログインしてユーザー名を表示",
     "cardMenu": "カードメニュー",
+    "showMoreLanguages": "他{count}件の言語を表示",
     "shareProfile": "プロフィールを共有",
     "reportProfile": "プロフィールを報告",
     "blockProfile": "ユーザーをブロック",

@@ -196,6 +196,7 @@
     "copiedToClipboard": "{username} copied to clipboard",
     "signInToViewUsername": "Sign in to view username",
     "cardMenu": "Card menu",
+    "showMoreLanguages": "Show {count} more languages",
     "shareProfile": "Share profile",
     "reportProfile": "Report profile",
     "blockProfile": "Block user",
