@@ -1,14 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { DiscoveryPage } from './DiscoveryPage';
-import { ProfileGrid } from './ProfileGrid';
-import { ProfileGridSkeleton } from './ProfileGridSkeleton';
+import { createSampleProfiles } from './profileFixtures';
+import 'src/app/globals.css';
 
 const meta: Meta<typeof DiscoveryPage> = {
   title: 'Discovery/DiscoveryPage',
   component: DiscoveryPage,
   args: {
-    isLoggedIn: false,
+    isLoggedIn: true,
     locale: 'en',
   },
   parameters: {
@@ -21,21 +22,109 @@ const meta: Meta<typeof DiscoveryPage> = {
 export default meta;
 type Story = StoryObj<typeof DiscoveryPage>;
 
-export const LoggedOutEmpty: Story = {
-  render: (args) => {
-    const t = useTranslations('Discovery');
+// Selecting Japanese as the primary language narrows the nine sample profiles
+// to the two Japanese speakers, then clearing restores the full feed.
+const filterAndClearPlay = async ({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}) => {
+  const canvas = within(canvasElement);
+  const doc = canvasElement.ownerDocument;
 
-    return (
-      <DiscoveryPage
-        {...args}
-        feed={
-          <ProfileGrid profiles={[]} emptyState={t('emptyFeedDescription')} />
-        }
-      />
-    );
+  await expect(canvas.getByText('9 partners')).toBeInTheDocument();
+
+  await userEvent.click(
+    canvas.getByRole('button', { name: 'Primary Language' }),
+  );
+
+  // The filter popover renders in a portal outside the story canvas, so scope
+  // option lookups to it to avoid matching language pills inside the cards.
+  const popover = within(
+    await waitFor(() => {
+      const content = doc.querySelector<HTMLElement>('.PopoverContent');
+      if (!content) throw new Error('Filter popover did not open');
+      return content;
+    }),
+  );
+
+  await userEvent.click(
+    await popover.findByRole('button', { name: 'Japanese' }),
+  );
+  await userEvent.click(popover.getByRole('button', { name: 'Apply' }));
+
+  await waitFor(() =>
+    expect(canvas.getByText('2 partners')).toBeInTheDocument(),
+  );
+  expect(canvas.queryAllByText('Carlos')).toHaveLength(0);
+
+  await userEvent.click(canvas.getByRole('button', { name: 'Clear filters' }));
+
+  await waitFor(() =>
+    expect(canvas.getByText('9 partners')).toBeInTheDocument(),
+  );
+};
+
+export const Default: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
+  },
+  play: async (context) => {
+    const canvas = within(context.canvasElement);
+
+    // The design removed the eyebrow-title-description header entirely.
+    expect(
+      canvas.queryByText('Find a language partner on Discord'),
+    ).not.toBeInTheDocument();
+
+    await filterAndClearPlay(context);
   },
 };
 
+export const Mobile: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+  },
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
+  },
+  play: filterAndClearPlay,
+};
+
 export const Loading: Story = {
-  render: (args) => <DiscoveryPage {...args} feed={<ProfileGridSkeleton />} />,
+  args: {
+    isLoading: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText(/Searching/)).toBeInTheDocument();
+    await expect(canvas.getByLabelText('Loading profiles')).toBeInTheDocument();
+  },
+};
+
+export const Empty: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('0 partners')).toBeInTheDocument();
+    await expect(canvas.getByText(/find any matches/)).toBeInTheDocument();
+  },
+};
+
+export const FeedError: Story = {
+  args: {
+    feedError: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText(/load profiles/)).toBeInTheDocument();
+  },
 };
