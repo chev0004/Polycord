@@ -305,7 +305,7 @@ export const ProfileCard = ({
           : 'hover:-translate-y-1 hover:shadow-xl'
       }`}
     >
-      <div className="-mx-5 -mt-5 relative h-[99px] flex-shrink-0">
+      <div className="-mx-5 -mt-5 relative h-[84px] flex-shrink-0">
         <div
           className="flex h-16 items-center justify-end rounded-t-3xl px-2.5"
           style={{ background: theme.banner }}
