@@ -159,7 +159,7 @@ export const LanguageOverflow: Story = {
       canvas.getByRole('button', { name: 'Show 3 more languages' }),
     );
 
-    const hidden = await body.findByRole('button', { name: /^FR/ });
+    const hidden = await body.findByRole('button', { name: /^French/ });
     await userEvent.click(hidden);
 
     await expect(args.onLanguageClick).toHaveBeenCalledWith(
