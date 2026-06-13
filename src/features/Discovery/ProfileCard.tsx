@@ -370,10 +370,7 @@ export const ProfileCard = ({
         </div>
       </div>
 
-      {/* -mt pulls the ring up so its centre lands on the banner's bottom
-          edge; -mb cancels the ring's bottom padding so the avatar-to-name
-          gap equals the card's 16px rhythm. */}
-      <div className="-mt-[51px] -mb-[7px] self-start">
+      <div className="-mb-[58px] relative self-start" style={{ top: '-51px' }}>
         <div
           className="rounded-full bg-background-dark p-[7px]"
           style={
