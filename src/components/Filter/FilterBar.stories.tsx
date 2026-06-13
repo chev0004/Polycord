@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
 import { useLocale } from 'next-intl';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   MdAccessTime,
   MdLanguage,
   MdLocationOn,
   MdSchool,
+  MdSwapVert,
 } from 'react-icons/md';
 import { countryOptions } from '@/constants/countries';
 import {
@@ -14,15 +15,23 @@ import {
   languageOptions,
   proficiencyOptions,
 } from '@/constants/languages';
+import type { FilterBarProps } from './FilterBar';
 import { FilterBar } from './FilterBar';
-import 'src/app/globals.css';
 
 const meta: Meta<typeof FilterBar> = {
   title: 'Components/Filter/FilterBar',
   component: FilterBar,
   args: {
     onFilterChange: fn(),
+    onClearFilters: fn(),
   },
+  decorators: [
+    (Story) => (
+      <div className="min-h-[420px] p-4">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export default meta;
@@ -45,56 +54,152 @@ const getTimezoneOptions = () => {
   return [];
 };
 
-export const Default: Story = {
-  render: (args) => {
-    const locale = useLocale();
+const useFilterDefs = () => {
+  const locale = useLocale();
 
-    const filters = useMemo(
-      () => [
-        {
-          id: 'primaryLanguage',
-          icon: MdLanguage,
-          labelKey: 'filterPrimaryLanguage',
-          placeholderKey: 'filterSelectLanguage',
-          options: languageOptions(locale),
-          multiple: true,
-        },
-        {
-          id: 'targetLanguage',
-          icon: MdLanguage,
-          labelKey: 'filterTargetLanguage',
-          placeholderKey: 'filterSelectLanguage',
-          options: languageOptions(locale),
-          multiple: true,
-        },
-        {
-          id: 'country',
-          icon: MdLocationOn,
-          labelKey: 'filterCountry',
-          placeholderKey: 'filterSelectCountry',
-          options: countryOptions(locale),
-          multiple: true,
-        },
-        {
-          id: 'proficiency',
-          icon: MdSchool,
-          labelKey: 'filterProficiency',
-          placeholderKey: 'filterSelectLevel',
-          options: proficiencyOptions(locale),
-          multiple: true,
-        },
-        {
-          id: 'timezone',
-          icon: MdAccessTime,
-          labelKey: 'filterTimezone',
-          placeholderKey: 'filterSelectTimezone',
-          options: getTimezoneOptions(),
-          multiple: true,
-        },
-      ],
-      [locale],
+  return useMemo(
+    () => [
+      {
+        id: 'primaryLanguage',
+        icon: MdLanguage,
+        labelKey: 'filterPrimaryLanguage',
+        placeholderKey: 'filterSelectLanguage',
+        options: languageOptions(locale),
+        multiple: true,
+      },
+      {
+        id: 'targetLanguage',
+        icon: MdLanguage,
+        labelKey: 'filterTargetLanguage',
+        placeholderKey: 'filterSelectLanguage',
+        options: languageOptions(locale),
+        multiple: true,
+      },
+      {
+        id: 'country',
+        icon: MdLocationOn,
+        labelKey: 'filterCountry',
+        placeholderKey: 'filterSelectCountry',
+        options: countryOptions(locale),
+        multiple: true,
+      },
+      {
+        id: 'proficiency',
+        icon: MdSchool,
+        labelKey: 'filterProficiency',
+        placeholderKey: 'filterSelectLevel',
+        options: proficiencyOptions(locale),
+      },
+      {
+        id: 'timezone',
+        icon: MdAccessTime,
+        labelKey: 'filterTimezone',
+        placeholderKey: 'filterSelectTimezone',
+        options: getTimezoneOptions(),
+        multiple: true,
+      },
+    ],
+    [locale],
+  );
+};
+
+type ControlledFilterBarProps = Omit<FilterBarProps, 'filters' | 'values'> & {
+  initialValues?: Record<string, string | string[]>;
+};
+
+const ControlledFilterBar = ({
+  initialValues,
+  onFilterChange,
+  onClearFilters,
+  ...props
+}: ControlledFilterBarProps) => {
+  const filters = useFilterDefs();
+  const [values, setValues] = useState<Record<string, string | string[]>>(
+    initialValues ?? {},
+  );
+
+  return (
+    <FilterBar
+      {...props}
+      filters={filters}
+      values={values}
+      onFilterChange={(filterId, value) => {
+        onFilterChange?.(filterId, value);
+        setValues((prev) => ({ ...prev, [filterId]: value }));
+      }}
+      onClearFilters={() => {
+        onClearFilters?.();
+        setValues({});
+      }}
+    />
+  );
+};
+
+export const Default: Story = {
+  render: (args) => <ControlledFilterBar {...args} />,
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Primary Language' }),
     );
 
-    return <FilterBar {...args} filters={filters} />;
+    await userEvent.click(
+      await body.findByRole('button', { name: 'Japanese' }),
+    );
+    await userEvent.click(body.getByRole('button', { name: 'Korean' }));
+    await userEvent.click(body.getByRole('button', { name: 'Apply' }));
+
+    await expect(args.onFilterChange).toHaveBeenCalledWith('primaryLanguage', [
+      'ja',
+      'ko',
+    ]);
+    await waitFor(() =>
+      expect(canvas.getByText('2 selected')).toBeInTheDocument(),
+    );
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Clear filters' }),
+    );
+
+    await expect(args.onClearFilters).toHaveBeenCalled();
+    await waitFor(() =>
+      expect(canvas.queryByText('2 selected')).not.toBeInTheDocument(),
+    );
+    await expect(
+      canvas.queryByRole('button', { name: 'Clear filters' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const WithSortSlot: Story = {
+  render: (args) => (
+    <ControlledFilterBar
+      {...args}
+      initialValues={{ proficiency: 'advanced', country: ['JP', 'KR'] }}
+      sortControl={
+        <button
+          type="button"
+          aria-label="Sort"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-white"
+        >
+          <MdSwapVert size={20} />
+        </button>
+      }
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByRole('button', { name: 'Sort' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Clear filters' }),
+    ).toBeInTheDocument();
+    await expect(canvas.getByText('Advanced')).toBeInTheDocument();
+    await expect(canvas.getByText('2 selected')).toBeInTheDocument();
+    await expect(canvas.getByText('1')).toBeInTheDocument();
   },
 };
