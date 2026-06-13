@@ -1,7 +1,7 @@
 'use client';
 
 import * as Popover from '@radix-ui/react-popover';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Fragment, useEffect, useState } from 'react';
 import {
   MdAdd,
@@ -17,14 +17,20 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
 import {
-  capitalizeLanguageCode,
   formatCurrentTime,
+  getLanguageName,
   getProficiencyTranslationKey,
   type IANATimezone,
   type LanguageCode,
   type Proficiency,
   type TimeFormat,
 } from '@/constants/languages';
+import {
+  type CardTheme,
+  deriveCardAccent,
+  FREE_ACCENT,
+  getFreeCardTheme,
+} from './cardTheme';
 
 export type DiscoveryTargetLanguage = {
   language: LanguageCode | string;
@@ -46,6 +52,8 @@ export type DiscoveryProfile = {
   timezone?: IANATimezone | string;
   allowAnonymousCopy?: boolean;
   lastBumpRelative?: string;
+  premium?: boolean;
+  cardTheme?: CardTheme;
 };
 
 type ProfileCardProps = {
@@ -71,9 +79,14 @@ type ProfileCardProps = {
 };
 
 const baseLanguagePillClasses =
-  'rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap flex-shrink-0';
+  'rounded-md px-2.5 py-[5px] text-xs font-medium whitespace-nowrap flex-shrink-0';
 const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-gray-200`;
-const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-primary-darker text-white`;
+const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip-bg,var(--color-primary-darker))] text-[var(--ct-chip-text,#fff)]`;
+
+// The card surface and avatar ring layer the premium tint over the dark
+// card colour; the transparent fallback keeps free cards untouched.
+const tintedSurface =
+  'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
 const TIME_FORMAT_STORAGE_KEY = 'polycord_timeFormat';
 
@@ -97,6 +110,7 @@ export const ProfileCard = ({
 }: ProfileCardProps) => {
   const t = useTranslations('Discovery');
   const tProfile = useTranslations('Profile');
+  const locale = useLocale();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
@@ -107,6 +121,17 @@ export const ProfileCard = ({
   const [isCopying, setIsCopying] = useState(false);
 
   const canCopyUsername = profile.allowAnonymousCopy !== false || isLoggedIn;
+
+  const theme = profile.cardTheme ?? getFreeCardTheme(2);
+  // Free profiles always use the neutral slate accent regardless of
+  // banner colour; only premium themes carry their own accent.
+  const accent = profile.premium ? theme.accent : FREE_ACCENT;
+  const themeStyle = {
+    ...deriveCardAccent(accent),
+    ...(profile.premium && theme.tint
+      ? { '--card-tint': theme.tint, background: tintedSurface }
+      : {}),
+  } as React.CSSProperties;
 
   const handleCopyUsername = async () => {
     if (!canCopyUsername || isCopying) return;
@@ -157,42 +182,9 @@ export const ProfileCard = ({
     return () => clearInterval(interval);
   }, [profile.timezone, timeFormat]);
 
-  const maxTargetLanguagesToShow = 2;
-  const displayedTargetLanguages = profile.targetLanguages.slice(
-    0,
-    maxTargetLanguagesToShow,
-  );
-  const remainingTargetLanguages = profile.targetLanguages.slice(
-    maxTargetLanguagesToShow,
-  );
+  const displayedTargetLanguages = profile.targetLanguages.slice(0, 1);
+  const remainingTargetLanguages = profile.targetLanguages.slice(1);
   const remainingLanguagesCount = remainingTargetLanguages.length;
-
-  const displayedLanguages: Array<{
-    language: LanguageCode | string;
-    level?: Proficiency | string;
-    isPrimary: boolean;
-  }> = [
-    {
-      language: profile.primaryLanguage,
-      level: profile.primaryLanguageLevel,
-      isPrimary: true,
-    },
-    ...displayedTargetLanguages.map((lang) => ({
-      language: lang.language,
-      level: lang.level,
-      isPrimary: false,
-    })),
-  ];
-
-  const remainingLanguages: Array<{
-    language: LanguageCode | string;
-    level?: Proficiency | string;
-    isPrimary: boolean;
-  }> = remainingTargetLanguages.map((lang) => ({
-    language: lang.language,
-    level: lang.level,
-    isPrimary: false,
-  }));
 
   const handleTagClick = (tag: string) => {
     if (onTagClick) {
@@ -276,7 +268,7 @@ export const ProfileCard = ({
       onClick={() => handleLanguageClick(language, level, isPrimary)}
       className={`${isPrimary ? primaryLanguagePillClasses : languagePillClasses} cursor-pointer transition-opacity hover:opacity-80 active:opacity-60`}
     >
-      {capitalizeLanguageCode(language)}
+      {getLanguageName(language, locale)}
       {level ? ` · ${tProfile(getProficiencyTranslationKey(level))}` : ''}
     </button>
   );
@@ -306,185 +298,203 @@ export const ProfileCard = ({
 
   return (
     <article
-      className={`flex h-full w-full max-w-sm flex-col gap-4 rounded-2xl bg-background-dark p-4 shadow-lg transition-transform duration-200 ${
+      style={themeStyle}
+      className={`flex h-full w-full max-w-sm flex-col gap-4 rounded-3xl bg-background-dark p-5 shadow-lg transition-transform duration-200 ${
         isPopoverOpen || isMenuOpen
           ? '-translate-y-1 shadow-xl'
           : 'hover:-translate-y-1 hover:shadow-xl'
       }`}
     >
-      <header className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-background-darker p-1.5">
-              <Avatar avatarUrl={profile.avatarUrl} size="md" />
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <h3 className="truncate font-figtree font-semibold text-lg text-white">
-                {profile.displayName}
-              </h3>
-              {canCopyUsername ? (
-                <button
-                  type="button"
-                  onClick={handleCopyUsername}
-                  className="group flex items-center gap-1.5 text-left transition-colors"
-                  aria-label={t('copyUsername')}
-                >
-                  <div
-                    className={`flex items-center justify-center transition-all duration-200 ${
-                      copied
-                        ? 'scale-110 text-discord-blue-light'
-                        : 'text-gray-400 group-hover:text-white'
-                    }`}
-                  >
-                    {copied ? (
-                      <MdCheck size={14} />
-                    ) : (
-                      <MdContentCopy size={14} />
-                    )}
-                  </div>
-                  <span
-                    className={`truncate text-xs transition-colors duration-200 ${
-                      copied
-                        ? 'font-medium text-discord-blue-light'
-                        : 'text-gray-400 group-hover:text-white'
-                    }`}
-                  >
-                    {t('copyUsername')}
-                  </span>
-                </button>
-              ) : (
-                <span className="truncate text-gray-500 text-xs">
-                  {t('signInToViewUsername')}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {profile.lastBumpRelative && (
-              <span className="whitespace-nowrap rounded-full bg-background-darker px-3 py-1.5 font-semibold text-[11px] text-gray-300 uppercase tracking-wide">
-                {profile.lastBumpRelative}
-              </span>
-            )}
-            <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <Popover.Trigger asChild>
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-main/50 hover:text-white"
-                  aria-label={t('cardMenu')}
-                >
-                  <MdMoreVert size={20} />
-                </button>
-              </Popover.Trigger>
-              <Popover.Portal>
-                <Popover.Content
-                  className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
-                  side="bottom"
-                  align="end"
-                  sideOffset={5}
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                  <div className="flex flex-col gap-1">
-                    <MenuItem
-                      icon={MdPersonOutline}
-                      onClick={handleViewProfile}
-                    >
-                      {t('viewProfile')}
-                    </MenuItem>
-                    {(typeof navigator !== 'undefined' &&
-                      typeof navigator.share === 'function') ||
-                    !!onShare ? (
-                      <MenuItem icon={MdShare} onClick={handleShare}>
-                        {t('shareProfile')}
-                      </MenuItem>
-                    ) : null}
-                    <div className="my-1 h-[1px] bg-gray-500/50" />
-                    <MenuItem
-                      icon={MdFlag}
-                      onClick={handleReport}
-                      className="hover:!text-red-300 text-red-400"
-                      iconClassName="text-red-400"
-                    >
-                      {t('reportProfile')}
-                    </MenuItem>
-                    <MenuItem
-                      icon={MdBlock}
-                      onClick={handleBlock}
-                      className="hover:!text-red-300 text-red-400"
-                      iconClassName="text-red-400"
-                    >
-                      {t('blockProfile')}
-                    </MenuItem>
-                  </div>
-                  <Popover.Arrow className="fill-gray-500/50" />
-                </Popover.Content>
-              </Popover.Portal>
-            </Popover.Root>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {displayedLanguages.map(({ language, level, isPrimary }) =>
-            renderLanguagePill(
-              language,
-              level,
-              isPrimary,
-              `${profile.id}-${language}-${isPrimary ? 'primary' : 'target'}`,
-            ),
+      <div
+        className="-mx-5 -mt-5 flex h-16 flex-shrink-0 items-center justify-end rounded-t-3xl px-2.5"
+        style={{ background: theme.banner }}
+      >
+        <div className="flex items-center gap-1.5">
+          {profile.lastBumpRelative && (
+            <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
+              {profile.lastBumpRelative}
+            </span>
           )}
-          {remainingLanguagesCount > 0 && (
-            <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <Popover.Trigger asChild>
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  className="inline-flex items-center gap-1 rounded-md bg-background-darker px-2.5 py-1 font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white"
-                  aria-label={`Show ${remainingLanguagesCount} more languages`}
-                >
-                  <MdAdd size={14} />
-                  {remainingLanguagesCount}
-                </button>
-              </Popover.Trigger>
-              <Popover.Portal>
-                <Popover.Content
-                  className="PopoverContent z-50 w-[240px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-3 shadow-lg"
-                  side="bottom"
-                  align="start"
-                  sideOffset={5}
-                >
-                  <div className="flex flex-wrap gap-2">
-                    {remainingLanguages.map(
-                      ({ language, level, isPrimary }, index) =>
-                        renderLanguagePill(
-                          language,
-                          level,
-                          isPrimary,
-                          `${profile.id}-remaining-${language}-${index}`,
-                        ),
-                    )}
-                  </div>
-                  <Popover.Arrow className="fill-gray-500/50" />
-                </Popover.Content>
-              </Popover.Portal>
-            </Popover.Root>
-          )}
+          <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <Popover.Trigger asChild>
+              <button
+                type="button"
+                suppressHydrationWarning
+                className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
+                aria-label={t('cardMenu')}
+              >
+                <MdMoreVert size={17} />
+              </button>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content
+                className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                side="bottom"
+                align="end"
+                sideOffset={5}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <div className="flex flex-col gap-1">
+                  <MenuItem icon={MdPersonOutline} onClick={handleViewProfile}>
+                    {t('viewProfile')}
+                  </MenuItem>
+                  {(typeof navigator !== 'undefined' &&
+                    typeof navigator.share === 'function') ||
+                  !!onShare ? (
+                    <MenuItem icon={MdShare} onClick={handleShare}>
+                      {t('shareProfile')}
+                    </MenuItem>
+                  ) : null}
+                  <div className="my-1 h-[1px] bg-gray-500/50" />
+                  <MenuItem
+                    icon={MdFlag}
+                    onClick={handleReport}
+                    className="hover:!text-red-300 text-red-400"
+                    iconClassName="text-red-400"
+                  >
+                    {t('reportProfile')}
+                  </MenuItem>
+                  <MenuItem
+                    icon={MdBlock}
+                    onClick={handleBlock}
+                    className="hover:!text-red-300 text-red-400"
+                    iconClassName="text-red-400"
+                  >
+                    {t('blockProfile')}
+                  </MenuItem>
+                </div>
+                <Popover.Arrow className="fill-gray-500/50" />
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
         </div>
-      </header>
+      </div>
 
-      <div className="flex h-full flex-col gap-4 rounded-2xl bg-background-darker p-4">
+      {/* -mt pulls the ring up so its centre lands on the banner's bottom
+          edge; -mb cancels the ring's bottom padding so the avatar-to-name
+          gap equals the card's 16px rhythm. */}
+      <div className="-mt-[51px] -mb-[7px] self-start">
+        <div
+          className="rounded-full bg-background-dark p-[7px]"
+          style={
+            profile.premium && theme.tint
+              ? { background: tintedSurface }
+              : undefined
+          }
+        >
+          <Avatar avatarUrl={profile.avatarUrl} size="md" />
+        </div>
+      </div>
+
+      <div className="flex min-w-0 flex-col gap-[3px]">
+        <h3 className="truncate font-figtree font-semibold text-lg text-white">
+          {profile.displayName}
+        </h3>
+        {canCopyUsername ? (
+          <button
+            type="button"
+            onClick={handleCopyUsername}
+            className="group flex items-center gap-1.5 self-start text-left transition-colors"
+            aria-label={t('copyUsername')}
+          >
+            <div
+              className={`flex items-center justify-center transition-all duration-200 ${
+                copied
+                  ? 'scale-110 text-discord-blue-light'
+                  : 'text-gray-400 group-hover:text-white'
+              }`}
+            >
+              {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
+            </div>
+            <span
+              className={`truncate text-xs transition-colors duration-200 ${
+                copied
+                  ? 'font-medium text-discord-blue-light'
+                  : 'text-gray-400 group-hover:text-white'
+              }`}
+            >
+              {copied ? t('copied') : t('copyUsername')}
+            </span>
+          </button>
+        ) : (
+          <span className="truncate text-gray-500 text-xs">
+            {t('signInToViewUsername')}
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {renderLanguagePill(
+          profile.primaryLanguage,
+          profile.primaryLanguageLevel,
+          true,
+          `${profile.id}-primary`,
+        )}
+        {displayedTargetLanguages.map((lang) =>
+          renderLanguagePill(
+            lang.language,
+            lang.level,
+            false,
+            `${profile.id}-${lang.language}-target`,
+          ),
+        )}
+        {remainingLanguagesCount > 0 && (
+          <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <Popover.Trigger asChild>
+              <button
+                type="button"
+                suppressHydrationWarning
+                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white"
+                aria-label={t('showMoreLanguages', {
+                  count: remainingLanguagesCount,
+                })}
+              >
+                <MdAdd size={14} />
+                {remainingLanguagesCount}
+              </button>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content
+                className="PopoverContent z-50 w-[240px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-3 shadow-lg"
+                side="bottom"
+                align="start"
+                sideOffset={5}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {remainingTargetLanguages.map((lang, index) =>
+                    renderLanguagePill(
+                      lang.language,
+                      lang.level,
+                      false,
+                      `${profile.id}-remaining-${lang.language}-${index}`,
+                    ),
+                  )}
+                </div>
+                <Popover.Arrow className="fill-gray-500/50" />
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+        )}
+      </div>
+
+      {/* Voice chip slot (UIR-026) renders here, between the language
+          pills and the availability row. */}
+      {/* Availability row slot (UIR-022) renders here, above the body. */}
+
+      <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
         {profile.interests.length > 0 && (
           <section className="flex flex-col gap-2">
             <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
               {t('tagsLabel')}
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {profile.interests
                 .slice(0, 4)
                 .map((interest) =>
                   renderTag(interest, `${profile.id}-tag-${interest}`),
                 )}
               {profile.interests.length > 4 && (
-                <span className="rounded-md bg-background-main/50 px-2 py-1 text-[11px] text-gray-400">
+                <span className="rounded-md bg-background-main px-2 py-1 text-[11px] text-gray-400">
                   +{profile.interests.length - 4}
                 </span>
               )}
@@ -497,13 +507,13 @@ export const ProfileCard = ({
             <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
               {t('descriptionLabel')}
             </span>
-            <p className="line-clamp-4 text-gray-300 text-sm leading-snug">
+            <p className="whitespace-pre-wrap break-words font-light text-gray-300 text-sm leading-normal">
               {profile.about}
             </p>
           </section>
         )}
 
-        <div className="flex flex-wrap items-start justify-between gap-3 text-gray-400 text-xs">
+        <div className="mt-auto flex flex-wrap items-start justify-between gap-3 text-gray-400 text-xs">
           <div className="flex flex-col gap-1">
             {profile.country && (
               <button
@@ -511,7 +521,10 @@ export const ProfileCard = ({
                 onClick={handleCountryClick}
                 className="flex items-center gap-1.5 transition-opacity hover:opacity-80 active:opacity-60"
               >
-                <MdLocationOn className="text-primary" size={16} />
+                <MdLocationOn
+                  className="flex-shrink-0 text-[var(--ct-accent,var(--color-primary))]"
+                  size={16}
+                />
                 <span>
                   {t('locationValue', { location: profile.country })}
                   {currentTime ? (
