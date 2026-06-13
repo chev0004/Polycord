@@ -3,9 +3,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { FaDiscord } from 'react-icons/fa';
 import { z } from 'zod';
+import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import {
   FieldError,
@@ -40,15 +42,21 @@ export type SettingsPageProps = {
   defaultValues: SettingsFormValues;
   onDeleteAccount: () => Promise<void> | void;
   onExportData: () => Promise<void> | void;
-  onSubmit?: (data: SettingsFormValues) => void;
+  onSubmit?: (data: SettingsFormValues) => Promise<void> | void;
   onUpdateDiscordConnection: () => void;
   onManageSubscription: () => void;
+  userAvatarUrl?: string;
+  userDisplayName: string;
 };
 
-type SegmentOption<T extends string> = {
-  label: string;
-  value: T;
-};
+type SectionId = 'account' | 'appearance' | 'privacy' | 'notifications';
+
+const sections: { id: SectionId; labelKey: string }[] = [
+  { id: 'account', labelKey: 'accountTitle' },
+  { id: 'appearance', labelKey: 'appearanceTitle' },
+  { id: 'privacy', labelKey: 'privacyTitle' },
+  { id: 'notifications', labelKey: 'notificationsTitle' },
+];
 
 const getStoredTimeFormat = (): TimeFormat => {
   if (typeof window === 'undefined') return '24hr';
@@ -56,88 +64,43 @@ const getStoredTimeFormat = (): TimeFormat => {
   return stored === '12hr' || stored === '24hr' ? stored : '24hr';
 };
 
-const sectionNav = [
-  { id: 'account', label: 'Account' },
-  { id: 'appearance', label: 'Appearance' },
-  { id: 'privacy', label: 'Privacy' },
-  { id: 'notifications', label: 'Notifications' },
-];
-
-const Section = ({
-  id,
+const SectionCard = ({
   title,
   description,
   children,
 }: {
-  id: string;
   title: string;
   description?: string;
   children: React.ReactNode;
 }) => (
-  <section id={id} className="scroll-mt-6 border-white/10 border-t py-6">
-    <div className="mb-5">
-      <h2 className="font-figtree font-semibold text-white text-xl">{title}</h2>
+  <section className="flex flex-col gap-5 rounded-3xl bg-background-dark p-6 shadow-xl">
+    <div className="flex flex-col gap-[3px] border-white/10 border-b pb-3.5">
+      <h2 className="font-figtree font-semibold text-[19px] text-primary leading-[1.2]">
+        {title}
+      </h2>
       {description && (
-        <p className="mt-1 max-w-2xl text-gray-500 text-sm leading-relaxed">
-          {description}
-        </p>
+        <p className="text-[13px] text-gray-500">{description}</p>
       )}
     </div>
-    <div className="divide-y divide-white/5 rounded-xl border border-white/5 bg-background-darker/70">
-      {children}
-    </div>
+    <div className="flex flex-col gap-[18px]">{children}</div>
   </section>
 );
 
-const SettingsRow = ({
+const SettingRow = ({
   label,
   description,
   children,
 }: {
   label: string;
-  description?: string;
+  description: string;
   children: React.ReactNode;
 }) => (
-  <div className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(180px,auto)] sm:items-center">
-    <div>
-      <h3 className="font-medium text-sm text-white">{label}</h3>
-      {description && (
-        <p className="mt-1 max-w-xl text-gray-500 text-xs leading-relaxed">
-          {description}
-        </p>
-      )}
+  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+    <div className="min-w-0">
+      <p className="font-medium text-[15px] text-white">{label}</p>
+      <p className="mt-0.5 text-[12px] text-gray-500">{description}</p>
     </div>
-    <div className="sm:justify-self-end">{children}</div>
-  </div>
-);
-
-const SegmentedControl = <T extends string>({
-  value,
-  options,
-  onChange,
-}: {
-  value: T;
-  options: SegmentOption<T>[];
-  onChange: (value: T) => void;
-}) => (
-  <div className="inline-flex rounded-lg border border-white/10 bg-background-dark p-1">
-    {options.map((option) => {
-      const selected = value === option.value;
-      return (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => onChange(option.value)}
-          className={`min-w-24 rounded-md px-3 py-1.5 font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-            selected
-              ? 'bg-primary text-background-dark'
-              : 'text-gray-400 hover:bg-background-main hover:text-white'
-          }`}
-        >
-          {option.label}
-        </button>
-      );
-    })}
+    <div className="shrink-0">{children}</div>
   </div>
 );
 
@@ -148,9 +111,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onSubmit: onSubmitProp,
   onUpdateDiscordConnection,
   onManageSubscription,
+  userAvatarUrl,
+  userDisplayName,
 }) => {
   const t = useTranslations('Settings');
   const currentLocale = useLocale();
+  const [activeSection, setActiveSection] = useState<SectionId>('account');
   const [exportStatus, setExportStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
@@ -171,21 +137,48 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     register,
     handleSubmit,
     control,
-    formState: { isSubmitting, errors },
+    reset,
+    watch,
+    formState: { isSubmitting, isDirty, errors },
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: initialValues,
   });
 
-  const onSubmit = (data: SettingsFormValues) => {
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (sections.some((section) => section.id === hash)) {
+      setActiveSection(hash as SectionId);
+    }
+  }, []);
+
+  const jumpToSection = (id: SectionId) => {
+    setActiveSection(id);
+    window.history.replaceState(null, '', `#${id}`);
+    window.scrollTo({ top: 0 });
+  };
+
+  const onSubmit = async (data: SettingsFormValues) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('polycord_timeFormat', data.timeFormat);
       window.dispatchEvent(new Event('timeFormatChanged'));
     }
 
-    if (onSubmitProp) {
-      onSubmitProp(data);
+    await onSubmitProp?.(data);
+    reset(data);
+  };
+
+  const onInvalid = (formErrors: typeof errors) => {
+    if (formErrors.email) {
+      jumpToSection('account');
     }
+  };
+
+  const handleDiscard = () => {
+    reset();
+    setExportStatus('idle');
+    setDeleteStatus('idle');
+    setDeleteConfirmation('');
   };
 
   const handleExportData = async () => {
@@ -224,58 +217,75 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     [currentLocale],
   );
 
-  const themeOptions: SegmentOption<SettingsFormValues['theme']>[] = [
+  const themeOptions = [
     { label: t('themeDark'), value: 'dark' },
     { label: t('themeLight'), value: 'light' },
   ];
 
-  const timeFormatOptions: SegmentOption<SettingsFormValues['timeFormat']>[] = [
+  const timeFormatOptions = [
     { label: t('timeFormat24hr'), value: '24hr' },
     { label: t('timeFormat12hr'), value: '12hr' },
   ];
 
+  const emailValue = watch('email');
+
   return (
-    <div className="mx-auto w-full max-w-6xl p-4 sm:p-8">
+    <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
+      <div className="mb-6">
+        <h1 className="font-bold font-figtree text-[30px] text-white leading-[1.1]">
+          {t('settingsTitle')}
+        </h1>
+        <p className="mt-1.5 font-light text-[15px] text-gray-400">
+          {t('settingsSubtitle')}
+        </p>
+      </div>
+
       <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]"
+        onSubmit={handleSubmit(onSubmit, onInvalid)}
+        className="grid items-start gap-6 lg:grid-cols-[232px_minmax(0,1fr)]"
       >
-        <aside className="hidden lg:block">
-          <div className="sticky top-8 rounded-xl border border-white/5 bg-background-dark p-3">
-            <p className="px-3 py-2 font-semibold text-gray-500 text-xs uppercase tracking-wide">
-              Settings
-            </p>
-            <nav className="flex flex-col">
-              {sectionNav.map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  className="rounded-lg px-3 py-2 font-medium text-gray-400 text-sm transition-colors hover:bg-background-darker hover:text-white"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-          </div>
+        <aside className="lg:sticky lg:top-6">
+          <nav className="flex flex-col gap-3.5 rounded-3xl bg-background-dark p-4 shadow-xl">
+            <div className="hidden items-center gap-3 border-white/10 border-b px-1.5 pt-1 pb-3.5 lg:flex">
+              <Avatar avatarUrl={userAvatarUrl} size="sm" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-[14px] text-white">
+                  {userDisplayName}
+                </p>
+                <p className="truncate text-[12px] text-gray-400">
+                  {emailValue}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-row flex-wrap gap-1 lg:flex-col">
+              {sections.map((section) => {
+                const isActive = activeSection === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() => jumpToSection(section.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`flex items-center rounded-full px-3 py-2.5 text-left font-medium text-[14px] transition-colors focus:outline-none ${
+                      isActive
+                        ? 'bg-primary-darker text-primary-light'
+                        : 'text-gray-400 hover:bg-background-main hover:text-white'
+                    }`}
+                  >
+                    {t(section.labelKey)}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
         </aside>
 
-        <div className="rounded-2xl border border-white/5 bg-background-dark px-4 shadow-xl sm:px-6">
-          <header className="py-6">
-            <h1 className="font-bold font-figtree text-3xl text-white">
-              {t('settingsTitle')}
-            </h1>
-            <p className="mt-2 max-w-2xl text-gray-500 text-sm leading-relaxed">
-              Manage account access, profile visibility, and notification
-              behavior from one place.
-            </p>
-          </header>
-
-          <Section
-            id="account"
-            title={t('accountTitle')}
-            description="Account details and external services."
-          >
-            <div className="p-4">
+        <div className="flex min-w-0 flex-col gap-5">
+          {activeSection === 'account' && (
+            <SectionCard
+              title={t('accountTitle')}
+              description={t('accountDescription')}
+            >
               <FormGroup>
                 <Label htmlFor="email" required>
                   {t('emailLabel')}
@@ -291,77 +301,89 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   <FieldError>{t(errors.email.message as string)}</FieldError>
                 )}
               </FormGroup>
-            </div>
 
-            <SettingsRow
-              label={t('updateDiscordConnectionLabel')}
-              description={t('updateDiscordConnectionDescription')}
-            >
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onUpdateDiscordConnection}
-                className="h-9 whitespace-nowrap px-3 py-1.5"
+              <SettingRow
+                label={t('updateDiscordConnectionLabel')}
+                description={t('updateDiscordConnectionDescription')}
               >
-                {t('updateDiscordButton')}
-              </Button>
-            </SettingsRow>
-
-            <SettingsRow
-              label={t('premiumMembershipLabel')}
-              description={t('premiumMembershipDescription')}
-            >
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onManageSubscription}
-                className="h-9 whitespace-nowrap px-3 py-1.5"
-              >
-                {t('manageSubscriptionButton')}
-              </Button>
-            </SettingsRow>
-
-            <SettingsRow
-              label={t('exportDataLabel')}
-              description={t('exportDataDescription')}
-            >
-              <div className="flex flex-col items-start gap-2 sm:items-end">
                 <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleExportData}
-                  disabled={exportStatus === 'loading'}
-                  className="h-9 whitespace-nowrap px-3 py-1.5"
+                  variant="discord"
+                  weight="semibold"
+                  icon={FaDiscord}
+                  onClick={onUpdateDiscordConnection}
+                  className="h-10 whitespace-nowrap"
                 >
-                  {exportStatus === 'loading'
-                    ? t('exportingData')
-                    : t('exportDataButton')}
+                  {t('updateDiscordButton')}
                 </Button>
-                {exportStatus !== 'idle' && exportStatus !== 'loading' ? (
-                  <output
-                    className={`text-xs ${
-                      exportStatus === 'success'
-                        ? 'text-green-400'
-                        : 'text-red-400'
-                    }`}
-                  >
-                    {exportStatus === 'success'
-                      ? t('exportDataSuccess')
-                      : t('exportDataError')}
-                  </output>
-                ) : null}
-              </div>
-            </SettingsRow>
+              </SettingRow>
 
-            <SettingsRow
-              label={t('deleteAccountLabel')}
-              description={t('deleteAccountDescription')}
-            >
-              <div className="flex w-full max-w-sm flex-col gap-3 sm:items-end">
-                {deleteStatus === 'confirming' ||
-                deleteStatus === 'loading' ||
-                deleteStatus === 'error' ? (
-                  <div className="w-full space-y-2">
+              <SettingRow
+                label={t('premiumMembershipLabel')}
+                description={t('premiumMembershipDescription')}
+              >
+                <Button
+                  variant="outline"
+                  onClick={onManageSubscription}
+                  className="h-10 whitespace-nowrap"
+                >
+                  {t('viewPlansButton')}
+                </Button>
+              </SettingRow>
+
+              <SettingRow
+                label={t('exportDataLabel')}
+                description={t('exportDataDescription')}
+              >
+                <div className="flex flex-col items-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleExportData}
+                    disabled={exportStatus === 'loading'}
+                    className="h-10 whitespace-nowrap"
+                  >
+                    {exportStatus === 'loading'
+                      ? t('exportingData')
+                      : t('exportDataButton')}
+                  </Button>
+                  {exportStatus === 'success' || exportStatus === 'error' ? (
+                    <output
+                      className={`text-xs ${
+                        exportStatus === 'success'
+                          ? 'text-green-400'
+                          : 'text-red-400'
+                      }`}
+                    >
+                      {exportStatus === 'success'
+                        ? t('exportDataSuccess')
+                        : t('exportDataError')}
+                    </output>
+                  ) : null}
+                </div>
+              </SettingRow>
+
+              <div className="rounded-xl bg-background-darker px-4 py-3.5">
+                <div className="flex items-center justify-between gap-6">
+                  <div className="min-w-0">
+                    <p className="font-medium text-[15px] text-white">
+                      {t('deleteAccountLabel')}
+                    </p>
+                    <p className="mt-0.5 text-[12px] text-gray-500">
+                      {t('deleteAccountDescription')}
+                    </p>
+                  </div>
+                  {deleteStatus === 'idle' ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => setDeleteStatus('confirming')}
+                      className="h-10 whitespace-nowrap border-red-500/60 text-red-300 hover:bg-red-950/40"
+                    >
+                      {t('deleteAccountButton')}
+                    </Button>
+                  ) : null}
+                </div>
+
+                {deleteStatus !== 'idle' ? (
+                  <div className="mt-3 flex flex-col gap-2">
                     <Label htmlFor="deleteAccountConfirmation">
                       {t('deleteAccountConfirmationLabel')}
                     </Label>
@@ -374,7 +396,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       placeholder={t('deleteAccountConfirmationPlaceholder')}
                       disabled={deleteStatus === 'loading'}
                     />
-                    <p className="text-gray-500 text-xs leading-relaxed">
+                    <p className="text-[12px] text-gray-500 leading-relaxed">
                       {t('deleteAccountRetentionNote')}
                     </p>
                     {deleteStatus === 'error' ? (
@@ -382,55 +404,43 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                         {t('deleteAccountError')}
                       </p>
                     ) : null}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setDeleteStatus('idle');
+                          setDeleteConfirmation('');
+                        }}
+                        disabled={deleteStatus === 'loading'}
+                        className="h-10 whitespace-nowrap"
+                      >
+                        {t('cancelDeleteAccount')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleDeleteAccount}
+                        disabled={
+                          deleteStatus === 'loading' ||
+                          deleteConfirmation !== 'DELETE'
+                        }
+                        className="h-10 whitespace-nowrap border-red-500/60 text-red-300 hover:bg-red-950/40"
+                      >
+                        {deleteStatus === 'loading'
+                          ? t('deletingAccount')
+                          : t('deleteAccountButton')}
+                      </Button>
+                    </div>
                   </div>
                 ) : null}
-                <div className="flex gap-2">
-                  {deleteStatus === 'confirming' ||
-                  deleteStatus === 'loading' ||
-                  deleteStatus === 'error' ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setDeleteStatus('idle');
-                        setDeleteConfirmation('');
-                      }}
-                      disabled={deleteStatus === 'loading'}
-                      className="h-9 whitespace-nowrap px-3 py-1.5"
-                    >
-                      {t('cancelDeleteAccount')}
-                    </Button>
-                  ) : null}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={
-                      deleteStatus === 'idle'
-                        ? () => setDeleteStatus('confirming')
-                        : handleDeleteAccount
-                    }
-                    disabled={
-                      deleteStatus === 'loading' ||
-                      (deleteStatus !== 'idle' &&
-                        deleteConfirmation !== 'DELETE')
-                    }
-                    className="h-9 whitespace-nowrap border-red-500/60 px-3 py-1.5 text-red-300 hover:bg-red-950/40"
-                  >
-                    {deleteStatus === 'loading'
-                      ? t('deletingAccount')
-                      : t('deleteAccountButton')}
-                  </Button>
-                </div>
               </div>
-            </SettingsRow>
-          </Section>
+            </SectionCard>
+          )}
 
-          <Section
-            id="appearance"
-            title={t('appearanceTitle')}
-            description="Choose how Polycord displays language and time."
-          >
-            <div className="p-4">
+          {activeSection === 'appearance' && (
+            <SectionCard
+              title={t('appearanceTitle')}
+              description={t('appearanceDescription')}
+            >
               <FormGroup>
                 <Label htmlFor="applicationLanguage" required>
                   {t('applicationLanguageLabel')}
@@ -440,7 +450,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   control={control}
                   render={({ field }) => (
                     <Select
-                      {...field}
                       options={localizedLanguageOptions}
                       onValueChange={field.onChange}
                       value={field.value}
@@ -450,170 +459,197 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   )}
                 />
               </FormGroup>
-            </div>
 
-            <SettingsRow
-              label={t('themeLabel')}
-              description={t('themeDescription')}
+              <SettingRow
+                label={t('themeLabel')}
+                description={t('themeDescription')}
+              >
+                <Controller
+                  name="theme"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      options={themeOptions}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      ariaLabel={t('themeLabel')}
+                      className="w-[170px]"
+                    />
+                  )}
+                />
+              </SettingRow>
+
+              <SettingRow
+                label={t('timeFormatLabel')}
+                description={t('timeFormatDescription')}
+              >
+                <Controller
+                  name="timeFormat"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      options={timeFormatOptions}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      ariaLabel={t('timeFormatLabel')}
+                      className="w-[170px]"
+                    />
+                  )}
+                />
+              </SettingRow>
+            </SectionCard>
+          )}
+
+          {activeSection === 'privacy' && (
+            <SectionCard
+              title={t('privacyTitle')}
+              description={t('privacyDescription')}
             >
-              <Controller
-                name="theme"
-                control={control}
-                render={({ field }) => (
-                  <SegmentedControl
-                    value={field.value}
-                    options={themeOptions}
-                    onChange={field.onChange}
+              <div className="flex flex-col gap-2.5">
+                <SettingRow
+                  label={t('makeProfilePublicLabel')}
+                  description={t('makeProfilePublicDescription')}
+                >
+                  <Controller
+                    name="isPublic"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
                   />
-                )}
-              />
-            </SettingsRow>
+                </SettingRow>
 
-            <SettingsRow
-              label={t('timeFormatLabel')}
-              description={t('timeFormatDescription')}
+                <SettingRow
+                  label={t('activityStatusLabel')}
+                  description={t('activityStatusDescription')}
+                >
+                  <Controller
+                    name="activityStatus"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                </SettingRow>
+
+                <SettingRow
+                  label={t('allowAnonymousCopyingLabel')}
+                  description={t('allowAnonymousCopyingDescription')}
+                >
+                  <Controller
+                    name="allowAnonymousCopy"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                </SettingRow>
+
+                <SettingRow
+                  label={t('displayTimezoneLabel')}
+                  description={t('displayTimezoneDescription')}
+                >
+                  <Controller
+                    name="displayTimezone"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                </SettingRow>
+              </div>
+            </SectionCard>
+          )}
+
+          {activeSection === 'notifications' && (
+            <SectionCard
+              title={t('notificationsTitle')}
+              description={t('notificationsDescription')}
             >
-              <Controller
-                name="timeFormat"
-                control={control}
-                render={({ field }) => (
-                  <SegmentedControl
-                    value={field.value}
-                    options={timeFormatOptions}
-                    onChange={field.onChange}
+              <div className="flex flex-col gap-2.5">
+                <SettingRow
+                  label={t('pushNotificationsLabel')}
+                  description={t('pushNotificationsDescription')}
+                >
+                  <Controller
+                    name="pushNotifications"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
                   />
-                )}
-              />
-            </SettingsRow>
-          </Section>
+                </SettingRow>
 
-          <Section
-            id="privacy"
-            title={t('privacyTitle')}
-            description="Control what other people can discover and copy."
-          >
-            <SettingsRow
-              label={t('makeProfilePublicLabel')}
-              description={t('makeProfilePublicDescription')}
+                <SettingRow
+                  label={t('matchAlertLabel')}
+                  description={t('matchAlertDescription')}
+                >
+                  <Controller
+                    name="matchAlert"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                </SettingRow>
+
+                <SettingRow
+                  label={t('profileInteractionAlertLabel')}
+                  description={t('profileInteractionAlertDescription')}
+                >
+                  <Controller
+                    name="profileInteractionAlert"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                </SettingRow>
+              </div>
+            </SectionCard>
+          )}
+
+          <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
+            <span
+              className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
             >
-              <Controller
-                name="isPublic"
-                control={control}
-                render={({ field }) => (
-                  <Toggle
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </SettingsRow>
-
-            <SettingsRow
-              label={t('activityStatusLabel')}
-              description={t('activityStatusDescription')}
-            >
-              <Controller
-                name="activityStatus"
-                control={control}
-                render={({ field }) => (
-                  <Toggle
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </SettingsRow>
-
-            <SettingsRow
-              label={t('allowAnonymousCopyingLabel')}
-              description={t('allowAnonymousCopyingDescription')}
-            >
-              <Controller
-                name="allowAnonymousCopy"
-                control={control}
-                render={({ field }) => (
-                  <Toggle
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </SettingsRow>
-
-            <SettingsRow
-              label={t('displayTimezoneLabel')}
-              description={t('displayTimezoneDescription')}
-            >
-              <Controller
-                name="displayTimezone"
-                control={control}
-                render={({ field }) => (
-                  <Toggle
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </SettingsRow>
-          </Section>
-
-          <Section
-            id="notifications"
-            title={t('notificationsTitle')}
-            description="Decide which alerts are worth interrupting you."
-          >
-            <SettingsRow
-              label={t('pushNotificationsLabel')}
-              description={t('pushNotificationsDescription')}
-            >
-              <Controller
-                name="pushNotifications"
-                control={control}
-                render={({ field }) => (
-                  <Toggle
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </SettingsRow>
-
-            <SettingsRow
-              label={t('matchAlertLabel')}
-              description={t('matchAlertDescription')}
-            >
-              <Controller
-                name="matchAlert"
-                control={control}
-                render={({ field }) => (
-                  <Toggle
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </SettingsRow>
-
-            <SettingsRow
-              label={t('profileInteractionAlertLabel')}
-              description={t('profileInteractionAlertDescription')}
-            >
-              <Controller
-                name="profileInteractionAlert"
-                control={control}
-                render={({ field }) => (
-                  <Toggle
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </SettingsRow>
-          </Section>
-
-          <div className="-mx-4 sm:-mx-6 sticky bottom-0 border-white/10 border-t bg-background-dark px-4 py-4 sm:px-6">
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting} className="h-10">
+              {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleDiscard}
+                disabled={!isDirty || isSubmitting}
+                className="h-10"
+              >
+                {t('discard')}
+              </Button>
+              <Button
+                type="submit"
+                disabled={!isDirty || isSubmitting}
+                className="h-10"
+              >
                 {isSubmitting ? t('saving') : t('saveSettings')}
               </Button>
             </div>
