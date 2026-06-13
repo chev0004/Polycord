@@ -156,7 +156,7 @@ export const Default: Story = {
       'ko',
     ]);
     await waitFor(() =>
-      expect(canvas.getByText('2 selected')).toBeInTheDocument(),
+      expect(canvas.getByText('Primary Language')).toBeInTheDocument(),
     );
 
     await userEvent.click(
@@ -165,11 +165,10 @@ export const Default: Story = {
 
     await expect(args.onClearFilters).toHaveBeenCalled();
     await waitFor(() =>
-      expect(canvas.queryByText('2 selected')).not.toBeInTheDocument(),
+      expect(
+        canvas.queryByRole('button', { name: 'Clear filters' }),
+      ).not.toBeInTheDocument(),
     );
-    await expect(
-      canvas.queryByRole('button', { name: 'Clear filters' }),
-    ).not.toBeInTheDocument();
   },
 };
 
@@ -199,7 +198,8 @@ export const WithSortSlot: Story = {
       canvas.getByRole('button', { name: 'Clear filters' }),
     ).toBeInTheDocument();
     await expect(canvas.getByText('Advanced')).toBeInTheDocument();
-    await expect(canvas.getByText('2 selected')).toBeInTheDocument();
+    await expect(canvas.getByText('Country')).toBeInTheDocument();
+    await expect(canvas.getByText('2')).toBeInTheDocument();
     await expect(canvas.getByText('1')).toBeInTheDocument();
   },
 };

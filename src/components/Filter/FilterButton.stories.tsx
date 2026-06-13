@@ -123,7 +123,7 @@ export const Active: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expect(canvas.getByText('2 selected')).toBeInTheDocument();
+    await expect(canvas.getByText('Primary Language')).toBeInTheDocument();
     await expect(canvas.getByText('2')).toBeInTheDocument();
   },
 };
