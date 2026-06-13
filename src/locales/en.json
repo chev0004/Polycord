@@ -34,6 +34,9 @@
     "settings": "Settings",
     "logout": "Logout"
   },
+  "LanguageSwitcher": {
+    "changeLanguage": "Change language"
+  },
   "Profile": {
     "editProfile": "Edit Profile",
     "defaultDisplayName": "Your profile",
