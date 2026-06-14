@@ -65,6 +65,8 @@ export const profileSchema = z.object({
 
   country: z.string().optional(),
 
+  cardColor: z.string().optional(),
+
   timezone: z
     .string()
     .refine((val) => !val || isValidIANATimezone(val), {

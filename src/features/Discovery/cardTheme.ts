@@ -6,10 +6,6 @@ export type CardTheme = {
   accent: string;
 };
 
-// Free profiles cycle through the flat banner colours, but the accent
-// (which drives chips, the primary language pill, and the location pin)
-// is always the neutral slate so those elements look identical
-// regardless of banner colour.
 export const FREE_ACCENT = '#7a8a99';
 
 export const FREE_CARD_COLORS = [
@@ -17,6 +13,8 @@ export const FREE_CARD_COLORS = [
   { id: 'pink', banner: '#f9a8cf' },
   { id: 'slate', banner: '#46525f' },
 ] as const;
+
+export const DEFAULT_CARD_COLOR = FREE_CARD_COLORS[0].id;
 
 export const PREMIUM_CARD_THEMES = [
   {
@@ -56,10 +54,22 @@ export const getFreeCardTheme = (index: number): CardTheme => ({
   accent: FREE_ACCENT,
 });
 
-// Derive complementary card-surface colours from a single hex accent.
-// Returns a CSS-var object ready to spread into an element's inline style.
-// The accent hex is used directly, with chip text blended 28% toward
-// white so it stays readable on dark surfaces.
+export const findCardTheme = (id: string): CardTheme | undefined => {
+  const free = FREE_CARD_COLORS.find((color) => color.id === id);
+  if (free) return { banner: free.banner, accent: FREE_ACCENT };
+
+  const premium = PREMIUM_CARD_THEMES.find((color) => color.id === id);
+  if (premium) {
+    return {
+      banner: premium.banner,
+      tint: premium.tint,
+      accent: premium.accent,
+    };
+  }
+
+  return undefined;
+};
+
 export const deriveCardAccent = (hex: string): CSSProperties => {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return {};
   const n = Number.parseInt(hex.slice(1), 16);
