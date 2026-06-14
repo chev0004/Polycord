@@ -13,14 +13,27 @@ export const profileSchema = z.object({
 
   primaryLanguage: z.string().min(1, { message: 'primaryLanguageRequired' }),
 
-  targetLanguage: z.string().min(1, { message: 'targetLanguageRequired' }),
-
-  proficiencyLevel: z
-    .string()
-    .min(1, { message: 'proficiencyLevelRequired' })
-    .refine((val) => Boolean(isValidProficiency(val)), {
-      message: 'proficiencyLevelRequired',
-    }),
+  targetLanguages: z
+    .array(
+      z.object({
+        language: z.string().min(1, { message: 'targetLanguageRequired' }),
+        level: z
+          .string()
+          .min(1, { message: 'proficiencyLevelRequired' })
+          .refine((val) => Boolean(isValidProficiency(val)), {
+            message: 'proficiencyLevelRequired',
+          }),
+      }),
+    )
+    .min(1, { message: 'targetLanguageRequired' })
+    .max(10, { message: 'maxLanguages' })
+    .refine(
+      (rows) => {
+        const languages = rows.map((row) => row.language).filter(Boolean);
+        return new Set(languages).size === languages.length;
+      },
+      { message: 'duplicateLanguage' },
+    ),
 
   bio: z
     .string()

@@ -35,6 +35,10 @@ import {
   proficiencyOptions,
 } from '@/constants';
 import { type ProfileFormValues, profileSchema } from './schema';
+import {
+  createEmptyLanguageRow,
+  TargetLanguagesEditor,
+} from './TargetLanguagesEditor';
 
 type ProfilePageProps = {
   initialValues?: ProfileFormValues;
@@ -52,7 +56,7 @@ const PREMIUM_TAG_CAP = 8;
 
 const defaultValues: ProfileFormValues = {
   primaryLanguage: '',
-  targetLanguage: '',
+  targetLanguages: [createEmptyLanguageRow()],
   allowAnonymousCopy: true,
   displayTimezone: true,
   isPublic: true,
@@ -61,7 +65,6 @@ const defaultValues: ProfileFormValues = {
   tags: [],
   country: '',
   timezone: '',
-  proficiencyLevel: '',
 };
 
 const availabilityLabelKeys: Record<string, string> = {
@@ -176,8 +179,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const displayTimezone = watch('displayTimezone');
   const isPublic = watch('isPublic');
   const primaryLanguage = watch('primaryLanguage');
-  const targetLanguage = watch('targetLanguage');
-  const proficiencyLevel = watch('proficiencyLevel');
+  const targetLanguages = watch('targetLanguages') ?? [];
   const country = watch('country');
   const bio = watch('bio');
   const tags = watch('tags') ?? [];
@@ -264,8 +266,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
     return {
       primaryLanguage: getLabel(localizedLanguageOptions, primaryLanguage),
-      targetLanguage: getLabel(localizedLanguageOptions, targetLanguage),
-      proficiencyLevel: getLabel(localizedProficiencyOptions, proficiencyLevel),
+      targetLanguages: targetLanguages
+        .filter((row) => row.language)
+        .map((row) => ({
+          language: getLabel(localizedLanguageOptions, row.language),
+          level: getLabel(localizedProficiencyOptions, row.level),
+        })),
       country: getLabel(localizedCountryOptions, country),
     };
   }, [
@@ -274,8 +280,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     localizedLanguageOptions,
     localizedProficiencyOptions,
     primaryLanguage,
-    proficiencyLevel,
-    targetLanguage,
+    targetLanguages,
   ]);
 
   const tagsSchemaError = errors.tags?.message
@@ -363,116 +368,66 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             title={t('languageProfile')}
             description={t('languageProfileDescription')}
           >
-            <div className="grid gap-4 md:grid-cols-2">
-              <FormGroup>
-                <Label htmlFor="primaryLanguage" required>
-                  {t('primaryLanguageLabel')}
-                </Label>
-                <Controller
-                  name="primaryLanguage"
-                  control={control}
-                  render={({ field }) => (
-                    <Combobox
-                      {...field}
-                      value={field.value || ''}
-                      onValueChange={field.onChange}
-                      options={localizedLanguageOptions}
-                      placeholder={t('languageSelectPlaceholder')}
-                      error={!!errors.primaryLanguage}
-                    />
-                  )}
-                />
-                {errors.primaryLanguage && (
-                  <FieldError>
-                    {t(errors.primaryLanguage.message as string)}
-                  </FieldError>
+            <FormGroup>
+              <Label htmlFor="primaryLanguage" required>
+                {t('primaryLanguageLabel')}
+              </Label>
+              <Controller
+                name="primaryLanguage"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    {...field}
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={localizedLanguageOptions}
+                    placeholder={t('languageSelectPlaceholder')}
+                    error={!!errors.primaryLanguage}
+                  />
                 )}
-              </FormGroup>
+              />
+              {errors.primaryLanguage && (
+                <FieldError>
+                  {t(errors.primaryLanguage.message as string)}
+                </FieldError>
+              )}
+            </FormGroup>
 
-              <FormGroup>
-                <Label htmlFor="targetLanguage" required>
-                  {t('targetLanguageLabel')}
-                </Label>
-                <Controller
-                  name="targetLanguage"
-                  control={control}
-                  render={({ field }) => (
-                    <Combobox
-                      {...field}
-                      value={field.value || ''}
-                      onValueChange={field.onChange}
-                      options={localizedLanguageOptions}
-                      placeholder={t('languageSelectPlaceholder')}
-                      error={!!errors.targetLanguage}
-                    />
-                  )}
-                />
-                {errors.targetLanguage && (
-                  <FieldError>
-                    {t(errors.targetLanguage.message as string)}
-                  </FieldError>
-                )}
-              </FormGroup>
+            <TargetLanguagesEditor control={control} premium={premium} />
 
-              <FormGroup>
-                <Label htmlFor="proficiencyLevel" required>
-                  {t('proficiencyLevelLabel')}
-                </Label>
-                <Controller
-                  name="proficiencyLevel"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      options={localizedProficiencyOptions}
-                      placeholder={t('proficiencyLevelPlaceholder')}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      error={!!errors.proficiencyLevel}
-                    />
-                  )}
-                />
-                {errors.proficiencyLevel && (
-                  <FieldError>
-                    {t(errors.proficiencyLevel.message as string)}
-                  </FieldError>
+            <FormGroup>
+              <Label htmlFor="country">{t('countryLabel')}</Label>
+              <Controller
+                name="country"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    {...field}
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={localizedCountryOptions}
+                    placeholder={t('countryPlaceholder')}
+                    error={!!errors.country}
+                  />
                 )}
-              </FormGroup>
+              />
+              {errors.country && (
+                <FieldError>{errors.country.message}</FieldError>
+              )}
+            </FormGroup>
 
-              <FormGroup>
-                <Label htmlFor="country">{t('countryLabel')}</Label>
-                <Controller
-                  name="country"
-                  control={control}
-                  render={({ field }) => (
-                    <Combobox
-                      {...field}
-                      value={field.value || ''}
-                      onValueChange={field.onChange}
-                      options={localizedCountryOptions}
-                      placeholder={t('countryPlaceholder')}
-                      error={!!errors.country}
-                    />
-                  )}
-                />
-                {errors.country && (
-                  <FieldError>{errors.country.message}</FieldError>
-                )}
-              </FormGroup>
-
-              <FormGroup className="md:col-span-2">
-                <Label htmlFor={timezoneId}>{t('timezoneLabel')}</Label>
-                <TextInput
-                  id={timezoneId}
-                  {...register('timezone')}
-                  placeholder={t('displayTimezoneDescription')}
-                  error={!!errors.timezone}
-                />
-                {errors.timezone && (
-                  <FieldError>{errors.timezone.message}</FieldError>
-                )}
-              </FormGroup>
-            </div>
+            <FormGroup>
+              <Label htmlFor={timezoneId}>{t('timezoneLabel')}</Label>
+              <TextInput
+                id={timezoneId}
+                {...register('timezone')}
+                placeholder={t('displayTimezoneDescription')}
+                error={!!errors.timezone}
+              />
+              {errors.timezone && (
+                <FieldError>{errors.timezone.message}</FieldError>
+              )}
+            </FormGroup>
           </SectionCard>
 
           <SectionCard
@@ -725,14 +680,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       {preview.primaryLanguage}
                     </span>
                   )}
-                  {preview.targetLanguage && (
-                    <span className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs">
-                      {preview.targetLanguage}
-                      {preview.proficiencyLevel
-                        ? ` / ${preview.proficiencyLevel}`
-                        : ''}
+                  {preview.targetLanguages.map((target) => (
+                    <span
+                      key={target.language}
+                      className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs"
+                    >
+                      {target.language}
+                      {target.level ? ` / ${target.level}` : ''}
                     </span>
-                  )}
+                  ))}
                 </div>
 
                 <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">

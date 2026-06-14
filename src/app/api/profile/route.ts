@@ -35,6 +35,7 @@ export const POST = async (request: Request) => {
 
   const user = await upsertDiscordUser(currentUser);
   const values = payload.data;
+  const [primaryTarget] = values.targetLanguages;
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: values.allowAnonymousCopy,
     availability: values.availability ?? 'flexible',
@@ -43,10 +44,9 @@ export const POST = async (request: Request) => {
     displayTimezone: values.displayTimezone,
     isPublic: values.isPublic,
     primaryLanguage: values.primaryLanguage,
-    proficiencyLevel:
-      values.proficiencyLevel as ProfileValues['proficiencyLevel'],
+    proficiencyLevel: primaryTarget.level as ProfileValues['proficiencyLevel'],
     tags: values.tags ?? [],
-    targetLanguage: values.targetLanguage,
+    targetLanguage: primaryTarget.language,
     timezone: values.timezone || null,
   });
 

@@ -19,9 +19,10 @@ const toProfileFormValues = ({
   displayTimezone: profile.displayTimezone,
   isPublic: profile.isPublic,
   primaryLanguage: profile.primaryLanguage,
-  proficiencyLevel: profile.proficiencyLevel,
   tags: profile.tags,
-  targetLanguage: profile.targetLanguage,
+  targetLanguages: [
+    { language: profile.targetLanguage, level: profile.proficiencyLevel },
+  ],
   timezone: profile.timezone ?? '',
 });
 
