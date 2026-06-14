@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
 
+const hexColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
+
 export const profileSchema = z.object({
   isPublic: z.boolean(),
   allowAnonymousCopy: z.boolean(),
@@ -66,6 +68,15 @@ export const profileSchema = z.object({
   country: z.string().optional(),
 
   cardColor: z.string().optional(),
+
+  customGradient: z
+    .object({
+      from: hexColorSchema,
+      to: hexColorSchema,
+    })
+    .optional(),
+
+  accentOverride: hexColorSchema.nullable().optional(),
 
   timezone: z
     .string()

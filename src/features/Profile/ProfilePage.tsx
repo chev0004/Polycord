@@ -30,8 +30,11 @@ import { countryOptions, languageOptions } from '@/constants';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import {
+  CUSTOM_CARD_THEME_ID,
   DEFAULT_CARD_COLOR,
+  DEFAULT_CUSTOM_GRADIENT,
   findCardTheme,
+  getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
 import { AvailabilityEditor } from './AvailabilityEditor';
@@ -67,6 +70,8 @@ const defaultValues: ProfileFormValues = {
   tags: [],
   country: '',
   cardColor: DEFAULT_CARD_COLOR,
+  customGradient: DEFAULT_CUSTOM_GRADIENT,
+  accentOverride: null,
   timezone: '',
 };
 
@@ -183,9 +188,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const tags = watch('tags') ?? [];
   const timezone = watch('timezone');
   const cardColor = watch('cardColor') ?? DEFAULT_CARD_COLOR;
+  const customGradient = watch('customGradient') ?? DEFAULT_CUSTOM_GRADIENT;
+  const accentOverride = watch('accentOverride') ?? null;
 
   const effectiveCardColor = premium ? cardColor : (tease ?? cardColor);
-  const previewTheme = findCardTheme(effectiveCardColor) ?? getFreeCardTheme(0);
+  const basePreviewTheme =
+    premium && effectiveCardColor === CUSTOM_CARD_THEME_ID
+      ? getCustomCardTheme(customGradient)
+      : (findCardTheme(effectiveCardColor) ?? getFreeCardTheme(0));
+  const previewTheme =
+    premium && accentOverride
+      ? { ...basePreviewTheme, accent: accentOverride }
+      : basePreviewTheme;
+  const autoAccent = basePreviewTheme.accent;
   const previewIsPremiumLook = premium || Boolean(tease);
 
   useEffect(() => {
@@ -603,6 +618,21 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   premium={premium}
                   tease={tease}
                   onTease={setTease}
+                  customGradient={customGradient}
+                  accentOverride={accentOverride}
+                  autoAccent={autoAccent}
+                  onCustomGradient={(gradient) =>
+                    setValue('customGradient', gradient, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                  onAccentOverride={(color) =>
+                    setValue('accentOverride', color, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
                 />
               )}
             />
