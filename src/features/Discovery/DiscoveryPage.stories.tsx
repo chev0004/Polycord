@@ -97,6 +97,53 @@ export const Mobile: Story = {
   play: filterAndClearPlay,
 };
 
+// "IELTS" appears only in one profile's bio, so the feed narrows to that single
+// card, proving search reaches across every field down to the description.
+export const Search: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('9 partners')).toBeInTheDocument();
+
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'Search profiles' }),
+      'IELTS',
+    );
+
+    await waitFor(() =>
+      expect(canvas.getByText('1 partner')).toBeInTheDocument(),
+    );
+    await expect(canvas.getByText('Yuki')).toBeInTheDocument();
+    expect(canvas.queryByText('Carlos')).not.toBeInTheDocument();
+  },
+};
+
+export const SearchEmpty: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'Search profiles' }),
+      'zzqxnomatch',
+    );
+
+    await waitFor(() =>
+      expect(canvas.getByText('0 partners')).toBeInTheDocument(),
+    );
+    await expect(canvas.getByText(/find any matches/)).toBeInTheDocument();
+  },
+};
+
 export const Loading: Story = {
   args: {
     isLoading: true,
