@@ -231,7 +231,7 @@
     "sortOldestBumped": "バンプが古い順",
     "sortNameAsc": "名前 (A-Z)",
     "sortNameDesc": "名前 (Z-A)",
-    "paginationLabel": "{total}ページ中{page}ページ目",
+    "paginationLabel": "{page}/{total}",
     "paginationPrevious": "前のページ",
     "paginationNext": "次のページ",
     "filterPrimaryLanguage": "主要言語",
