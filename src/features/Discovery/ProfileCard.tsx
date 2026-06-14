@@ -52,6 +52,7 @@ export type DiscoveryProfile = {
   timezone?: IANATimezone | string;
   allowAnonymousCopy?: boolean;
   lastBumpRelative?: string;
+  bumpedMinutesAgo?: number;
   premium?: boolean;
   cardTheme?: CardTheme;
 };
