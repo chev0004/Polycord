@@ -18,10 +18,12 @@ import {
   useDiscoveryFilterDefs,
 } from './discoveryFilters';
 import { applyDiscoverySearch } from './discoverySearch';
+import { applyTagFilter, buildTagCounts } from './discoveryTags';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 import { SearchBar } from './SearchBar';
+import { TagCloud } from './TagCloud';
 
 const SEARCH_TRANSITION_MS = 320;
 
@@ -62,6 +64,7 @@ export const DiscoveryPage = ({
   const filterDefs = useDiscoveryFilterDefs();
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
@@ -93,23 +96,29 @@ export const DiscoveryPage = ({
 
   const completion = useMemo(() => getOnboardingCompletion(draft), [draft]);
 
+  const tagCounts = useMemo(() => buildTagCounts(profiles), [profiles]);
+
   const hasActiveFilters = useMemo(
     () =>
       searchQuery.trim().length > 0 ||
+      selectedTags.length > 0 ||
       Object.values(filterValues).some((value) =>
         Array.isArray(value) ? value.length > 0 : Boolean(value),
       ),
-    [filterValues, searchQuery],
+    [filterValues, searchQuery, selectedTags],
   );
 
   const filteredProfiles = useMemo(
     () =>
-      applyDiscoverySearch(
-        applyDiscoveryFilters(profiles, filterValues),
-        searchQuery,
-        locale,
+      applyTagFilter(
+        applyDiscoverySearch(
+          applyDiscoveryFilters(profiles, filterValues),
+          searchQuery,
+          locale,
+        ),
+        selectedTags,
       ),
-    [profiles, filterValues, searchQuery, locale],
+    [profiles, filterValues, searchQuery, locale, selectedTags],
   );
 
   useEffect(() => {
@@ -132,6 +141,18 @@ export const DiscoveryPage = ({
 
   const handleClearFilters = () => {
     setFilterValues({});
+  };
+
+  const handleToggleTag = (tag: string) => {
+    setSelectedTags((previous) =>
+      previous.includes(tag)
+        ? previous.filter((value) => value !== tag)
+        : [...previous, tag],
+    );
+  };
+
+  const handleClearTags = () => {
+    setSelectedTags([]);
   };
 
   return (
@@ -164,7 +185,14 @@ export const DiscoveryPage = ({
 
         <div className="mb-[26px] flex flex-col gap-[14px]">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          {/* Popular tags cloud mounts here (UIR-018) */}
+          {tagCounts.length > 0 ? (
+            <TagCloud
+              tags={tagCounts}
+              selected={selectedTags}
+              onToggle={handleToggleTag}
+              onClear={handleClearTags}
+            />
+          ) : null}
           {/* FilterBar's sortControl slot is reserved for the sort menu (UIR-019) */}
           <FilterBar
             filters={filterDefs}
