@@ -17,9 +17,14 @@ import {
   type DiscoveryFilterValues,
   useDiscoveryFilterDefs,
 } from './discoveryFilters';
+import { applyDiscoverySearch } from './discoverySearch';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
+import { SearchBar } from './SearchBar';
+
+// Mirrors the design's brief skeleton transition while a query narrows results.
+const SEARCH_TRANSITION_MS = 320;
 
 type DiscoveryPageProps = {
   authError?: string;
@@ -57,6 +62,8 @@ export const DiscoveryPage = ({
   const t = useTranslations('Discovery');
   const filterDefs = useDiscoveryFilterDefs();
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
 
@@ -89,16 +96,36 @@ export const DiscoveryPage = ({
 
   const hasActiveFilters = useMemo(
     () =>
+      searchQuery.trim().length > 0 ||
       Object.values(filterValues).some((value) =>
         Array.isArray(value) ? value.length > 0 : Boolean(value),
       ),
-    [filterValues],
+    [filterValues, searchQuery],
   );
 
   const filteredProfiles = useMemo(
-    () => applyDiscoveryFilters(profiles, filterValues),
-    [profiles, filterValues],
+    () =>
+      applyDiscoverySearch(
+        applyDiscoveryFilters(profiles, filterValues),
+        searchQuery,
+        locale,
+      ),
+    [profiles, filterValues, searchQuery, locale],
   );
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = setTimeout(() => setIsSearching(false), SEARCH_TRANSITION_MS);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const showSkeleton = isLoading || isSearching;
 
   const handleFilterChange = (filterId: string, value: string | string[]) => {
     setFilterValues((previous) => ({ ...previous, [filterId]: value }));
@@ -137,7 +164,7 @@ export const DiscoveryPage = ({
         ) : null}
 
         <div className="mb-[26px] flex flex-col gap-[14px]">
-          {/* Search bar mounts here (UIR-017) */}
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
           {/* Popular tags cloud mounts here (UIR-018) */}
           {/* FilterBar's sortControl slot is reserved for the sort menu (UIR-019) */}
           <FilterBar
@@ -163,13 +190,13 @@ export const DiscoveryPage = ({
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
               >
-                {isLoading
+                {showSkeleton
                   ? t('resultsSearching')
                   : t('resultsCount', { count: filteredProfiles.length })}
               </span>
             </div>
 
-            {isLoading ? (
+            {showSkeleton ? (
               <ProfileGridSkeleton />
             ) : (
               <ProfileGrid
