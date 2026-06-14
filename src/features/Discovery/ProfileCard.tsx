@@ -16,6 +16,7 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
+import type { AvailabilityPattern } from '@/constants/availability';
 import {
   formatCurrentTime,
   getLanguageName,
@@ -25,6 +26,7 @@ import {
   type Proficiency,
   type TimeFormat,
 } from '@/constants/languages';
+import { AvailabilityRow } from './AvailabilityRow';
 import {
   type CardTheme,
   deriveCardAccent,
@@ -55,11 +57,13 @@ export type DiscoveryProfile = {
   bumpedMinutesAgo?: number;
   premium?: boolean;
   cardTheme?: CardTheme;
+  availability?: AvailabilityPattern;
 };
 
 type ProfileCardProps = {
   profile: DiscoveryProfile;
   isLoggedIn?: boolean;
+  viewerTimezone?: string;
   onCopyUsername?: (
     username: string,
     profileId: string,
@@ -100,6 +104,7 @@ const getTimeFormat = (): TimeFormat => {
 export const ProfileCard = ({
   profile,
   isLoggedIn = false,
+  viewerTimezone,
   onCopyUsername,
   onTagClick,
   onLanguageClick,
@@ -480,7 +485,13 @@ export const ProfileCard = ({
 
       {/* Voice chip slot (UIR-026) renders here, between the language
           pills and the availability row. */}
-      {/* Availability row slot (UIR-022) renders here, above the body. */}
+      {profile.availability && (
+        <AvailabilityRow
+          availability={profile.availability}
+          ownerTimezone={profile.timezone}
+          viewerTimezone={viewerTimezone}
+        />
+      )}
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
         {profile.interests.length > 0 && (
