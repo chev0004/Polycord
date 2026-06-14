@@ -97,8 +97,6 @@ export const Mobile: Story = {
   play: filterAndClearPlay,
 };
 
-// "IELTS" appears only in one profile's bio, so the feed narrows to that single
-// card, proving search reaches across every field down to the description.
 export const Search: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');

@@ -5,9 +5,6 @@ import {
 } from '@/constants/languages';
 import type { DiscoveryProfile } from './ProfileCard';
 
-// Builds one lowercased haystack from every field a viewer can read on a card.
-// Locale-aware so queries match the display names people see, not the codes
-// stored on the profile.
 export const buildProfileSearchText = (
   profile: DiscoveryProfile,
   locale: string,

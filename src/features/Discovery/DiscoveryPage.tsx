@@ -23,7 +23,6 @@ import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 import { SearchBar } from './SearchBar';
 
-// Mirrors the design's brief skeleton transition while a query narrows results.
 const SEARCH_TRANSITION_MS = 320;
 
 type DiscoveryPageProps = {
