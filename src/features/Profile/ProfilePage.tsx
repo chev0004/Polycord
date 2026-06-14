@@ -12,11 +12,9 @@ import {
   MdArrowUpward,
   MdDeleteOutline,
   MdErrorOutline,
-  MdLocationOn,
   MdMoreVert,
   MdVisibility,
 } from 'react-icons/md';
-import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import {
@@ -28,16 +26,11 @@ import {
   TextInput,
   Toggle,
 } from '@/components/Form';
-import {
-  countryOptions,
-  languageOptions,
-  proficiencyOptions,
-} from '@/constants';
+import { countryOptions, languageOptions } from '@/constants';
 import { availabilityPresetToPattern } from '@/constants/availability';
+import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import {
   DEFAULT_CARD_COLOR,
-  deriveCardAccent,
-  FREE_ACCENT,
   findCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
@@ -181,27 +174,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   });
 
   const displayTimezone = watch('displayTimezone');
-  const isPublic = watch('isPublic');
+  const allowAnonymousCopy = watch('allowAnonymousCopy');
   const primaryLanguage = watch('primaryLanguage');
   const targetLanguages = watch('targetLanguages') ?? [];
   const country = watch('country');
   const bio = watch('bio');
+  const availability = watch('availability');
   const tags = watch('tags') ?? [];
   const timezone = watch('timezone');
   const cardColor = watch('cardColor') ?? DEFAULT_CARD_COLOR;
 
   const effectiveCardColor = premium ? cardColor : (tease ?? cardColor);
   const previewTheme = findCardTheme(effectiveCardColor) ?? getFreeCardTheme(0);
-  const previewAccent = premium ? previewTheme.accent : FREE_ACCENT;
   const previewIsPremiumLook = premium || Boolean(tease);
-  const previewStyle = {
-    ...deriveCardAccent(previewAccent),
-    ...(previewIsPremiumLook && previewTheme.tint
-      ? {
-          backgroundImage: `linear-gradient(${previewTheme.tint},${previewTheme.tint})`,
-        }
-      : {}),
-  } as React.CSSProperties;
 
   useEffect(() => {
     if (initialValues) {
@@ -274,32 +259,52 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const localizedLanguageOptions = languageOptions(locale);
   const localizedCountryOptions = countryOptions(locale);
-  const localizedProficiencyOptions = proficiencyOptions(locale);
   const displayName = userDisplayName ?? t('defaultDisplayName');
 
-  const preview = useMemo(() => {
+  const previewProfile = useMemo<DiscoveryProfile>(() => {
     const getLabel = (
       options: { label: string; value: string }[],
       value?: string,
     ) => options.find((option) => option.value === value)?.label ?? '';
 
     return {
-      primaryLanguage: getLabel(localizedLanguageOptions, primaryLanguage),
+      id: 'profile-preview',
+      displayName,
+      discordUsername: displayName,
+      avatarUrl: userAvatarUrl,
+      primaryLanguage: primaryLanguage || t('previewPrimaryFallback'),
       targetLanguages: targetLanguages
         .filter((row) => row.language)
         .map((row) => ({
-          language: getLabel(localizedLanguageOptions, row.language),
-          level: getLabel(localizedProficiencyOptions, row.level),
+          language: row.language,
+          level: row.level || undefined,
         })),
+      about: bio,
+      interests: tags,
       country: getLabel(localizedCountryOptions, country),
+      timezone: displayTimezone ? timezone : '',
+      allowAnonymousCopy,
+      lastBumpRelative: t('previewJustNow'),
+      premium: previewIsPremiumLook,
+      cardTheme: previewTheme,
+      availability: availability ?? undefined,
     };
   }, [
+    allowAnonymousCopy,
+    availability,
+    bio,
     country,
+    displayName,
+    displayTimezone,
     localizedCountryOptions,
-    localizedLanguageOptions,
-    localizedProficiencyOptions,
     primaryLanguage,
+    previewIsPremiumLook,
+    previewTheme,
+    t,
+    tags,
     targetLanguages,
+    timezone,
+    userAvatarUrl,
   ]);
 
   const tagsSchemaError = errors.tags?.message
@@ -690,74 +695,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <MdVisibility size={15} className="text-primary" />
               {t('livePreview')}
             </span>
-            <div className="rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
-              <div
-                className="overflow-hidden rounded-xl bg-background-darker"
-                style={previewStyle}
-              >
-                <div
-                  className="h-12 w-full"
-                  style={{ background: previewTheme.banner }}
-                />
-                <div className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar avatarUrl={userAvatarUrl} size="md" />
-                    <div>
-                      <h2 className="font-semibold text-white">
-                        {displayName}
-                      </h2>
-                      <p className="text-gray-500 text-xs">
-                        {isPublic ? t('statusPublic') : t('statusUnlisted')}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {preview.primaryLanguage && (
-                      <span className="rounded-md bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-2 py-1 text-[var(--ct-chip-text,var(--color-primary-light))] text-xs">
-                        {preview.primaryLanguage}
-                      </span>
-                    )}
-                    {preview.targetLanguages.map((target) => (
-                      <span
-                        key={target.language}
-                        className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs"
-                      >
-                        {target.language}
-                        {target.level ? ` / ${target.level}` : ''}
-                      </span>
-                    ))}
-                  </div>
-
-                  <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
-                    {bio || t('bioPlaceholder')}
-                  </p>
-
-                  {tags.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {tags.slice(0, tagCap).map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-md bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-2 py-1 text-[var(--ct-chip-text,var(--color-primary-light))] text-xs"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {preview.country && (
-                    <p className="mt-4 flex items-center gap-1.5 text-gray-500 text-xs">
-                      <MdLocationOn
-                        size={14}
-                        className="text-[var(--ct-accent,var(--color-primary))]"
-                      />
-                      {preview.country}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ProfileCard
+              profile={previewProfile}
+              variant="preview"
+              bioFallback={t('previewBioFallback')}
+              emptyTagsLabel={t('previewNoTags')}
+            />
           </div>
         </aside>
       </form>
