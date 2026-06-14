@@ -1,6 +1,8 @@
 import 'server-only';
 
 import { desc, eq } from 'drizzle-orm';
+import { availabilityPresetToPattern } from '@/constants/availability';
+import { isValidAvailability } from '@/constants/languages';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
 import { db } from './client';
@@ -62,6 +64,11 @@ const toDiscoveryProfile = ({
   timezone: profile.displayTimezone
     ? (profile.timezone ?? undefined)
     : undefined,
+  availability:
+    isValidAvailability(profile.availability) &&
+    profile.availability !== 'flexible'
+      ? availabilityPresetToPattern(profile.availability)
+      : undefined,
   allowAnonymousCopy: profile.allowAnonymousCopy,
 });
 
