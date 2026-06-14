@@ -12,7 +12,6 @@ import {
   MdLocationOn,
   MdMoreVert,
   MdPersonOutline,
-  MdPlayArrow,
   MdShare,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
@@ -34,6 +33,7 @@ import {
   FREE_ACCENT,
   getFreeCardTheme,
 } from './cardTheme';
+import { VoiceChip } from './VoiceChip';
 
 export type DiscoveryTargetLanguage = {
   language: LanguageCode | string;
@@ -313,32 +313,6 @@ export const ProfileCard = ({
     );
   };
 
-  const renderVoiceChip = () => {
-    if (!profile.voiceIntroSeconds) return null;
-
-    const bars = [8, 13, 18, 12, 20, 15, 10, 17, 22, 14, 9, 16, 11, 19];
-    const seconds = Math.max(0, Math.floor(profile.voiceIntroSeconds));
-
-    return (
-      <span
-        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-background-darker px-3 py-2 text-gray-300 text-xs"
-        title={t('voiceIntroPreview')}
-      >
-        <MdPlayArrow size={16} className="text-[var(--ct-accent)]" />
-        <span className="flex h-[22px] items-center gap-[2px]" aria-hidden>
-          {bars.map((height, index) => (
-            <span
-              key={`${profile.id}-voice-${height}-${index}`}
-              className="w-[2px] rounded-full bg-[var(--ct-accent)] opacity-70"
-              style={{ height }}
-            />
-          ))}
-        </span>
-        <span>0:{String(seconds).padStart(2, '0')}</span>
-      </span>
-    );
-  };
-
   const MenuItem = ({
     icon: Icon,
     onClick,
@@ -585,7 +559,9 @@ export const ProfileCard = ({
         />
       )}
 
-      {renderVoiceChip()}
+      {profile.premium && profile.voiceIntroSeconds ? (
+        <VoiceChip seconds={profile.voiceIntroSeconds} />
+      ) : null}
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
         {(profile.interests.length > 0 || isPreview) && (
