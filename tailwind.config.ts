@@ -70,11 +70,17 @@ export default {
           from: { width: '100%' },
           to: { width: '0%' },
         },
+        voiceBar: {
+          from: { transform: 'scaleY(0.5)' },
+          to: { transform: 'scaleY(1.15)' },
+        },
       },
       animation: {
         slideIn: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         hide: 'hide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         shrink: 'shrink var(--toast-duration, 5000ms) linear forwards',
+        voiceBar:
+          'voiceBar 0.9s cubic-bezier(0.16, 1, 0.3, 1) infinite alternate',
       },
     },
   },
