@@ -223,6 +223,8 @@
     "blockProfile": "Block user",
     "searchPlaceholder": "Search names, languages, country, interests, descriptions…",
     "searchLabel": "Search profiles",
+    "tagCloudLabel": "Popular tags",
+    "tagCloudClear": "{count} selected · Clear",
     "filterPrimaryLanguage": "Primary Language",
     "filterTargetLanguage": "Target Language",
     "filterCountry": "Country",

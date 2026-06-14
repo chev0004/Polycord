@@ -223,6 +223,8 @@
     "blockProfile": "ユーザーをブロック",
     "searchPlaceholder": "名前、言語、国、興味、自己紹介を検索…",
     "searchLabel": "プロフィールを検索",
+    "tagCloudLabel": "人気のタグ",
+    "tagCloudClear": "{count}件選択中 · クリア",
     "filterPrimaryLanguage": "主要言語",
     "filterTargetLanguage": "学習言語",
     "filterCountry": "国",
