@@ -12,6 +12,7 @@ import {
   MdLocationOn,
   MdMoreVert,
   MdPersonOutline,
+  MdPlayArrow,
   MdShare,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
@@ -58,12 +59,17 @@ export type DiscoveryProfile = {
   premium?: boolean;
   cardTheme?: CardTheme;
   availability?: AvailabilityPattern;
+  voiceIntroSeconds?: number;
 };
 
 type ProfileCardProps = {
   profile: DiscoveryProfile;
+  variant?: 'discovery' | 'preview';
   isLoggedIn?: boolean;
   viewerTimezone?: string;
+  bioFallback?: string;
+  className?: string;
+  emptyTagsLabel?: string;
   onCopyUsername?: (
     username: string,
     profileId: string,
@@ -103,8 +109,12 @@ const getTimeFormat = (): TimeFormat => {
 
 export const ProfileCard = ({
   profile,
+  variant = 'discovery',
   isLoggedIn = false,
   viewerTimezone,
+  bioFallback,
+  className,
+  emptyTagsLabel,
   onCopyUsername,
   onTagClick,
   onLanguageClick,
@@ -117,6 +127,7 @@ export const ProfileCard = ({
   const t = useTranslations('Discovery');
   const tProfile = useTranslations('Profile');
   const locale = useLocale();
+  const isPreview = variant === 'preview';
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
@@ -126,7 +137,8 @@ export const ProfileCard = ({
   const [copied, setCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
 
-  const canCopyUsername = profile.allowAnonymousCopy !== false || isLoggedIn;
+  const canCopyUsername =
+    isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
 
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
   // Free profiles always use the neutral slate accent regardless of
@@ -188,8 +200,14 @@ export const ProfileCard = ({
     return () => clearInterval(interval);
   }, [profile.timezone, timeFormat]);
 
-  const displayedTargetLanguages = profile.targetLanguages.slice(0, 1);
-  const remainingTargetLanguages = profile.targetLanguages.slice(1);
+  const visibleTargetLanguageCount = isPreview ? 2 : 1;
+  const displayedTargetLanguages = profile.targetLanguages.slice(
+    0,
+    visibleTargetLanguageCount,
+  );
+  const remainingTargetLanguages = profile.targetLanguages.slice(
+    visibleTargetLanguageCount,
+  );
   const remainingLanguagesCount = remainingTargetLanguages.length;
 
   const handleTagClick = (tag: string) => {
@@ -267,17 +285,59 @@ export const ProfileCard = ({
     level: Proficiency | string | undefined,
     isPrimary: boolean,
     key?: string,
-  ) => (
-    <button
-      key={key}
-      type="button"
-      onClick={() => handleLanguageClick(language, level, isPrimary)}
-      className={`${isPrimary ? primaryLanguagePillClasses : languagePillClasses} cursor-pointer transition-opacity hover:opacity-80 active:opacity-60`}
-    >
-      {getLanguageName(language, locale)}
-      {level ? ` · ${tProfile(getProficiencyTranslationKey(level))}` : ''}
-    </button>
-  );
+  ) => {
+    const label = `${getLanguageName(language, locale)}${
+      level ? ` / ${tProfile(getProficiencyTranslationKey(level))}` : ''
+    }`;
+    const classes = isPrimary
+      ? primaryLanguagePillClasses
+      : languagePillClasses;
+
+    if (isPreview) {
+      return (
+        <span key={key} className={classes}>
+          {label}
+        </span>
+      );
+    }
+
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() => handleLanguageClick(language, level, isPrimary)}
+        className={`${classes} cursor-pointer transition-opacity hover:opacity-80 active:opacity-60`}
+      >
+        {label}
+      </button>
+    );
+  };
+
+  const renderVoiceChip = () => {
+    if (!profile.voiceIntroSeconds) return null;
+
+    const bars = [8, 13, 18, 12, 20, 15, 10, 17, 22, 14, 9, 16, 11, 19];
+    const seconds = Math.max(0, Math.floor(profile.voiceIntroSeconds));
+
+    return (
+      <span
+        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-background-darker px-3 py-2 text-gray-300 text-xs"
+        title={t('voiceIntroPreview')}
+      >
+        <MdPlayArrow size={16} className="text-[var(--ct-accent)]" />
+        <span className="flex h-[22px] items-center gap-[2px]" aria-hidden>
+          {bars.map((height, index) => (
+            <span
+              key={`${profile.id}-voice-${height}-${index}`}
+              className="w-[2px] rounded-full bg-[var(--ct-accent)] opacity-70"
+              style={{ height }}
+            />
+          ))}
+        </span>
+        <span>0:{String(seconds).padStart(2, '0')}</span>
+      </span>
+    );
+  };
 
   const MenuItem = ({
     icon: Icon,
@@ -302,15 +362,42 @@ export const ProfileCard = ({
     </button>
   );
 
+  const renderLocationContent = () => (
+    <>
+      <MdLocationOn
+        className="flex-shrink-0 text-[var(--ct-accent,var(--color-primary))]"
+        size={16}
+      />
+      <span>
+        {profile.country
+          ? t('locationValue', { location: profile.country })
+          : ''}
+        {currentTime ? (
+          <Fragment>
+            {' · '}
+            {t('currentlyTime', { time: currentTime })}
+          </Fragment>
+        ) : null}
+      </span>
+    </>
+  );
+
+  const cardClassName = [
+    'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-transform duration-200',
+    isPreview
+      ? 'mb-0 border border-white/10 shadow-none'
+      : `mb-6 shadow-lg ${
+          isPopoverOpen || isMenuOpen
+            ? '-translate-y-1 shadow-xl'
+            : 'hover:-translate-y-1 hover:shadow-xl'
+        }`,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <article
-      style={themeStyle}
-      className={`relative mb-6 flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 shadow-lg transition-transform duration-200 ${
-        isPopoverOpen || isMenuOpen
-          ? '-translate-y-1 shadow-xl'
-          : 'hover:-translate-y-1 hover:shadow-xl'
-      }`}
-    >
+    <article style={themeStyle} className={cardClassName}>
       <div className="-mx-5 -mt-5 relative h-[84px] flex-shrink-0">
         <div
           className="flex h-16 items-center justify-end rounded-t-3xl px-2.5"
@@ -322,61 +409,63 @@ export const ProfileCard = ({
                 {profile.lastBumpRelative}
               </span>
             )}
-            <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <Popover.Trigger asChild>
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
-                  aria-label={t('cardMenu')}
-                >
-                  <MdMoreVert size={17} />
-                </button>
-              </Popover.Trigger>
-              <Popover.Portal>
-                <Popover.Content
-                  className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
-                  side="bottom"
-                  align="end"
-                  sideOffset={5}
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                  <div className="flex flex-col gap-1">
-                    <MenuItem
-                      icon={MdPersonOutline}
-                      onClick={handleViewProfile}
-                    >
-                      {t('viewProfile')}
-                    </MenuItem>
-                    {(typeof navigator !== 'undefined' &&
-                      typeof navigator.share === 'function') ||
-                    !!onShare ? (
-                      <MenuItem icon={MdShare} onClick={handleShare}>
-                        {t('shareProfile')}
+            {!isPreview && (
+              <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <Popover.Trigger asChild>
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
+                    aria-label={t('cardMenu')}
+                  >
+                    <MdMoreVert size={17} />
+                  </button>
+                </Popover.Trigger>
+                <Popover.Portal>
+                  <Popover.Content
+                    className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                    side="bottom"
+                    align="end"
+                    sideOffset={5}
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    <div className="flex flex-col gap-1">
+                      <MenuItem
+                        icon={MdPersonOutline}
+                        onClick={handleViewProfile}
+                      >
+                        {t('viewProfile')}
                       </MenuItem>
-                    ) : null}
-                    <div className="my-1 h-[1px] bg-gray-500/50" />
-                    <MenuItem
-                      icon={MdFlag}
-                      onClick={handleReport}
-                      className="hover:!text-red-300 text-red-400"
-                      iconClassName="text-red-400"
-                    >
-                      {t('reportProfile')}
-                    </MenuItem>
-                    <MenuItem
-                      icon={MdBlock}
-                      onClick={handleBlock}
-                      className="hover:!text-red-300 text-red-400"
-                      iconClassName="text-red-400"
-                    >
-                      {t('blockProfile')}
-                    </MenuItem>
-                  </div>
-                  <Popover.Arrow className="fill-gray-500/50" />
-                </Popover.Content>
-              </Popover.Portal>
-            </Popover.Root>
+                      {(typeof navigator !== 'undefined' &&
+                        typeof navigator.share === 'function') ||
+                      !!onShare ? (
+                        <MenuItem icon={MdShare} onClick={handleShare}>
+                          {t('shareProfile')}
+                        </MenuItem>
+                      ) : null}
+                      <div className="my-1 h-[1px] bg-gray-500/50" />
+                      <MenuItem
+                        icon={MdFlag}
+                        onClick={handleReport}
+                        className="hover:!text-red-300 text-red-400"
+                        iconClassName="text-red-400"
+                      >
+                        {t('reportProfile')}
+                      </MenuItem>
+                      <MenuItem
+                        icon={MdBlock}
+                        onClick={handleBlock}
+                        className="hover:!text-red-300 text-red-400"
+                        iconClassName="text-red-400"
+                      >
+                        {t('blockProfile')}
+                      </MenuItem>
+                    </div>
+                    <Popover.Arrow className="fill-gray-500/50" />
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
+            )}
           </div>
         </div>
 
@@ -396,7 +485,12 @@ export const ProfileCard = ({
         <h3 className="truncate font-figtree font-semibold text-lg text-white">
           {profile.displayName}
         </h3>
-        {canCopyUsername ? (
+        {isPreview ? (
+          <span className="flex items-center gap-1.5 self-start text-gray-400 text-xs">
+            <MdContentCopy size={14} />
+            <span>{t('copyUsername')}</span>
+          </span>
+        ) : canCopyUsername ? (
           <button
             type="button"
             onClick={handleCopyUsername}
@@ -483,8 +577,6 @@ export const ProfileCard = ({
         )}
       </div>
 
-      {/* Voice chip slot (UIR-026) renders here, between the language
-          pills and the availability row. */}
       {profile.availability && (
         <AvailabilityRow
           availability={profile.availability}
@@ -493,18 +585,26 @@ export const ProfileCard = ({
         />
       )}
 
+      {renderVoiceChip()}
+
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
-        {profile.interests.length > 0 && (
+        {(profile.interests.length > 0 || isPreview) && (
           <section className="flex flex-col gap-2">
             <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
               {t('tagsLabel')}
             </span>
             <div className="flex flex-wrap items-center gap-2">
-              {profile.interests
-                .slice(0, 4)
-                .map((interest) =>
-                  renderTag(interest, `${profile.id}-tag-${interest}`),
-                )}
+              {profile.interests.length > 0
+                ? profile.interests
+                    .slice(0, 4)
+                    .map((interest) =>
+                      renderTag(interest, `${profile.id}-tag-${interest}`),
+                    )
+                : emptyTagsLabel && (
+                    <span className="text-gray-500 text-xs">
+                      {emptyTagsLabel}
+                    </span>
+                  )}
               {profile.interests.length > 4 && (
                 <span className="rounded-md bg-background-main px-2 py-1 text-[11px] text-gray-400">
                   +{profile.interests.length - 4}
@@ -514,40 +614,33 @@ export const ProfileCard = ({
           </section>
         )}
 
-        {profile.about && (
+        {(profile.about || (isPreview && bioFallback)) && (
           <section className="flex flex-col gap-2">
             <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
               {t('descriptionLabel')}
             </span>
             <p className="whitespace-pre-wrap break-words font-light text-gray-300 text-sm leading-normal">
-              {profile.about}
+              {profile.about || bioFallback}
             </p>
           </section>
         )}
 
         <div className="mt-auto flex flex-wrap items-start justify-between gap-3 text-gray-400 text-xs">
           <div className="flex flex-col gap-1">
-            {profile.country && (
+            {profile.country && isPreview ? (
+              <span className="flex items-center gap-1.5">
+                {renderLocationContent()}
+              </span>
+            ) : null}
+            {profile.country && !isPreview ? (
               <button
                 type="button"
                 onClick={handleCountryClick}
                 className="flex items-center gap-1.5 transition-opacity hover:opacity-80 active:opacity-60"
               >
-                <MdLocationOn
-                  className="flex-shrink-0 text-[var(--ct-accent,var(--color-primary))]"
-                  size={16}
-                />
-                <span>
-                  {t('locationValue', { location: profile.country })}
-                  {currentTime ? (
-                    <Fragment>
-                      {' · '}
-                      {t('currentlyTime', { time: currentTime })}
-                    </Fragment>
-                  ) : null}
-                </span>
+                {renderLocationContent()}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

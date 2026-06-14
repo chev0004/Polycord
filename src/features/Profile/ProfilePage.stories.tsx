@@ -94,6 +94,59 @@ export const WithProfile: Story = {
   },
 };
 
+export const LivePreviewUpdates: Story = {
+  args: {
+    initialValues: {
+      ...sampleProfile,
+      tags: [],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const updatedBio =
+      'I want relaxed evening chats about design, food, and Japanese idioms.';
+    const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
+
+    setFieldValue(bio, updatedBio);
+
+    await waitFor(() =>
+      expect(canvas.getByText(updatedBio)).toBeInTheDocument(),
+    );
+
+    await addTag(canvas, 'Gardening');
+
+    await waitFor(() =>
+      expect(canvas.getAllByText('Gardening')).toHaveLength(2),
+    );
+  },
+};
+
+export const EmptyPreview: Story = {
+  args: {
+    initialValues: {
+      ...sampleProfile,
+      primaryLanguage: '',
+      targetLanguages: [{ language: '', level: '' }],
+      country: '',
+      timezone: '',
+      displayTimezone: false,
+      availability: null,
+      bio: '',
+      tags: [],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByText('Your bio preview will appear here.'),
+    ).toBeInTheDocument();
+    await expect(canvas.getByText('No tags yet')).toBeInTheDocument();
+    await expect(canvas.getByText('Primary')).toBeInTheDocument();
+  },
+};
+
 export const AddLanguage: Story = {
   args: {
     premium: false,
