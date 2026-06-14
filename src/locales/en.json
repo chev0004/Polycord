@@ -221,6 +221,8 @@
     "shareProfile": "Share profile",
     "reportProfile": "Report profile",
     "blockProfile": "Block user",
+    "searchPlaceholder": "Search names, languages, country, interests, descriptions…",
+    "searchLabel": "Search profiles",
     "filterPrimaryLanguage": "Primary Language",
     "filterTargetLanguage": "Target Language",
     "filterCountry": "Country",
