@@ -16,6 +16,7 @@ import {
   MdVisibility,
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import { Chip } from '@/components/Chip';
 import {
   Combobox,
   FieldError,
