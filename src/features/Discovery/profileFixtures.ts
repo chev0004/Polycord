@@ -49,6 +49,7 @@ export const createSampleProfiles = (
     timezone: 'Asia/Tokyo',
     allowAnonymousCopy: true,
     lastBumpRelative: t('bumpTwoDays'),
+    bumpedMinutesAgo: 2820,
   },
   {
     id: 'profile-2',
@@ -69,6 +70,7 @@ export const createSampleProfiles = (
     timezone: 'America/Argentina/Buenos_Aires',
     allowAnonymousCopy: false,
     lastBumpRelative: t('bumpOneWeek'),
+    bumpedMinutesAgo: 9900,
   },
   {
     id: 'profile-3',
@@ -121,6 +123,7 @@ export const createSampleProfiles = (
     timezone: 'Asia/Singapore',
     allowAnonymousCopy: true,
     lastBumpRelative: t('bumpFiveHours'),
+    bumpedMinutesAgo: 280,
   },
   {
     id: 'profile-4',
@@ -145,6 +148,7 @@ export const createSampleProfiles = (
     timezone: 'Europe/Rome',
     allowAnonymousCopy: true,
     lastBumpRelative: t('bumpFiveHours'),
+    bumpedMinutesAgo: 300,
   },
   {
     id: 'profile-5',
@@ -194,6 +198,7 @@ export const createSampleProfiles = (
     timezone: 'America/New_York',
     allowAnonymousCopy: false,
     lastBumpRelative: t('bumpTwoDays'),
+    bumpedMinutesAgo: 2880,
   },
   {
     id: 'profile-6',
@@ -219,6 +224,7 @@ export const createSampleProfiles = (
     timezone: 'Africa/Cairo',
     allowAnonymousCopy: true,
     lastBumpRelative: t('bumpOneWeek'),
+    bumpedMinutesAgo: 10080,
   },
   {
     id: 'profile-7',
@@ -243,6 +249,7 @@ export const createSampleProfiles = (
     timezone: 'Europe/Paris',
     allowAnonymousCopy: true,
     lastBumpRelative: t('bumpFiveHours'),
+    bumpedMinutesAgo: 320,
   },
   {
     id: 'profile-8',
@@ -284,6 +291,7 @@ export const createSampleProfiles = (
     timezone: 'Asia/Tokyo',
     allowAnonymousCopy: false,
     lastBumpRelative: t('bumpTwoDays'),
+    bumpedMinutesAgo: 3000,
   },
   {
     id: 'profile-9',
@@ -308,5 +316,6 @@ export const createSampleProfiles = (
     timezone: 'America/Mexico_City',
     allowAnonymousCopy: true,
     lastBumpRelative: t('bumpOneWeek'),
+    bumpedMinutesAgo: 10260,
   },
 ];

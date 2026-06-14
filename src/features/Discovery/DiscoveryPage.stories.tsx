@@ -188,6 +188,51 @@ export const Tags: Story = {
   },
 };
 
+export const Sort: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const doc = canvasElement.ownerDocument;
+
+    const firstOccurrence = (name: string) => canvas.getAllByText(name)[0];
+    const precedes = (before: string, after: string) =>
+      Boolean(
+        firstOccurrence(before).compareDocumentPosition(
+          firstOccurrence(after),
+        ) & Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+
+    await expect(precedes('Wei', 'Yuki')).toBe(true);
+
+    const pickSort = async (option: string) => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+
+      const popover = within(
+        await waitFor(() => {
+          const content = doc.querySelector<HTMLElement>('.PopoverContent');
+          if (!content) throw new Error('Sort popover did not open');
+          return content;
+        }),
+      );
+
+      await userEvent.click(popover.getByRole('button', { name: option }));
+    };
+
+    await pickSort('Oldest bumped');
+    await waitFor(() => expect(precedes('Sofia', 'Wei')).toBe(true));
+
+    await pickSort('Name (A-Z)');
+    await waitFor(() => expect(precedes('Alex', 'Yuki')).toBe(true));
+
+    await pickSort('Name (Z-A)');
+    await waitFor(() => expect(precedes('Yuki', 'Alex')).toBe(true));
+  },
+};
+
 export const Loading: Story = {
   args: {
     isLoading: true,

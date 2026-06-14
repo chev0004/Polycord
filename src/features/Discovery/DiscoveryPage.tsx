@@ -18,11 +18,17 @@ import {
   useDiscoveryFilterDefs,
 } from './discoveryFilters';
 import { applyDiscoverySearch } from './discoverySearch';
+import {
+  applyDiscoverySort,
+  DEFAULT_SORT,
+  type DiscoverySortValue,
+} from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 import { SearchBar } from './SearchBar';
+import { SortMenu } from './SortMenu';
 import { TagCloud } from './TagCloud';
 
 const SEARCH_TRANSITION_MS = 320;
@@ -65,6 +71,7 @@ export const DiscoveryPage = ({
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortValue, setSortValue] = useState<DiscoverySortValue>(DEFAULT_SORT);
   const [isSearching, setIsSearching] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
@@ -110,15 +117,18 @@ export const DiscoveryPage = ({
 
   const filteredProfiles = useMemo(
     () =>
-      applyTagFilter(
-        applyDiscoverySearch(
-          applyDiscoveryFilters(profiles, filterValues),
-          searchQuery,
-          locale,
+      applyDiscoverySort(
+        applyTagFilter(
+          applyDiscoverySearch(
+            applyDiscoveryFilters(profiles, filterValues),
+            searchQuery,
+            locale,
+          ),
+          selectedTags,
         ),
-        selectedTags,
+        sortValue,
       ),
-    [profiles, filterValues, searchQuery, locale, selectedTags],
+    [profiles, filterValues, searchQuery, locale, selectedTags, sortValue],
   );
 
   useEffect(() => {
@@ -193,12 +203,12 @@ export const DiscoveryPage = ({
               onClear={handleClearTags}
             />
           ) : null}
-          {/* FilterBar's sortControl slot is reserved for the sort menu (UIR-019) */}
           <FilterBar
             filters={filterDefs}
             values={filterValues}
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
+            sortControl={<SortMenu value={sortValue} onChange={setSortValue} />}
           />
         </div>
 
