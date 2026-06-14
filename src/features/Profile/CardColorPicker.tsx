@@ -19,8 +19,6 @@ const COLOR_LABEL_KEYS: Record<string, string> = {
   blue: 'cardColorBlue',
 };
 
-// Selection rings are applied inline so they survive the global
-// `*:focus { box-shadow: none }` reset once the swatch takes focus.
 const SELECTED_RING =
   '0 0 0 3px var(--color-background-dark), 0 0 0 5px #ffffff';
 const TEASE_RING =
