@@ -233,6 +233,63 @@ export const Sort: Story = {
   },
 };
 
+export const Paginated: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    const base = createSampleProfiles(t);
+
+    return (
+      <DiscoveryPage
+        {...args}
+        profiles={[
+          ...base,
+          ...base.map((profile) => ({ ...profile, id: `${profile.id}-b` })),
+        ]}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const doc = canvasElement.ownerDocument;
+
+    await expect(canvas.getByText('18 partners')).toBeInTheDocument();
+    await expect(canvas.getByText('Page 1 of 2')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Previous page' }),
+    ).toBeDisabled();
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Next page' }));
+    await expect(canvas.getByText('Page 2 of 2')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Next page' }),
+    ).toBeDisabled();
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Primary Language' }),
+    );
+
+    const popover = within(
+      await waitFor(() => {
+        const content = doc.querySelector<HTMLElement>('.PopoverContent');
+        if (!content) throw new Error('Filter popover did not open');
+        return content;
+      }),
+    );
+
+    await userEvent.click(
+      await popover.findByRole('button', { name: 'Japanese' }),
+    );
+    await userEvent.click(popover.getByRole('button', { name: 'Apply' }));
+
+    await waitFor(() =>
+      expect(canvas.getByText('4 partners')).toBeInTheDocument(),
+    );
+    await expect(
+      canvas.queryByRole('button', { name: 'Next page' }),
+    ).toBeNull();
+  },
+};
+
 export const Loading: Story = {
   args: {
     isLoading: true,

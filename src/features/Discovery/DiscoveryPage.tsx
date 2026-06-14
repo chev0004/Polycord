@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { Navbar } from '@/features/Navbar';
@@ -24,6 +24,7 @@ import {
   type DiscoverySortValue,
 } from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
+import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
@@ -32,6 +33,7 @@ import { SortMenu } from './SortMenu';
 import { TagCloud } from './TagCloud';
 
 const SEARCH_TRANSITION_MS = 320;
+const PER_PAGE = 9;
 
 type DiscoveryPageProps = {
   authError?: string;
@@ -68,10 +70,12 @@ export const DiscoveryPage = ({
   const router = useRouter();
   const t = useTranslations('Discovery');
   const filterDefs = useDiscoveryFilterDefs();
+  const resultsHeadRef = useRef<HTMLDivElement>(null);
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortValue, setSortValue] = useState<DiscoverySortValue>(DEFAULT_SORT);
+  const [page, setPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
@@ -131,6 +135,14 @@ export const DiscoveryPage = ({
     [profiles, filterValues, searchQuery, locale, selectedTags, sortValue],
   );
 
+  const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = useMemo(
+    () =>
+      filteredProfiles.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE),
+    [filteredProfiles, safePage],
+  );
+
   useEffect(() => {
     if (!searchQuery) {
       setIsSearching(false);
@@ -145,12 +157,24 @@ export const DiscoveryPage = ({
 
   const showSkeleton = isLoading || isSearching;
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const handleSortChange = (value: DiscoverySortValue) => {
+    setSortValue(value);
+    setPage(1);
+  };
+
   const handleFilterChange = (filterId: string, value: string | string[]) => {
     setFilterValues((previous) => ({ ...previous, [filterId]: value }));
+    setPage(1);
   };
 
   const handleClearFilters = () => {
     setFilterValues({});
+    setPage(1);
   };
 
   const handleToggleTag = (tag: string) => {
@@ -159,10 +183,20 @@ export const DiscoveryPage = ({
         ? previous.filter((value) => value !== tag)
         : [...previous, tag],
     );
+    setPage(1);
   };
 
   const handleClearTags = () => {
     setSelectedTags([]);
+    setPage(1);
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    resultsHeadRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
   };
 
   return (
@@ -194,7 +228,7 @@ export const DiscoveryPage = ({
         ) : null}
 
         <div className="mb-[26px] flex flex-col gap-[14px]">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          <SearchBar value={searchQuery} onChange={handleSearchChange} />
           {tagCounts.length > 0 ? (
             <TagCloud
               tags={tagCounts}
@@ -208,7 +242,9 @@ export const DiscoveryPage = ({
             values={filterValues}
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
-            sortControl={<SortMenu value={sortValue} onChange={setSortValue} />}
+            sortControl={
+              <SortMenu value={sortValue} onChange={handleSortChange} />
+            }
           />
         </div>
 
@@ -222,7 +258,10 @@ export const DiscoveryPage = ({
           </div>
         ) : (
           <>
-            <div className="mb-[18px] flex items-center">
+            <div
+              ref={resultsHeadRef}
+              className="mb-[18px] flex scroll-mt-8 items-center"
+            >
               <span
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
@@ -237,11 +276,19 @@ export const DiscoveryPage = ({
               <ProfileGridSkeleton />
             ) : (
               <ProfileGrid
-                profiles={filteredProfiles}
+                profiles={pageItems}
                 isLoggedIn={isLoggedIn}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
                 }
+              />
+            )}
+
+            {showSkeleton ? null : (
+              <Pagination
+                page={safePage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
               />
             )}
           </>
