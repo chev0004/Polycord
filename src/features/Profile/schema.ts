@@ -1,10 +1,5 @@
 import { z } from 'zod';
-import {
-  type Availability,
-  availabilityValues,
-  isValidIANATimezone,
-  isValidProficiency,
-} from '@/constants/languages';
+import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
 
 export const profileSchema = z.object({
   isPublic: z.boolean(),
@@ -42,7 +37,13 @@ export const profileSchema = z.object({
     .max(500, { message: 'bioTooLong' }),
 
   availability: z
-    .enum(availabilityValues as unknown as [Availability, ...Availability[]])
+    .object({
+      days: z.enum(['any', 'weekdays', 'weekends']),
+      from: z.string(),
+      to: z.string(),
+      anyTime: z.boolean().optional(),
+    })
+    .nullable()
     .optional(),
 
   tags: z

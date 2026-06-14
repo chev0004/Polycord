@@ -23,17 +23,17 @@ import {
   FieldError,
   FormGroup,
   Label,
-  Select,
   TextArea,
   TextInput,
   Toggle,
 } from '@/components/Form';
 import {
-  availabilityValues,
   countryOptions,
   languageOptions,
   proficiencyOptions,
 } from '@/constants';
+import { availabilityPresetToPattern } from '@/constants/availability';
+import { AvailabilityEditor } from './AvailabilityEditor';
 import { type ProfileFormValues, profileSchema } from './schema';
 import {
   createEmptyLanguageRow,
@@ -61,17 +61,10 @@ const defaultValues: ProfileFormValues = {
   displayTimezone: true,
   isPublic: true,
   bio: '',
-  availability: 'flexible',
+  availability: availabilityPresetToPattern('flexible'),
   tags: [],
   country: '',
   timezone: '',
-};
-
-const availabilityLabelKeys: Record<string, string> = {
-  weeknights: 'availabilityOptionWeeknights',
-  weekends: 'availabilityOptionWeekends',
-  weekday_mornings: 'availabilityOptionWeekdayMornings',
-  flexible: 'availabilityOptionFlexible',
 };
 
 const SectionCard = ({
@@ -434,26 +427,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             title={t('aboutMe')}
             description={t('aboutMeDescription')}
           >
-            <FormGroup>
-              <Label htmlFor="availability">{t('availabilityLabel')}</Label>
-              <Controller
-                name="availability"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    options={availabilityValues.map((value) => ({
-                      label: t(availabilityLabelKeys[value]),
-                      value,
-                    }))}
-                    placeholder={t('availabilityPlaceholder')}
-                    onValueChange={field.onChange}
-                    value={field.value ?? 'flexible'}
-                    error={!!errors.availability}
-                  />
-                )}
-              />
-            </FormGroup>
+            <Controller
+              name="availability"
+              control={control}
+              render={({ field }) => (
+                <AvailabilityEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
 
             <FormGroup>
               <Label htmlFor={bioId}>{t('bioLabel')}</Label>
