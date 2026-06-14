@@ -6,7 +6,17 @@ export type CardTheme = {
   accent: string;
 };
 
+export type CustomGradient = {
+  from: string;
+  to: string;
+};
+
 export const FREE_ACCENT = '#7a8a99';
+export const CUSTOM_CARD_THEME_ID = 'custom';
+export const DEFAULT_CUSTOM_GRADIENT: CustomGradient = {
+  from: '#5964f2',
+  to: '#7883f5',
+};
 
 export const FREE_CARD_COLORS = [
   { id: 'sky', banner: '#c1d5e9' },
@@ -70,12 +80,46 @@ export const findCardTheme = (id: string): CardTheme | undefined => {
   return undefined;
 };
 
-export const deriveCardAccent = (hex: string): CSSProperties => {
-  if (!/^#[0-9a-f]{6}$/i.test(hex)) return {};
+export const isValidHex = (hex: string): boolean => /^#[0-9a-f]{6}$/i.test(hex);
+
+export const hexToRgb = (hex: string) => {
+  if (!isValidHex(hex)) return null;
   const n = Number.parseInt(hex.slice(1), 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
+  return {
+    r: (n >> 16) & 255,
+    g: (n >> 8) & 255,
+    b: n & 255,
+  };
+};
+
+export const rgbToHex = ({ r, g, b }: { r: number; g: number; b: number }) =>
+  `#${[r, g, b]
+    .map((value) => Math.round(value).toString(16).padStart(2, '0'))
+    .join('')}`;
+
+export const blendHex = (from: string, to: string, amount = 0.45): string => {
+  const a = hexToRgb(from);
+  const b = hexToRgb(to);
+  if (!a || !b) return from;
+  return rgbToHex({
+    r: a.r + (b.r - a.r) * amount,
+    g: a.g + (b.g - a.g) * amount,
+    b: a.b + (b.b - a.b) * amount,
+  });
+};
+
+export const getCustomCardTheme = (
+  gradient: CustomGradient = DEFAULT_CUSTOM_GRADIENT,
+): CardTheme => ({
+  banner: `linear-gradient(115deg, ${gradient.from}, ${gradient.to})`,
+  tint: `${gradient.from}22`,
+  accent: blendHex(gradient.from, gradient.to),
+});
+
+export const deriveCardAccent = (hex: string): CSSProperties => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return {};
+  const { r, g, b } = rgb;
   const tR = Math.round(r + (255 - r) * 0.28);
   const tG = Math.round(g + (255 - g) * 0.28);
   const tB = Math.round(b + (255 - b) * 0.28);
