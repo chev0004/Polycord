@@ -142,6 +142,56 @@ export const SearchEmpty: Story = {
   },
 };
 
+export const Tags: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const doc = canvasElement.ownerDocument;
+
+    await expect(canvas.getByText('9 partners')).toBeInTheDocument();
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Gaming (4)' }));
+    await waitFor(() =>
+      expect(canvas.getByText('4 partners')).toBeInTheDocument(),
+    );
+
+    // Tags combine with the filter row: Gaming and Japanese primary leave Yuki.
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Primary Language' }),
+    );
+
+    const popover = within(
+      await waitFor(() => {
+        const content = doc.querySelector<HTMLElement>('.PopoverContent');
+        if (!content) throw new Error('Filter popover did not open');
+        return content;
+      }),
+    );
+
+    await userEvent.click(
+      await popover.findByRole('button', { name: 'Japanese' }),
+    );
+    await userEvent.click(popover.getByRole('button', { name: 'Apply' }));
+
+    await waitFor(() =>
+      expect(canvas.getByText('1 partner')).toBeInTheDocument(),
+    );
+    // ProfileGrid renders each card once per responsive breakpoint, so the
+    // surviving name resolves to several nodes.
+    expect(canvas.getAllByText('Yuki').length).toBeGreaterThan(0);
+
+    // Clearing tags from the cloud head leaves the language filter applied.
+    await userEvent.click(canvas.getByRole('button', { name: /1 selected/ }));
+    await waitFor(() =>
+      expect(canvas.getByText('2 partners')).toBeInTheDocument(),
+    );
+  },
+};
+
 export const Loading: Story = {
   args: {
     isLoading: true,
