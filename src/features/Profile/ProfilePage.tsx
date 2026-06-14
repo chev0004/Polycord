@@ -12,6 +12,7 @@ import {
   MdArrowUpward,
   MdDeleteOutline,
   MdErrorOutline,
+  MdLocationOn,
   MdMoreVert,
   MdVisibility,
 } from 'react-icons/md';
@@ -33,7 +34,15 @@ import {
   proficiencyOptions,
 } from '@/constants';
 import { availabilityPresetToPattern } from '@/constants/availability';
+import {
+  DEFAULT_CARD_COLOR,
+  deriveCardAccent,
+  FREE_ACCENT,
+  findCardTheme,
+  getFreeCardTheme,
+} from '@/features/Discovery/cardTheme';
 import { AvailabilityEditor } from './AvailabilityEditor';
+import { CardColorPicker } from './CardColorPicker';
 import { type ProfileFormValues, profileSchema } from './schema';
 import {
   createEmptyLanguageRow,
@@ -64,6 +73,7 @@ const defaultValues: ProfileFormValues = {
   availability: availabilityPresetToPattern('flexible'),
   tags: [],
   country: '',
+  cardColor: DEFAULT_CARD_COLOR,
   timezone: '',
 };
 
@@ -153,6 +163,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [saveFailed, setSaveFailed] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [tease, setTease] = useState<string | null>(null);
 
   const tagCap = premium ? PREMIUM_TAG_CAP : FREE_TAG_CAP;
 
@@ -177,6 +188,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const bio = watch('bio');
   const tags = watch('tags') ?? [];
   const timezone = watch('timezone');
+  const cardColor = watch('cardColor') ?? DEFAULT_CARD_COLOR;
+
+  const effectiveCardColor = premium ? cardColor : (tease ?? cardColor);
+  const previewTheme = findCardTheme(effectiveCardColor) ?? getFreeCardTheme(0);
+  const previewAccent = premium ? previewTheme.accent : FREE_ACCENT;
+  const previewIsPremiumLook = premium || Boolean(tease);
+  const previewStyle = {
+    ...deriveCardAccent(previewAccent),
+    ...(previewIsPremiumLook && previewTheme.tint
+      ? {
+          backgroundImage: `linear-gradient(${previewTheme.tint},${previewTheme.tint})`,
+        }
+      : {}),
+  } as React.CSSProperties;
 
   useEffect(() => {
     if (initialValues) {
@@ -219,6 +244,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     setTagError(null);
     setSaveFailed(false);
     setDeleteFailed(false);
+    setTease(null);
   };
 
   const handleDeleteProfile = async () => {
@@ -559,6 +585,25 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </SectionCard>
 
           <SectionCard
+            title={t('cardStyle')}
+            description={t('cardStyleDescription')}
+          >
+            <Controller
+              name="cardColor"
+              control={control}
+              render={({ field }) => (
+                <CardColorPicker
+                  value={field.value ?? DEFAULT_CARD_COLOR}
+                  onChange={field.onChange}
+                  premium={premium}
+                  tease={tease}
+                  onTease={setTease}
+                />
+              )}
+            />
+          </SectionCard>
+
+          <SectionCard
             title={t('privacySettings')}
             description={t('privacySettingsDescription')}
           >
@@ -646,56 +691,71 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {t('livePreview')}
             </span>
             <div className="rounded-2xl border border-white/5 bg-background-dark p-4 shadow-xl">
-              <div className="rounded-xl bg-background-darker p-4">
-                <div className="flex items-center gap-3">
-                  <Avatar avatarUrl={userAvatarUrl} size="md" />
-                  <div>
-                    <h2 className="font-semibold text-white">{displayName}</h2>
-                    <p className="text-gray-500 text-xs">
-                      {isPublic ? t('statusPublic') : t('statusUnlisted')}
-                    </p>
+              <div
+                className="overflow-hidden rounded-xl bg-background-darker"
+                style={previewStyle}
+              >
+                <div
+                  className="h-12 w-full"
+                  style={{ background: previewTheme.banner }}
+                />
+                <div className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar avatarUrl={userAvatarUrl} size="md" />
+                    <div>
+                      <h2 className="font-semibold text-white">
+                        {displayName}
+                      </h2>
+                      <p className="text-gray-500 text-xs">
+                        {isPublic ? t('statusPublic') : t('statusUnlisted')}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {preview.primaryLanguage && (
-                    <span className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs">
-                      {preview.primaryLanguage}
-                    </span>
-                  )}
-                  {preview.targetLanguages.map((target) => (
-                    <span
-                      key={target.language}
-                      className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs"
-                    >
-                      {target.language}
-                      {target.level ? ` / ${target.level}` : ''}
-                    </span>
-                  ))}
-                </div>
-
-                <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
-                  {bio || t('bioPlaceholder')}
-                </p>
-
-                {tags.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {tags.slice(0, tagCap).map((tag) => (
+                    {preview.primaryLanguage && (
+                      <span className="rounded-md bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-2 py-1 text-[var(--ct-chip-text,var(--color-primary-light))] text-xs">
+                        {preview.primaryLanguage}
+                      </span>
+                    )}
+                    {preview.targetLanguages.map((target) => (
                       <span
-                        key={tag}
-                        className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs"
+                        key={target.language}
+                        className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs"
                       >
-                        {tag}
+                        {target.language}
+                        {target.level ? ` / ${target.level}` : ''}
                       </span>
                     ))}
                   </div>
-                )}
 
-                {preview.country && (
-                  <p className="mt-4 text-gray-500 text-xs">
-                    {preview.country}
+                  <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
+                    {bio || t('bioPlaceholder')}
                   </p>
-                )}
+
+                  {tags.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {tags.slice(0, tagCap).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-md bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-2 py-1 text-[var(--ct-chip-text,var(--color-primary-light))] text-xs"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {preview.country && (
+                    <p className="mt-4 flex items-center gap-1.5 text-gray-500 text-xs">
+                      <MdLocationOn
+                        size={14}
+                        className="text-[var(--ct-accent,var(--color-primary))]"
+                      />
+                      {preview.country}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
