@@ -18,6 +18,8 @@ export const FREE_CARD_COLORS = [
   { id: 'slate', banner: '#46525f' },
 ] as const;
 
+export const DEFAULT_CARD_COLOR = FREE_CARD_COLORS[0].id;
+
 export const PREMIUM_CARD_THEMES = [
   {
     id: 'indigo',
@@ -55,6 +57,24 @@ export const getFreeCardTheme = (index: number): CardTheme => ({
   banner: FREE_CARD_COLORS[index % FREE_CARD_COLORS.length].banner,
   accent: FREE_ACCENT,
 });
+
+// Resolve a stored card-colour id to its theme. Free colours always carry the
+// neutral slate accent; premium themes keep their own accent and tint.
+export const findCardTheme = (id: string): CardTheme | undefined => {
+  const free = FREE_CARD_COLORS.find((color) => color.id === id);
+  if (free) return { banner: free.banner, accent: FREE_ACCENT };
+
+  const premium = PREMIUM_CARD_THEMES.find((color) => color.id === id);
+  if (premium) {
+    return {
+      banner: premium.banner,
+      tint: premium.tint,
+      accent: premium.accent,
+    };
+  }
+
+  return undefined;
+};
 
 // Derive complementary card-surface colours from a single hex accent.
 // Returns a CSS-var object ready to spread into an element's inline style.
