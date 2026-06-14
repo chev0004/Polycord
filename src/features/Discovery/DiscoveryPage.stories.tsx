@@ -159,7 +159,6 @@ export const Tags: Story = {
       expect(canvas.getByText('4 partners')).toBeInTheDocument(),
     );
 
-    // Tags combine with the filter row: Gaming and Japanese primary leave Yuki.
     await userEvent.click(
       canvas.getByRole('button', { name: 'Primary Language' }),
     );
@@ -180,11 +179,8 @@ export const Tags: Story = {
     await waitFor(() =>
       expect(canvas.getByText('1 partner')).toBeInTheDocument(),
     );
-    // ProfileGrid renders each card once per responsive breakpoint, so the
-    // surviving name resolves to several nodes.
     expect(canvas.getAllByText('Yuki').length).toBeGreaterThan(0);
 
-    // Clearing tags from the cloud head leaves the language filter applied.
     await userEvent.click(canvas.getByRole('button', { name: /1 selected/ }));
     await waitFor(() =>
       expect(canvas.getByText('2 partners')).toBeInTheDocument(),

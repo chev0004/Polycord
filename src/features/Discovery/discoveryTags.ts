@@ -5,7 +5,6 @@ export type DiscoveryTagCount = {
   count: number;
 };
 
-// Tags actually in use across the profiles, ordered by usage then alphabetical.
 export const buildTagCounts = (
   profiles: DiscoveryProfile[],
 ): DiscoveryTagCount[] => {
@@ -25,8 +24,6 @@ export const buildTagCounts = (
     .map(([tag, count]) => ({ tag, count }));
 };
 
-// Narrows profiles to those carrying every selected tag, combining with the
-// other discovery filters. Same value shape DISC-002 will send to the server.
 export const applyTagFilter = (
   profiles: DiscoveryProfile[],
   selectedTags: string[],
