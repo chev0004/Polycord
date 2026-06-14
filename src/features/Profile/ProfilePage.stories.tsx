@@ -27,8 +27,7 @@ type Story = StoryObj<typeof ProfilePage>;
 
 const sampleProfile: ProfileFormValues = {
   primaryLanguage: 'ja',
-  targetLanguage: 'en',
-  proficiencyLevel: 'intermediate',
+  targetLanguages: [{ language: 'en', level: 'intermediate' }],
   country: 'JP',
   timezone: 'Asia/Tokyo',
   isPublic: true,
@@ -38,6 +37,24 @@ const sampleProfile: ProfileFormValues = {
   bio: 'I am a graphic designer in Osaka looking for a patient partner to practice everyday English with.',
   tags: ['Anime', 'Cooking', 'Photography'],
 };
+
+const twoLanguages = [
+  { language: 'en', level: 'intermediate' },
+  { language: 'ko', level: 'beginner' },
+];
+
+const premiumLanguages = [
+  'en',
+  'ko',
+  'fr',
+  'de',
+  'es',
+  'it',
+  'pt',
+  'ru',
+  'zh',
+  'ar',
+].map((language) => ({ language, level: 'beginner' }));
 
 const setFieldValue = (
   field: HTMLInputElement | HTMLTextAreaElement,
@@ -74,6 +91,104 @@ export const WithProfile: Story = {
     onBumpProfile: fn(),
     onViewPublicProfile: fn(),
     onDeleteProfile: fn(),
+  },
+};
+
+export const AddLanguage: Story = {
+  args: {
+    premium: false,
+    initialValues: sampleProfile,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getAllByRole('button', { name: 'Remove language' }),
+    ).toHaveLength(1);
+    await expect(canvas.getByText('1/2 languages')).toBeInTheDocument();
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Add a language' }));
+
+    await waitFor(() =>
+      expect(
+        canvas.getAllByRole('button', { name: 'Remove language' }),
+      ).toHaveLength(2),
+    );
+    await expect(canvas.getByText('2/2 languages')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Add a language' }),
+    ).toBeDisabled();
+  },
+};
+
+export const RemoveLanguage: Story = {
+  args: {
+    premium: true,
+    initialValues: {
+      ...sampleProfile,
+      targetLanguages: twoLanguages,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const removeButtons = canvas.getAllByRole('button', {
+      name: 'Remove language',
+    });
+    await expect(removeButtons).toHaveLength(2);
+
+    fireEvent.click(removeButtons[1]);
+
+    await waitFor(() =>
+      expect(
+        canvas.getAllByRole('button', { name: 'Remove language' }),
+      ).toHaveLength(1),
+    );
+    await expect(
+      canvas.getByRole('button', { name: 'Remove language' }),
+    ).toBeDisabled();
+  },
+};
+
+export const FreeLanguageCap: Story = {
+  args: {
+    premium: false,
+    initialValues: {
+      ...sampleProfile,
+      targetLanguages: twoLanguages,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('2/2 languages')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Add a language' }),
+    ).toBeDisabled();
+    await expect(
+      canvas.getByText(/reached the free limit of 2 languages/),
+    ).toBeInTheDocument();
+  },
+};
+
+export const PremiumLanguageCap: Story = {
+  args: {
+    premium: true,
+    initialValues: {
+      ...sampleProfile,
+      targetLanguages: premiumLanguages,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('10/10 languages')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Add a language' }),
+    ).toBeDisabled();
+    expect(
+      canvas.queryByText(/reached the free limit/),
+    ).not.toBeInTheDocument();
   },
 };
 
