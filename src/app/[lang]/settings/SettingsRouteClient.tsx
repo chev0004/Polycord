@@ -51,6 +51,7 @@ export const SettingsRouteClient = ({
     pushNotifications: true,
     matchAlert: true,
     profileInteractionAlert: true,
+    profileViewAlert: false,
     theme: 'dark',
     applicationLanguage: locale,
     timeFormat: '24hr',

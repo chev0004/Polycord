@@ -18,6 +18,7 @@ import {
   Toggle,
 } from '@/components/Form';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
+import { CompareTable } from './CompareTable';
 
 const settingsSchema = z.object({
   isPublic: z.boolean(),
@@ -27,6 +28,7 @@ const settingsSchema = z.object({
   pushNotifications: z.boolean(),
   matchAlert: z.boolean(),
   profileInteractionAlert: z.boolean(),
+  profileViewAlert: z.boolean(),
   theme: z.enum(['dark', 'light']),
   applicationLanguage: z.string().min(1),
   timeFormat: z.enum(['12hr', '24hr']),
@@ -45,14 +47,21 @@ export type SettingsPageProps = {
   onSubmit?: (data: SettingsFormValues) => Promise<void> | void;
   onUpdateDiscordConnection: () => void;
   onManageSubscription: () => void;
+  premium?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
 
-type SectionId = 'account' | 'appearance' | 'privacy' | 'notifications';
+type SectionId =
+  | 'account'
+  | 'premium'
+  | 'appearance'
+  | 'privacy'
+  | 'notifications';
 
 const sections: { id: SectionId; labelKey: string }[] = [
   { id: 'account', labelKey: 'accountTitle' },
+  { id: 'premium', labelKey: 'premiumTitle' },
   { id: 'appearance', labelKey: 'appearanceTitle' },
   { id: 'privacy', labelKey: 'privacyTitle' },
   { id: 'notifications', labelKey: 'notificationsTitle' },
@@ -111,6 +120,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onSubmit: onSubmitProp,
   onUpdateDiscordConnection,
   onManageSubscription,
+  premium = false,
   userAvatarUrl,
   userDisplayName,
 }) => {
@@ -319,15 +329,29 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
               <SettingRow
                 label={t('premiumMembershipLabel')}
-                description={t('premiumMembershipDescription')}
+                description={
+                  premium
+                    ? t('premiumMembershipDescriptionPremium')
+                    : t('premiumMembershipDescription')
+                }
               >
-                <Button
-                  variant="outline"
-                  onClick={onManageSubscription}
-                  className="h-10 whitespace-nowrap"
-                >
-                  {t('viewPlansButton')}
-                </Button>
+                {premium ? (
+                  <Button
+                    variant="outline"
+                    onClick={onManageSubscription}
+                    className="h-10 whitespace-nowrap"
+                  >
+                    {t('manageBillingButton')}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => jumpToSection('premium')}
+                    className="h-10 whitespace-nowrap"
+                  >
+                    {t('viewPlansButton')}
+                  </Button>
+                )}
               </SettingRow>
 
               <SettingRow
@@ -433,6 +457,58 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   </div>
                 ) : null}
               </div>
+            </SectionCard>
+          )}
+
+          {activeSection === 'premium' && (
+            <SectionCard
+              title={t('premiumTitle')}
+              description={
+                premium
+                  ? t('premiumTabDescriptionPremium')
+                  : t('premiumTabDescriptionFree')
+              }
+            >
+              {premium ? (
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-background-darker px-4 py-3.5">
+                  <div className="min-w-0">
+                    <div className="flex items-baseline gap-[5px]">
+                      <span className="font-bold text-[26px] text-white tracking-[-0.01em]">
+                        {t('premiumPriceAmount')}
+                      </span>
+                      <span className="text-[13px] text-gray-400">
+                        {t('premiumPriceRenewal')}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-[12.5px] text-gray-500">
+                      {t('premiumPlanNote')}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={onManageSubscription}
+                    className="h-10 whitespace-nowrap"
+                  >
+                    {t('manageBillingButton')}
+                  </Button>
+                </div>
+              ) : null}
+
+              <CompareTable />
+
+              {premium ? null : (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[12px] text-gray-500">
+                    {t('premiumUpgradeNote')}
+                  </span>
+                  <Button
+                    onClick={onManageSubscription}
+                    className="h-9 whitespace-nowrap text-[13px]"
+                  >
+                    {t('premiumUpgradeButton')}
+                  </Button>
+                </div>
+              )}
             </SectionCard>
           )}
 
@@ -613,7 +689,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
                 <SettingRow
                   label={t('profileInteractionAlertLabel')}
-                  description={t('profileInteractionAlertDescription')}
+                  description={
+                    premium
+                      ? t('profileInteractionAlertDescriptionPremium')
+                      : t('profileInteractionAlertDescription')
+                  }
                 >
                   <Controller
                     name="profileInteractionAlert"
@@ -626,6 +706,45 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     )}
                   />
                 </SettingRow>
+
+                {premium ? (
+                  <SettingRow
+                    label={t('profileViewAlertLabel')}
+                    description={t('profileViewAlertDescriptionPremium')}
+                  >
+                    <Controller
+                      name="profileViewAlert"
+                      control={control}
+                      render={({ field }) => (
+                        <Toggle
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </SettingRow>
+                ) : (
+                  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-2 font-medium text-[15px] text-white">
+                        {t('profileViewAlertLabel')}
+                        <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                          {t('premiumTag')}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-[12px] text-gray-500">
+                        {t('profileViewAlertDescriptionFree')}
+                      </p>
+                    </div>
+                    <div className="shrink-0">
+                      <Toggle
+                        checked={false}
+                        onCheckedChange={() => jumpToSection('premium')}
+                        aria-label={t('profileViewAlertLabel')}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </SectionCard>
           )}
