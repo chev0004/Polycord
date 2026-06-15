@@ -1,8 +1,12 @@
+export type NotificationKind = 'copy' | 'view';
+
 export type Notification = {
   id: string;
-  message: string;
+  kind: NotificationKind;
+  actorName?: string;
+  actorAvatarUrl?: string;
+  isGuest?: boolean;
   timestamp: string;
-  iconUrl?: string;
 };
 
 export type Notifications = Notification[];

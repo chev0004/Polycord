@@ -10,12 +10,32 @@ import type { Notification } from '@/types';
 
 type NotificationEntryProps = {
   notification: Notification & { read: boolean; isDeleting?: boolean };
+  premium?: boolean;
   onMarkAsRead: () => void;
   onDelete: () => void;
 } & HTMLAttributes<HTMLDivElement>;
 
+const getNotificationMessage = (
+  notification: Notification,
+  premium: boolean,
+  t: ReturnType<typeof useTranslations<'Inbox'>>,
+) => {
+  if (!premium) return t('anonymousCopyAlert');
+
+  if (notification.kind === 'view') {
+    return notification.actorName
+      ? t('userViewed', { user: notification.actorName })
+      : t('guestViewed');
+  }
+
+  return notification.actorName
+    ? t('userCopied', { user: notification.actorName })
+    : t('anonymousUserCopied');
+};
+
 export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   notification,
+  premium = false,
   onMarkAsRead,
   onDelete,
   className,
@@ -23,6 +43,9 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   ...props
 }) => {
   const t = useTranslations('Inbox');
+  const avatarUrl = premium ? notification.actorAvatarUrl : undefined;
+  const message = getNotificationMessage(notification, premium, t);
+
   return (
     <div
       {...props}
@@ -41,10 +64,10 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
         }`}
       />
 
-      <Avatar avatarUrl={notification.iconUrl} size="sm" />
+      <Avatar avatarUrl={avatarUrl} size="sm" />
 
       <div className="flex-grow overflow-hidden">
-        <p className="truncate text-sm">{notification.message}</p>
+        <p className="truncate text-sm">{message}</p>
         <span className="text-gray-400 text-xs">{notification.timestamp}</span>
       </div>
 

@@ -11,6 +11,7 @@ type NavbarProps = {
   iconUrl?: string;
   isLoggedIn: boolean;
   notifications: Notifications;
+  premium?: boolean;
   onHomeClick?: () => void;
   onLoginClick: () => void;
   onProfileClick: () => void;
@@ -25,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onHomeClick,
   onLoginClick,
   notifications,
+  premium = false,
   onProfileClick,
   onBumpProfileClick,
   onSettingsClick,
@@ -57,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {isLoggedIn ? (
           <>
-            <Inbox notifications={notifications} />
+            <Inbox notifications={notifications} premium={premium} />
             <UserMenu
               iconUrl={iconUrl}
               onProfileClick={onProfileClick}

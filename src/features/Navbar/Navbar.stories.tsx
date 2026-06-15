@@ -37,21 +37,26 @@ export const LoggedIn: Story = {
           {...args}
           iconUrl={MOCK_USER_AVATAR_URL}
           isLoggedIn
+          premium
           notifications={[
             {
               id: '1',
-              message: t('anonymousUserCopied'),
+              kind: 'copy',
+              actorName: 'Mina Park',
+              actorAvatarUrl: MOCK_USER_AVATAR_URL,
               timestamp: t('minutesAgo', { count: 2 }),
             },
             {
               id: '2',
-              message: t('userCopied', { user: 'xhev' }),
+              kind: 'view',
+              actorName: 'Sophie Laurent',
+              actorAvatarUrl: MOCK_USER_AVATAR_URL,
               timestamp: t('hoursAgo', { count: 1 }),
-              iconUrl: MOCK_USER_AVATAR_URL,
             },
             {
               id: '3',
-              message: t('anonymousUserCopied'),
+              kind: 'copy',
+              isGuest: true,
               timestamp: t('hoursAgo', { count: 2 }),
             },
           ]}
