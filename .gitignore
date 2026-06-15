@@ -48,3 +48,7 @@ next-env.d.ts
 
 # Notion sync cache
 .notion-db-id
+
+# Local design-system extracts
+/Polycord Design System/
+/polycord-design-system/
