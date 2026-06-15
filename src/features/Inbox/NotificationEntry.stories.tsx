@@ -36,11 +36,13 @@ const DefaultNotificationStory = () => {
     <NotificationEntry
       notification={{
         id: '1',
-        message: t('anonymousUserCopied'),
+        kind: 'copy',
+        actorName: 'Mina Park',
+        actorAvatarUrl: MOCK_USER_AVATAR_URL,
         timestamp: t('minutesAgo', { count: 2 }),
-        iconUrl: MOCK_USER_AVATAR_URL,
         read: false,
       }}
+      premium
       onMarkAsRead={() => {}}
       onDelete={() => {}}
     />
@@ -57,11 +59,13 @@ const ReadNotificationStory = () => {
     <NotificationEntry
       notification={{
         id: '2',
-        message: t('userCopied', { user: 'xhev' }),
+        kind: 'view',
+        actorName: 'Sophie Laurent',
+        actorAvatarUrl: MOCK_USER_AVATAR_URL,
         timestamp: t('hoursAgo', { count: 1 }),
-        iconUrl: MOCK_USER_AVATAR_URL,
         read: true,
       }}
+      premium
       onMarkAsRead={() => {}}
       onDelete={() => {}}
     />

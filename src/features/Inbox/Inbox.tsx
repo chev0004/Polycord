@@ -1,5 +1,6 @@
 import * as Popover from '@radix-ui/react-popover';
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import {
   MdOutlineInbox,
@@ -10,18 +11,23 @@ import { Button } from '@/components/Button';
 import type { Notifications } from '@/types';
 import { NotificationEntry } from './NotificationEntry';
 
-const initializeNotifications = (initial: Notifications) =>
-  initial.map((n) => ({ ...n, read: false, isDeleting: false }));
+const initializeNotifications = (initial: Notifications, premium: boolean) =>
+  initial
+    .filter((notification) => premium || notification.kind === 'copy')
+    .map((n) => ({ ...n, read: false, isDeleting: false }));
 
 export const Inbox = ({
   notifications: initialNotifications,
+  premium = false,
 }: {
   notifications: Notifications;
+  premium?: boolean;
 }) => {
   const t = useTranslations('Inbox');
+  const locale = useLocale();
 
   const [notifications, setNotifications] = useState(() =>
-    initializeNotifications(initialNotifications),
+    initializeNotifications(initialNotifications, premium),
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [isMounted, setIsMounted] = useState(false);
@@ -32,9 +38,9 @@ export const Inbox = ({
   }, []);
 
   useEffect(() => {
-    setNotifications(initializeNotifications(initialNotifications));
+    setNotifications(initializeNotifications(initialNotifications, premium));
     setCurrentPage(1);
-  }, [initialNotifications]);
+  }, [initialNotifications, premium]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -161,6 +167,7 @@ export const Inbox = ({
                 currentNotifications.map((notification, index) => (
                   <NotificationEntry
                     notification={notification}
+                    premium={premium}
                     key={notification.id}
                     onMarkAsRead={() => handleMarkAsRead(notification.id)}
                     onDelete={() => handleDelete(notification.id)}
@@ -185,6 +192,14 @@ export const Inbox = ({
                     </span>
                   </p>
                 </div>
+              )}
+              {!premium && currentNotifications.length > 0 && (
+                <Link
+                  href={`/${locale}/settings#premium`}
+                  className="rounded-md px-3 py-2.5 font-semibold text-[13px] text-primary-light transition-colors hover:bg-background-main hover:text-primary-lighter"
+                >
+                  {t('seeWhoWithPremium')}
+                </Link>
               )}
             </div>
 
