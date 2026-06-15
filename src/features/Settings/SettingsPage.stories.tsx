@@ -10,6 +10,7 @@ const defaultSettings: SettingsFormValues = {
   pushNotifications: true,
   matchAlert: true,
   profileInteractionAlert: true,
+  profileViewAlert: true,
   theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
@@ -142,5 +143,77 @@ export const SaveFlow: Story = {
       () => expect(canvas.getByText('All changes saved')).toBeInTheDocument(),
       { timeout: 5000 },
     );
+  },
+};
+
+export const PremiumTabFree: Story = {
+  args: { premium: false },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+
+    await waitFor(() =>
+      expect(canvas.getByText('Bump cooldown')).toBeInTheDocument(),
+    );
+    expect(canvas.getByText('Every 1 h 30 m')).toBeInTheDocument();
+    expect(canvas.getByText('See who viewed you')).toBeInTheDocument();
+    expect(canvas.getAllByText('No')).toHaveLength(2);
+
+    expect(
+      canvas.getByText('$2.99 / month · cancel anytime'),
+    ).toBeInTheDocument();
+    expect(canvas.getByRole('button', { name: 'Upgrade' })).toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: 'Manage billing' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const PremiumTabPremium: Story = {
+  args: { premium: true },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+
+    await waitFor(() =>
+      expect(
+        canvas.getByText('Your plan: everything below is included.'),
+      ).toBeInTheDocument(),
+    );
+    expect(canvas.getByText('$2.99')).toBeInTheDocument();
+    expect(canvas.getByText('Bump cooldown')).toBeInTheDocument();
+    expect(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    ).toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: 'Upgrade' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const GatedProfileViewAlert: Story = {
+  args: { premium: false },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Notifications' }));
+
+    await waitFor(() =>
+      expect(canvas.getByText('Profile View Alert')).toBeInTheDocument(),
+    );
+    expect(canvas.getAllByText('Premium')).toHaveLength(2);
+
+    fireEvent.click(canvas.getByRole('switch', { name: 'Profile View Alert' }));
+
+    await waitFor(() =>
+      expect(canvas.getByText('Bump cooldown')).toBeInTheDocument(),
+    );
+    expect(
+      canvas.getByText(
+        'Everything in Free, plus more room to learn and be found.',
+      ),
+    ).toBeInTheDocument();
   },
 };
