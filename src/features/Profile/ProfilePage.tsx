@@ -44,6 +44,7 @@ import {
   createEmptyLanguageRow,
   TargetLanguagesEditor,
 } from './TargetLanguagesEditor';
+import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
   initialValues?: ProfileFormValues;
@@ -58,6 +59,7 @@ type ProfilePageProps = {
 
 const FREE_TAG_CAP = 5;
 const PREMIUM_TAG_CAP = 8;
+const PREVIEW_TEASE_VOICE_SECONDS = 12;
 
 const defaultValues: ProfileFormValues = {
   primaryLanguage: '',
@@ -69,6 +71,7 @@ const defaultValues: ProfileFormValues = {
   availability: availabilityPresetToPattern('flexible'),
   tags: [],
   country: '',
+  voiceIntroSeconds: 0,
   cardColor: DEFAULT_CARD_COLOR,
   customGradient: DEFAULT_CUSTOM_GRADIENT,
   accentOverride: null,
@@ -190,6 +193,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const cardColor = watch('cardColor') ?? DEFAULT_CARD_COLOR;
   const customGradient = watch('customGradient') ?? DEFAULT_CUSTOM_GRADIENT;
   const accentOverride = watch('accentOverride') ?? null;
+  const voiceIntroSeconds = watch('voiceIntroSeconds') ?? 0;
 
   const effectiveCardColor = premium ? cardColor : (tease ?? cardColor);
   const basePreviewTheme =
@@ -303,6 +307,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       premium: previewIsPremiumLook,
       cardTheme: previewTheme,
       availability: availability ?? undefined,
+      voiceIntroSeconds: premium
+        ? voiceIntroSeconds
+        : PREVIEW_TEASE_VOICE_SECONDS,
     };
   }, [
     allowAnonymousCopy,
@@ -312,6 +319,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     displayName,
     displayTimezone,
     localizedCountryOptions,
+    premium,
     primaryLanguage,
     previewIsPremiumLook,
     previewTheme,
@@ -320,6 +328,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     targetLanguages,
     timezone,
     userAvatarUrl,
+    voiceIntroSeconds,
   ]);
 
   const tagsSchemaError = errors.tags?.message
@@ -601,6 +610,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   </FormGroup>
                 );
               }}
+            />
+
+            <Controller
+              name="voiceIntroSeconds"
+              control={control}
+              render={({ field }) => (
+                <VoiceIntroEditor
+                  premium={premium}
+                  voiceSeconds={field.value ?? 0}
+                  onChange={field.onChange}
+                />
+              )}
             />
           </SectionCard>
 

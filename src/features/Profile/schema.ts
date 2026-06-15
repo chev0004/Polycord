@@ -67,6 +67,8 @@ export const profileSchema = z.object({
 
   country: z.string().optional(),
 
+  voiceIntroSeconds: z.number().int().min(0).max(20).optional(),
+
   cardColor: z.string().optional(),
 
   customGradient: z
