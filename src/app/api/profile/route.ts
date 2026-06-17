@@ -3,7 +3,7 @@ import { availabilityPatternToPreset } from '@/constants/availability';
 import {
   deleteProfileForUser,
   getUserByDiscordId,
-  type ProfileValues,
+  type ProfileTargetLanguageValue,
   upsertDiscordUser,
   upsertProfileForUser,
 } from '@/db';
@@ -36,7 +36,6 @@ export const POST = async (request: Request) => {
 
   const user = await upsertDiscordUser(currentUser);
   const values = payload.data;
-  const [primaryTarget] = values.targetLanguages;
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: values.allowAnonymousCopy,
     availability: availabilityPatternToPreset(values.availability),
@@ -45,9 +44,11 @@ export const POST = async (request: Request) => {
     displayTimezone: values.displayTimezone,
     isPublic: values.isPublic,
     primaryLanguage: values.primaryLanguage,
-    proficiencyLevel: primaryTarget.level as ProfileValues['proficiencyLevel'],
     tags: values.tags ?? [],
-    targetLanguage: primaryTarget.language,
+    targetLanguages: values.targetLanguages.map((targetLanguage) => ({
+      language: targetLanguage.language,
+      level: targetLanguage.level as ProfileTargetLanguageValue['level'],
+    })),
     timezone: values.timezone || null,
   });
 
