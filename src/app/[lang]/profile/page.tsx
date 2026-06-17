@@ -8,6 +8,7 @@ import { ProfileRouteClient } from './ProfileRouteClient';
 
 const toProfileFormValues = ({
   profile,
+  targetLanguages,
 }: NonNullable<
   Awaited<ReturnType<typeof getProfileByUserId>>
 >): ProfileFormValues => ({
@@ -23,9 +24,7 @@ const toProfileFormValues = ({
   isPublic: profile.isPublic,
   primaryLanguage: profile.primaryLanguage,
   tags: profile.tags,
-  targetLanguages: [
-    { language: profile.targetLanguage, level: profile.proficiencyLevel },
-  ],
+  targetLanguages,
   timezone: profile.timezone ?? '',
 });
 

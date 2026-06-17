@@ -3,11 +3,11 @@ import { availabilityPatternToPreset } from '@/constants/availability';
 import {
   deleteProfileForUser,
   getUserByDiscordId,
-  type ProfileValues,
+  type ProfileTargetLanguageValue,
   upsertDiscordUser,
   upsertProfileForUser,
 } from '@/db';
-import { profileSchema } from '@/features/Profile/schema';
+import { FREE_LANGUAGE_CAP, profileSchema } from '@/features/Profile/schema';
 import { getCurrentUser } from '@/lib/auth';
 
 export const POST = async (request: Request) => {
@@ -34,9 +34,26 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const user = await upsertDiscordUser(currentUser);
   const values = payload.data;
-  const [primaryTarget] = values.targetLanguages;
+
+  if (values.targetLanguages.length > FREE_LANGUAGE_CAP) {
+    return NextResponse.json(
+      {
+        error: 'Invalid profile',
+        issues: [
+          {
+            code: 'too_big',
+            maximum: FREE_LANGUAGE_CAP,
+            path: ['targetLanguages'],
+            message: 'maxLanguages',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+  }
+
+  const user = await upsertDiscordUser(currentUser);
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: values.allowAnonymousCopy,
     availability: availabilityPatternToPreset(values.availability),
@@ -45,9 +62,11 @@ export const POST = async (request: Request) => {
     displayTimezone: values.displayTimezone,
     isPublic: values.isPublic,
     primaryLanguage: values.primaryLanguage,
-    proficiencyLevel: primaryTarget.level as ProfileValues['proficiencyLevel'],
     tags: values.tags ?? [],
-    targetLanguage: primaryTarget.language,
+    targetLanguages: values.targetLanguages.map((targetLanguage) => ({
+      language: targetLanguage.language,
+      level: targetLanguage.level as ProfileTargetLanguageValue['level'],
+    })),
     timezone: values.timezone || null,
   });
 

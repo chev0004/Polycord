@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { desc, eq } from 'drizzle-orm';
+import { asc, desc, eq, inArray } from 'drizzle-orm';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { isValidAvailability } from '@/constants/languages';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
@@ -11,6 +11,7 @@ import {
   type NewUser,
   type Profile,
   profiles,
+  profileTargetLanguages,
   type User,
   users,
 } from './schema';
@@ -24,14 +25,20 @@ export type ProfileValues = Pick<
   | 'displayTimezone'
   | 'isPublic'
   | 'primaryLanguage'
-  | 'proficiencyLevel'
   | 'tags'
-  | 'targetLanguage'
   | 'timezone'
->;
+> & {
+  targetLanguages: ProfileTargetLanguageValue[];
+};
+
+export type ProfileTargetLanguageValue = {
+  language: string;
+  level: Profile['proficiencyLevel'];
+};
 
 type ProfileWithUser = {
   profile: Profile;
+  targetLanguages: ProfileTargetLanguageValue[];
   user: User;
 };
 
@@ -45,6 +52,7 @@ const toUserValues = (user: CurrentUser): NewUser => ({
 
 const toDiscoveryProfile = ({
   profile,
+  targetLanguages,
   user,
 }: ProfileWithUser): DiscoveryProfile => ({
   id: profile.id,
@@ -52,12 +60,7 @@ const toDiscoveryProfile = ({
   discordUsername: user.discordUsername,
   avatarUrl: user.avatarUrl ?? undefined,
   primaryLanguage: profile.primaryLanguage,
-  targetLanguages: [
-    {
-      language: profile.targetLanguage,
-      level: profile.proficiencyLevel,
-    },
-  ],
+  targetLanguages,
   about: profile.bio,
   interests: profile.tags,
   country: profile.country ?? undefined,
@@ -71,6 +74,64 @@ const toDiscoveryProfile = ({
       : undefined,
   allowAnonymousCopy: profile.allowAnonymousCopy,
 });
+
+const targetLanguagesForProfile = (
+  profile: Profile,
+  targetLanguages: ProfileTargetLanguageValue[] | undefined,
+) =>
+  targetLanguages?.length
+    ? targetLanguages
+    : [
+        {
+          language: profile.targetLanguage,
+          level: profile.proficiencyLevel,
+        },
+      ];
+
+const listTargetLanguagesByProfileIds = async (profileIds: string[]) => {
+  const byProfile = new Map<string, ProfileTargetLanguageValue[]>();
+
+  if (!profileIds.length) {
+    return byProfile;
+  }
+
+  const rows = await db
+    .select({
+      profileId: profileTargetLanguages.profileId,
+      language: profileTargetLanguages.language,
+      level: profileTargetLanguages.proficiencyLevel,
+    })
+    .from(profileTargetLanguages)
+    .where(inArray(profileTargetLanguages.profileId, profileIds))
+    .orderBy(asc(profileTargetLanguages.position));
+
+  for (const row of rows) {
+    const targetLanguages = byProfile.get(row.profileId) ?? [];
+    targetLanguages.push({
+      language: row.language,
+      level: row.level,
+    });
+    byProfile.set(row.profileId, targetLanguages);
+  }
+
+  return byProfile;
+};
+
+const attachTargetLanguages = async (
+  row: Omit<ProfileWithUser, 'targetLanguages'>,
+) => {
+  const targetLanguagesByProfile = await listTargetLanguagesByProfileIds([
+    row.profile.id,
+  ]);
+
+  return {
+    ...row,
+    targetLanguages: targetLanguagesForProfile(
+      row.profile,
+      targetLanguagesByProfile.get(row.profile.id),
+    ),
+  };
+};
 
 export const upsertDiscordUser = async (currentUser: CurrentUser) => {
   const values = toUserValues(currentUser);
@@ -113,7 +174,7 @@ export const getProfileById = async (profileId: string) => {
     .where(eq(profiles.id, profileId))
     .limit(1);
 
-  return row ?? null;
+  return row ? attachTargetLanguages(row) : null;
 };
 
 export const getProfileByUserId = async (userId: string) => {
@@ -127,7 +188,7 @@ export const getProfileByUserId = async (userId: string) => {
     .where(eq(profiles.userId, userId))
     .limit(1);
 
-  return row ?? null;
+  return row ? attachTargetLanguages(row) : null;
 };
 
 export const getProfileByDiscordUserId = async (discordUserId: string) => {
@@ -141,7 +202,7 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
     .where(eq(users.discordUserId, discordUserId))
     .limit(1);
 
-  return row ?? null;
+  return row ? attachTargetLanguages(row) : null;
 };
 
 export const getPublicProfileById = async (profileId: string) => {
@@ -165,29 +226,69 @@ export const listPublicProfiles = async () => {
     .where(eq(profiles.isPublic, true))
     .orderBy(desc(profiles.updatedAt));
 
-  return rows.map(toDiscoveryProfile);
+  const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
+    rows.map((row) => row.profile.id),
+  );
+
+  return rows.map((row) =>
+    toDiscoveryProfile({
+      ...row,
+      targetLanguages: targetLanguagesForProfile(
+        row.profile,
+        targetLanguagesByProfile.get(row.profile.id),
+      ),
+    }),
+  );
 };
 
 export const upsertProfileForUser = async (
   userId: string,
   values: ProfileValues,
 ) => {
-  const [profile] = await db
-    .insert(profiles)
-    .values({
-      ...values,
-      userId,
-    })
-    .onConflictDoUpdate({
-      target: profiles.userId,
-      set: {
-        ...values,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
+  const { targetLanguages, ...profileValues } = values;
+  const [primaryTarget] = targetLanguages;
 
-  return profile;
+  if (!primaryTarget) {
+    throw new Error('Profile requires at least one target language.');
+  }
+
+  const writableProfileValues = {
+    ...profileValues,
+    proficiencyLevel: primaryTarget.level,
+    targetLanguage: primaryTarget.language,
+  };
+
+  return db.transaction(async (tx) => {
+    const [profile] = await tx
+      .insert(profiles)
+      .values({
+        ...writableProfileValues,
+        userId,
+      })
+      .onConflictDoUpdate({
+        target: profiles.userId,
+        set: {
+          ...writableProfileValues,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+
+    await tx
+      .delete(profileTargetLanguages)
+      .where(eq(profileTargetLanguages.profileId, profile.id));
+
+    await tx.insert(profileTargetLanguages).values(
+      targetLanguages.map((targetLanguage, position) => ({
+        language: targetLanguage.language,
+        position,
+        profileId: profile.id,
+        proficiencyLevel: targetLanguage.level,
+      })),
+    );
+
+    return profile;
+  });
 };
 
 export const deleteProfileForUser = async (userId: string) => {

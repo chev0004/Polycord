@@ -15,6 +15,13 @@
       "when": 1780767969574,
       "tag": "0001_onboarding_profile_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781719554836,
+      "tag": "0002_profile_target_languages",
+      "breakpoints": true
     }
   ]
 }

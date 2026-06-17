@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { upsertDiscordUser, upsertProfileForUser } from '@/db';
+import {
+  type ProfileTargetLanguageValue,
+  upsertDiscordUser,
+  upsertProfileForUser,
+} from '@/db';
 import { onboardingSchema } from '@/features/Onboarding/schema';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -39,9 +43,13 @@ export const POST = async (request: Request) => {
     displayTimezone: true,
     isPublic: true,
     primaryLanguage: values.primaryLanguage,
-    proficiencyLevel: values.proficiencyLevel,
     tags: values.tags ?? [],
-    targetLanguage: values.targetLanguage,
+    targetLanguages: [
+      {
+        language: values.targetLanguage,
+        level: values.proficiencyLevel as ProfileTargetLanguageValue['level'],
+      },
+    ],
     timezone: values.timezone,
   });
 

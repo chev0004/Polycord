@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
 
+export const FREE_LANGUAGE_CAP = 2;
+export const PREMIUM_LANGUAGE_CAP = 10;
+
 const hexColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
 
 export const profileSchema = z.object({
@@ -23,7 +26,7 @@ export const profileSchema = z.object({
       }),
     )
     .min(1, { message: 'targetLanguageRequired' })
-    .max(10, { message: 'maxLanguages' })
+    .max(PREMIUM_LANGUAGE_CAP, { message: 'maxLanguages' })
     .refine(
       (rows) => {
         const languages = rows.map((row) => row.language).filter(Boolean);

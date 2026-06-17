@@ -1,8 +1,8 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { db } from './client';
-import { profiles, users } from './schema';
+import { profiles, profileTargetLanguages, users } from './schema';
 
 export const getAccountExportByDiscordId = async (discordUserId: string) => {
   const [user] = await db
@@ -20,6 +20,17 @@ export const getAccountExportByDiscordId = async (discordUserId: string) => {
     .from(profiles)
     .where(eq(profiles.userId, user.id))
     .limit(1);
+
+  const targetLanguages = profile
+    ? await db
+        .select({
+          language: profileTargetLanguages.language,
+          level: profileTargetLanguages.proficiencyLevel,
+        })
+        .from(profileTargetLanguages)
+        .where(eq(profileTargetLanguages.profileId, profile.id))
+        .orderBy(asc(profileTargetLanguages.position))
+    : [];
 
   return {
     exportedAt: new Date().toISOString(),
@@ -41,6 +52,14 @@ export const getAccountExportByDiscordId = async (discordUserId: string) => {
           displayTimezone: profile.displayTimezone,
           primaryLanguage: profile.primaryLanguage,
           targetLanguage: profile.targetLanguage,
+          targetLanguages: targetLanguages.length
+            ? targetLanguages
+            : [
+                {
+                  language: profile.targetLanguage,
+                  level: profile.proficiencyLevel,
+                },
+              ],
           proficiencyLevel: profile.proficiencyLevel,
           bio: profile.bio,
           availability: profile.availability,

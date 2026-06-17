@@ -3,6 +3,7 @@ import {
   boolean,
   check,
   index,
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -83,18 +84,61 @@ export const profiles = pgTable(
   ],
 );
 
+export const profileTargetLanguages = pgTable(
+  'profile_target_languages',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    language: varchar('language', { length: 16 }).notNull(),
+    proficiencyLevel: proficiencyLevelEnum('proficiency_level').notNull(),
+    position: integer('position').notNull(),
+  },
+  (table) => [
+    index('profile_target_languages_profile_id_idx').on(table.profileId),
+    index('profile_target_languages_language_idx').on(table.language),
+    uniqueIndex('profile_target_languages_profile_language_idx').on(
+      table.profileId,
+      table.language,
+    ),
+    uniqueIndex('profile_target_languages_profile_position_idx').on(
+      table.profileId,
+      table.position,
+    ),
+    check(
+      'profile_target_languages_position_check',
+      sql`${table.position} >= 0`,
+    ),
+  ],
+);
+
 export const usersRelations = relations(users, ({ one }) => ({
   profile: one(profiles),
 }));
 
-export const profilesRelations = relations(profiles, ({ one }) => ({
+export const profilesRelations = relations(profiles, ({ many, one }) => ({
+  targetLanguages: many(profileTargetLanguages),
   user: one(users, {
     fields: [profiles.userId],
     references: [users.id],
   }),
 }));
 
+export const profileTargetLanguagesRelations = relations(
+  profileTargetLanguages,
+  ({ one }) => ({
+    profile: one(profiles, {
+      fields: [profileTargetLanguages.profileId],
+      references: [profiles.id],
+    }),
+  }),
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;
+export type ProfileTargetLanguage = typeof profileTargetLanguages.$inferSelect;
+export type NewProfileTargetLanguage =
+  typeof profileTargetLanguages.$inferInsert;
