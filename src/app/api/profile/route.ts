@@ -7,7 +7,7 @@ import {
   upsertDiscordUser,
   upsertProfileForUser,
 } from '@/db';
-import { profileSchema } from '@/features/Profile/schema';
+import { FREE_LANGUAGE_CAP, profileSchema } from '@/features/Profile/schema';
 import { getCurrentUser } from '@/lib/auth';
 
 export const POST = async (request: Request) => {
@@ -34,8 +34,26 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const user = await upsertDiscordUser(currentUser);
   const values = payload.data;
+
+  if (values.targetLanguages.length > FREE_LANGUAGE_CAP) {
+    return NextResponse.json(
+      {
+        error: 'Invalid profile',
+        issues: [
+          {
+            code: 'too_big',
+            maximum: FREE_LANGUAGE_CAP,
+            path: ['targetLanguages'],
+            message: 'maxLanguages',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+  }
+
+  const user = await upsertDiscordUser(currentUser);
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: values.allowAnonymousCopy,
     availability: availabilityPatternToPreset(values.availability),
