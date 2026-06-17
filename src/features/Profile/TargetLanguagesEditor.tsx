@@ -19,10 +19,11 @@ import {
   Select,
 } from '@/components/Form';
 import { languageOptions, Proficiency, proficiencyOptions } from '@/constants';
-import type { ProfileFormValues } from './schema';
-
-export const FREE_LANGUAGE_CAP = 2;
-export const PREMIUM_LANGUAGE_CAP = 10;
+import {
+  FREE_LANGUAGE_CAP,
+  PREMIUM_LANGUAGE_CAP,
+  type ProfileFormValues,
+} from './schema';
 
 export const createEmptyLanguageRow = () => ({
   language: '',
