@@ -1,6 +1,6 @@
 import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { languages } from '@/constants/languages';
@@ -41,8 +41,11 @@ export const LanguageSwitcher: React.FC = () => {
   const t = useTranslations('LanguageSwitcher');
   const currentLocale = useLocale();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
   const pathWithoutLocale = pathname.replace(/^\/[^/]+/, '') || '';
+  const query = searchParams.toString();
+  const queryString = query ? `?${query}` : '';
 
   useEffect(() => {
     setIsMounted(true);
@@ -96,7 +99,7 @@ export const LanguageSwitcher: React.FC = () => {
                 key={locale}
                 locale={locale}
                 currentLocale={currentLocale}
-                href={`/${locale}${pathWithoutLocale}`}
+                href={`/${locale}${pathWithoutLocale}${queryString}`}
               />
             ))}
           </div>
