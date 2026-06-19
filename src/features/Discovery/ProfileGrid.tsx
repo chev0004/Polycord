@@ -1,23 +1,18 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React, { type ReactNode, useMemo } from 'react';
+import React, { type ReactNode } from 'react';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
-import {
-  calculateMatchScore,
-  type MatchCriteria,
-  useProfileMatching,
-} from '@/hooks/useProfileMatching';
 import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
 import { getFreeCardTheme } from './cardTheme';
+import type { ViewerMatchProfile } from './discoveryMatch';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
   profiles: DiscoveryProfile[];
   emptyState?: ReactNode;
   isLoggedIn?: boolean;
-  matchCriteria?: MatchCriteria | null;
-  sortByMatchScore?: boolean;
+  viewer?: ViewerMatchProfile | null;
   onCopyUsername?: (username: string, profileId: string) => void;
   onTagClick?: (tag: string, profileId: string) => void;
   onLanguageClick?: (
@@ -77,8 +72,7 @@ export const ProfileGrid = ({
   profiles,
   emptyState,
   isLoggedIn = false,
-  matchCriteria = null,
-  sortByMatchScore = false,
+  viewer = null,
   onCopyUsername,
   onTagClick,
   onLanguageClick,
@@ -91,22 +85,8 @@ export const ProfileGrid = ({
   const t = useTranslations('Discovery');
   const { toasts, addToast, dismissToast } = useToastStack();
 
-  const filteredProfiles = useProfileMatching(profiles, matchCriteria);
-
-  const displayedProfiles = useMemo(() => {
-    if (!matchCriteria || !sortByMatchScore) {
-      return filteredProfiles;
-    }
-
-    return [...filteredProfiles].sort((a, b) => {
-      const scoreA = calculateMatchScore(a, matchCriteria);
-      const scoreB = calculateMatchScore(b, matchCriteria);
-      return scoreB - scoreA;
-    });
-  }, [filteredProfiles, matchCriteria, sortByMatchScore]);
-
-  const hasProfiles = displayedProfiles.length > 0;
-  const displayedProfileItems = displayedProfiles.map((profile, index) => ({
+  const hasProfiles = profiles.length > 0;
+  const displayedProfileItems = profiles.map((profile, index) => ({
     profile,
     index,
   }));
@@ -136,6 +116,7 @@ export const ProfileGrid = ({
         cardTheme: profile.cardTheme ?? getFreeCardTheme(index),
       }}
       isLoggedIn={isLoggedIn}
+      viewer={viewer}
       onCopyUsername={handleCopyUsername}
       onTagClick={onTagClick}
       onLanguageClick={onLanguageClick}
