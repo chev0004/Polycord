@@ -52,6 +52,7 @@ const toFirstValue = (value: string | string[] | undefined): string =>
 
 export const parseDiscoveryState = (
   params: ReadableParams,
+  defaultSort: DiscoverySortValue = DEFAULT_SORT,
 ): DiscoveryUrlState => {
   const filterValues: DiscoveryFilterValues = {};
 
@@ -73,7 +74,7 @@ export const parseDiscoveryState = (
     filterValues,
     searchQuery: params.get(SEARCH_PARAM) ?? '',
     selectedTags: params.getAll(TAGS_PARAM),
-    sortValue: isSortValue(sort) ? sort : DEFAULT_SORT,
+    sortValue: isSortValue(sort) ? sort : defaultSort,
     page: parsePage(params.get(PAGE_PARAM)),
   };
 };
@@ -81,6 +82,7 @@ export const parseDiscoveryState = (
 export const buildDiscoveryQuery = (
   state: DiscoveryUrlState,
   base?: ReadableParams,
+  defaultSort: DiscoverySortValue = DEFAULT_SORT,
 ): string => {
   const params = new URLSearchParams(base ? base.toString() : undefined);
   for (const param of MANAGED_PARAMS) {
@@ -110,7 +112,7 @@ export const buildDiscoveryQuery = (
   if (state.searchQuery.trim()) {
     params.set(SEARCH_PARAM, state.searchQuery);
   }
-  if (state.sortValue !== DEFAULT_SORT) {
+  if (state.sortValue !== defaultSort) {
     params.set(SORT_PARAM, state.sortValue);
   }
   if (state.page > 1) {

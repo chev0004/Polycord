@@ -9,16 +9,22 @@ import { type DiscoverySortValue, SORT_OPTIONS } from './discoverySort';
 type SortMenuProps = {
   value: DiscoverySortValue;
   onChange: (value: DiscoverySortValue) => void;
+  options?: readonly DiscoverySortValue[];
 };
 
 const sortOptionLabelKeys: Record<DiscoverySortValue, string> = {
+  match: 'sortBestMatch',
   'bumped-desc': 'sortLastBumped',
   'bumped-asc': 'sortOldestBumped',
   'name-asc': 'sortNameAsc',
   'name-desc': 'sortNameDesc',
 };
 
-export const SortMenu = ({ value, onChange }: SortMenuProps) => {
+export const SortMenu = ({
+  value,
+  onChange,
+  options = SORT_OPTIONS,
+}: SortMenuProps) => {
   const t = useTranslations('Discovery');
   const [open, setOpen] = useState(false);
 
@@ -44,7 +50,7 @@ export const SortMenu = ({ value, onChange }: SortMenuProps) => {
           <div className="px-2.5 pt-1.5 pb-1 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
             {t('sortByLabel')}
           </div>
-          {SORT_OPTIONS.map((option) => {
+          {options.map((option) => {
             const active = option === value;
 
             return (

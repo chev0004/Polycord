@@ -1,6 +1,8 @@
+import { rankProfiles, type ViewerMatchProfile } from './discoveryMatch';
 import type { DiscoveryProfile } from './ProfileCard';
 
 export const SORT_OPTIONS = [
+  'match',
   'bumped-desc',
   'bumped-asc',
   'name-asc',
@@ -17,10 +19,15 @@ const bumpRank = (profile: DiscoveryProfile): number =>
 export const applyDiscoverySort = (
   profiles: DiscoveryProfile[],
   sort: DiscoverySortValue,
+  viewer?: ViewerMatchProfile | null,
 ): DiscoveryProfile[] => {
   const sorted = [...profiles];
 
   switch (sort) {
+    case 'match':
+      return viewer
+        ? rankProfiles(viewer, sorted)
+        : applyDiscoverySort(sorted, DEFAULT_SORT);
     case 'bumped-desc':
       return sorted.sort(
         (a, b) =>

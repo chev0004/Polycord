@@ -17,8 +17,17 @@ import {
   type DiscoveryFilterValues,
   useDiscoveryFilterDefs,
 } from './discoveryFilters';
+import {
+  hasViewerMatchProfile,
+  type ViewerMatchProfile,
+} from './discoveryMatch';
 import { applyDiscoverySearch } from './discoverySearch';
-import { applyDiscoverySort, type DiscoverySortValue } from './discoverySort';
+import {
+  applyDiscoverySort,
+  DEFAULT_SORT,
+  type DiscoverySortValue,
+  SORT_OPTIONS,
+} from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
 import { buildDiscoveryQuery, parseDiscoveryState } from './discoveryUrlState';
 import { Pagination } from './Pagination';
@@ -41,6 +50,7 @@ type DiscoveryPageProps = {
   needsOnboarding?: boolean;
   profiles?: DiscoveryProfile[];
   userAvatarUrl?: string;
+  viewer?: ViewerMatchProfile | null;
 };
 
 const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
@@ -63,6 +73,7 @@ export const DiscoveryPage = ({
   needsOnboarding = false,
   profiles = [],
   userAvatarUrl,
+  viewer = null,
 }: DiscoveryPageProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -70,7 +81,14 @@ export const DiscoveryPage = ({
   const t = useTranslations('Discovery');
   const filterDefs = useDiscoveryFilterDefs();
   const resultsHeadRef = useRef<HTMLDivElement>(null);
-  const [initialState] = useState(() => parseDiscoveryState(searchParams));
+  const matchEnabled = isLoggedIn && hasViewerMatchProfile(viewer);
+  const defaultSort: DiscoverySortValue = matchEnabled ? 'match' : DEFAULT_SORT;
+  const sortOptions = matchEnabled
+    ? SORT_OPTIONS
+    : SORT_OPTIONS.filter((option) => option !== 'match');
+  const [initialState] = useState(() =>
+    parseDiscoveryState(searchParams, defaultSort),
+  );
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>(
     initialState.filterValues,
   );
@@ -79,7 +97,9 @@ export const DiscoveryPage = ({
     initialState.selectedTags,
   );
   const [sortValue, setSortValue] = useState<DiscoverySortValue>(
-    initialState.sortValue,
+    !matchEnabled && initialState.sortValue === 'match'
+      ? DEFAULT_SORT
+      : initialState.sortValue,
   );
   const [page, setPage] = useState(initialState.page);
   const [isSearching, setIsSearching] = useState(false);
@@ -137,8 +157,17 @@ export const DiscoveryPage = ({
           selectedTags,
         ),
         sortValue,
+        viewer,
       ),
-    [profiles, filterValues, searchQuery, locale, selectedTags, sortValue],
+    [
+      profiles,
+      filterValues,
+      searchQuery,
+      locale,
+      selectedTags,
+      sortValue,
+      viewer,
+    ],
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PER_PAGE));
@@ -153,6 +182,7 @@ export const DiscoveryPage = ({
     const query = buildDiscoveryQuery(
       { filterValues, searchQuery, selectedTags, sortValue, page: safePage },
       new URLSearchParams(window.location.search),
+      defaultSort,
     );
 
     if (query === new URLSearchParams(window.location.search).toString()) {
@@ -164,7 +194,15 @@ export const DiscoveryPage = ({
       '',
       query ? `${pathname}?${query}` : pathname,
     );
-  }, [filterValues, searchQuery, selectedTags, sortValue, safePage, pathname]);
+  }, [
+    filterValues,
+    searchQuery,
+    selectedTags,
+    sortValue,
+    safePage,
+    pathname,
+    defaultSort,
+  ]);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -266,7 +304,11 @@ export const DiscoveryPage = ({
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
             sortControl={
-              <SortMenu value={sortValue} onChange={handleSortChange} />
+              <SortMenu
+                value={sortValue}
+                onChange={handleSortChange}
+                options={sortOptions}
+              />
             }
           />
         </div>
@@ -301,6 +343,7 @@ export const DiscoveryPage = ({
               <ProfileGrid
                 profiles={pageItems}
                 isLoggedIn={isLoggedIn}
+                viewer={viewer}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
                 }
