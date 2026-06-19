@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Fragment, useEffect, useState } from 'react';
 import {
   MdAdd,
+  MdAutoAwesome,
   MdBlock,
   MdCheck,
   MdContentCopy,
@@ -33,6 +34,11 @@ import {
   FREE_ACCENT,
   getFreeCardTheme,
 } from './cardTheme';
+import {
+  getMatchReason,
+  type MatchReason,
+  type ViewerMatchProfile,
+} from './discoveryMatch';
 import { VoiceChip } from './VoiceChip';
 
 export type DiscoveryTargetLanguage = {
@@ -66,6 +72,7 @@ type ProfileCardProps = {
   profile: DiscoveryProfile;
   variant?: 'discovery' | 'preview';
   isLoggedIn?: boolean;
+  viewer?: ViewerMatchProfile | null;
   viewerTimezone?: string;
   bioFallback?: string;
   className?: string;
@@ -111,6 +118,7 @@ export const ProfileCard = ({
   profile,
   variant = 'discovery',
   isLoggedIn = false,
+  viewer = null,
   viewerTimezone,
   bioFallback,
   className,
@@ -128,6 +136,8 @@ export const ProfileCard = ({
   const tProfile = useTranslations('Profile');
   const locale = useLocale();
   const isPreview = variant === 'preview';
+  const matchReason =
+    !isPreview && viewer ? getMatchReason(viewer, profile) : null;
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
@@ -279,6 +289,25 @@ export const ProfileCard = ({
   const renderTag = (value: string, key?: string) => (
     <Chip key={key} label={value} onClick={() => handleTagClick(value)} />
   );
+
+  const matchReasonText = (reason: MatchReason): string => {
+    switch (reason.key) {
+      case 'mutual':
+        return t('matchReasonMutual');
+      case 'speaksYourTarget':
+        return t('matchReasonSpeaksTarget', {
+          language: getLanguageName(reason.language, locale),
+        });
+      case 'learnsYourNative':
+        return t('matchReasonLearnsNative', {
+          language: getLanguageName(reason.language, locale),
+        });
+      case 'sharedInterests':
+        return t('matchReasonSharedInterests', { count: reason.count });
+      case 'sameTimezone':
+        return t('matchReasonTimezone');
+    }
+  };
 
   const renderLanguagePill = (
     language: LanguageCode | string,
@@ -496,6 +525,13 @@ export const ProfileCard = ({
           </span>
         )}
       </div>
+
+      {matchReason ? (
+        <div className="flex items-center gap-1.5 self-start rounded-md bg-background-darker px-2.5 py-[5px] font-medium text-[var(--ct-accent,var(--color-primary))] text-xs">
+          <MdAutoAwesome size={14} aria-hidden className="flex-shrink-0" />
+          <span className="truncate">{matchReasonText(matchReason)}</span>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
         {renderLanguagePill(
