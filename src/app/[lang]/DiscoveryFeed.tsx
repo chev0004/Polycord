@@ -1,5 +1,6 @@
 import { listPublicProfiles } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
+import type { ViewerMatchProfile } from '@/features/Discovery/discoveryMatch';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 
 type DiscoveryFeedProps = {
@@ -8,6 +9,7 @@ type DiscoveryFeedProps = {
   locale: string;
   needsOnboarding: boolean;
   userAvatarUrl?: string;
+  viewer?: ViewerMatchProfile | null;
 };
 
 export const DiscoveryFeed = async ({
@@ -16,6 +18,7 @@ export const DiscoveryFeed = async ({
   locale,
   needsOnboarding,
   userAvatarUrl,
+  viewer,
 }: DiscoveryFeedProps) => {
   let profiles: DiscoveryProfile[] = [];
   let feedError = false;
@@ -36,6 +39,7 @@ export const DiscoveryFeed = async ({
       needsOnboarding={needsOnboarding}
       profiles={profiles}
       userAvatarUrl={userAvatarUrl}
+      viewer={viewer}
     />
   );
 };

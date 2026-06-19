@@ -3,6 +3,7 @@ import 'server-only';
 import { asc, desc, eq, inArray } from 'drizzle-orm';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { isValidAvailability } from '@/constants/languages';
+import type { ViewerMatchProfile } from '@/features/Discovery/discoveryMatch';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
 import { db } from './client';
@@ -36,7 +37,7 @@ export type ProfileTargetLanguageValue = {
   level: Profile['proficiencyLevel'];
 };
 
-type ProfileWithUser = {
+export type ProfileWithUser = {
   profile: Profile;
   targetLanguages: ProfileTargetLanguageValue[];
   user: User;
@@ -301,3 +302,18 @@ export const deleteProfileForUser = async (userId: string) => {
 };
 
 export const mapProfileToDiscoveryProfile = toDiscoveryProfile;
+
+export const mapProfileToViewerMatch = ({
+  profile,
+  targetLanguages,
+}: ProfileWithUser): ViewerMatchProfile => ({
+  primaryLanguage: profile.primaryLanguage,
+  targetLanguages: targetLanguages.map((target) => ({
+    language: target.language,
+    level: target.level,
+  })),
+  interests: profile.tags,
+  timezone: profile.displayTimezone
+    ? (profile.timezone ?? undefined)
+    : undefined,
+});
