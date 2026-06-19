@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
@@ -18,12 +18,9 @@ import {
   useDiscoveryFilterDefs,
 } from './discoveryFilters';
 import { applyDiscoverySearch } from './discoverySearch';
-import {
-  applyDiscoverySort,
-  DEFAULT_SORT,
-  type DiscoverySortValue,
-} from './discoverySort';
+import { applyDiscoverySort, type DiscoverySortValue } from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
+import { buildDiscoveryQuery, parseDiscoveryState } from './discoveryUrlState';
 import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
@@ -68,14 +65,23 @@ export const DiscoveryPage = ({
   userAvatarUrl,
 }: DiscoveryPageProps) => {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const t = useTranslations('Discovery');
   const filterDefs = useDiscoveryFilterDefs();
   const resultsHeadRef = useRef<HTMLDivElement>(null);
-  const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortValue, setSortValue] = useState<DiscoverySortValue>(DEFAULT_SORT);
-  const [page, setPage] = useState(1);
+  const [initialState] = useState(() => parseDiscoveryState(searchParams));
+  const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>(
+    initialState.filterValues,
+  );
+  const [searchQuery, setSearchQuery] = useState(initialState.searchQuery);
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    initialState.selectedTags,
+  );
+  const [sortValue, setSortValue] = useState<DiscoverySortValue>(
+    initialState.sortValue,
+  );
+  const [page, setPage] = useState(initialState.page);
   const [isSearching, setIsSearching] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
@@ -142,6 +148,23 @@ export const DiscoveryPage = ({
       filteredProfiles.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE),
     [filteredProfiles, safePage],
   );
+
+  useEffect(() => {
+    const query = buildDiscoveryQuery(
+      { filterValues, searchQuery, selectedTags, sortValue, page: safePage },
+      new URLSearchParams(window.location.search),
+    );
+
+    if (query === new URLSearchParams(window.location.search).toString()) {
+      return;
+    }
+
+    window.history.replaceState(
+      null,
+      '',
+      query ? `${pathname}?${query}` : pathname,
+    );
+  }, [filterValues, searchQuery, selectedTags, sortValue, safePage, pathname]);
 
   useEffect(() => {
     if (!searchQuery) {
