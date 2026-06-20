@@ -284,6 +284,7 @@ export const ProfileCard = ({
 
   const handleToggleSave = () => {
     onToggleSave?.(profile.id);
+    setIsMenuOpen(false);
   };
 
   const renderTag = (value: string, key?: string) => (
@@ -393,25 +394,6 @@ export const ProfileCard = ({
                 {profile.lastBumpRelative}
               </span>
             )}
-            {!isPreview && onToggleSave && (
-              <button
-                type="button"
-                onClick={handleToggleSave}
-                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-colors hover:bg-black/50 ${
-                  isSaved
-                    ? 'text-[var(--ct-accent,var(--color-primary))]'
-                    : 'text-white/90 hover:text-white'
-                }`}
-                aria-label={isSaved ? t('unsaveProfile') : t('saveProfile')}
-                aria-pressed={isSaved}
-              >
-                {isSaved ? (
-                  <MdBookmark size={16} />
-                ) : (
-                  <MdBookmarkBorder size={16} />
-                )}
-              </button>
-            )}
             {!isPreview && (
               <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <Popover.Trigger asChild>
@@ -439,6 +421,19 @@ export const ProfileCard = ({
                       >
                         {t('viewProfile')}
                       </MenuItem>
+                      {onToggleSave ? (
+                        <MenuItem
+                          icon={isSaved ? MdBookmark : MdBookmarkBorder}
+                          onClick={handleToggleSave}
+                          iconClassName={
+                            isSaved
+                              ? 'text-[var(--ct-accent,var(--color-primary))]'
+                              : undefined
+                          }
+                        >
+                          {isSaved ? t('unsaveProfile') : t('saveProfile')}
+                        </MenuItem>
+                      ) : null}
                       {(typeof navigator !== 'undefined' &&
                         typeof navigator.share === 'function') ||
                       !!onShare ? (

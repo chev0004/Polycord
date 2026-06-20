@@ -374,7 +374,7 @@
     "title": "Saved profiles",
     "subtitle": "Profiles you saved to revisit. Private or removed profiles drop off automatically.",
     "emptyTitle": "No saved profiles yet",
-    "emptyDescription": "Use the bookmark on any profile card to keep it here for later.",
+    "emptyDescription": "Use the save action in any profile card menu to keep it here for later.",
     "emptyAction": "Browse profiles"
   },
   "Onboarding": {
