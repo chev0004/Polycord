@@ -17,6 +17,7 @@ import {
   MdShare,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { Badge } from '@/components/Badge';
 import { Chip } from '@/components/Chip';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
@@ -70,6 +71,7 @@ type ProfileCardProps = {
   isLoggedIn?: boolean;
   isSaved?: boolean;
   viewerTimezone?: string;
+  availabilityMatch?: { availableNow?: boolean; hasOverlap?: boolean };
   bioFallback?: string;
   className?: string;
   emptyTagsLabel?: string;
@@ -117,6 +119,7 @@ export const ProfileCard = ({
   isLoggedIn = false,
   isSaved = false,
   viewerTimezone,
+  availabilityMatch,
   bioFallback,
   className,
   emptyTagsLabel,
@@ -576,11 +579,20 @@ export const ProfileCard = ({
       </div>
 
       {profile.availability && (
-        <AvailabilityRow
-          availability={profile.availability}
-          ownerTimezone={profile.timezone}
-          viewerTimezone={viewerTimezone}
-        />
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+          <AvailabilityRow
+            availability={profile.availability}
+            ownerTimezone={profile.timezone}
+            viewerTimezone={viewerTimezone}
+          />
+          {availabilityMatch?.availableNow ? (
+            <Badge variant="positive">{t('availableNowBadge')}</Badge>
+          ) : availabilityMatch?.hasOverlap ? (
+            <span className="inline-flex items-center rounded-md bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-2.5 py-[3px] font-figtree font-semibold text-[var(--ct-chip-text,var(--color-primary-light))] text-xs">
+              {t('overlapBadge')}
+            </span>
+          ) : null}
+        </div>
       )}
 
       {profile.premium && profile.voiceIntroSeconds ? (

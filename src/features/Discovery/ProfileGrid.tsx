@@ -3,12 +3,14 @@
 import { useTranslations } from 'next-intl';
 import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
+import type { AvailabilityPattern } from '@/constants/availability';
 import {
   calculateMatchScore,
   type MatchCriteria,
   useProfileMatching,
 } from '@/hooks/useProfileMatching';
 import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
+import { computeAvailabilityMatch } from './availabilityOverlap';
 import { getFreeCardTheme } from './cardTheme';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
@@ -18,6 +20,8 @@ type ProfileGridProps = {
   isLoggedIn?: boolean;
   savedProfileIds?: string[];
   currentProfileId?: string;
+  viewerTimezone?: string;
+  viewerAvailability?: AvailabilityPattern | null;
   matchCriteria?: MatchCriteria | null;
   sortByMatchScore?: boolean;
   onCopyUsername?: (username: string, profileId: string) => void;
@@ -83,6 +87,8 @@ export const ProfileGrid = ({
   isLoggedIn = false,
   savedProfileIds,
   currentProfileId,
+  viewerTimezone,
+  viewerAvailability,
   matchCriteria = null,
   sortByMatchScore = false,
   onCopyUsername,
@@ -103,6 +109,15 @@ export const ProfileGrid = ({
   );
 
   const saveEnabled = Boolean(onSaveProfile);
+
+  const viewerContext = useMemo(
+    () => ({
+      availability: viewerAvailability ?? undefined,
+      timezone: viewerTimezone,
+    }),
+    [viewerAvailability, viewerTimezone],
+  );
+  const viewerHasAvailability = Boolean(viewerAvailability);
 
   const handleToggleSave = useCallback(
     async (profileId: string) => {
@@ -195,6 +210,12 @@ export const ProfileGrid = ({
 
   const renderProfileCard = ({ profile, index }: ProfileGridItem) => {
     const canSaveProfile = saveEnabled && profile.id !== currentProfileId;
+    const match = profile.availability
+      ? computeAvailabilityMatch(viewerContext, {
+          availability: profile.availability,
+          timezone: profile.timezone,
+        })
+      : null;
 
     return (
       <ProfileCard
@@ -205,6 +226,15 @@ export const ProfileGrid = ({
         }}
         isLoggedIn={isLoggedIn}
         isSaved={savedIds.has(profile.id)}
+        viewerTimezone={viewerTimezone}
+        availabilityMatch={
+          match
+            ? {
+                availableNow: match.availableNow,
+                hasOverlap: viewerHasAvailability && match.hasOverlap,
+              }
+            : undefined
+        }
         onCopyUsername={handleCopyUsername}
         onToggleSave={canSaveProfile ? handleToggleSave : undefined}
         onTagClick={onTagClick}
