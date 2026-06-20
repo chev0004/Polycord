@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
+import { ToastStack } from '@/components/Toast';
 import { Navbar } from '@/features/Navbar';
 import {
   getMissingRequiredFields,
@@ -12,6 +13,7 @@ import {
   ONBOARDING_DRAFT_STORAGE_KEY,
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
+import { useToastStack } from '@/hooks/useToast';
 import {
   BumpProfileError,
   type BumpProfileResponse,
@@ -52,11 +54,7 @@ type DiscoveryPageProps = {
   onBumpProfile?: () => Promise<BumpProfileResponse>;
 };
 
-type BumpNotice = {
-  kind: 'success' | 'error';
-  title: string;
-  description: string;
-};
+const BUMP_TOAST_DURATION = 4000;
 
 const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
   availability: 'onboardingFieldAvailability',
@@ -104,7 +102,8 @@ export const DiscoveryPage = ({
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
   const [profileItems, setProfileItems] = useState(profiles);
-  const [bumpNotice, setBumpNotice] = useState<BumpNotice | null>(null);
+  const [isBumping, setIsBumping] = useState(false);
+  const { toasts, addToast, dismissToast } = useToastStack();
 
   useEffect(() => {
     setProfileItems(profiles);
@@ -261,14 +260,20 @@ export const DiscoveryPage = ({
   };
 
   const handleBumpProfile = async () => {
+    if (isBumping) {
+      return;
+    }
+
     if (!currentProfileId) {
-      setBumpNotice({
-        kind: 'error',
+      addToast({
         title: t('bumpNeedsProfileTitle'),
         description: t('bumpNeedsProfileDescription'),
+        duration: BUMP_TOAST_DURATION,
       });
       return;
     }
+
+    setIsBumping(true);
 
     try {
       const result = await onBumpProfile();
@@ -284,11 +289,11 @@ export const DiscoveryPage = ({
             : profile,
         ),
       );
-      setSortValue('bumped-desc');
-      setBumpNotice({
-        kind: 'success',
+      addToast({
         title: t('bumpSuccessTitle'),
         description: t('bumpSuccessDescription'),
+        iconUrl: userAvatarUrl,
+        duration: BUMP_TOAST_DURATION,
       });
     } catch (error) {
       const cooldown =
@@ -296,13 +301,15 @@ export const DiscoveryPage = ({
           ? error.remainingMs
           : undefined;
 
-      setBumpNotice({
-        kind: 'error',
+      addToast({
         title: cooldown ? t('bumpCooldownTitle') : t('bumpErrorTitle'),
         description: cooldown
           ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
           : t('bumpErrorDescription'),
+        duration: BUMP_TOAST_DURATION,
       });
+    } finally {
+      setIsBumping(false);
     }
   };
 
@@ -390,6 +397,7 @@ export const DiscoveryPage = ({
                 savedProfileIds={savedProfileIds}
                 currentProfileId={currentProfileId}
                 onSaveProfile={saveProfileRequest}
+                addToast={addToast}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
                 }
@@ -447,21 +455,7 @@ export const DiscoveryPage = ({
         </aside>
       ) : null}
 
-      {bumpNotice ? (
-        <aside
-          role={bumpNotice.kind === 'success' ? 'status' : 'alert'}
-          className={`fixed top-20 right-4 z-50 w-[min(360px,calc(100vw-2rem))] rounded-lg border px-4 py-3 shadow-xl ${
-            bumpNotice.kind === 'success'
-              ? 'border-primary/40 bg-background-darker text-white'
-              : 'border-red-400/40 bg-red-950 text-red-50'
-          }`}
-        >
-          <p className="font-figtree font-semibold text-sm">
-            {bumpNotice.title}
-          </p>
-          <p className="mt-1 text-gray-300 text-sm">{bumpNotice.description}</p>
-        </aside>
-      ) : null}
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 };
