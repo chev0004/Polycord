@@ -17,7 +17,6 @@ import {
   MdShare,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
-import { Badge } from '@/components/Badge';
 import { Chip } from '@/components/Chip';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
@@ -585,9 +584,7 @@ export const ProfileCard = ({
             ownerTimezone={profile.timezone}
             viewerTimezone={viewerTimezone}
           />
-          {availabilityMatch?.availableNow ? (
-            <Badge variant="positive">{t('availableNowBadge')}</Badge>
-          ) : availabilityMatch?.hasOverlap ? (
+          {availabilityMatch?.hasOverlap ? (
             <span className="inline-flex items-center rounded-md bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-2.5 py-[3px] font-figtree font-semibold text-[var(--ct-chip-text,var(--color-primary-light))] text-xs">
               {t('overlapBadge')}
             </span>

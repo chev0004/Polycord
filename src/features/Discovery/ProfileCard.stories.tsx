@@ -244,27 +244,6 @@ export const AvailabilityOverlap: Story = {
   },
 };
 
-export const AvailableNow: Story = {
-  render: (args) => {
-    const t = useTranslations('DiscoveryStories');
-    const profile: DiscoveryProfile = {
-      ...createMockProfile(t),
-      availability: { days: 'any', from: '00:00', to: '00:00', anyTime: true },
-    };
-    return (
-      <ProfileCard
-        {...args}
-        profile={profile}
-        availabilityMatch={{ availableNow: true }}
-      />
-    );
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByText('Available now')).toBeInTheDocument();
-  },
-};
-
 export const CopyUsername: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');
