@@ -39,6 +39,7 @@ import {
 } from '@/features/Discovery/cardTheme';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
+import { LookingForEditor } from './LookingForEditor';
 import { type ProfileFormValues, profileSchema } from './schema';
 import {
   createEmptyLanguageRow,
@@ -69,6 +70,7 @@ const defaultValues: ProfileFormValues = {
   isPublic: true,
   bio: '',
   availability: availabilityPresetToPattern('flexible'),
+  lookingFor: [],
   tags: [],
   country: '',
   voiceIntroSeconds: 0,
@@ -188,6 +190,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const country = watch('country');
   const bio = watch('bio');
   const availability = watch('availability');
+  const lookingFor = watch('lookingFor') ?? [];
   const tags = watch('tags') ?? [];
   const timezone = watch('timezone');
   const cardColor = watch('cardColor') ?? DEFAULT_CARD_COLOR;
@@ -300,6 +303,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         })),
       about: bio,
       interests: tags,
+      lookingFor,
       country: getLabel(localizedCountryOptions, country),
       timezone: displayTimezone ? timezone : '',
       allowAnonymousCopy,
@@ -319,6 +323,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     displayName,
     displayTimezone,
     localizedCountryOptions,
+    lookingFor,
     premium,
     primaryLanguage,
     previewIsPremiumLook,
@@ -482,6 +487,17 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             title={t('aboutMe')}
             description={t('aboutMeDescription')}
           >
+            <Controller
+              name="lookingFor"
+              control={control}
+              render={({ field }) => (
+                <LookingForEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+
             <Controller
               name="availability"
               control={control}
