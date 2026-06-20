@@ -24,6 +24,7 @@ export type ProfileValues = Pick<
   | 'country'
   | 'displayTimezone'
   | 'isPublic'
+  | 'lookingFor'
   | 'primaryLanguage'
   | 'tags'
   | 'timezone'
@@ -63,6 +64,7 @@ const toDiscoveryProfile = ({
   targetLanguages,
   about: profile.bio,
   interests: profile.tags,
+  lookingFor: profile.lookingFor,
   country: profile.country ?? undefined,
   timezone: profile.displayTimezone
     ? (profile.timezone ?? undefined)

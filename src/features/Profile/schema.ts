@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
+import { isValidLookingForMode } from '@/constants/lookingFor';
 
 export const FREE_LANGUAGE_CAP = 2;
 export const PREMIUM_LANGUAGE_CAP = 10;
@@ -66,6 +67,11 @@ export const profileSchema = z.object({
         message: 'duplicateTag',
       },
     )
+    .optional(),
+
+  lookingFor: z
+    .array(z.string().refine((value) => isValidLookingForMode(value)))
+    .max(7)
     .optional(),
 
   country: z.string().optional(),

@@ -61,6 +61,7 @@ export const POST = async (request: Request) => {
     country: values.country || null,
     displayTimezone: values.displayTimezone,
     isPublic: values.isPublic,
+    lookingFor: values.lookingFor ?? [],
     primaryLanguage: values.primaryLanguage,
     tags: values.tags ?? [],
     targetLanguages: values.targetLanguages.map((targetLanguage) => ({

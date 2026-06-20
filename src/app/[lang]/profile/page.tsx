@@ -22,6 +22,7 @@ const toProfileFormValues = ({
   country: profile.country ?? '',
   displayTimezone: profile.displayTimezone,
   isPublic: profile.isPublic,
+  lookingFor: profile.lookingFor,
   primaryLanguage: profile.primaryLanguage,
   tags: profile.tags,
   targetLanguages,
