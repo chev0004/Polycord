@@ -28,14 +28,16 @@ const MenuItem = ({
   onClick?: () => void;
   children: React.ReactNode;
 }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors hover:bg-background-main"
-  >
-    <Icon size={20} className="text-gray-400" />
-    {children}
-  </button>
+  <Popover.Close asChild>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors hover:bg-background-main"
+    >
+      <Icon size={20} className="text-gray-400" />
+      {children}
+    </button>
+  </Popover.Close>
 );
 
 export const UserMenu: React.FC<UserMenuProps> = ({
