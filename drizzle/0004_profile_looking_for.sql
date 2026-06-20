@@ -1,0 +1,3 @@
+ALTER TABLE "profiles" ADD COLUMN "looking_for" text[] DEFAULT '{}'::text[] NOT NULL;--> statement-breakpoint
+ALTER TABLE "profiles" ADD CONSTRAINT "profiles_looking_for_check" CHECK ("profiles"."looking_for" <@ ARRAY['casual_chat', 'study_buddy', 'voice_practice', 'grammar_help', 'gaming', 'exam_prep', 'culture_exchange']::text[]);--> statement-breakpoint
+ALTER TABLE "profiles" ADD CONSTRAINT "profiles_looking_for_limit_check" CHECK (cardinality("profiles"."looking_for") <= 7);

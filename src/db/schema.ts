@@ -57,6 +57,10 @@ export const profiles = pgTable(
       .default('flexible')
       .notNull(),
     tags: text('tags').array().default(sql`'{}'::text[]`).notNull(),
+    lookingFor: text('looking_for')
+      .array()
+      .default(sql`'{}'::text[]`)
+      .notNull(),
     country: varchar('country', { length: 2 }),
     timezone: varchar('timezone', { length: 64 }),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -81,6 +85,14 @@ export const profiles = pgTable(
       sql`${table.availability} in ('weeknights', 'weekends', 'weekday_mornings', 'flexible')`,
     ),
     check('profiles_tags_limit_check', sql`cardinality(${table.tags}) <= 6`),
+    check(
+      'profiles_looking_for_check',
+      sql`${table.lookingFor} <@ ARRAY['casual_chat', 'study_buddy', 'voice_practice', 'grammar_help', 'gaming', 'exam_prep', 'culture_exchange']::text[]`,
+    ),
+    check(
+      'profiles_looking_for_limit_check',
+      sql`cardinality(${table.lookingFor}) <= 7`,
+    ),
   ],
 );
 
