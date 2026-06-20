@@ -270,3 +270,68 @@ export const MenuActions: Story = {
     await expect(args.onViewProfile).toHaveBeenCalledWith('1');
   },
 };
+
+export const MatchReasonMutual: Story = {
+  render: (args) => (
+    <CardStory
+      {...args}
+      isLoggedIn
+      viewer={{
+        primaryLanguage: 'en',
+        targetLanguages: [{ language: 'ja' }],
+        interests: [],
+      }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByText("You are learning each other's native languages"),
+    ).toBeInTheDocument();
+  },
+};
+
+export const MatchReasonSpeaksTarget: Story = {
+  render: (args) => (
+    <CardStory
+      {...args}
+      isLoggedIn
+      modify={(p) => ({
+        ...p,
+        targetLanguages: [{ language: 'ko', level: Proficiency.BEGINNER }],
+      })}
+      viewer={{
+        primaryLanguage: 'en',
+        targetLanguages: [{ language: 'ja' }],
+        interests: [],
+      }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByText('Speaks Japanese, which you are learning'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const MatchReasonSharedInterests: Story = {
+  render: (args) => (
+    <CardStory
+      {...args}
+      isLoggedIn
+      viewer={{
+        primaryLanguage: 'fr',
+        targetLanguages: [{ language: 'de' }],
+        interests: ['Anime', 'Gaming'],
+      }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('2 shared interests')).toBeInTheDocument();
+  },
+};

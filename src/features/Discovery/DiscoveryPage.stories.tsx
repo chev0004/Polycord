@@ -290,6 +290,58 @@ export const Paginated: Story = {
   },
 };
 
+export const BestMatch: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return (
+      <DiscoveryPage
+        {...args}
+        profiles={createSampleProfiles(t)}
+        viewer={{
+          primaryLanguage: 'en',
+          targetLanguages: [{ language: 'ja' }],
+          interests: [],
+        }}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const doc = canvasElement.ownerDocument;
+
+    const firstOccurrence = (name: string) => canvas.getAllByText(name)[0];
+    const precedes = (before: string, after: string) =>
+      Boolean(
+        firstOccurrence(before).compareDocumentPosition(
+          firstOccurrence(after),
+        ) & Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+
+    await expect(precedes('Yuki', 'Alex')).toBe(true);
+    await expect(precedes('Haruto', 'Alex')).toBe(true);
+
+    await expect(
+      canvas.getAllByText("You are learning each other's native languages")
+        .length,
+    ).toBeGreaterThan(0);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+
+    const popover = within(
+      await waitFor(() => {
+        const content = doc.querySelector<HTMLElement>('.PopoverContent');
+        if (!content) throw new Error('Sort popover did not open');
+        return content;
+      }),
+    );
+
+    await expect(
+      popover.getByRole('button', { name: 'Best match' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+  },
+};
+
 export const Loading: Story = {
   args: {
     isLoading: true,
