@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/Button';
-import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
+import { ToastStack } from '@/components/Toast';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
-import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
+import { type ToastData, useToastStack } from '@/hooks/useToast';
 import type { Notification } from '@/types';
 import { Inbox } from './Inbox';
 
@@ -177,34 +177,6 @@ export const Empty: Story = {
   },
 };
 
-const ToastComponent = React.memo(
-  ({
-    toast,
-    onDismiss,
-  }: {
-    toast: ToastData;
-    onDismiss: (id: number) => void;
-  }) => {
-    const { open, onOpenChange, timerRef } = useToast({ toast, onDismiss });
-
-    if (!open && !timerRef.current) return null;
-
-    return (
-      <Toast
-        open={open}
-        onOpenChange={onOpenChange}
-        title={toast.title}
-        description={toast.description}
-        duration={toast.duration}
-        timerRef={timerRef}
-        iconUrl={toast.iconUrl}
-      />
-    );
-  },
-);
-
-ToastComponent.displayName = 'ToastComponent';
-
 const LiveUpdateStory = () => {
   const t = useTranslations('Inbox');
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -264,18 +236,11 @@ const LiveUpdateStory = () => {
         </div>
       </div>
 
-      {toasts.map((toast) => (
-        <ToastComponent key={toast.id} toast={toast} onDismiss={dismissToast} />
-      ))}
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </>
   );
 };
 
 export const LiveUpdate: Story = {
-  render: () => (
-    <ToastProvider>
-      <LiveUpdateStory />
-      <ToastViewport />
-    </ToastProvider>
-  ),
+  render: () => <LiveUpdateStory />,
 };
