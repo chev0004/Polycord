@@ -222,6 +222,49 @@ export const ShortBio: Story = {
   },
 };
 
+export const AvailabilityOverlap: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    const profile: DiscoveryProfile = {
+      ...createMockProfile(t),
+      availability: { days: 'weekdays', from: '20:00', to: '23:00' },
+    };
+    return (
+      <ProfileCard
+        {...args}
+        profile={profile}
+        viewerTimezone="America/New_York"
+        availabilityMatch={{ hasOverlap: true }}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Overlaps with you')).toBeInTheDocument();
+  },
+};
+
+export const AvailableNow: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    const profile: DiscoveryProfile = {
+      ...createMockProfile(t),
+      availability: { days: 'any', from: '00:00', to: '00:00', anyTime: true },
+    };
+    return (
+      <ProfileCard
+        {...args}
+        profile={profile}
+        availabilityMatch={{ availableNow: true }}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Available now')).toBeInTheDocument();
+  },
+};
+
 export const CopyUsername: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');
