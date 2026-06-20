@@ -350,14 +350,43 @@ export const BumpProfile: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const avatarButton = Array.from(
+    const imageButtons = Array.from(
       canvasElement.querySelectorAll<HTMLButtonElement>('nav button'),
-    ).find((button) => button.querySelector('img'));
+    ).filter((button) => button.querySelector('img'));
+    const avatarButton = imageButtons.at(-1);
 
     if (!avatarButton) throw new Error('User menu trigger not found');
 
     await userEvent.click(avatarButton);
     await userEvent.click(await screen.findByText('Bump profile'));
     await expect(await canvas.findByText('Profile bumped')).toBeInTheDocument();
+  },
+};
+
+export const BumpProfileCooldown: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return (
+      <DiscoveryPage
+        {...args}
+        currentProfileId="profile-1"
+        profiles={createSampleProfiles(t)}
+        userAvatarUrl={MOCK_USER_AVATAR_URL}
+        bumpReadyAt={new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const imageButtons = Array.from(
+      canvasElement.querySelectorAll<HTMLButtonElement>('nav button'),
+    ).filter((button) => button.querySelector('img'));
+    const avatarButton = imageButtons.at(-1);
+
+    if (!avatarButton) throw new Error('User menu trigger not found');
+
+    await userEvent.click(avatarButton);
+    const cooldownItem = await screen.findByText(/Bump in/);
+    await expect(cooldownItem.closest('button')).toBeDisabled();
   },
 };
