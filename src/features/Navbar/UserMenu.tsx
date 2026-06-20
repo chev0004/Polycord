@@ -14,6 +14,7 @@ type UserMenuProps = {
   iconUrl?: string;
   onProfileClick: () => void;
   onBumpProfileClick?: () => void;
+  bumpReadyAt?: string;
   onSavedClick?: () => void;
   onSettingsClick: () => void;
   onLogoutClick: () => void;
@@ -22,38 +23,85 @@ type UserMenuProps = {
 const MenuItem = ({
   icon: Icon,
   onClick,
+  disabled = false,
   children,
 }: {
   icon: React.ElementType;
   onClick?: () => void;
+  disabled?: boolean;
   children: React.ReactNode;
-}) => (
-  <Popover.Close asChild>
+}) => {
+  const button = (
     <button
       type="button"
       onClick={onClick}
-      className="flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors hover:bg-background-main"
+      disabled={disabled}
+      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors ${
+        disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-background-main'
+      }`}
     >
       <Icon size={20} className="text-gray-400" />
       {children}
     </button>
-  </Popover.Close>
-);
+  );
+
+  return disabled ? button : <Popover.Close asChild>{button}</Popover.Close>;
+};
+
+const formatBumpCooldown = (
+  ms: number,
+  t: ReturnType<typeof useTranslations>,
+) => {
+  const minutes = Math.max(1, Math.ceil(ms / 60000));
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+
+  if (hours && rest) {
+    return t('bumpCooldownHoursMinutes', { hours, minutes: rest });
+  }
+
+  return hours
+    ? t('bumpCooldownHours', { count: hours })
+    : t('bumpCooldownMinutes', { count: minutes });
+};
 
 export const UserMenu: React.FC<UserMenuProps> = ({
   iconUrl,
   onProfileClick,
   onBumpProfileClick,
+  bumpReadyAt,
   onSavedClick,
   onSettingsClick,
   onLogoutClick,
 }) => {
   const t = useTranslations('UserMenu');
   const [isMounted, setIsMounted] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const readyTime = bumpReadyAt ? new Date(bumpReadyAt).getTime() : 0;
+  const bumpRemainingMs = Math.max(0, readyTime - now);
+  const isBumpOnCooldown = bumpRemainingMs > 0;
+
+  useEffect(() => {
+    if (readyTime <= Date.now()) {
+      return;
+    }
+
+    setNow(Date.now());
+    const interval = setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (current >= readyTime) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [readyTime]);
 
   const triggerButton = (
     <button
@@ -94,8 +142,16 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             <MenuItem icon={MdBookmarkBorder} onClick={onSavedClick}>
               {t('saved')}
             </MenuItem>
-            <MenuItem icon={MdArrowUpward} onClick={onBumpProfileClick}>
-              {t('bumpProfile')}
+            <MenuItem
+              icon={MdArrowUpward}
+              onClick={onBumpProfileClick}
+              disabled={isBumpOnCooldown}
+            >
+              {isBumpOnCooldown
+                ? t('bumpProfileCooldown', {
+                    time: formatBumpCooldown(bumpRemainingMs, t),
+                  })
+                : t('bumpProfile')}
             </MenuItem>
             <MenuItem icon={MdOutlineSettings} onClick={onSettingsClick}>
               {t('settings')}
