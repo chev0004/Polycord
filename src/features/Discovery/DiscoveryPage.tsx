@@ -27,6 +27,7 @@ import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
+import { saveProfileRequest } from './saveProfileRequest';
 import { TagCloud } from './TagCloud';
 
 const SEARCH_TRANSITION_MS = 320;
@@ -40,6 +41,7 @@ type DiscoveryPageProps = {
   locale: string;
   needsOnboarding?: boolean;
   profiles?: DiscoveryProfile[];
+  savedProfileIds?: string[];
   userAvatarUrl?: string;
 };
 
@@ -62,6 +64,7 @@ export const DiscoveryPage = ({
   locale,
   needsOnboarding = false,
   profiles = [],
+  savedProfileIds,
   userAvatarUrl,
 }: DiscoveryPageProps) => {
   const router = useRouter();
@@ -233,6 +236,7 @@ export const DiscoveryPage = ({
           window.location.assign(`/api/auth/discord?locale=${locale}`)
         }
         onProfileClick={() => router.push(`/${locale}/profile`)}
+        onSavedClick={() => router.push(`/${locale}/saved`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
         onLogoutClick={() =>
           window.location.assign(`/api/auth/logout?locale=${locale}`)
@@ -301,6 +305,8 @@ export const DiscoveryPage = ({
               <ProfileGrid
                 profiles={pageItems}
                 isLoggedIn={isLoggedIn}
+                savedProfileIds={savedProfileIds}
+                onSaveProfile={saveProfileRequest}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
                 }

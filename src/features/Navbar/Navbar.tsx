@@ -16,6 +16,7 @@ type NavbarProps = {
   onLoginClick: () => void;
   onProfileClick: () => void;
   onBumpProfileClick?: () => void;
+  onSavedClick?: () => void;
   onSettingsClick: () => void;
   onLogoutClick: () => void;
 };
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   premium = false,
   onProfileClick,
   onBumpProfileClick,
+  onSavedClick,
   onSettingsClick,
   onLogoutClick,
 }) => {
@@ -64,6 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               iconUrl={iconUrl}
               onProfileClick={onProfileClick}
               onBumpProfileClick={onBumpProfileClick}
+              onSavedClick={onSavedClick}
               onSettingsClick={onSettingsClick}
               onLogoutClick={onLogoutClick}
             />

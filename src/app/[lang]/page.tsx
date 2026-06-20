@@ -1,5 +1,9 @@
 import { Suspense } from 'react';
-import { getProfileByUserId, upsertDiscordUser } from '@/db';
+import {
+  getProfileByUserId,
+  listSavedProfileIds,
+  upsertDiscordUser,
+} from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
 import { getCurrentUser } from '@/lib/auth';
 import { DiscoveryFeed } from './DiscoveryFeed';
@@ -15,11 +19,13 @@ export default async function Home({
   const { authError } = await searchParams;
   const user = await getCurrentUser();
   let needsOnboarding = false;
+  let savedProfileIds: string[] = [];
 
   if (user) {
     const persistedUser = await upsertDiscordUser(user);
     const profile = await getProfileByUserId(persistedUser.id);
     needsOnboarding = !profile;
+    savedProfileIds = await listSavedProfileIds(persistedUser.id);
   }
 
   const isLoggedIn = Boolean(user);
@@ -42,6 +48,7 @@ export default async function Home({
         isLoggedIn={isLoggedIn}
         locale={lang}
         needsOnboarding={needsOnboarding}
+        savedProfileIds={savedProfileIds}
         userAvatarUrl={user?.avatarUrl}
       />
     </Suspense>

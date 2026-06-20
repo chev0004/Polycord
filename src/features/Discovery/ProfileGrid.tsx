@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React, { type ReactNode, useMemo } from 'react';
+import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
 import {
   calculateMatchScore,
@@ -16,9 +16,12 @@ type ProfileGridProps = {
   profiles: DiscoveryProfile[];
   emptyState?: ReactNode;
   isLoggedIn?: boolean;
+  savedProfileIds?: string[];
   matchCriteria?: MatchCriteria | null;
   sortByMatchScore?: boolean;
   onCopyUsername?: (username: string, profileId: string) => void;
+  onSaveProfile?: (profileId: string, nextSaved: boolean) => Promise<void>;
+  onProfileUnsaved?: (profileId: string) => void;
   onTagClick?: (tag: string, profileId: string) => void;
   onLanguageClick?: (
     language: string,
@@ -77,9 +80,12 @@ export const ProfileGrid = ({
   profiles,
   emptyState,
   isLoggedIn = false,
+  savedProfileIds,
   matchCriteria = null,
   sortByMatchScore = false,
   onCopyUsername,
+  onSaveProfile,
+  onProfileUnsaved,
   onTagClick,
   onLanguageClick,
   onCountryClick,
@@ -90,6 +96,63 @@ export const ProfileGrid = ({
 }: ProfileGridProps) => {
   const t = useTranslations('Discovery');
   const { toasts, addToast, dismissToast } = useToastStack();
+  const [savedIds, setSavedIds] = useState<Set<string>>(
+    () => new Set(savedProfileIds),
+  );
+
+  const saveEnabled = Boolean(onSaveProfile);
+
+  const handleToggleSave = useCallback(
+    async (profileId: string) => {
+      if (!onSaveProfile) {
+        return;
+      }
+
+      if (!isLoggedIn) {
+        addToast({
+          title: t('saveLoginTitle'),
+          description: t('saveLoginDescription'),
+          duration: 4000,
+        });
+        return;
+      }
+
+      const nextSaved = !savedIds.has(profileId);
+
+      setSavedIds((previous) => {
+        const next = new Set(previous);
+        if (nextSaved) {
+          next.add(profileId);
+        } else {
+          next.delete(profileId);
+        }
+        return next;
+      });
+
+      try {
+        await onSaveProfile(profileId, nextSaved);
+        if (!nextSaved) {
+          onProfileUnsaved?.(profileId);
+        }
+      } catch {
+        setSavedIds((previous) => {
+          const next = new Set(previous);
+          if (nextSaved) {
+            next.delete(profileId);
+          } else {
+            next.add(profileId);
+          }
+          return next;
+        });
+        addToast({
+          title: t('saveError'),
+          description: t('saveErrorDescription'),
+          duration: 4000,
+        });
+      }
+    },
+    [addToast, isLoggedIn, onProfileUnsaved, onSaveProfile, savedIds, t],
+  );
 
   const filteredProfiles = useProfileMatching(profiles, matchCriteria);
 
@@ -136,7 +199,9 @@ export const ProfileGrid = ({
         cardTheme: profile.cardTheme ?? getFreeCardTheme(index),
       }}
       isLoggedIn={isLoggedIn}
+      isSaved={savedIds.has(profile.id)}
       onCopyUsername={handleCopyUsername}
+      onToggleSave={saveEnabled ? handleToggleSave : undefined}
       onTagClick={onTagClick}
       onLanguageClick={onLanguageClick}
       onCountryClick={onCountryClick}

@@ -113,15 +113,52 @@ export const profileTargetLanguages = pgTable(
   ],
 );
 
-export const usersRelations = relations(users, ({ one }) => ({
+export const savedProfiles = pgTable(
+  'saved_profiles',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('saved_profiles_user_profile_idx').on(
+      table.userId,
+      table.profileId,
+    ),
+    index('saved_profiles_user_id_idx').on(table.userId),
+    index('saved_profiles_profile_id_idx').on(table.profileId),
+  ],
+);
+
+export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(profiles),
+  savedProfiles: many(savedProfiles),
 }));
 
 export const profilesRelations = relations(profiles, ({ many, one }) => ({
   targetLanguages: many(profileTargetLanguages),
+  savedBy: many(savedProfiles),
   user: one(users, {
     fields: [profiles.userId],
     references: [users.id],
+  }),
+}));
+
+export const savedProfilesRelations = relations(savedProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [savedProfiles.userId],
+    references: [users.id],
+  }),
+  profile: one(profiles, {
+    fields: [savedProfiles.profileId],
+    references: [profiles.id],
   }),
 }));
 
@@ -142,3 +179,5 @@ export type NewProfile = typeof profiles.$inferInsert;
 export type ProfileTargetLanguage = typeof profileTargetLanguages.$inferSelect;
 export type NewProfileTargetLanguage =
   typeof profileTargetLanguages.$inferInsert;
+export type SavedProfile = typeof savedProfiles.$inferSelect;
+export type NewSavedProfile = typeof savedProfiles.$inferInsert;

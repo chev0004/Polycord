@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { isValidAvailability } from '@/constants/languages';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
@@ -239,6 +239,44 @@ export const listPublicProfiles = async () => {
       ),
     }),
   );
+};
+
+export const listPublicProfilesByIds = async (
+  profileIds: string[],
+): Promise<DiscoveryProfile[]> => {
+  if (!profileIds.length) {
+    return [];
+  }
+
+  const rows = await db
+    .select({
+      profile: profiles,
+      user: users,
+    })
+    .from(profiles)
+    .innerJoin(users, eq(profiles.userId, users.id))
+    .where(and(inArray(profiles.id, profileIds), eq(profiles.isPublic, true)));
+
+  const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
+    rows.map((row) => row.profile.id),
+  );
+
+  const byId = new Map(
+    rows.map((row) => [
+      row.profile.id,
+      toDiscoveryProfile({
+        ...row,
+        targetLanguages: targetLanguagesForProfile(
+          row.profile,
+          targetLanguagesByProfile.get(row.profile.id),
+        ),
+      }),
+    ]),
+  );
+
+  return profileIds
+    .map((id) => byId.get(id))
+    .filter((profile): profile is DiscoveryProfile => Boolean(profile));
 };
 
 export const upsertProfileForUser = async (
