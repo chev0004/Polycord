@@ -49,12 +49,21 @@ export const profiles = pgTable(
     isPublic: boolean('is_public').default(false).notNull(),
     allowAnonymousCopy: boolean('allow_anonymous_copy').default(true).notNull(),
     displayTimezone: boolean('display_timezone').default(true).notNull(),
+    displayAvailability: boolean('display_availability')
+      .default(true)
+      .notNull(),
     primaryLanguage: varchar('primary_language', { length: 16 }).notNull(),
     targetLanguage: varchar('target_language', { length: 16 }).notNull(),
     proficiencyLevel: proficiencyLevelEnum('proficiency_level').notNull(),
     bio: text('bio').notNull(),
     availability: varchar('availability', { length: 32 })
       .default('flexible')
+      .notNull(),
+    availabilityDays: varchar('availability_days', { length: 16 }),
+    availabilityFrom: varchar('availability_from', { length: 5 }),
+    availabilityTo: varchar('availability_to', { length: 5 }),
+    availabilityAnyTime: boolean('availability_any_time')
+      .default(false)
       .notNull(),
     tags: text('tags').array().default(sql`'{}'::text[]`).notNull(),
     country: varchar('country', { length: 2 }),
@@ -79,6 +88,18 @@ export const profiles = pgTable(
     check(
       'profiles_availability_check',
       sql`${table.availability} in ('weeknights', 'weekends', 'weekday_mornings', 'flexible')`,
+    ),
+    check(
+      'profiles_availability_days_check',
+      sql`${table.availabilityDays} is null or ${table.availabilityDays} in ('any', 'weekdays', 'weekends')`,
+    ),
+    check(
+      'profiles_availability_from_check',
+      sql`${table.availabilityFrom} is null or ${table.availabilityFrom} ~ '^[0-2][0-9]:[0-5][0-9]$'`,
+    ),
+    check(
+      'profiles_availability_to_check',
+      sql`${table.availabilityTo} is null or ${table.availabilityTo} ~ '^[0-2][0-9]:[0-5][0-9]$'`,
     ),
     check('profiles_tags_limit_check', sql`cardinality(${table.tags}) <= 6`),
   ],

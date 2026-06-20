@@ -1,9 +1,10 @@
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import {
   MdAccessTime,
   MdLanguage,
   MdLocationOn,
+  MdSchedule,
   MdSchool,
 } from 'react-icons/md';
 import type { FilterConfig } from '@/components/Filter/FilterBar';
@@ -13,9 +14,25 @@ import {
   languageOptions,
   proficiencyOptions,
 } from '@/constants/languages';
+import {
+  type AvailabilityContext,
+  isAvailableNow,
+  MEANINGFUL_OVERLAP_MINUTES,
+  overlapMinutes,
+} from './availabilityOverlap';
 import type { DiscoveryProfile } from './ProfileCard';
 
 export type DiscoveryFilterValues = Record<string, string | string[]>;
+
+export const AVAILABILITY_AVAILABLE_NOW = 'available-now';
+export const AVAILABILITY_OVERLAPS = 'overlaps';
+
+const toAvailabilityContext = (
+  profile: DiscoveryProfile,
+): AvailabilityContext => ({
+  availability: profile.availability,
+  timezone: profile.timezone,
+});
 
 // The timezone picker mirrors the runtime's IANA zones so values stay aligned
 // with what profiles persist. Guarded for engines without supportedValuesOf.
@@ -38,10 +55,12 @@ export const getTimezoneFilterOptions = (): {
   return [];
 };
 
-// The five discovery filters from the design, in row order. Shared by the
-// discovery page and the FilterBar story so definitions stay in one place.
-export const useDiscoveryFilterDefs = (): FilterConfig[] => {
+export const useDiscoveryFilterDefs = (options?: {
+  viewerHasAvailability?: boolean;
+}): FilterConfig[] => {
   const locale = useLocale();
+  const t = useTranslations('Discovery');
+  const viewerHasAvailability = options?.viewerHasAvailability ?? false;
 
   return useMemo(
     () => [
@@ -84,8 +103,25 @@ export const useDiscoveryFilterDefs = (): FilterConfig[] => {
         options: getTimezoneFilterOptions(),
         multiple: true,
       },
+      {
+        id: 'availability',
+        icon: MdSchedule,
+        labelKey: 'filterAvailability',
+        placeholderKey: 'filterSelectAvailability',
+        options: [
+          { value: AVAILABILITY_AVAILABLE_NOW, label: t('filterAvailableNow') },
+          ...(viewerHasAvailability
+            ? [
+                {
+                  value: AVAILABILITY_OVERLAPS,
+                  label: t('filterOverlapsWithMe'),
+                },
+              ]
+            : []),
+        ],
+      },
     ],
-    [locale],
+    [locale, t, viewerHasAvailability],
   );
 };
 
@@ -99,12 +135,14 @@ const toSelection = (value: string | string[] | undefined): string[] => {
 export const applyDiscoveryFilters = (
   profiles: DiscoveryProfile[],
   values: DiscoveryFilterValues,
+  viewer?: AvailabilityContext,
 ): DiscoveryProfile[] => {
   const primaryLanguage = toSelection(values.primaryLanguage);
   const targetLanguage = toSelection(values.targetLanguage);
   const country = toSelection(values.country);
   const proficiency = toSelection(values.proficiency);
   const timezone = toSelection(values.timezone);
+  const availability = toSelection(values.availability)[0];
 
   return profiles.filter((profile) => {
     if (
@@ -142,6 +180,22 @@ export const applyDiscoveryFilters = (
     if (
       timezone.length &&
       !(profile.timezone && timezone.includes(profile.timezone))
+    ) {
+      return false;
+    }
+
+    if (
+      availability === AVAILABILITY_AVAILABLE_NOW &&
+      !isAvailableNow(toAvailabilityContext(profile))
+    ) {
+      return false;
+    }
+
+    if (
+      availability === AVAILABILITY_OVERLAPS &&
+      (!viewer ||
+        overlapMinutes(viewer, toAvailabilityContext(profile)) <
+          MEANINGFUL_OVERLAP_MINUTES)
     ) {
       return false;
     }

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { asc, eq } from 'drizzle-orm';
 import { db } from './client';
+import { mapProfileAvailability } from './profiles';
 import { profiles, profileTargetLanguages, users } from './schema';
 
 export const getAccountExportByDiscordId = async (discordUserId: string) => {
@@ -50,6 +51,7 @@ export const getAccountExportByDiscordId = async (discordUserId: string) => {
           isPublic: profile.isPublic,
           allowAnonymousCopy: profile.allowAnonymousCopy,
           displayTimezone: profile.displayTimezone,
+          displayAvailability: profile.displayAvailability,
           primaryLanguage: profile.primaryLanguage,
           targetLanguage: profile.targetLanguage,
           targetLanguages: targetLanguages.length
@@ -63,6 +65,7 @@ export const getAccountExportByDiscordId = async (discordUserId: string) => {
           proficiencyLevel: profile.proficiencyLevel,
           bio: profile.bio,
           availability: profile.availability,
+          availabilityWindow: mapProfileAvailability(profile) ?? null,
           tags: profile.tags,
           country: profile.country,
           timezone: profile.timezone,

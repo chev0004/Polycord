@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
+import type { AvailabilityPattern } from '@/constants/availability';
 import {
   getProfileByUserId,
   listSavedProfileIds,
+  toViewerAvailabilityContext,
   upsertDiscordUser,
 } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
@@ -21,6 +23,8 @@ export default async function Home({
   let needsOnboarding = false;
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
+  let viewerTimezone: string | undefined;
+  let viewerAvailability: AvailabilityPattern | undefined;
 
   if (user) {
     const persistedUser = await upsertDiscordUser(user);
@@ -28,6 +32,12 @@ export default async function Home({
     needsOnboarding = !profile;
     currentProfileId = profile?.profile.id;
     savedProfileIds = await listSavedProfileIds(persistedUser.id);
+
+    if (profile) {
+      const viewer = toViewerAvailabilityContext(profile.profile);
+      viewerTimezone = viewer.timezone;
+      viewerAvailability = viewer.availability;
+    }
   }
 
   const isLoggedIn = Boolean(user);
@@ -42,6 +52,8 @@ export default async function Home({
           locale={lang}
           needsOnboarding={needsOnboarding}
           currentProfileId={currentProfileId}
+          viewerTimezone={viewerTimezone}
+          viewerAvailability={viewerAvailability}
           userAvatarUrl={user?.avatarUrl}
         />
       }
@@ -53,6 +65,8 @@ export default async function Home({
         needsOnboarding={needsOnboarding}
         savedProfileIds={savedProfileIds}
         currentProfileId={currentProfileId}
+        viewerTimezone={viewerTimezone}
+        viewerAvailability={viewerAvailability}
         userAvatarUrl={user?.avatarUrl}
       />
     </Suspense>

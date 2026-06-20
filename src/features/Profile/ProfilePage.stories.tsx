@@ -33,6 +33,7 @@ const sampleProfile: ProfileFormValues = {
   isPublic: true,
   allowAnonymousCopy: true,
   displayTimezone: true,
+  displayAvailability: true,
   availability: { days: 'weekdays', from: '06:00', to: '09:00' },
   bio: 'I am a graphic designer in Osaka looking for a patient partner to practice everyday English with.',
   tags: ['Anime', 'Cooking', 'Photography'],

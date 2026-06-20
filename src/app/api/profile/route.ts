@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { availabilityPatternToPreset } from '@/constants/availability';
 import {
   deleteProfileForUser,
   getUserByDiscordId,
@@ -56,9 +55,10 @@ export const POST = async (request: Request) => {
   const user = await upsertDiscordUser(currentUser);
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: values.allowAnonymousCopy,
-    availability: availabilityPatternToPreset(values.availability),
+    availability: values.availability ?? null,
     bio: values.bio.trim(),
     country: values.country || null,
+    displayAvailability: values.displayAvailability,
     displayTimezone: values.displayTimezone,
     isPublic: values.isPublic,
     primaryLanguage: values.primaryLanguage,

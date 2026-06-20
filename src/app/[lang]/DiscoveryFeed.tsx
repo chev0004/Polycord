@@ -1,3 +1,4 @@
+import type { AvailabilityPattern } from '@/constants/availability';
 import { listPublicProfiles } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
@@ -9,6 +10,8 @@ type DiscoveryFeedProps = {
   needsOnboarding: boolean;
   savedProfileIds: string[];
   currentProfileId?: string;
+  viewerTimezone?: string;
+  viewerAvailability?: AvailabilityPattern;
   userAvatarUrl?: string;
 };
 
@@ -19,6 +22,8 @@ export const DiscoveryFeed = async ({
   needsOnboarding,
   savedProfileIds,
   currentProfileId,
+  viewerTimezone,
+  viewerAvailability,
   userAvatarUrl,
 }: DiscoveryFeedProps) => {
   let profiles: DiscoveryProfile[] = [];
@@ -41,6 +46,8 @@ export const DiscoveryFeed = async ({
       profiles={profiles}
       savedProfileIds={savedProfileIds}
       currentProfileId={currentProfileId}
+      viewerTimezone={viewerTimezone}
+      viewerAvailability={viewerAvailability}
       userAvatarUrl={userAvatarUrl}
     />
   );
