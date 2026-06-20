@@ -5,7 +5,9 @@ import {
   upsertDiscordUser,
 } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
+import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import { getCurrentUser } from '@/lib/auth';
+import { hasPremiumEntitlement } from '@/lib/entitlements';
 import { DiscoveryFeed } from './DiscoveryFeed';
 
 export default async function Home({
@@ -21,6 +23,7 @@ export default async function Home({
   let needsOnboarding = false;
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
+  let bumpReadyAt: string | undefined;
 
   if (user) {
     const persistedUser = await upsertDiscordUser(user);
@@ -28,6 +31,14 @@ export default async function Home({
     needsOnboarding = !profile;
     currentProfileId = profile?.profile.id;
     savedProfileIds = await listSavedProfileIds(persistedUser.id);
+
+    if (profile?.profile.isPublic) {
+      const { nextBumpAt } = getBumpCooldown(
+        profile.profile.lastBumpedAt,
+        hasPremiumEntitlement(user),
+      );
+      bumpReadyAt = nextBumpAt.toISOString();
+    }
   }
 
   const isLoggedIn = Boolean(user);
@@ -42,6 +53,7 @@ export default async function Home({
           locale={lang}
           needsOnboarding={needsOnboarding}
           currentProfileId={currentProfileId}
+          bumpReadyAt={bumpReadyAt}
           userAvatarUrl={user?.avatarUrl}
         />
       }
@@ -53,6 +65,7 @@ export default async function Home({
         needsOnboarding={needsOnboarding}
         savedProfileIds={savedProfileIds}
         currentProfileId={currentProfileId}
+        bumpReadyAt={bumpReadyAt}
         userAvatarUrl={user?.avatarUrl}
       />
     </Suspense>

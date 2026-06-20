@@ -9,6 +9,7 @@ type DiscoveryFeedProps = {
   needsOnboarding: boolean;
   savedProfileIds: string[];
   currentProfileId?: string;
+  bumpReadyAt?: string;
   userAvatarUrl?: string;
 };
 
@@ -19,6 +20,7 @@ export const DiscoveryFeed = async ({
   needsOnboarding,
   savedProfileIds,
   currentProfileId,
+  bumpReadyAt,
   userAvatarUrl,
 }: DiscoveryFeedProps) => {
   let profiles: DiscoveryProfile[] = [];
@@ -41,6 +43,7 @@ export const DiscoveryFeed = async ({
       profiles={profiles}
       savedProfileIds={savedProfileIds}
       currentProfileId={currentProfileId}
+      bumpReadyAt={bumpReadyAt}
       userAvatarUrl={userAvatarUrl}
     />
   );
