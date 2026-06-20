@@ -18,6 +18,7 @@ type ProfileGridProps = {
   isLoggedIn?: boolean;
   savedProfileIds?: string[];
   currentProfileId?: string;
+  viewerTimezone?: string;
   matchCriteria?: MatchCriteria | null;
   sortByMatchScore?: boolean;
   onCopyUsername?: (username: string, profileId: string) => void;
@@ -57,6 +58,7 @@ export const ProfileGrid = ({
   isLoggedIn = false,
   savedProfileIds,
   currentProfileId,
+  viewerTimezone,
   matchCriteria = null,
   sortByMatchScore = false,
   onCopyUsername,
@@ -182,6 +184,7 @@ export const ProfileGrid = ({
         }}
         isLoggedIn={isLoggedIn}
         isSaved={savedIds.has(profile.id)}
+        viewerTimezone={viewerTimezone}
         onCopyUsername={handleCopyUsername}
         onToggleSave={canSaveProfile ? handleToggleSave : undefined}
         onTagClick={onTagClick}

@@ -22,6 +22,8 @@ const SORT_PARAM = 'sort';
 const PAGE_PARAM = 'page';
 const PROFICIENCY_PARAM = 'level';
 const PROFICIENCY_FILTER_ID = 'proficiency';
+const AVAILABILITY_PARAM = 'avail';
+const AVAILABILITY_FILTER_ID = 'availability';
 
 const MULTI_FILTER_PARAMS = [
   ['primaryLanguage', 'primary'],
@@ -36,6 +38,7 @@ const MANAGED_PARAMS = [
   SORT_PARAM,
   PAGE_PARAM,
   PROFICIENCY_PARAM,
+  AVAILABILITY_PARAM,
   ...MULTI_FILTER_PARAMS.map(([, param]) => param),
 ];
 
@@ -65,6 +68,11 @@ export const parseDiscoveryState = (
   const proficiency = params.get(PROFICIENCY_PARAM);
   if (proficiency) {
     filterValues[PROFICIENCY_FILTER_ID] = proficiency;
+  }
+
+  const availability = params.get(AVAILABILITY_PARAM);
+  if (availability) {
+    filterValues[AVAILABILITY_FILTER_ID] = availability;
   }
 
   const sort = params.get(SORT_PARAM);
@@ -101,6 +109,11 @@ export const buildDiscoveryQuery = (
   const proficiency = toFirstValue(state.filterValues[PROFICIENCY_FILTER_ID]);
   if (proficiency) {
     params.set(PROFICIENCY_PARAM, proficiency);
+  }
+
+  const availability = toFirstValue(state.filterValues[AVAILABILITY_FILTER_ID]);
+  if (availability) {
+    params.set(AVAILABILITY_PARAM, availability);
   }
 
   for (const tag of state.selectedTags) {

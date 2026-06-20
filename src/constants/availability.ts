@@ -45,31 +45,34 @@ export const availabilityPatternToPreset = (
   return fromHour < 12 ? 'weekday_mornings' : 'weeknights';
 };
 
-// Convert a wall-clock time ('HH:MM') from one IANA zone to another.
+export const tzOffsetMinutes = (timezone: string): number => {
+  try {
+    const now = new Date();
+    const local = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+    const utc = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+    return Math.round((local.getTime() - utc.getTime()) / 60000);
+  } catch {
+    return 0;
+  }
+};
+
+export const parseHhMm = (value: string): number => {
+  const [h, m] = value.split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return 0;
+  return h * 60 + m;
+};
+
 export const convertTime = (
   time24: string,
   fromTz: string,
   toTz: string,
 ): { h: number; m: number } => {
-  const [h, m] = time24.split(':').map(Number);
-  try {
-    const now = new Date();
-    const fromLocal = new Date(
-      now.toLocaleString('en-US', { timeZone: fromTz }),
-    );
-    const utcLocal = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-    const toLocal = new Date(now.toLocaleString('en-US', { timeZone: toTz }));
-    const fromOffMs = fromLocal.getTime() - utcLocal.getTime();
-    const toOffMs = toLocal.getTime() - utcLocal.getTime();
-    const utcMs = h * 3600000 + m * 60000 - fromOffMs;
-    const totalMin = Math.round((utcMs + toOffMs) / 60000);
-    return {
-      h: ((Math.floor(totalMin / 60) % 24) + 24) % 24,
-      m: ((totalMin % 60) + 60) % 60,
-    };
-  } catch {
-    return { h, m };
-  }
+  const totalMin =
+    parseHhMm(time24) - tzOffsetMinutes(fromTz) + tzOffsetMinutes(toTz);
+  return {
+    h: ((Math.floor(totalMin / 60) % 24) + 24) % 24,
+    m: ((totalMin % 60) + 60) % 60,
+  };
 };
 
 export const fmtHour = (h: number, m: number): string => {

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
+import type { AvailabilityPattern } from '@/constants/availability';
 import { Navbar } from '@/features/Navbar';
 import {
   getMissingRequiredFields,
@@ -25,7 +26,11 @@ import {
   useDiscoveryFilterDefs,
 } from './discoveryFilters';
 import { applyDiscoverySearch } from './discoverySearch';
-import { applyDiscoverySort, type DiscoverySortValue } from './discoverySort';
+import {
+  applyDiscoverySort,
+  type DiscoverySortValue,
+  SORT_OPTIONS,
+} from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
 import { buildDiscoveryQuery, parseDiscoveryState } from './discoveryUrlState';
 import { Pagination } from './Pagination';
@@ -51,6 +56,8 @@ type DiscoveryPageProps = {
   savedProfileIds?: string[];
   currentProfileId?: string;
   bumpReadyAt?: string;
+  viewerTimezone?: string;
+  viewerAvailability?: AvailabilityPattern | null;
   userAvatarUrl?: string;
   onBumpProfile?: () => Promise<BumpProfileResponse>;
 };
@@ -79,6 +86,8 @@ export const DiscoveryPage = ({
   savedProfileIds,
   currentProfileId,
   bumpReadyAt: initialBumpReadyAt,
+  viewerTimezone,
+  viewerAvailability,
   userAvatarUrl,
   onBumpProfile = bumpProfileRequest,
 }: DiscoveryPageProps) => {
@@ -86,7 +95,22 @@ export const DiscoveryPage = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations('Discovery');
-  const filterDefs = useDiscoveryFilterDefs();
+  const viewerHasAvailability = Boolean(viewerAvailability);
+  const viewerContext = useMemo(
+    () => ({
+      availability: viewerAvailability ?? undefined,
+      timezone: viewerTimezone,
+    }),
+    [viewerAvailability, viewerTimezone],
+  );
+  const filterDefs = useDiscoveryFilterDefs({ viewerHasAvailability });
+  const sortOptions = useMemo(
+    () =>
+      viewerHasAvailability
+        ? SORT_OPTIONS
+        : SORT_OPTIONS.filter((option) => option !== 'overlap-desc'),
+    [viewerHasAvailability],
+  );
   const resultsHeadRef = useRef<HTMLDivElement>(null);
   const [initialState] = useState(() => parseDiscoveryState(searchParams));
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>(
@@ -160,15 +184,24 @@ export const DiscoveryPage = ({
       applyDiscoverySort(
         applyTagFilter(
           applyDiscoverySearch(
-            applyDiscoveryFilters(profileItems, filterValues),
+            applyDiscoveryFilters(profileItems, filterValues, viewerContext),
             searchQuery,
             locale,
           ),
           selectedTags,
         ),
         sortValue,
+        viewerContext,
       ),
-    [profileItems, filterValues, searchQuery, locale, selectedTags, sortValue],
+    [
+      profileItems,
+      filterValues,
+      searchQuery,
+      locale,
+      selectedTags,
+      sortValue,
+      viewerContext,
+    ],
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PER_PAGE));
@@ -372,7 +405,11 @@ export const DiscoveryPage = ({
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
             sortControl={
-              <SortMenu value={sortValue} onChange={handleSortChange} />
+              <SortMenu
+                value={sortValue}
+                onChange={handleSortChange}
+                options={sortOptions}
+              />
             }
           />
         </div>
@@ -409,6 +446,7 @@ export const DiscoveryPage = ({
                 isLoggedIn={isLoggedIn}
                 savedProfileIds={savedProfileIds}
                 currentProfileId={currentProfileId}
+                viewerTimezone={viewerTimezone}
                 onSaveProfile={saveProfileRequest}
                 addToast={addToast}
                 emptyState={

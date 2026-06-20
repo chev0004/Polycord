@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
+import type { AvailabilityPattern } from '@/constants/availability';
 import {
   getProfileByUserId,
   listSavedProfileIds,
+  toViewerAvailabilityContext,
   upsertDiscordUser,
 } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
@@ -24,6 +26,8 @@ export default async function Home({
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
   let bumpReadyAt: string | undefined;
+  let viewerTimezone: string | undefined;
+  let viewerAvailability: AvailabilityPattern | undefined;
 
   if (user) {
     const persistedUser = await upsertDiscordUser(user);
@@ -32,12 +36,18 @@ export default async function Home({
     currentProfileId = profile?.profile.id;
     savedProfileIds = await listSavedProfileIds(persistedUser.id);
 
-    if (profile?.profile.isPublic) {
-      const { nextBumpAt } = getBumpCooldown(
-        profile.profile.lastBumpedAt,
-        hasPremiumEntitlement(user),
-      );
-      bumpReadyAt = nextBumpAt.toISOString();
+    if (profile) {
+      const viewer = toViewerAvailabilityContext(profile.profile);
+      viewerTimezone = viewer.timezone;
+      viewerAvailability = viewer.availability;
+
+      if (profile.profile.isPublic) {
+        const { nextBumpAt } = getBumpCooldown(
+          profile.profile.lastBumpedAt,
+          hasPremiumEntitlement(user),
+        );
+        bumpReadyAt = nextBumpAt.toISOString();
+      }
     }
   }
 
@@ -54,6 +64,8 @@ export default async function Home({
           needsOnboarding={needsOnboarding}
           currentProfileId={currentProfileId}
           bumpReadyAt={bumpReadyAt}
+          viewerTimezone={viewerTimezone}
+          viewerAvailability={viewerAvailability}
           userAvatarUrl={user?.avatarUrl}
         />
       }
@@ -66,6 +78,8 @@ export default async function Home({
         savedProfileIds={savedProfileIds}
         currentProfileId={currentProfileId}
         bumpReadyAt={bumpReadyAt}
+        viewerTimezone={viewerTimezone}
+        viewerAvailability={viewerAvailability}
         userAvatarUrl={user?.avatarUrl}
       />
     </Suspense>

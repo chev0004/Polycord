@@ -1,6 +1,6 @@
 {
-  "id": "7c945a3f-a20e-44ea-aba7-c831143d15fb",
-  "prevId": "ce2b3ae6-fe2b-4d70-b44b-3d71f3e997aa",
+  "id": "b389cb57-c04b-4c8e-be35-b9780eac65db",
+  "prevId": "7c945a3f-a20e-44ea-aba7-c831143d15fb",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -258,6 +258,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "last_bumped_at": {
+          "name": "last_bumped_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -339,6 +345,21 @@
           "columns": [
             {
               "expression": "country",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profiles_last_bumped_at_idx": {
+          "name": "profiles_last_bumped_at_idx",
+          "columns": [
+            {
+              "expression": "last_bumped_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

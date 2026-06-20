@@ -66,6 +66,7 @@ const defaultValues: ProfileFormValues = {
   targetLanguages: [createEmptyLanguageRow()],
   allowAnonymousCopy: true,
   displayTimezone: true,
+  displayAvailability: true,
   isPublic: true,
   bio: '',
   availability: availabilityPresetToPattern('flexible'),
@@ -182,6 +183,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   });
 
   const displayTimezone = watch('displayTimezone');
+  const displayAvailability = watch('displayAvailability');
   const allowAnonymousCopy = watch('allowAnonymousCopy');
   const primaryLanguage = watch('primaryLanguage');
   const targetLanguages = watch('targetLanguages') ?? [];
@@ -306,7 +308,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       lastBumpRelative: t('previewJustNow'),
       premium: previewIsPremiumLook,
       cardTheme: previewTheme,
-      availability: availability ?? undefined,
+      availability: displayAvailability
+        ? (availability ?? undefined)
+        : undefined,
       voiceIntroSeconds: premium
         ? voiceIntroSeconds
         : PREVIEW_TEASE_VOICE_SECONDS,
@@ -317,6 +321,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     bio,
     country,
     displayName,
+    displayAvailability,
     displayTimezone,
     localizedCountryOptions,
     premium,
@@ -702,6 +707,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               >
                 <Controller
                   name="displayTimezone"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </SettingsRow>
+
+              <SettingsRow
+                label={t('displayAvailabilityLabel')}
+                description={t('displayAvailabilityDescription')}
+              >
+                <Controller
+                  name="displayAvailability"
                   control={control}
                   render={({ field }) => (
                     <Toggle

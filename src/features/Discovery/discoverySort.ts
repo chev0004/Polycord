@@ -1,3 +1,7 @@
+import {
+  type AvailabilityContext,
+  overlapMinutes,
+} from './availabilityOverlap';
 import type { DiscoveryProfile } from './ProfileCard';
 
 export const SORT_OPTIONS = [
@@ -5,6 +9,7 @@ export const SORT_OPTIONS = [
   'bumped-asc',
   'name-asc',
   'name-desc',
+  'overlap-desc',
 ] as const;
 
 export type DiscoverySortValue = (typeof SORT_OPTIONS)[number];
@@ -25,6 +30,7 @@ const bumpRank = (profile: DiscoveryProfile): number =>
 export const applyDiscoverySort = (
   profiles: DiscoveryProfile[],
   sort: DiscoverySortValue,
+  viewer?: AvailabilityContext,
 ): DiscoveryProfile[] => {
   const sorted = [...profiles];
 
@@ -45,5 +51,24 @@ export const applyDiscoverySort = (
       return sorted.sort((a, b) => a.displayName.localeCompare(b.displayName));
     case 'name-desc':
       return sorted.sort((a, b) => b.displayName.localeCompare(a.displayName));
+    case 'overlap-desc': {
+      const overlap = new Map(
+        sorted.map((profile) => [
+          profile.id,
+          viewer
+            ? overlapMinutes(viewer, {
+                availability: profile.availability,
+                timezone: profile.timezone,
+              })
+            : 0,
+        ]),
+      );
+      return sorted.sort(
+        (a, b) =>
+          (overlap.get(b.id) ?? 0) - (overlap.get(a.id) ?? 0) ||
+          bumpRank(a) - bumpRank(b) ||
+          a.displayName.localeCompare(b.displayName),
+      );
+    }
   }
 };
