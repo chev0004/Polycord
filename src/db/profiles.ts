@@ -1,7 +1,11 @@
 import 'server-only';
 
 import { and, asc, desc, eq, inArray } from 'drizzle-orm';
-import { availabilityPresetToPattern } from '@/constants/availability';
+import {
+  type AvailabilityPattern,
+  availabilityPatternToPreset,
+  availabilityPresetToPattern,
+} from '@/constants/availability';
 import { isValidAvailability } from '@/constants/languages';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
@@ -20,14 +24,15 @@ export type ProfileValues = Pick<
   NewProfile,
   | 'allowAnonymousCopy'
   | 'bio'
-  | 'availability'
   | 'country'
+  | 'displayAvailability'
   | 'displayTimezone'
   | 'isPublic'
   | 'primaryLanguage'
   | 'tags'
   | 'timezone'
 > & {
+  availability: AvailabilityPattern | null;
   targetLanguages: ProfileTargetLanguageValue[];
 };
 
@@ -50,6 +55,48 @@ const toUserValues = (user: CurrentUser): NewUser => ({
   email: user.email,
 });
 
+const toAvailabilityPattern = (
+  profile: Profile,
+): AvailabilityPattern | undefined => {
+  if (profile.availabilityDays) {
+    return {
+      days: profile.availabilityDays as AvailabilityPattern['days'],
+      from: profile.availabilityFrom ?? '',
+      to: profile.availabilityTo ?? '',
+      anyTime: profile.availabilityAnyTime || undefined,
+    };
+  }
+
+  if (
+    isValidAvailability(profile.availability) &&
+    profile.availability !== 'flexible'
+  ) {
+    return availabilityPresetToPattern(profile.availability);
+  }
+
+  return undefined;
+};
+
+const toAvailabilityColumns = (pattern: AvailabilityPattern | null) => {
+  if (!pattern) {
+    return {
+      availability: 'flexible',
+      availabilityDays: null,
+      availabilityFrom: null,
+      availabilityTo: null,
+      availabilityAnyTime: false,
+    };
+  }
+
+  return {
+    availability: availabilityPatternToPreset(pattern),
+    availabilityDays: pattern.days,
+    availabilityFrom: pattern.anyTime ? null : pattern.from,
+    availabilityTo: pattern.anyTime ? null : pattern.to,
+    availabilityAnyTime: Boolean(pattern.anyTime),
+  };
+};
+
 const toDiscoveryProfile = ({
   profile,
   targetLanguages,
@@ -67,12 +114,22 @@ const toDiscoveryProfile = ({
   timezone: profile.displayTimezone
     ? (profile.timezone ?? undefined)
     : undefined,
-  availability:
-    isValidAvailability(profile.availability) &&
-    profile.availability !== 'flexible'
-      ? availabilityPresetToPattern(profile.availability)
-      : undefined,
+  availability: profile.displayAvailability
+    ? toAvailabilityPattern(profile)
+    : undefined,
   allowAnonymousCopy: profile.allowAnonymousCopy,
+});
+
+export type ViewerAvailabilityContext = {
+  timezone?: string;
+  availability?: AvailabilityPattern;
+};
+
+export const toViewerAvailabilityContext = (
+  profile: Profile,
+): ViewerAvailabilityContext => ({
+  timezone: profile.timezone ?? undefined,
+  availability: toAvailabilityPattern(profile),
 });
 
 const targetLanguagesForProfile = (
@@ -283,7 +340,7 @@ export const upsertProfileForUser = async (
   userId: string,
   values: ProfileValues,
 ) => {
-  const { targetLanguages, ...profileValues } = values;
+  const { targetLanguages, availability, ...profileValues } = values;
   const [primaryTarget] = targetLanguages;
 
   if (!primaryTarget) {
@@ -292,6 +349,7 @@ export const upsertProfileForUser = async (
 
   const writableProfileValues = {
     ...profileValues,
+    ...toAvailabilityColumns(availability),
     proficiencyLevel: primaryTarget.level,
     targetLanguage: primaryTarget.language,
   };
@@ -339,3 +397,4 @@ export const deleteProfileForUser = async (userId: string) => {
 };
 
 export const mapProfileToDiscoveryProfile = toDiscoveryProfile;
+export const mapProfileAvailability = toAvailabilityPattern;

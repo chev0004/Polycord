@@ -10,6 +10,7 @@ export const profileSchema = z.object({
   isPublic: z.boolean(),
   allowAnonymousCopy: z.boolean(),
   displayTimezone: z.boolean(),
+  displayAvailability: z.boolean(),
 
   primaryLanguage: z.string().min(1, { message: 'primaryLanguageRequired' }),
 

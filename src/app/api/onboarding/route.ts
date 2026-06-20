@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { availabilityPresetToPattern } from '@/constants/availability';
 import {
   type ProfileTargetLanguageValue,
   upsertDiscordUser,
@@ -37,9 +38,13 @@ export const POST = async (request: Request) => {
 
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: true,
-    availability: values.availability,
+    availability:
+      values.availability === 'flexible'
+        ? null
+        : availabilityPresetToPattern(values.availability),
     bio,
     country: values.country || null,
+    displayAvailability: true,
     displayTimezone: true,
     isPublic: true,
     primaryLanguage: values.primaryLanguage,

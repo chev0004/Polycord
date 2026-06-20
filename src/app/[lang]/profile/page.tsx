@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
-import { availabilityPresetToPattern } from '@/constants/availability';
-import { isValidAvailability } from '@/constants/languages';
-import { getProfileByUserId, upsertDiscordUser } from '@/db';
+import {
+  getProfileByUserId,
+  mapProfileAvailability,
+  upsertDiscordUser,
+} from '@/db';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { ProfileRouteClient } from './ProfileRouteClient';
@@ -13,13 +15,10 @@ const toProfileFormValues = ({
   Awaited<ReturnType<typeof getProfileByUserId>>
 >): ProfileFormValues => ({
   allowAnonymousCopy: profile.allowAnonymousCopy,
-  availability: availabilityPresetToPattern(
-    isValidAvailability(profile.availability)
-      ? profile.availability
-      : 'flexible',
-  ),
+  availability: mapProfileAvailability(profile) ?? null,
   bio: profile.bio,
   country: profile.country ?? '',
+  displayAvailability: profile.displayAvailability,
   displayTimezone: profile.displayTimezone,
   isPublic: profile.isPublic,
   primaryLanguage: profile.primaryLanguage,
