@@ -5,14 +5,48 @@ import { db } from './client';
 import { listPublicProfilesByIds } from './profiles';
 import { savedProfiles } from './schema';
 
-export const listSavedProfileIds = async (userId: string) => {
-  const rows = await db
-    .select({ profileId: savedProfiles.profileId })
-    .from(savedProfiles)
-    .where(eq(savedProfiles.userId, userId))
-    .orderBy(desc(savedProfiles.createdAt));
+const missingSavedProfilesStorageCodes = new Set(['42P01', '42703']);
 
-  return rows.map((row) => row.profileId);
+const getErrorCode = (error: unknown) =>
+  error && typeof error === 'object' && 'code' in error
+    ? String(error.code)
+    : null;
+
+const getErrorCause = (error: unknown) =>
+  error && typeof error === 'object' && 'cause' in error ? error.cause : null;
+
+const isMissingSavedProfilesStorageError = (error: unknown): boolean => {
+  let current: unknown = error;
+
+  while (current) {
+    const code = getErrorCode(current);
+
+    if (code && missingSavedProfilesStorageCodes.has(code)) {
+      return true;
+    }
+
+    current = getErrorCause(current);
+  }
+
+  return false;
+};
+
+export const listSavedProfileIds = async (userId: string) => {
+  try {
+    const rows = await db
+      .select({ profileId: savedProfiles.profileId })
+      .from(savedProfiles)
+      .where(eq(savedProfiles.userId, userId))
+      .orderBy(desc(savedProfiles.createdAt));
+
+    return rows.map((row) => row.profileId);
+  } catch (error) {
+    if (isMissingSavedProfilesStorageError(error)) {
+      return [];
+    }
+
+    throw error;
+  }
 };
 
 export const listSavedProfiles = async (userId: string) => {
