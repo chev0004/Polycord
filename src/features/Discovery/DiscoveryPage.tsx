@@ -50,6 +50,7 @@ type DiscoveryPageProps = {
   profiles?: DiscoveryProfile[];
   savedProfileIds?: string[];
   currentProfileId?: string;
+  bumpReadyAt?: string;
   userAvatarUrl?: string;
   onBumpProfile?: () => Promise<BumpProfileResponse>;
 };
@@ -77,6 +78,7 @@ export const DiscoveryPage = ({
   profiles = [],
   savedProfileIds,
   currentProfileId,
+  bumpReadyAt: initialBumpReadyAt,
   userAvatarUrl,
   onBumpProfile = bumpProfileRequest,
 }: DiscoveryPageProps) => {
@@ -103,11 +105,16 @@ export const DiscoveryPage = ({
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
   const [profileItems, setProfileItems] = useState(profiles);
   const [isBumping, setIsBumping] = useState(false);
+  const [bumpReadyAt, setBumpReadyAt] = useState(initialBumpReadyAt);
   const { toasts, addToast, dismissToast } = useToastStack();
 
   useEffect(() => {
     setProfileItems(profiles);
   }, [profiles]);
+
+  useEffect(() => {
+    setBumpReadyAt(initialBumpReadyAt);
+  }, [initialBumpReadyAt]);
 
   useEffect(() => {
     if (!needsOnboarding) {
@@ -289,6 +296,7 @@ export const DiscoveryPage = ({
             : profile,
         ),
       );
+      setBumpReadyAt(result.nextBumpAt);
       addToast({
         title: t('bumpSuccessTitle'),
         description: t('bumpSuccessDescription'),
@@ -300,6 +308,10 @@ export const DiscoveryPage = ({
         error instanceof BumpProfileError && error.status === 429
           ? error.remainingMs
           : undefined;
+
+      if (cooldown) {
+        setBumpReadyAt(new Date(Date.now() + cooldown).toISOString());
+      }
 
       addToast({
         title: cooldown ? t('bumpCooldownTitle') : t('bumpErrorTitle'),
@@ -325,6 +337,7 @@ export const DiscoveryPage = ({
         }
         onProfileClick={() => router.push(`/${locale}/profile`)}
         onBumpProfileClick={handleBumpProfile}
+        bumpReadyAt={bumpReadyAt}
         onSavedClick={() => router.push(`/${locale}/saved`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
         onLogoutClick={() =>
