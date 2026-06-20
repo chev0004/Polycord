@@ -37,9 +37,6 @@
     "saved": "Saved",
     "bumpProfile": "Bump profile",
     "bumpProfileCooldown": "Bump in {time}",
-    "bumpCooldownMinutes": "{count, plural, one {# min} other {# mins}}",
-    "bumpCooldownHours": "{count, plural, one {# hr} other {# hrs}}",
-    "bumpCooldownHoursMinutes": "{hours}h {minutes}m",
     "settings": "Settings",
     "logout": "Logout"
   },

@@ -37,9 +37,6 @@
     "saved": "保存済み",
     "bumpProfile": "プロフィールをバンプ",
     "bumpProfileCooldown": "あと{time}でバンプ可能",
-    "bumpCooldownMinutes": "{count, plural, other {#分}}",
-    "bumpCooldownHours": "{count, plural, other {#時間}}",
-    "bumpCooldownHoursMinutes": "{hours}時間{minutes}分",
     "settings": "設定",
     "logout": "ログアウト"
   },

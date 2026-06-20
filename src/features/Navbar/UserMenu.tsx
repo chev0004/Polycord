@@ -48,21 +48,14 @@ const MenuItem = ({
   return disabled ? button : <Popover.Close asChild>{button}</Popover.Close>;
 };
 
-const formatBumpCooldown = (
-  ms: number,
-  t: ReturnType<typeof useTranslations>,
-) => {
-  const minutes = Math.max(1, Math.ceil(ms / 60000));
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
+const formatBumpCooldown = (ms: number) => {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (value: number) => String(value).padStart(2, '0');
 
-  if (hours && rest) {
-    return t('bumpCooldownHoursMinutes', { hours, minutes: rest });
-  }
-
-  return hours
-    ? t('bumpCooldownHours', { count: hours })
-    : t('bumpCooldownMinutes', { count: minutes });
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
 
 export const UserMenu: React.FC<UserMenuProps> = ({
@@ -149,7 +142,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             >
               {isBumpOnCooldown
                 ? t('bumpProfileCooldown', {
-                    time: formatBumpCooldown(bumpRemainingMs, t),
+                    time: formatBumpCooldown(bumpRemainingMs),
                   })
                 : t('bumpProfile')}
             </MenuItem>
