@@ -31,6 +31,7 @@ export const ProfileRouteClient = ({
           window.location.assign(`/api/auth/discord?locale=${locale}`)
         }
         onProfileClick={() => router.push(`/${locale}/profile`)}
+        onSavedClick={() => router.push(`/${locale}/saved`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
         onLogoutClick={() =>
           window.location.assign(`/api/auth/logout?locale=${locale}`)

@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import {
   MdArrowUpward,
+  MdBookmarkBorder,
   MdOutlineExitToApp,
   MdOutlineSettings,
   MdPersonOutline,
@@ -13,6 +14,7 @@ type UserMenuProps = {
   iconUrl?: string;
   onProfileClick: () => void;
   onBumpProfileClick?: () => void;
+  onSavedClick?: () => void;
   onSettingsClick: () => void;
   onLogoutClick: () => void;
 };
@@ -40,6 +42,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   iconUrl,
   onProfileClick,
   onBumpProfileClick,
+  onSavedClick,
   onSettingsClick,
   onLogoutClick,
 }) => {
@@ -85,6 +88,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           <div className="flex flex-col">
             <MenuItem icon={MdPersonOutline} onClick={onProfileClick}>
               {t('profile')}
+            </MenuItem>
+            <MenuItem icon={MdBookmarkBorder} onClick={onSavedClick}>
+              {t('saved')}
             </MenuItem>
             <MenuItem icon={MdArrowUpward} onClick={onBumpProfileClick}>
               {t('bumpProfile')}
