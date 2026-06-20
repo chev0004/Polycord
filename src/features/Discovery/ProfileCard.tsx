@@ -6,6 +6,8 @@ import { Fragment, useEffect, useState } from 'react';
 import {
   MdAdd,
   MdBlock,
+  MdBookmark,
+  MdBookmarkBorder,
   MdCheck,
   MdContentCopy,
   MdFlag,
@@ -66,6 +68,7 @@ type ProfileCardProps = {
   profile: DiscoveryProfile;
   variant?: 'discovery' | 'preview';
   isLoggedIn?: boolean;
+  isSaved?: boolean;
   viewerTimezone?: string;
   bioFallback?: string;
   className?: string;
@@ -87,6 +90,7 @@ type ProfileCardProps = {
   onReport?: (profileId: string) => void;
   onBlock?: (profileId: string) => void;
   onShare?: (profileId: string) => void;
+  onToggleSave?: (profileId: string) => void;
 };
 
 const baseLanguagePillClasses =
@@ -111,6 +115,7 @@ export const ProfileCard = ({
   profile,
   variant = 'discovery',
   isLoggedIn = false,
+  isSaved = false,
   viewerTimezone,
   bioFallback,
   className,
@@ -123,6 +128,7 @@ export const ProfileCard = ({
   onReport,
   onBlock,
   onShare,
+  onToggleSave,
 }: ProfileCardProps) => {
   const t = useTranslations('Discovery');
   const tProfile = useTranslations('Profile');
@@ -276,6 +282,10 @@ export const ProfileCard = ({
     setIsMenuOpen(false);
   };
 
+  const handleToggleSave = () => {
+    onToggleSave?.(profile.id);
+  };
+
   const renderTag = (value: string, key?: string) => (
     <Chip key={key} label={value} onClick={() => handleTagClick(value)} />
   );
@@ -382,6 +392,25 @@ export const ProfileCard = ({
               <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
                 {profile.lastBumpRelative}
               </span>
+            )}
+            {!isPreview && onToggleSave && (
+              <button
+                type="button"
+                onClick={handleToggleSave}
+                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-colors hover:bg-black/50 ${
+                  isSaved
+                    ? 'text-[var(--ct-accent,var(--color-primary))]'
+                    : 'text-white/90 hover:text-white'
+                }`}
+                aria-label={isSaved ? t('unsaveProfile') : t('saveProfile')}
+                aria-pressed={isSaved}
+              >
+                {isSaved ? (
+                  <MdBookmark size={16} />
+                ) : (
+                  <MdBookmarkBorder size={16} />
+                )}
+              </button>
             )}
             {!isPreview && (
               <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>

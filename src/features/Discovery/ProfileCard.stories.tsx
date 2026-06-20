@@ -18,6 +18,7 @@ const meta: Meta<typeof ProfileCard> = {
     onReport: fn(),
     onBlock: fn(),
     onShare: fn(),
+    onToggleSave: fn(),
   },
   decorators: [
     (Story) => (
@@ -245,6 +246,33 @@ export const CopyUsername: Story = {
       expect(args.onCopyUsername).toHaveBeenCalledWith('user1', '1', undefined),
     );
     await expect(canvas.getByText('Copied!')).toBeInTheDocument();
+  },
+};
+
+export const SaveAction: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return <ProfileCard {...args} profile={createMockProfile(t)} />;
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Save profile' }));
+    await expect(args.onToggleSave).toHaveBeenCalledWith('1');
+  },
+};
+
+export const Saved: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return <ProfileCard {...args} profile={createMockProfile(t)} isSaved />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByRole('button', { name: 'Remove from saved' }),
+    ).toBeInTheDocument();
   },
 };
 

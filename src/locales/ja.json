@@ -34,6 +34,7 @@
   },
   "UserMenu": {
     "profile": "プロフィール",
+    "saved": "保存済み",
     "bumpProfile": "プロフィールをバンプ",
     "settings": "設定",
     "logout": "ログアウト"
@@ -360,7 +361,21 @@
     "filterSelectTimezone": "タイムゾーンを選択",
     "filterSearchPlaceholder": "検索...",
     "filterClear": "フィルターをクリア",
-    "filterNoResults": "結果が見つかりません"
+    "filterNoResults": "結果が見つかりません",
+    "saveProfile": "プロフィールを保存",
+    "unsaveProfile": "保存から削除",
+    "saveLoginTitle": "ログインして保存",
+    "saveLoginDescription": "Discordでログインすると、気になるプロフィールを保存できます。",
+    "saveError": "保存を更新できませんでした",
+    "saveErrorDescription": "問題が発生しました。もう一度お試しください。"
+  },
+  "Saved": {
+    "eyebrow": "保存済み",
+    "title": "保存したプロフィール",
+    "subtitle": "あとで見返すために保存したプロフィール。非公開や削除されたプロフィールは自動的に表示されなくなります。",
+    "emptyTitle": "保存したプロフィールはまだありません",
+    "emptyDescription": "プロフィールカードのブックマークを押すと、ここに保存して後で見返せます。",
+    "emptyAction": "プロフィールを見る"
   },
   "Onboarding": {
     "firstRunSetup": "初回セットアップ",
