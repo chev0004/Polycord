@@ -10,6 +10,7 @@ type DiscoveryFeedProps = {
   needsOnboarding: boolean;
   savedProfileIds: string[];
   currentProfileId?: string;
+  bumpReadyAt?: string;
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern;
   userAvatarUrl?: string;
@@ -22,6 +23,7 @@ export const DiscoveryFeed = async ({
   needsOnboarding,
   savedProfileIds,
   currentProfileId,
+  bumpReadyAt,
   viewerTimezone,
   viewerAvailability,
   userAvatarUrl,
@@ -46,6 +48,7 @@ export const DiscoveryFeed = async ({
       profiles={profiles}
       savedProfileIds={savedProfileIds}
       currentProfileId={currentProfileId}
+      bumpReadyAt={bumpReadyAt}
       viewerTimezone={viewerTimezone}
       viewerAvailability={viewerAvailability}
       userAvatarUrl={userAvatarUrl}

@@ -1,14 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
-import { Toast, ToastProvider, ToastViewport } from '@/components/Toast';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import { ToastStack } from '@/components/Toast';
 import {
   calculateMatchScore,
   type MatchCriteria,
   useProfileMatching,
 } from '@/hooks/useProfileMatching';
-import { type ToastData, useToast, useToastStack } from '@/hooks/useToast';
+import { type ToastData, useToastStack } from '@/hooks/useToast';
 import { getFreeCardTheme } from './cardTheme';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
@@ -36,6 +36,7 @@ type ProfileGridProps = {
   onReport?: (profileId: string) => void;
   onBlock?: (profileId: string) => void;
   onShare?: (profileId: string) => void;
+  addToast?: (toast: Omit<ToastData, 'id'>) => void;
 };
 
 type ProfileGridItem = {
@@ -50,33 +51,6 @@ const splitIntoColumns = <T,>(items: T[], columnCount: number) => {
     items.slice(columnIndex * columnSize, (columnIndex + 1) * columnSize),
   ).filter((column) => column.length > 0);
 };
-
-const ToastComponent = React.memo(
-  ({
-    toast,
-    onDismiss,
-  }: {
-    toast: ToastData;
-    onDismiss: (id: number) => void;
-  }) => {
-    const { open, onOpenChange, timerRef } = useToast({ toast, onDismiss });
-
-    if (!open && !timerRef.current) return null;
-
-    return (
-      <Toast
-        open={open}
-        onOpenChange={onOpenChange}
-        title={toast.title}
-        description={toast.description}
-        duration={toast.duration}
-        timerRef={timerRef}
-        iconUrl={toast.iconUrl}
-      />
-    );
-  },
-);
-ToastComponent.displayName = 'ToastComponent';
 
 export const ProfileGrid = ({
   profiles,
@@ -97,9 +71,12 @@ export const ProfileGrid = ({
   onReport,
   onBlock,
   onShare,
+  addToast: externalAddToast,
 }: ProfileGridProps) => {
   const t = useTranslations('Discovery');
-  const { toasts, addToast, dismissToast } = useToastStack();
+  const localStack = useToastStack();
+  const addToast = externalAddToast ?? localStack.addToast;
+  const ownsToastStack = !externalAddToast;
   const [savedIds, setSavedIds] = useState<Set<string>>(
     () => new Set(savedProfileIds),
   );
@@ -235,7 +212,7 @@ export const ProfileGrid = ({
   );
 
   return (
-    <ToastProvider>
+    <>
       <section className="flex flex-col gap-6">
         {hasProfiles ? (
           <>
@@ -258,10 +235,12 @@ export const ProfileGrid = ({
         )}
       </section>
 
-      {toasts.map((toast) => (
-        <ToastComponent key={toast.id} toast={toast} onDismiss={dismissToast} />
-      ))}
-      <ToastViewport />
-    </ToastProvider>
+      {ownsToastStack ? (
+        <ToastStack
+          toasts={localStack.toasts}
+          onDismiss={localStack.dismissToast}
+        />
+      ) : null}
+    </>
   );
 };

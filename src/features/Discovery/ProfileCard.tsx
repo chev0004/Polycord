@@ -57,6 +57,7 @@ export type DiscoveryProfile = {
   timezone?: IANATimezone | string;
   allowAnonymousCopy?: boolean;
   lastBumpRelative?: string;
+  lastBumpedAt?: string;
   bumpedMinutesAgo?: number;
   premium?: boolean;
   cardTheme?: CardTheme;
@@ -104,6 +105,23 @@ const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
 const TIME_FORMAT_STORAGE_KEY = 'polycord_timeFormat';
+
+const getBumpAge = (value?: string) => {
+  if (!value) return null;
+
+  const minutes = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(value).getTime()) / 60000),
+  );
+
+  if (minutes < 1) return { key: 'bumpedJustNow' as const };
+  if (minutes < 60) return { key: 'bumpedMinutesAgo' as const, count: minutes };
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return { key: 'bumpedHoursAgo' as const, count: hours };
+
+  return { key: 'bumpedDaysAgo' as const, count: Math.floor(hours / 24) };
+};
 
 const getTimeFormat = (): TimeFormat => {
   if (typeof window === 'undefined') return '24hr';
@@ -156,6 +174,10 @@ export const ProfileCard = ({
       ? { '--card-tint': theme.tint, background: tintedSurface }
       : {}),
   } as React.CSSProperties;
+  const bumpAge = getBumpAge(profile.lastBumpedAt);
+  const lastBumpRelative =
+    profile.lastBumpRelative ??
+    (bumpAge ? t(bumpAge.key, { count: bumpAge.count ?? 0 }) : undefined);
 
   const handleCopyUsername = async () => {
     if (!canCopyUsername || isCopying) return;
@@ -389,9 +411,9 @@ export const ProfileCard = ({
           style={{ background: theme.banner }}
         >
           <div className="flex items-center gap-1.5">
-            {profile.lastBumpRelative && (
+            {lastBumpRelative && (
               <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
-                {profile.lastBumpRelative}
+                {lastBumpRelative}
               </span>
             )}
             {!isPreview && (

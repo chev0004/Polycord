@@ -36,6 +36,7 @@
     "profile": "Profile",
     "saved": "Saved",
     "bumpProfile": "Bump profile",
+    "bumpProfileCooldown": "Bump in {time}",
     "settings": "Settings",
     "logout": "Logout"
   },
@@ -374,7 +375,22 @@
     "saveLoginTitle": "Log in to save profiles",
     "saveLoginDescription": "Sign in with Discord to keep profiles you want to revisit.",
     "saveError": "Couldn't update saved profiles",
-    "saveErrorDescription": "Something went wrong. Please try again."
+    "saveErrorDescription": "Something went wrong. Please try again.",
+    "bumpedJustNow": "just now",
+    "bumpedMinutesAgo": "{count, plural, one {# minute ago} other {# minutes ago}}",
+    "bumpedHoursAgo": "{count, plural, one {# hour ago} other {# hours ago}}",
+    "bumpedDaysAgo": "{count, plural, one {# day ago} other {# days ago}}",
+    "bumpSuccessTitle": "Profile bumped",
+    "bumpSuccessDescription": "You're back near the top of discovery.",
+    "bumpCooldownTitle": "Bump cooling down",
+    "bumpCooldownDescription": "Try again in {time}.",
+    "bumpCooldownMinutes": "{count, plural, one {# minute} other {# minutes}}",
+    "bumpCooldownHours": "{count, plural, one {# hour} other {# hours}}",
+    "bumpCooldownHoursMinutes": "{hours, plural, one {# hour} other {# hours}} {minutes, plural, one {# minute} other {# minutes}}",
+    "bumpNeedsProfileTitle": "Create a public profile first",
+    "bumpNeedsProfileDescription": "Finish your profile and make it public before bumping.",
+    "bumpErrorTitle": "Couldn't bump profile",
+    "bumpErrorDescription": "Something went wrong. Please try again."
   },
   "Saved": {
     "eyebrow": "Saved",

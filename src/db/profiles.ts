@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import {
   type AvailabilityPattern,
   availabilityPatternToPreset,
@@ -118,6 +118,13 @@ const toDiscoveryProfile = ({
     ? toAvailabilityPattern(profile)
     : undefined,
   allowAnonymousCopy: profile.allowAnonymousCopy,
+  lastBumpedAt: profile.lastBumpedAt?.toISOString(),
+  bumpedMinutesAgo: profile.lastBumpedAt
+    ? Math.max(
+        0,
+        Math.floor((Date.now() - profile.lastBumpedAt.getTime()) / 60000),
+      )
+    : undefined,
 });
 
 export type ViewerAvailabilityContext = {
@@ -281,7 +288,10 @@ export const listPublicProfiles = async () => {
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
     .where(eq(profiles.isPublic, true))
-    .orderBy(desc(profiles.updatedAt));
+    .orderBy(
+      sql`${profiles.lastBumpedAt} desc nulls last`,
+      desc(profiles.updatedAt),
+    );
 
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
     rows.map((row) => row.profile.id),
@@ -394,6 +404,19 @@ export const deleteProfileForUser = async (userId: string) => {
     .returning({ id: profiles.id });
 
   return deletedProfiles.length > 0;
+};
+
+export const bumpProfileForUser = async (
+  userId: string,
+  bumpedAt = new Date(),
+) => {
+  const [profile] = await db
+    .update(profiles)
+    .set({ lastBumpedAt: bumpedAt })
+    .where(eq(profiles.userId, userId))
+    .returning();
+
+  return profile ?? null;
 };
 
 export const mapProfileToDiscoveryProfile = toDiscoveryProfile;

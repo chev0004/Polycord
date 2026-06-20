@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
+import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { Navbar } from '@/features/Navbar';
 import {
@@ -13,6 +14,12 @@ import {
   ONBOARDING_DRAFT_STORAGE_KEY,
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
+import { useToastStack } from '@/hooks/useToast';
+import {
+  BumpProfileError,
+  type BumpProfileResponse,
+  bumpProfileRequest,
+} from './bumpProfileRequest';
 import {
   applyDiscoveryFilters,
   type DiscoveryFilterValues,
@@ -48,10 +55,14 @@ type DiscoveryPageProps = {
   profiles?: DiscoveryProfile[];
   savedProfileIds?: string[];
   currentProfileId?: string;
+  bumpReadyAt?: string;
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern | null;
   userAvatarUrl?: string;
+  onBumpProfile?: () => Promise<BumpProfileResponse>;
 };
+
+const BUMP_TOAST_DURATION = 4000;
 
 const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
   availability: 'onboardingFieldAvailability',
@@ -74,9 +85,11 @@ export const DiscoveryPage = ({
   profiles = [],
   savedProfileIds,
   currentProfileId,
+  bumpReadyAt: initialBumpReadyAt,
   viewerTimezone,
   viewerAvailability,
   userAvatarUrl,
+  onBumpProfile = bumpProfileRequest,
 }: DiscoveryPageProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -114,6 +127,18 @@ export const DiscoveryPage = ({
   const [isSearching, setIsSearching] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
+  const [profileItems, setProfileItems] = useState(profiles);
+  const [isBumping, setIsBumping] = useState(false);
+  const [bumpReadyAt, setBumpReadyAt] = useState(initialBumpReadyAt);
+  const { toasts, addToast, dismissToast } = useToastStack();
+
+  useEffect(() => {
+    setProfileItems(profiles);
+  }, [profiles]);
+
+  useEffect(() => {
+    setBumpReadyAt(initialBumpReadyAt);
+  }, [initialBumpReadyAt]);
 
   useEffect(() => {
     if (!needsOnboarding) {
@@ -142,7 +167,7 @@ export const DiscoveryPage = ({
 
   const completion = useMemo(() => getOnboardingCompletion(draft), [draft]);
 
-  const tagCounts = useMemo(() => buildTagCounts(profiles), [profiles]);
+  const tagCounts = useMemo(() => buildTagCounts(profileItems), [profileItems]);
 
   const hasActiveFilters = useMemo(
     () =>
@@ -159,7 +184,7 @@ export const DiscoveryPage = ({
       applyDiscoverySort(
         applyTagFilter(
           applyDiscoverySearch(
-            applyDiscoveryFilters(profiles, filterValues, viewerContext),
+            applyDiscoveryFilters(profileItems, filterValues, viewerContext),
             searchQuery,
             locale,
           ),
@@ -169,7 +194,7 @@ export const DiscoveryPage = ({
         viewerContext,
       ),
     [
-      profiles,
+      profileItems,
       filterValues,
       searchQuery,
       locale,
@@ -260,6 +285,79 @@ export const DiscoveryPage = ({
     });
   };
 
+  const formatRemaining = (ms: number) => {
+    const minutes = Math.max(1, Math.ceil(ms / 60000));
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+
+    if (hours && rest) {
+      return t('bumpCooldownHoursMinutes', { hours, minutes: rest });
+    }
+
+    return hours
+      ? t('bumpCooldownHours', { count: hours })
+      : t('bumpCooldownMinutes', { count: minutes });
+  };
+
+  const handleBumpProfile = async () => {
+    if (isBumping) {
+      return;
+    }
+
+    if (!currentProfileId) {
+      addToast({
+        title: t('bumpNeedsProfileTitle'),
+        description: t('bumpNeedsProfileDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+      return;
+    }
+
+    setIsBumping(true);
+
+    try {
+      const result = await onBumpProfile();
+      setProfileItems((previous) =>
+        previous.map((profile) =>
+          profile.id === currentProfileId
+            ? {
+                ...profile,
+                bumpedMinutesAgo: 0,
+                lastBumpRelative: undefined,
+                lastBumpedAt: result.lastBumpedAt,
+              }
+            : profile,
+        ),
+      );
+      setBumpReadyAt(result.nextBumpAt);
+      addToast({
+        title: t('bumpSuccessTitle'),
+        description: t('bumpSuccessDescription'),
+        iconUrl: userAvatarUrl,
+        duration: BUMP_TOAST_DURATION,
+      });
+    } catch (error) {
+      const cooldown =
+        error instanceof BumpProfileError && error.status === 429
+          ? error.remainingMs
+          : undefined;
+
+      if (cooldown) {
+        setBumpReadyAt(new Date(Date.now() + cooldown).toISOString());
+      }
+
+      addToast({
+        title: cooldown ? t('bumpCooldownTitle') : t('bumpErrorTitle'),
+        description: cooldown
+          ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
+          : t('bumpErrorDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+    } finally {
+      setIsBumping(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-main text-white">
       <Navbar
@@ -271,6 +369,8 @@ export const DiscoveryPage = ({
           window.location.assign(`/api/auth/discord?locale=${locale}`)
         }
         onProfileClick={() => router.push(`/${locale}/profile`)}
+        onBumpProfileClick={handleBumpProfile}
+        bumpReadyAt={bumpReadyAt}
         onSavedClick={() => router.push(`/${locale}/saved`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
         onLogoutClick={() =>
@@ -348,6 +448,7 @@ export const DiscoveryPage = ({
                 currentProfileId={currentProfileId}
                 viewerTimezone={viewerTimezone}
                 onSaveProfile={saveProfileRequest}
+                addToast={addToast}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
                 }
@@ -404,6 +505,8 @@ export const DiscoveryPage = ({
           </div>
         </aside>
       ) : null}
+
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 };
