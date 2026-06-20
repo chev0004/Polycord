@@ -13,12 +13,14 @@ import { Navbar } from '@/features/Navbar';
 type SavedRouteClientProps = {
   locale: string;
   profiles: DiscoveryProfile[];
+  currentProfileId?: string;
   userAvatarUrl?: string;
 };
 
 export const SavedRouteClient = ({
   locale,
   profiles: initialProfiles,
+  currentProfileId,
   userAvatarUrl,
 }: SavedRouteClientProps) => {
   const router = useRouter();
@@ -65,6 +67,7 @@ export const SavedRouteClient = ({
             profiles={profiles}
             isLoggedIn
             savedProfileIds={profiles.map((profile) => profile.id)}
+            currentProfileId={currentProfileId}
             onSaveProfile={saveProfileRequest}
             onProfileUnsaved={handleProfileUnsaved}
           />

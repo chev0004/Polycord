@@ -1,9 +1,9 @@
 import 'server-only';
 
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, ne } from 'drizzle-orm';
 import { db } from './client';
 import { listPublicProfilesByIds } from './profiles';
-import { savedProfiles } from './schema';
+import { profiles, savedProfiles } from './schema';
 
 const missingSavedProfilesStorageCodes = new Set(['42P01', '42703']);
 
@@ -36,7 +36,8 @@ export const listSavedProfileIds = async (userId: string) => {
     const rows = await db
       .select({ profileId: savedProfiles.profileId })
       .from(savedProfiles)
-      .where(eq(savedProfiles.userId, userId))
+      .innerJoin(profiles, eq(savedProfiles.profileId, profiles.id))
+      .where(and(eq(savedProfiles.userId, userId), ne(profiles.userId, userId)))
       .orderBy(desc(savedProfiles.createdAt));
 
     return rows.map((row) => row.profileId);

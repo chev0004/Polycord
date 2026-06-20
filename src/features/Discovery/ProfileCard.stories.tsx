@@ -256,8 +256,12 @@ export const SaveAction: Story = {
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
 
-    await userEvent.click(canvas.getByRole('button', { name: 'Save profile' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Card menu' }));
+    await userEvent.click(
+      await body.findByRole('button', { name: 'Save profile' }),
+    );
     await expect(args.onToggleSave).toHaveBeenCalledWith('1');
   },
 };
@@ -269,9 +273,12 @@ export const Saved: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Card menu' }));
 
     await expect(
-      canvas.getByRole('button', { name: 'Remove from saved' }),
+      await body.findByRole('button', { name: 'Remove from saved' }),
     ).toBeInTheDocument();
   },
 };
