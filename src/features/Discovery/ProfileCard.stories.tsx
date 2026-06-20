@@ -57,6 +57,7 @@ const createMockProfile = (t: ReturnType<typeof useTranslations>) =>
     ],
     about: longBio,
     interests: ['Anime', 'K-Pop', 'Gaming'],
+    lookingFor: ['casual_chat', 'voice_practice'],
     country: 'Japan',
     timezone: 'Asia/Tokyo',
     allowAnonymousCopy: true,

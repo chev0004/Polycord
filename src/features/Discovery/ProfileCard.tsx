@@ -35,6 +35,7 @@ import {
   FREE_ACCENT,
   getFreeCardTheme,
 } from './cardTheme';
+import { LookingForRow } from './LookingForRow';
 import { VoiceChip } from './VoiceChip';
 
 export type DiscoveryTargetLanguage = {
@@ -53,6 +54,7 @@ export type DiscoveryProfile = {
   targetLanguages: DiscoveryTargetLanguage[];
   about?: string;
   interests: string[];
+  lookingFor?: string[];
   country?: string;
   timezone?: IANATimezone | string;
   allowAnonymousCopy?: boolean;
@@ -574,6 +576,10 @@ export const ProfileCard = ({
           </Popover.Root>
         )}
       </div>
+
+      {profile.lookingFor && profile.lookingFor.length > 0 && (
+        <LookingForRow modes={profile.lookingFor} />
+      )}
 
       {profile.availability && (
         <AvailabilityRow
