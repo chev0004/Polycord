@@ -20,11 +20,13 @@ export default async function Home({
   const user = await getCurrentUser();
   let needsOnboarding = false;
   let savedProfileIds: string[] = [];
+  let currentProfileId: string | undefined;
 
   if (user) {
     const persistedUser = await upsertDiscordUser(user);
     const profile = await getProfileByUserId(persistedUser.id);
     needsOnboarding = !profile;
+    currentProfileId = profile?.profile.id;
     savedProfileIds = await listSavedProfileIds(persistedUser.id);
   }
 
@@ -39,6 +41,7 @@ export default async function Home({
           isLoggedIn={isLoggedIn}
           locale={lang}
           needsOnboarding={needsOnboarding}
+          currentProfileId={currentProfileId}
           userAvatarUrl={user?.avatarUrl}
         />
       }
@@ -49,6 +52,7 @@ export default async function Home({
         locale={lang}
         needsOnboarding={needsOnboarding}
         savedProfileIds={savedProfileIds}
+        currentProfileId={currentProfileId}
         userAvatarUrl={user?.avatarUrl}
       />
     </Suspense>

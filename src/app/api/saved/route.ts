@@ -50,6 +50,14 @@ export const POST = async (request: Request) => {
   }
 
   const user = await upsertDiscordUser(currentUser);
+
+  if (target.profile.userId === user.id) {
+    return NextResponse.json(
+      { error: 'Cannot save your own profile' },
+      { status: 400 },
+    );
+  }
+
   await saveProfile(user.id, profileId);
 
   return NextResponse.json({ saved: true });

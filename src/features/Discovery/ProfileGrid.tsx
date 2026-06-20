@@ -17,6 +17,7 @@ type ProfileGridProps = {
   emptyState?: ReactNode;
   isLoggedIn?: boolean;
   savedProfileIds?: string[];
+  currentProfileId?: string;
   matchCriteria?: MatchCriteria | null;
   sortByMatchScore?: boolean;
   onCopyUsername?: (username: string, profileId: string) => void;
@@ -81,6 +82,7 @@ export const ProfileGrid = ({
   emptyState,
   isLoggedIn = false,
   savedProfileIds,
+  currentProfileId,
   matchCriteria = null,
   sortByMatchScore = false,
   onCopyUsername,
@@ -191,26 +193,30 @@ export const ProfileGrid = ({
     }
   };
 
-  const renderProfileCard = ({ profile, index }: ProfileGridItem) => (
-    <ProfileCard
-      key={profile.id}
-      profile={{
-        ...profile,
-        cardTheme: profile.cardTheme ?? getFreeCardTheme(index),
-      }}
-      isLoggedIn={isLoggedIn}
-      isSaved={savedIds.has(profile.id)}
-      onCopyUsername={handleCopyUsername}
-      onToggleSave={saveEnabled ? handleToggleSave : undefined}
-      onTagClick={onTagClick}
-      onLanguageClick={onLanguageClick}
-      onCountryClick={onCountryClick}
-      onViewProfile={onViewProfile}
-      onReport={onReport}
-      onBlock={onBlock}
-      onShare={onShare}
-    />
-  );
+  const renderProfileCard = ({ profile, index }: ProfileGridItem) => {
+    const canSaveProfile = saveEnabled && profile.id !== currentProfileId;
+
+    return (
+      <ProfileCard
+        key={profile.id}
+        profile={{
+          ...profile,
+          cardTheme: profile.cardTheme ?? getFreeCardTheme(index),
+        }}
+        isLoggedIn={isLoggedIn}
+        isSaved={savedIds.has(profile.id)}
+        onCopyUsername={handleCopyUsername}
+        onToggleSave={canSaveProfile ? handleToggleSave : undefined}
+        onTagClick={onTagClick}
+        onLanguageClick={onLanguageClick}
+        onCountryClick={onCountryClick}
+        onViewProfile={onViewProfile}
+        onReport={onReport}
+        onBlock={onBlock}
+        onShare={onShare}
+      />
+    );
+  };
 
   const renderProfileColumns = (columnCount: number, className: string) => (
     <div className={`mx-auto w-full max-w-[1180px] gap-6 ${className}`}>

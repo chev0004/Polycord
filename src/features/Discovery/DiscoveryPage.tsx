@@ -42,6 +42,7 @@ type DiscoveryPageProps = {
   needsOnboarding?: boolean;
   profiles?: DiscoveryProfile[];
   savedProfileIds?: string[];
+  currentProfileId?: string;
   userAvatarUrl?: string;
 };
 
@@ -65,6 +66,7 @@ export const DiscoveryPage = ({
   needsOnboarding = false,
   profiles = [],
   savedProfileIds,
+  currentProfileId,
   userAvatarUrl,
 }: DiscoveryPageProps) => {
   const router = useRouter();
@@ -306,6 +308,7 @@ export const DiscoveryPage = ({
                 profiles={pageItems}
                 isLoggedIn={isLoggedIn}
                 savedProfileIds={savedProfileIds}
+                currentProfileId={currentProfileId}
                 onSaveProfile={saveProfileRequest}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
