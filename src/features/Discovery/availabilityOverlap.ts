@@ -14,12 +14,6 @@ export type AvailabilityContext = {
   timezone?: string;
 };
 
-export type AvailabilityMatch = {
-  overlapMinutes: number;
-  hasOverlap: boolean;
-  availableNow: boolean;
-};
-
 type Interval = { start: number; end: number };
 
 const daysForBucket = (days: AvailabilityPattern['days']): number[] => {
@@ -128,21 +122,3 @@ export const isAvailableNow = (
     (interval) => minute >= interval.start && minute < interval.end,
   );
 };
-
-export const computeAvailabilityMatch = (
-  viewer: AvailabilityContext,
-  candidate: AvailabilityContext,
-  now: Date = new Date(),
-): AvailabilityMatch => {
-  const minutes = overlapMinutes(viewer, candidate);
-
-  return {
-    overlapMinutes: minutes,
-    hasOverlap: minutes >= MEANINGFUL_OVERLAP_MINUTES,
-    availableNow: isAvailableNow(candidate, now),
-  };
-};
-
-export const hasViewerAvailability = (
-  context: AvailabilityContext | undefined,
-): boolean => Boolean(context?.availability);

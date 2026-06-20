@@ -347,7 +347,6 @@ export const DiscoveryPage = ({
                 savedProfileIds={savedProfileIds}
                 currentProfileId={currentProfileId}
                 viewerTimezone={viewerTimezone}
-                viewerAvailability={viewerAvailability}
                 onSaveProfile={saveProfileRequest}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')

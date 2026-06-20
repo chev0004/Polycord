@@ -366,8 +366,6 @@
     "filterSelectAvailability": "Select availability",
     "filterAvailableNow": "Available now",
     "filterOverlapsWithMe": "Overlaps with me",
-    "availableNowBadge": "Available now",
-    "overlapBadge": "Overlaps with you",
     "filterSearchPlaceholder": "Search...",
     "filterClear": "Clear filters",
     "filterNoResults": "No results found",

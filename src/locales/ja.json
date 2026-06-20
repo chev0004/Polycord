@@ -366,8 +366,6 @@
     "filterSelectAvailability": "空き時間を選択",
     "filterAvailableNow": "現在対応可能",
     "filterOverlapsWithMe": "自分と時間が合う",
-    "availableNowBadge": "現在対応可能",
-    "overlapBadge": "あなたと時間が合う",
     "filterSearchPlaceholder": "検索...",
     "filterClear": "フィルターをクリア",
     "filterNoResults": "結果が見つかりません",
