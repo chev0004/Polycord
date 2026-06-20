@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
   type SettingsFormValues,
   SettingsPage,
@@ -42,7 +42,7 @@ export const SettingsRouteClient = ({
   userAvatarUrl,
   userDisplayName,
 }: SettingsRouteClientProps) => {
-  const router = useRouter();
+  const router = useRouteProgressRouter();
   const defaultSettings: SettingsFormValues = {
     isPublic: initialPrivacySettings?.isPublic ?? true,
     allowAnonymousCopy: initialPrivacySettings?.allowAnonymousCopy ?? true,

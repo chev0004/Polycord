@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { locales } from '@/utils/locales';
 import '../globals.css';
 
@@ -30,7 +31,7 @@ export default async function RootLayout({
     <html lang={lang} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <NextIntlClientProvider locale={lang} messages={messages}>
-          {children}
+          <RouteProgressProvider>{children}</RouteProgressProvider>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
@@ -8,6 +8,7 @@ import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { Navbar } from '@/features/Navbar';
+import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
   getMissingRequiredFields,
   getOnboardingCompletion,
@@ -91,7 +92,7 @@ export const DiscoveryPage = ({
   userAvatarUrl,
   onBumpProfile = bumpProfileRequest,
 }: DiscoveryPageProps) => {
-  const router = useRouter();
+  const router = useRouteProgressRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations('Discovery');

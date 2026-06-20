@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { languages } from '@/constants/languages';
+import { useRouteProgress } from '@/features/Navigation/RouteProgress';
 import { locales } from '@/utils/locales';
 
 const getLocaleName = (code: string) => {
@@ -22,10 +23,16 @@ const MenuItem = ({
 }) => {
   const isSelected = locale === currentLocale;
   const name = getLocaleName(locale);
+  const { start } = useRouteProgress();
 
   return (
     <Link
       href={href}
+      onClick={() => {
+        if (!isSelected) {
+          start();
+        }
+      }}
       className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors ${
         isSelected
           ? 'bg-background-main text-primary-light'
