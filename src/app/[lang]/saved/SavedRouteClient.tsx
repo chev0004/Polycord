@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MdBookmarkBorder } from 'react-icons/md';
@@ -9,6 +8,7 @@ import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { ProfileGrid } from '@/features/Discovery/ProfileGrid';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
 import { Navbar } from '@/features/Navbar';
+import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 
 type SavedRouteClientProps = {
   locale: string;
@@ -23,7 +23,7 @@ export const SavedRouteClient = ({
   currentProfileId,
   userAvatarUrl,
 }: SavedRouteClientProps) => {
-  const router = useRouter();
+  const router = useRouteProgressRouter();
   const t = useTranslations('Saved');
   const [profiles, setProfiles] = useState(initialProfiles);
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Controller, type DefaultValues, useForm } from 'react-hook-form';
@@ -23,6 +22,7 @@ import {
   proficiencyOptions,
 } from '@/constants';
 import { Navbar } from '@/features/Navbar';
+import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
   getOnboardingCompletion,
   ONBOARDING_DRAFT_STORAGE_KEY,
@@ -59,7 +59,7 @@ export const OnboardingPage = ({
   const timezoneId = useId();
   const tagsInputId = useId();
   const locale = useLocale();
-  const router = useRouter();
+  const router = useRouteProgressRouter();
   const t = useTranslations('Onboarding');
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [tagInput, setTagInput] = useState('');

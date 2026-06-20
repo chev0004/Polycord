@@ -36,11 +36,18 @@ type ToastStackProps = {
   onDismiss: (id: number) => void;
 };
 
-export const ToastStack = ({ toasts, onDismiss }: ToastStackProps) => (
-  <ToastProvider>
-    {toasts.map((toast) => (
-      <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
-    ))}
-    <ToastViewport />
-  </ToastProvider>
-);
+export const ToastStack = ({ toasts, onDismiss }: ToastStackProps) => {
+  if (!toasts.length) {
+    return null;
+  }
+
+  return (
+    <ToastProvider>
+      <ToastViewport>
+        {toasts.map((toast) => (
+          <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
+        ))}
+      </ToastViewport>
+    </ToastProvider>
+  );
+};

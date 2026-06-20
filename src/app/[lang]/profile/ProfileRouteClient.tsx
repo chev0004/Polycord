@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Navbar } from '@/features/Navbar';
+import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 
@@ -18,7 +18,7 @@ export const ProfileRouteClient = ({
   userAvatarUrl,
   userDisplayName,
 }: ProfileRouteClientProps) => {
-  const router = useRouter();
+  const router = useRouteProgressRouter();
 
   return (
     <>

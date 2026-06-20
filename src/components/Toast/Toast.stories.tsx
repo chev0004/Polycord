@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from '@storybook/test';
-import { type ToastMessage, useToast, useToastStack } from '@/hooks/useToast';
+import { useToastStack } from '@/hooks/useToast';
 import { Button } from '../Button';
-import { Toast, ToastProvider, ToastViewport } from './Toast';
+import { Toast } from './Toast';
+import { ToastStack } from './ToastStack';
 
 const meta: Meta<typeof Toast> = {
   title: 'Components/Toast',
@@ -11,30 +12,6 @@ const meta: Meta<typeof Toast> = {
 
 export default meta;
 type Story = StoryObj<typeof Toast>;
-
-const StoryToast = ({
-  toast,
-  onDismiss,
-}: {
-  toast: ToastMessage;
-  onDismiss: (id: number) => void;
-}) => {
-  const { open, onOpenChange, timerRef } = useToast({ toast, onDismiss });
-
-  if (!open && !timerRef.current) return null;
-
-  return (
-    <Toast
-      open={open}
-      onOpenChange={onOpenChange}
-      title={toast.title}
-      description={toast.description}
-      duration={toast.duration}
-      timerRef={timerRef}
-      iconUrl={toast.iconUrl}
-    />
-  );
-};
 
 const ToastDemo = ({
   duration,
@@ -46,7 +23,7 @@ const ToastDemo = ({
   const { toasts, addToast, dismissToast } = useToastStack();
 
   return (
-    <ToastProvider>
+    <>
       <div className="p-10">
         <Button
           onClick={() =>
@@ -61,11 +38,8 @@ const ToastDemo = ({
           Show toast
         </Button>
       </div>
-      {toasts.map((toast) => (
-        <StoryToast key={toast.id} toast={toast} onDismiss={dismissToast} />
-      ))}
-      <ToastViewport />
-    </ToastProvider>
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
+    </>
   );
 };
 

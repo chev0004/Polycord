@@ -1,4 +1,3 @@
-import type { Root as ToastPrimitiveRoot } from '@radix-ui/react-toast';
 import {
   type RefObject,
   useCallback,
@@ -23,7 +22,7 @@ export type UseToastProps = {
 };
 export type UseToastReturn = {
   open: boolean;
-  onOpenChange: React.ComponentProps<typeof ToastPrimitiveRoot>['onOpenChange'];
+  onOpenChange: (isOpen: boolean) => void;
   timerRef: RefObject<HTMLDivElement | null>;
 };
 
