@@ -7,6 +7,7 @@ type DiscoveryFeedProps = {
   isLoggedIn: boolean;
   locale: string;
   needsOnboarding: boolean;
+  savedProfileIds: string[];
   userAvatarUrl?: string;
 };
 
@@ -15,6 +16,7 @@ export const DiscoveryFeed = async ({
   isLoggedIn,
   locale,
   needsOnboarding,
+  savedProfileIds,
   userAvatarUrl,
 }: DiscoveryFeedProps) => {
   let profiles: DiscoveryProfile[] = [];
@@ -35,6 +37,7 @@ export const DiscoveryFeed = async ({
       locale={locale}
       needsOnboarding={needsOnboarding}
       profiles={profiles}
+      savedProfileIds={savedProfileIds}
       userAvatarUrl={userAvatarUrl}
     />
   );
