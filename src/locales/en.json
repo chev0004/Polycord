@@ -376,6 +376,10 @@
     "saveLoginDescription": "Sign in with Discord to keep profiles you want to revisit.",
     "saveError": "Couldn't update saved profiles",
     "saveErrorDescription": "Something went wrong. Please try again.",
+    "shareCopiedTitle": "Profile link copied",
+    "shareCopiedDescription": "The public profile link is on your clipboard.",
+    "shareErrorTitle": "Couldn't share profile",
+    "shareErrorDescription": "Something went wrong. Please try again.",
     "bumpedJustNow": "just now",
     "bumpedMinutesAgo": "{count, plural, one {# minute ago} other {# minutes ago}}",
     "bumpedHoursAgo": "{count, plural, one {# hour ago} other {# hours ago}}",
@@ -399,6 +403,9 @@
     "emptyTitle": "No saved profiles yet",
     "emptyDescription": "Use the save action in any profile card menu to keep it here for later.",
     "emptyAction": "Browse profiles"
+  },
+  "PublicProfile": {
+    "backToDiscovery": "Back to discovery"
   },
   "Onboarding": {
     "firstRunSetup": "First-run setup",
