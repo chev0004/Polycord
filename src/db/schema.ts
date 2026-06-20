@@ -59,6 +59,7 @@ export const profiles = pgTable(
     tags: text('tags').array().default(sql`'{}'::text[]`).notNull(),
     country: varchar('country', { length: 2 }),
     timezone: varchar('timezone', { length: 64 }),
+    lastBumpedAt: timestamp('last_bumped_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -72,6 +73,7 @@ export const profiles = pgTable(
     index('profiles_primary_language_idx').on(table.primaryLanguage),
     index('profiles_target_language_idx').on(table.targetLanguage),
     index('profiles_country_idx').on(table.country),
+    index('profiles_last_bumped_at_idx').on(table.lastBumpedAt),
     check(
       'profiles_bio_length_check',
       sql`char_length(${table.bio}) between 10 and 500`,
