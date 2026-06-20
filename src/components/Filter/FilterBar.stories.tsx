@@ -4,6 +4,7 @@ import { useLocale } from 'next-intl';
 import { useMemo, useState } from 'react';
 import {
   MdAccessTime,
+  MdChatBubbleOutline,
   MdLanguage,
   MdLocationOn,
   MdSchool,
@@ -15,6 +16,7 @@ import {
   languageOptions,
   proficiencyOptions,
 } from '@/constants/languages';
+import { lookingForOptions } from '@/constants/lookingFor';
 import type { FilterBarProps } from './FilterBar';
 import { FilterBar } from './FilterBar';
 
@@ -89,6 +91,14 @@ const useFilterDefs = () => {
         labelKey: 'filterProficiency',
         placeholderKey: 'filterSelectLevel',
         options: proficiencyOptions(locale),
+      },
+      {
+        id: 'lookingFor',
+        icon: MdChatBubbleOutline,
+        labelKey: 'filterLookingFor',
+        placeholderKey: 'filterSelectLookingFor',
+        options: lookingForOptions(locale),
+        multiple: true,
       },
       {
         id: 'timezone',

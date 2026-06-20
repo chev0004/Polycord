@@ -2,6 +2,7 @@ import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
 import {
   MdAccessTime,
+  MdChatBubbleOutline,
   MdLanguage,
   MdLocationOn,
   MdSchool,
@@ -13,6 +14,7 @@ import {
   languageOptions,
   proficiencyOptions,
 } from '@/constants/languages';
+import { lookingForOptions } from '@/constants/lookingFor';
 import type { DiscoveryProfile } from './ProfileCard';
 
 export type DiscoveryFilterValues = Record<string, string | string[]>;
@@ -77,6 +79,14 @@ export const useDiscoveryFilterDefs = (): FilterConfig[] => {
         options: proficiencyOptions(locale),
       },
       {
+        id: 'lookingFor',
+        icon: MdChatBubbleOutline,
+        labelKey: 'filterLookingFor',
+        placeholderKey: 'filterSelectLookingFor',
+        options: lookingForOptions(locale),
+        multiple: true,
+      },
+      {
         id: 'timezone',
         icon: MdAccessTime,
         labelKey: 'filterTimezone',
@@ -104,6 +114,7 @@ export const applyDiscoveryFilters = (
   const targetLanguage = toSelection(values.targetLanguage);
   const country = toSelection(values.country);
   const proficiency = toSelection(values.proficiency);
+  const lookingFor = toSelection(values.lookingFor);
   const timezone = toSelection(values.timezone);
 
   return profiles.filter((profile) => {
@@ -135,6 +146,13 @@ export const applyDiscoveryFilters = (
     if (
       country.length &&
       !(profile.country && country.includes(profile.country))
+    ) {
+      return false;
+    }
+
+    if (
+      lookingFor.length &&
+      !profile.lookingFor?.some((mode) => lookingFor.includes(mode))
     ) {
       return false;
     }

@@ -27,6 +27,7 @@ const MULTI_FILTER_PARAMS = [
   ['primaryLanguage', 'primary'],
   ['targetLanguage', 'target'],
   ['country', 'country'],
+  ['lookingFor', 'looking'],
   ['timezone', 'tz'],
 ] as const;
 
