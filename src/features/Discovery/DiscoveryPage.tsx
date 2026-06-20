@@ -13,6 +13,11 @@ import {
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
 import {
+  BumpProfileError,
+  type BumpProfileResponse,
+  bumpProfileRequest,
+} from './bumpProfileRequest';
+import {
   applyDiscoveryFilters,
   type DiscoveryFilterValues,
   useDiscoveryFilterDefs,
@@ -44,6 +49,13 @@ type DiscoveryPageProps = {
   savedProfileIds?: string[];
   currentProfileId?: string;
   userAvatarUrl?: string;
+  onBumpProfile?: () => Promise<BumpProfileResponse>;
+};
+
+type BumpNotice = {
+  kind: 'success' | 'error';
+  title: string;
+  description: string;
 };
 
 const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
@@ -68,6 +80,7 @@ export const DiscoveryPage = ({
   savedProfileIds,
   currentProfileId,
   userAvatarUrl,
+  onBumpProfile = bumpProfileRequest,
 }: DiscoveryPageProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -90,6 +103,12 @@ export const DiscoveryPage = ({
   const [isSearching, setIsSearching] = useState(false);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
+  const [profileItems, setProfileItems] = useState(profiles);
+  const [bumpNotice, setBumpNotice] = useState<BumpNotice | null>(null);
+
+  useEffect(() => {
+    setProfileItems(profiles);
+  }, [profiles]);
 
   useEffect(() => {
     if (!needsOnboarding) {
@@ -118,7 +137,7 @@ export const DiscoveryPage = ({
 
   const completion = useMemo(() => getOnboardingCompletion(draft), [draft]);
 
-  const tagCounts = useMemo(() => buildTagCounts(profiles), [profiles]);
+  const tagCounts = useMemo(() => buildTagCounts(profileItems), [profileItems]);
 
   const hasActiveFilters = useMemo(
     () =>
@@ -135,7 +154,7 @@ export const DiscoveryPage = ({
       applyDiscoverySort(
         applyTagFilter(
           applyDiscoverySearch(
-            applyDiscoveryFilters(profiles, filterValues),
+            applyDiscoveryFilters(profileItems, filterValues),
             searchQuery,
             locale,
           ),
@@ -143,7 +162,7 @@ export const DiscoveryPage = ({
         ),
         sortValue,
       ),
-    [profiles, filterValues, searchQuery, locale, selectedTags, sortValue],
+    [profileItems, filterValues, searchQuery, locale, selectedTags, sortValue],
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PER_PAGE));
@@ -227,6 +246,66 @@ export const DiscoveryPage = ({
     });
   };
 
+  const formatRemaining = (ms: number) => {
+    const minutes = Math.max(1, Math.ceil(ms / 60000));
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+
+    if (hours && rest) {
+      return t('bumpCooldownHoursMinutes', { hours, minutes: rest });
+    }
+
+    return hours
+      ? t('bumpCooldownHours', { count: hours })
+      : t('bumpCooldownMinutes', { count: minutes });
+  };
+
+  const handleBumpProfile = async () => {
+    if (!currentProfileId) {
+      setBumpNotice({
+        kind: 'error',
+        title: t('bumpNeedsProfileTitle'),
+        description: t('bumpNeedsProfileDescription'),
+      });
+      return;
+    }
+
+    try {
+      const result = await onBumpProfile();
+      setProfileItems((previous) =>
+        previous.map((profile) =>
+          profile.id === currentProfileId
+            ? {
+                ...profile,
+                bumpedMinutesAgo: 0,
+                lastBumpRelative: undefined,
+                lastBumpedAt: result.lastBumpedAt,
+              }
+            : profile,
+        ),
+      );
+      setSortValue('bumped-desc');
+      setBumpNotice({
+        kind: 'success',
+        title: t('bumpSuccessTitle'),
+        description: t('bumpSuccessDescription'),
+      });
+    } catch (error) {
+      const cooldown =
+        error instanceof BumpProfileError && error.status === 429
+          ? error.remainingMs
+          : undefined;
+
+      setBumpNotice({
+        kind: 'error',
+        title: cooldown ? t('bumpCooldownTitle') : t('bumpErrorTitle'),
+        description: cooldown
+          ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
+          : t('bumpErrorDescription'),
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-main text-white">
       <Navbar
@@ -238,6 +317,7 @@ export const DiscoveryPage = ({
           window.location.assign(`/api/auth/discord?locale=${locale}`)
         }
         onProfileClick={() => router.push(`/${locale}/profile`)}
+        onBumpProfileClick={handleBumpProfile}
         onSavedClick={() => router.push(`/${locale}/saved`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
         onLogoutClick={() =>
@@ -364,6 +444,22 @@ export const DiscoveryPage = ({
               <MdClose size={16} />
             </button>
           </div>
+        </aside>
+      ) : null}
+
+      {bumpNotice ? (
+        <aside
+          role={bumpNotice.kind === 'success' ? 'status' : 'alert'}
+          className={`fixed top-20 right-4 z-50 w-[min(360px,calc(100vw-2rem))] rounded-lg border px-4 py-3 shadow-xl ${
+            bumpNotice.kind === 'success'
+              ? 'border-primary/40 bg-background-darker text-white'
+              : 'border-red-400/40 bg-red-950 text-red-50'
+          }`}
+        >
+          <p className="font-figtree font-semibold text-sm">
+            {bumpNotice.title}
+          </p>
+          <p className="mt-1 text-gray-300 text-sm">{bumpNotice.description}</p>
         </aside>
       ) : null}
     </div>

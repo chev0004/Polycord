@@ -367,7 +367,22 @@
     "saveLoginTitle": "ログインして保存",
     "saveLoginDescription": "Discordでログインすると、気になるプロフィールを保存できます。",
     "saveError": "保存を更新できませんでした",
-    "saveErrorDescription": "問題が発生しました。もう一度お試しください。"
+    "saveErrorDescription": "問題が発生しました。もう一度お試しください。",
+    "bumpedJustNow": "たった今",
+    "bumpedMinutesAgo": "{count, plural, other {#分前}}",
+    "bumpedHoursAgo": "{count, plural, other {#時間前}}",
+    "bumpedDaysAgo": "{count, plural, other {#日前}}",
+    "bumpSuccessTitle": "プロフィールをバンプしました",
+    "bumpSuccessDescription": "ディスカバリーの上位に戻りました。",
+    "bumpCooldownTitle": "まだバンプできません",
+    "bumpCooldownDescription": "あと{time}で再試行できます。",
+    "bumpCooldownMinutes": "{count, plural, other {#分}}",
+    "bumpCooldownHours": "{count, plural, other {#時間}}",
+    "bumpCooldownHoursMinutes": "{hours, plural, other {#時間}}{minutes, plural, other {#分}}",
+    "bumpNeedsProfileTitle": "先に公開プロフィールを作成してください",
+    "bumpNeedsProfileDescription": "バンプする前にプロフィールを完成させ、公開してください。",
+    "bumpErrorTitle": "プロフィールをバンプできませんでした",
+    "bumpErrorDescription": "問題が発生しました。もう一度お試しください。"
   },
   "Saved": {
     "eyebrow": "保存済み",

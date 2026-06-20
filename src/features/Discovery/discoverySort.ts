@@ -12,7 +12,15 @@ export type DiscoverySortValue = (typeof SORT_OPTIONS)[number];
 export const DEFAULT_SORT: DiscoverySortValue = 'bumped-desc';
 
 const bumpRank = (profile: DiscoveryProfile): number =>
-  profile.bumpedMinutesAgo ?? Number.POSITIVE_INFINITY;
+  profile.bumpedMinutesAgo ??
+  (profile.lastBumpedAt
+    ? Math.max(
+        0,
+        Math.floor(
+          (Date.now() - new Date(profile.lastBumpedAt).getTime()) / 60000,
+        ),
+      )
+    : Number.POSITIVE_INFINITY);
 
 export const applyDiscoverySort = (
   profiles: DiscoveryProfile[],
