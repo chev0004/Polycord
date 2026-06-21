@@ -1,0 +1,2 @@
+ALTER TABLE "profiles" DROP CONSTRAINT "profiles_tags_limit_check";--> statement-breakpoint
+ALTER TABLE "profiles" ADD CONSTRAINT "profiles_tags_limit_check" CHECK (cardinality("profiles"."tags") <= 8);

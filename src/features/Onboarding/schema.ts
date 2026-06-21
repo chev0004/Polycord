@@ -3,8 +3,14 @@ import {
   type Availability,
   availabilityValues,
   isValidIANATimezone,
-  isValidLanguageCode,
 } from '@/constants/languages';
+import {
+  bioField,
+  hasUniqueTags,
+  languageCodeField,
+  optionalCountryField,
+  tagItemField,
+} from '@/lib/profileFields';
 
 const proficiencyValues = [
   'beginner',
@@ -14,11 +20,11 @@ const proficiencyValues = [
 ] as const;
 
 export const onboardingSchema = z.object({
-  primaryLanguage: z.string().refine(isValidLanguageCode, {
-    message: 'Please select your primary language.',
+  primaryLanguage: languageCodeField({
+    invalid: 'Please select your primary language.',
   }),
-  targetLanguage: z.string().refine(isValidLanguageCode, {
-    message: 'Please select the language you want to practice.',
+  targetLanguage: languageCodeField({
+    invalid: 'Please select the language you want to practice.',
   }),
   proficiencyLevel: z.enum(proficiencyValues, {
     message: 'Please select your current level.',
@@ -32,31 +38,20 @@ export const onboardingSchema = z.object({
       message: 'Please choose when you are usually available.',
     },
   ),
-  bio: z
-    .string()
-    .trim()
-    .min(10, { message: 'Write at least 10 characters about yourself.' })
-    .max(500, { message: 'Keep your bio under 500 characters.' }),
-  country: z
-    .string()
-    .refine((value) => !value || /^[A-Z]{2}$/.test(value), {
-      message: 'Please choose a valid country.',
-    })
-    .optional(),
+  bio: bioField({
+    tooShort: 'Write at least 10 characters about yourself.',
+    tooLong: 'Keep your bio under 500 characters.',
+  }),
+  country: optionalCountryField('Please choose a valid country.'),
   tags: z
     .array(
-      z
-        .string()
-        .trim()
-        .min(2, { message: 'Tags must be at least 2 characters.' })
-        .max(20, { message: 'Tags must be 20 characters or fewer.' }),
+      tagItemField({
+        tooShort: 'Tags must be at least 2 characters.',
+        tooLong: 'Tags must be 20 characters or fewer.',
+      }),
     )
     .max(6, { message: 'You can add up to 6 tags.' })
-    .refine(
-      (items) =>
-        new Set(items.map((item) => item.toLowerCase())).size === items.length,
-      { message: 'Each tag can only be added once.' },
-    )
+    .refine(hasUniqueTags, { message: 'Each tag can only be added once.' })
     .optional(),
 });
 
