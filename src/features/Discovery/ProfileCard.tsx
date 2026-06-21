@@ -617,21 +617,14 @@ export const ProfileCard = ({
             </span>
             <div className="flex flex-wrap items-center gap-2">
               {profile.interests.length > 0
-                ? profile.interests
-                    .slice(0, 4)
-                    .map((interest) =>
-                      renderTag(interest, `${profile.id}-tag-${interest}`),
-                    )
+                ? profile.interests.map((interest) =>
+                    renderTag(interest, `${profile.id}-tag-${interest}`),
+                  )
                 : emptyTagsLabel && (
                     <span className="text-gray-500 text-xs">
                       {emptyTagsLabel}
                     </span>
                   )}
-              {profile.interests.length > 4 && (
-                <span className="rounded-md bg-background-main px-2 py-1 text-[11px] text-gray-400">
-                  +{profile.interests.length - 4}
-                </span>
-              )}
             </div>
           </section>
         )}
