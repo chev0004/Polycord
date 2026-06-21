@@ -371,6 +371,9 @@ export const countries: Country[] = [
   { code: 'ZW', name_en: 'Zimbabwe', name_ja: 'ジンバブエ' },
 ];
 
+export const isValidCountryCode = (code: string): boolean =>
+  /^[A-Z]{2}$/.test(code);
+
 export const countryOptions = (locale: string) => {
   const nameKey = `name_${locale}` as `name_${string}`;
   const fallbackKey: `name_${string}` = 'name_en';
