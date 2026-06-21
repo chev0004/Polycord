@@ -16,6 +16,9 @@ const initializeNotifications = (initial: Notifications, premium: boolean) =>
     .filter((notification) => premium || notification.kind === 'copy')
     .map((n) => ({ ...n, read: false, isDeleting: false }));
 
+const notificationsSignature = (initial: Notifications, premium: boolean) =>
+  `${premium}:${initial.map((n) => n.id).join(',')}`;
+
 export const Inbox = ({
   notifications: initialNotifications,
   premium = false,
@@ -31,16 +34,21 @@ export const Inbox = ({
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [isMounted, setIsMounted] = useState(false);
+  const [signature, setSignature] = useState(() =>
+    notificationsSignature(initialNotifications, premium),
+  );
   const itemsPerPage = 5;
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
+  const nextSignature = notificationsSignature(initialNotifications, premium);
+  if (nextSignature !== signature) {
+    setSignature(nextSignature);
     setNotifications(initializeNotifications(initialNotifications, premium));
     setCurrentPage(1);
-  }, [initialNotifications, premium]);
+  }
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

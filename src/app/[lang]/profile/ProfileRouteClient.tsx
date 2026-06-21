@@ -8,6 +8,7 @@ import type { ProfileFormValues } from '@/features/Profile/schema';
 type ProfileRouteClientProps = {
   initialValues?: ProfileFormValues;
   locale: string;
+  profileId?: string;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -15,6 +16,7 @@ type ProfileRouteClientProps = {
 export const ProfileRouteClient = ({
   initialValues,
   locale,
+  profileId,
   userAvatarUrl,
   userDisplayName,
 }: ProfileRouteClientProps) => {
@@ -41,6 +43,9 @@ export const ProfileRouteClient = ({
         initialValues={initialValues}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
+        onViewPublicProfile={
+          profileId ? () => router.push(`/${locale}/u/${profileId}`) : undefined
+        }
         onSubmit={async (data) => {
           const response = await fetch('/api/profile', {
             method: 'POST',

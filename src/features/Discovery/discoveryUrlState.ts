@@ -86,6 +86,29 @@ export const parseDiscoveryState = (
   };
 };
 
+export type DiscoveryFilterTarget =
+  | 'tag'
+  | 'primaryLanguage'
+  | 'targetLanguage'
+  | 'country';
+
+const FILTER_TARGET_PARAM: Record<DiscoveryFilterTarget, string> = {
+  tag: TAGS_PARAM,
+  primaryLanguage: 'primary',
+  targetLanguage: 'target',
+  country: 'country',
+};
+
+export const buildDiscoveryFilterHref = (
+  locale: string,
+  target: DiscoveryFilterTarget,
+  value: string,
+): string => {
+  const params = new URLSearchParams();
+  params.set(FILTER_TARGET_PARAM[target], value);
+  return `/${locale}?${params.toString()}`;
+};
+
 export const buildDiscoveryQuery = (
   state: DiscoveryUrlState,
   base?: ReadableParams,

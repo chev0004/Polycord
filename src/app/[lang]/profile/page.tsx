@@ -47,6 +47,7 @@ export default async function ProfileRoute({
       <ProfileRouteClient
         locale={lang}
         initialValues={profile ? toProfileFormValues(profile) : undefined}
+        profileId={profile?.profile.isPublic ? profile.profile.id : undefined}
         userAvatarUrl={user.avatarUrl}
         userDisplayName={user.name}
       />

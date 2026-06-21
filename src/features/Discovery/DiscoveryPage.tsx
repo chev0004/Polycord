@@ -41,6 +41,7 @@ import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
 import { saveProfileRequest } from './saveProfileRequest';
+import { buildPublicProfileUrl, shareProfileUrl } from './shareProfile';
 import { TagCloud } from './TagCloud';
 
 const SEARCH_TRANSITION_MS = 320;
@@ -278,6 +279,55 @@ export const DiscoveryPage = ({
     setPage(1);
   };
 
+  const handleAddTagFilter = (tag: string) => {
+    setSelectedTags((previous) =>
+      previous.includes(tag) ? previous : [...previous, tag],
+    );
+    setPage(1);
+  };
+
+  const handleAddMultiFilter = (filterId: string, value: string) => {
+    setFilterValues((previous) => {
+      const current = previous[filterId];
+      const values = Array.isArray(current)
+        ? current
+        : current
+          ? [current]
+          : [];
+
+      if (values.includes(value)) {
+        return previous;
+      }
+
+      return { ...previous, [filterId]: [...values, value] };
+    });
+    setPage(1);
+  };
+
+  const handleViewProfile = (profileId: string) => {
+    router.push(`/${locale}/u/${profileId}`);
+  };
+
+  const handleShareProfile = async (profileId: string) => {
+    const result = await shareProfileUrl(
+      buildPublicProfileUrl(locale, profileId),
+    );
+
+    if (result === 'copied') {
+      addToast({
+        title: t('shareCopiedTitle'),
+        description: t('shareCopiedDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+    } else if (result === 'error') {
+      addToast({
+        title: t('shareErrorTitle'),
+        description: t('shareErrorDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+    }
+  };
+
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage);
     resultsHeadRef.current?.scrollIntoView({
@@ -449,6 +499,18 @@ export const DiscoveryPage = ({
                 currentProfileId={currentProfileId}
                 viewerTimezone={viewerTimezone}
                 onSaveProfile={saveProfileRequest}
+                onViewProfile={handleViewProfile}
+                onShare={handleShareProfile}
+                onTagClick={(tag) => handleAddTagFilter(tag)}
+                onLanguageClick={(language, _level, isPrimary) =>
+                  handleAddMultiFilter(
+                    isPrimary ? 'primaryLanguage' : 'targetLanguage',
+                    language,
+                  )
+                }
+                onCountryClick={(country) =>
+                  handleAddMultiFilter('country', country)
+                }
                 addToast={addToast}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
