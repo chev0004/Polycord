@@ -43,6 +43,13 @@
       "when": 1781966823877,
       "tag": "0005_cool_stryfe",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782067199140,
+      "tag": "0006_strong_post",
+      "breakpoints": true
     }
   ]
 }

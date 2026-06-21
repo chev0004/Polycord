@@ -103,7 +103,7 @@ export const profiles = pgTable(
       'profiles_availability_to_check',
       sql`${table.availabilityTo} is null or ${table.availabilityTo} ~ '^[0-2][0-9]:[0-5][0-9]$'`,
     ),
-    check('profiles_tags_limit_check', sql`cardinality(${table.tags}) <= 6`),
+    check('profiles_tags_limit_check', sql`cardinality(${table.tags}) <= 8`),
   ],
 );
 
