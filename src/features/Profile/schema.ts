@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
+import {
+  bioField,
+  hasUniqueTags,
+  languageCodeField,
+  optionalCountryField,
+  tagItemField,
+} from '@/lib/profileFields';
 
 export const FREE_LANGUAGE_CAP = 2;
 export const PREMIUM_LANGUAGE_CAP = 10;
@@ -12,12 +19,18 @@ export const profileSchema = z.object({
   displayTimezone: z.boolean(),
   displayAvailability: z.boolean(),
 
-  primaryLanguage: z.string().min(1, { message: 'primaryLanguageRequired' }),
+  primaryLanguage: languageCodeField({
+    required: 'primaryLanguageRequired',
+    invalid: 'primaryLanguageInvalid',
+  }),
 
   targetLanguages: z
     .array(
       z.object({
-        language: z.string().min(1, { message: 'targetLanguageRequired' }),
+        language: languageCodeField({
+          required: 'targetLanguageRequired',
+          invalid: 'targetLanguageInvalid',
+        }),
         level: z
           .string()
           .min(1, { message: 'proficiencyLevelRequired' })
@@ -36,11 +49,11 @@ export const profileSchema = z.object({
       { message: 'duplicateLanguage' },
     ),
 
-  bio: z
-    .string()
-    .min(1, { message: 'bioRequired' })
-    .min(10, { message: 'bioTooShort' })
-    .max(500, { message: 'bioTooLong' }),
+  bio: bioField({
+    required: 'bioRequired',
+    tooShort: 'bioTooShort',
+    tooLong: 'bioTooLong',
+  }),
 
   availability: z
     .object({
@@ -53,23 +66,12 @@ export const profileSchema = z.object({
     .optional(),
 
   tags: z
-    .array(
-      z
-        .string()
-        .min(2, { message: 'tagTooShort' })
-        .max(20, { message: 'tagTooLong' }),
-    )
+    .array(tagItemField({ tooShort: 'tagTooShort', tooLong: 'tagTooLong' }))
     .max(8, { message: 'maxTags' })
-    .refine(
-      (items) =>
-        new Set(items.map((item) => item.toLowerCase())).size === items.length,
-      {
-        message: 'duplicateTag',
-      },
-    )
+    .refine(hasUniqueTags, { message: 'duplicateTag' })
     .optional(),
 
-  country: z.string().optional(),
+  country: optionalCountryField('countryInvalid'),
 
   voiceIntroSeconds: z.number().int().min(0).max(20).optional(),
 
