@@ -21,6 +21,8 @@ import {
   languageOptions,
   proficiencyOptions,
 } from '@/constants';
+import { availabilityPresetToPattern } from '@/constants/availability';
+import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
@@ -119,32 +121,46 @@ export const OnboardingPage = ({
 
   const completion = useMemo(() => getOnboardingCompletion(values), [values]);
 
-  const preview = useMemo(() => {
-    const getLabel = (
-      options: { label: string; value: string }[],
-      value?: string,
-    ) => options.find((option) => option.value === value)?.label ?? '';
+  const previewProfile = useMemo<DiscoveryProfile>(() => {
+    const countryLabel =
+      localizedCountryOptions.find((option) => option.value === values.country)
+        ?.label ?? '';
 
     return {
-      primaryLanguage: getLabel(
-        localizedLanguageOptions,
-        values.primaryLanguage,
-      ),
-      targetLanguage: getLabel(localizedLanguageOptions, values.targetLanguage),
-      proficiencyLevel: getLabel(
-        localizedProficiencyOptions,
-        values.proficiencyLevel,
-      ),
-      country: getLabel(localizedCountryOptions, values.country),
+      id: 'onboarding-preview',
+      displayName: userDisplayName,
+      discordUsername: userDisplayName,
+      avatarUrl: userAvatarUrl,
+      primaryLanguage: values.primaryLanguage || t('previewPrimaryFallback'),
+      targetLanguages: values.targetLanguage
+        ? [
+            {
+              language: values.targetLanguage,
+              level: values.proficiencyLevel || undefined,
+            },
+          ]
+        : [],
+      about: values.bio,
+      interests: tags,
+      country: countryLabel,
+      timezone: values.timezone,
+      availability: values.availability
+        ? availabilityPresetToPattern(values.availability)
+        : undefined,
     };
   }, [
     localizedCountryOptions,
-    localizedLanguageOptions,
-    localizedProficiencyOptions,
+    t,
+    tags,
+    userAvatarUrl,
+    userDisplayName,
+    values.availability,
+    values.bio,
     values.country,
     values.primaryLanguage,
     values.proficiencyLevel,
     values.targetLanguage,
+    values.timezone,
   ]);
 
   const addTag = () => {
@@ -499,61 +515,12 @@ export const OnboardingPage = ({
             <p className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
               {t('previewTitle')}
             </p>
-            <div className="rounded-lg bg-background-darker p-4">
-              <div className="flex items-center gap-3">
-                <Avatar avatarUrl={userAvatarUrl} size="md" />
-                <div>
-                  <h2 className="font-semibold text-white">
-                    {userDisplayName}
-                  </h2>
-                  <p className="text-gray-500 text-xs">{t('previewPublic')}</p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {preview.primaryLanguage ? (
-                  <span className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs">
-                    {preview.primaryLanguage}
-                  </span>
-                ) : null}
-                {preview.targetLanguage ? (
-                  <span className="rounded-md bg-background-main px-2 py-1 text-gray-300 text-xs">
-                    {preview.targetLanguage}
-                    {preview.proficiencyLevel
-                      ? ` / ${preview.proficiencyLevel}`
-                      : ''}
-                  </span>
-                ) : null}
-              </div>
-
-              <p className="mt-4 line-clamp-5 text-gray-400 text-sm leading-relaxed">
-                {values.bio || t('previewBioFallback')}
-              </p>
-
-              <p className="mt-4 text-gray-500 text-xs">
-                {values.availability
-                  ? t(availabilityLabelKeys[values.availability])
-                  : t('previewAvailabilityFallback')}
-                {values.timezone ? ` / ${values.timezone}` : ''}
-              </p>
-
-              {tags.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {tags.slice(0, 6).map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-md bg-primary-darker px-2 py-1 text-primary-light text-xs"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              {preview.country ? (
-                <p className="mt-4 text-gray-500 text-xs">{preview.country}</p>
-              ) : null}
-            </div>
+            <ProfileCard
+              profile={previewProfile}
+              variant="preview"
+              bioFallback={t('previewBioFallback')}
+              emptyTagsLabel={t('previewNoTags')}
+            />
           </div>
         </aside>
       </main>

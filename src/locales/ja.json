@@ -449,9 +449,9 @@
     "publishButton": "プロフィールを公開",
     "publishing": "公開中...",
     "previewTitle": "公開カードプレビュー",
-    "previewPublic": "公開",
     "previewBioFallback": "自己紹介がここに表示されます。",
-    "previewAvailabilityFallback": "利用可能な時間"
+    "previewPrimaryFallback": "主要言語",
+    "previewNoTags": "タグはまだありません"
   },
   "DiscoveryStories": {
     "gridTitle": "次の言語パートナーを見つけよう",

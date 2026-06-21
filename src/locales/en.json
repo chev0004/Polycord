@@ -449,9 +449,9 @@
     "publishButton": "Publish profile",
     "publishing": "Publishing...",
     "previewTitle": "Public card preview",
-    "previewPublic": "Public",
     "previewBioFallback": "Your bio will appear here.",
-    "previewAvailabilityFallback": "Availability"
+    "previewPrimaryFallback": "Primary",
+    "previewNoTags": "No tags yet"
   },
   "DiscoveryStories": {
     "gridTitle": "Find your next language partner",
