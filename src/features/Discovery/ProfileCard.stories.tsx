@@ -172,6 +172,47 @@ export const LanguageOverflow: Story = {
   },
 };
 
+export const TagOverflow: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    const profile: DiscoveryProfile = {
+      ...createMockProfile(t),
+      interests: [
+        'Anime',
+        'K-Pop',
+        'Gaming',
+        'Cooking',
+        'Travel',
+        'Photography',
+        'Hiking',
+      ],
+    };
+    return <ProfileCard {...args} profile={profile} />;
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const tags = [
+      'Anime',
+      'K-Pop',
+      'Gaming',
+      'Cooking',
+      'Travel',
+      'Photography',
+      'Hiking',
+    ];
+
+    for (const tag of tags) {
+      await expect(
+        canvas.getByRole('button', { name: tag }),
+      ).toBeInTheDocument();
+    }
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Hiking' }));
+    await expect(args.onTagClick).toHaveBeenCalledWith('Hiking', '1');
+  },
+};
+
 export const LockedCopy: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');
