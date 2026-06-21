@@ -46,6 +46,7 @@ import { TagCloud } from './TagCloud';
 
 const SEARCH_TRANSITION_MS = 320;
 const PER_PAGE = 9;
+const EMPTY_PROFILES: DiscoveryProfile[] = [];
 
 type DiscoveryPageProps = {
   authError?: string;
@@ -84,7 +85,7 @@ export const DiscoveryPage = ({
   isLoggedIn,
   locale,
   needsOnboarding = false,
-  profiles = [],
+  profiles = EMPTY_PROFILES,
   savedProfileIds,
   currentProfileId,
   bumpReadyAt: initialBumpReadyAt,
