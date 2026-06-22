@@ -37,8 +37,10 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { computeProfileCompleteness } from '@/lib/profileCompleteness';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
+import { ProfileStrength } from './ProfileStrength';
 import { type ProfileFormValues, profileSchema } from './schema';
 import {
   createEmptyLanguageRow,
@@ -335,6 +337,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     userAvatarUrl,
     voiceIntroSeconds,
   ]);
+
+  const completeness = useMemo(
+    () =>
+      computeProfileCompleteness({
+        primaryLanguage,
+        targetLanguages,
+        bio,
+        availability,
+        tags,
+        country,
+      }),
+    [primaryLanguage, targetLanguages, bio, availability, tags, country],
+  );
 
   const tagsSchemaError = errors.tags?.message
     ? t(errors.tags.message as string, { cap: tagCap })
@@ -762,17 +777,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </div>
 
         <aside className="lg:sticky lg:top-6">
-          <div className="flex flex-col gap-2.5">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
-              <MdVisibility size={15} className="text-primary" />
-              {t('livePreview')}
-            </span>
-            <ProfileCard
-              profile={previewProfile}
-              variant="preview"
-              bioFallback={t('previewBioFallback')}
-              emptyTagsLabel={t('previewNoTags')}
+          <div className="flex flex-col gap-4">
+            <ProfileStrength
+              score={completeness.score}
+              missing={completeness.missing}
             />
+            <div className="flex flex-col gap-2.5">
+              <span className="inline-flex items-center gap-1.5 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+                <MdVisibility size={15} className="text-primary" />
+                {t('livePreview')}
+              </span>
+              <ProfileCard
+                profile={previewProfile}
+                variant="preview"
+                bioFallback={t('previewBioFallback')}
+                emptyTagsLabel={t('previewNoTags')}
+              />
+            </div>
           </div>
         </aside>
       </form>

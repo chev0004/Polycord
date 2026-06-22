@@ -301,6 +301,54 @@ export const PremiumTagCap: Story = {
   },
 };
 
+export const ProfileStrengthComplete: Story = {
+  args: {
+    initialValues: sampleProfile,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('Profile strength')).toBeInTheDocument();
+    await expect(canvas.getByText('100%')).toBeInTheDocument();
+    await expect(
+      canvas.getByText('Looks great. Your profile is complete.'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const ProfileStrengthUpdatesOnInput: Story = {
+  args: {
+    initialValues: {
+      ...sampleProfile,
+      primaryLanguage: '',
+      targetLanguages: [{ language: '', level: '' }],
+      country: '',
+      timezone: '',
+      displayTimezone: false,
+      availability: null,
+      bio: '',
+      tags: [],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('0%')).toBeInTheDocument();
+    await expect(canvas.getByText('Write a short bio')).toBeInTheDocument();
+
+    const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
+    setFieldValue(
+      bio,
+      'I want relaxed evening chats about design and Japanese idioms.',
+    );
+
+    await waitFor(() => expect(canvas.getByText('20%')).toBeInTheDocument());
+    await expect(
+      canvas.queryByText('Write a short bio'),
+    ).not.toBeInTheDocument();
+  },
+};
+
 export const ValidationErrors: Story = {
   args: {
     initialValues: sampleProfile,
