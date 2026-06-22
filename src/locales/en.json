@@ -468,5 +468,25 @@
     "bumpFiveHours": "5 hours ago",
     "bumpTwoDays": "2 days ago",
     "bumpOneWeek": "1 week ago"
+  },
+  "Footer": {
+    "brand": "Polycord",
+    "tagline": "Find language partners on Discord, one profile at a time.",
+    "legalHeading": "Legal",
+    "copyright": "© {year} Polycord. All rights reserved."
+  },
+  "Legal": {
+    "eyebrow": "Legal",
+    "backToLegal": "Back to legal",
+    "lastUpdated": "Last updated {date}",
+    "fallbackNotice": "This page is currently available in English only. A translation is on the way.",
+    "termsTitle": "Terms of Service",
+    "termsSummary": "The rules for using Polycord and what you agree to.",
+    "privacyTitle": "Privacy Policy",
+    "privacySummary": "What we collect, how we use it, and the controls you have.",
+    "guidelinesTitle": "Community Guidelines",
+    "guidelinesSummary": "How to treat others and stay safe while you connect.",
+    "hubTitle": "Policies and guidelines",
+    "hubDescription": "The plain-language policies that cover your data, your profile, and how we keep Polycord safe."
   }
 }

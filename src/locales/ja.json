@@ -468,5 +468,25 @@
     "bumpFiveHours": "5時間前",
     "bumpTwoDays": "2日前",
     "bumpOneWeek": "1週間前"
+  },
+  "Footer": {
+    "brand": "Polycord",
+    "tagline": "Discordで言語パートナーを見つけよう。プロフィールから始まる出会い。",
+    "legalHeading": "法的情報",
+    "copyright": "© {year} Polycord. All rights reserved."
+  },
+  "Legal": {
+    "eyebrow": "法的情報",
+    "backToLegal": "法的情報に戻る",
+    "lastUpdated": "最終更新日 {date}",
+    "fallbackNotice": "このページは現在英語のみで提供されています。翻訳は準備中です。",
+    "termsTitle": "利用規約",
+    "termsSummary": "Polycordの利用ルールと同意事項。",
+    "privacyTitle": "プライバシーポリシー",
+    "privacySummary": "収集する情報、その利用方法、設定できる項目。",
+    "guidelinesTitle": "コミュニティガイドライン",
+    "guidelinesSummary": "安心してつながるためのマナーと安全の心得。",
+    "hubTitle": "ポリシーとガイドライン",
+    "hubDescription": "データ、プロフィール、Polycordの安全性に関するわかりやすいポリシーをまとめています。"
   }
 }
