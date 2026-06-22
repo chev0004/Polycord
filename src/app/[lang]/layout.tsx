@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
+import { resolveTheme, THEME_COOKIE, ThemeProvider } from '@/features/Theme';
 import { locales } from '@/utils/locales';
 import '../globals.css';
 
@@ -27,12 +29,17 @@ export default async function RootLayout({
 
   const messages = await getMessages({ locale: lang });
 
+  const cookieStore = await cookies();
+  const theme = resolveTheme(cookieStore.get(THEME_COOKIE)?.value);
+
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html lang={lang} data-theme={theme} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <NextIntlClientProvider locale={lang} messages={messages}>
-          <RouteProgressProvider>{children}</RouteProgressProvider>
-        </NextIntlClientProvider>
+        <ThemeProvider initialTheme={theme}>
+          <NextIntlClientProvider locale={lang} messages={messages}>
+            <RouteProgressProvider>{children}</RouteProgressProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
