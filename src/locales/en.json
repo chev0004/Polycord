@@ -7,6 +7,10 @@
     "loading": "Loading...",
     "noResults": "No results found."
   },
+  "Dropdown": {
+    "noResults": "No results found",
+    "noOptions": "No options"
+  },
   "Inbox": {
     "notifications": "Notifications",
     "noNotifications": "No notifications yet",
