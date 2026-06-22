@@ -7,6 +7,7 @@ import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
+import { Footer } from '@/features/Footer';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
@@ -529,6 +530,8 @@ export const DiscoveryPage = ({
           </>
         )}
       </main>
+
+      <Footer locale={locale} />
 
       {needsOnboarding && !isPromptDismissed ? (
         <aside className="fixed right-4 bottom-4 z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
