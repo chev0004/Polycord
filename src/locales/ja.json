@@ -7,6 +7,10 @@
     "loading": "読み込み中...",
     "noResults": "結果が見つかりませんでした。"
   },
+  "Dropdown": {
+    "noResults": "結果が見つかりませんでした",
+    "noOptions": "選択肢がありません"
+  },
   "Inbox": {
     "notifications": "受信ボックス",
     "noNotifications": "通知はまだありません",

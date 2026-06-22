@@ -11,6 +11,17 @@ const I18N_PROPS = [
   'alt',
 ];
 
+const I18N_OBJECT_KEYS = [
+  'label',
+  'description',
+  'placeholder',
+  'subtitle',
+  'heading',
+  'tooltip',
+];
+
+const CLASS_LIKE = /[-/:[\]]/;
+
 const SKIP_LINE_PATTERNS = [
   /^\s*\/\//,
   /^\s*\*/,
@@ -90,9 +101,43 @@ function checkFile(filePath: string): Violation[] {
         });
       }
     }
+
+    for (const key of I18N_OBJECT_KEYS) {
+      const keyRegex = new RegExp(
+        `(?:^|[\\s,{(])${key}\\s*:\\s*(['"])([^'"]*[a-zA-Z]{2,}[^'"]*)\\1`,
+        'g',
+      );
+      for (const m of line.matchAll(keyRegex)) {
+        if (CLASS_LIKE.test(m[2])) continue;
+        violations.push({
+          file: rel,
+          line: i + 1,
+          text: trimmed,
+          reason: `hardcoded ${key}: "${m[2]}"`,
+        });
+      }
+    }
+
+    const exprRegex = /[?:]\s*(['"])([^'"]*[a-zA-Z]{2,}[^'"]*)\1/g;
+    for (const m of line.matchAll(exprRegex)) {
+      const value = m[2];
+      if (!value.includes(' ') || CLASS_LIKE.test(value)) continue;
+      violations.push({
+        file: rel,
+        line: i + 1,
+        text: trimmed,
+        reason: `hardcoded expression string: "${value}"`,
+      });
+    }
   }
 
-  return violations;
+  const seen = new Set<string>();
+  return violations.filter((v) => {
+    const id = `${v.line}:${v.reason.slice(v.reason.indexOf('"'))}`;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
 }
 
 const files = findTsxFiles(SRC_DIR);

@@ -1,4 +1,5 @@
 import * as SelectPrimitive from '@radix-ui/react-select';
+import { useTranslations } from 'next-intl';
 import React, {
   useEffect,
   useLayoutEffect,
@@ -66,6 +67,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
     },
     forwardedRef,
   ) => {
+    const t = useTranslations('Dropdown');
     const isMinimalVariant = variant === 'minimal';
     const isDefaultVariant = variant === 'default';
     const [open, setOpen] = useState(false);
@@ -457,7 +459,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                 </>
               ) : (
                 <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
-                  {searchable && searchTerm ? 'No results found' : 'No options'}
+                  {searchable && searchTerm ? t('noResults') : t('noOptions')}
                 </div>
               )}
             </SelectPrimitive.Viewport>
