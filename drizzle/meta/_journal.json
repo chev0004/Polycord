@@ -50,6 +50,13 @@
       "when": 1782067199140,
       "tag": "0006_strong_post",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782114038962,
+      "tag": "0007_closed_roland_deschain",
+      "breakpoints": true
     }
   ]
 }

@@ -20,6 +20,10 @@ export const proficiencyLevelEnum = pgEnum('proficiency_level', [
   'native-level',
 ]);
 
+export const themeEnum = pgEnum('theme', ['dark', 'light']);
+
+export const timeFormatEnum = pgEnum('time_format', ['12hr', '24hr']);
+
 export const users = pgTable(
   'users',
   {
@@ -160,9 +164,39 @@ export const savedProfiles = pgTable(
   ],
 );
 
+export const userSettings = pgTable(
+  'user_settings',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    theme: themeEnum('theme').default('dark').notNull(),
+    applicationLanguage: varchar('application_language', { length: 16 })
+      .default('en')
+      .notNull(),
+    timeFormat: timeFormatEnum('time_format').default('24hr').notNull(),
+    activityStatus: boolean('activity_status').default(true).notNull(),
+    pushNotifications: boolean('push_notifications').default(true).notNull(),
+    matchAlert: boolean('match_alert').default(true).notNull(),
+    profileInteractionAlert: boolean('profile_interaction_alert')
+      .default(true)
+      .notNull(),
+    profileViewAlert: boolean('profile_view_alert').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [uniqueIndex('user_settings_user_id_idx').on(table.userId)],
+);
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(profiles),
   savedProfiles: many(savedProfiles),
+  settings: one(userSettings),
 }));
 
 export const profilesRelations = relations(profiles, ({ many, one }) => ({
@@ -195,6 +229,13 @@ export const profileTargetLanguagesRelations = relations(
   }),
 );
 
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [userSettings.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
@@ -204,3 +245,5 @@ export type NewProfileTargetLanguage =
   typeof profileTargetLanguages.$inferInsert;
 export type SavedProfile = typeof savedProfiles.$inferSelect;
 export type NewSavedProfile = typeof savedProfiles.$inferInsert;
+export type UserSettings = typeof userSettings.$inferSelect;
+export type NewUserSettings = typeof userSettings.$inferInsert;

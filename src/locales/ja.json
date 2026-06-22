@@ -262,6 +262,7 @@
     "saving": "保存中...",
     "unsavedChanges": "保存されていない変更があります",
     "allChangesSaved": "すべての変更を保存しました",
+    "saveError": "設定を保存できませんでした。もう一度お試しください。",
     "discard": "破棄",
     "makeProfilePublicLabel": "プロフィールを公開する",
     "makeProfilePublicDescription": "他のユーザーが検索結果で自分のプロフィールを見つけられるようにする。",
