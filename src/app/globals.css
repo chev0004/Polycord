@@ -41,6 +41,41 @@
   --font-DM: "DM Sans", sans-serif;
 }
 
+html[data-theme="light"] {
+  --color-primary: #2c3a49;
+  --color-primary-light: #1d2731;
+  --color-primary-lighter: #0f161d;
+  --color-primary-dark: #5b6b7b;
+  --color-primary-darker: #d9e3ee;
+
+  --color-background-dark: #ffffff;
+  --color-background-light: #6b7280;
+  --color-background-darker: #eef1f5;
+  --color-background-main: #f3f5f8;
+  --color-background-lighter: #9aa3ae;
+  --color-background-darkest: #e2e6ec;
+}
+
+html[data-theme="light"] body {
+  color: #1a1d22;
+}
+
+html[data-theme="light"] .text-white {
+  color: #1a1d22;
+}
+
+html[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .hover\:bg-\[\#161617\]:hover {
+  background-color: #e7eaf0;
+}
+
 @keyframes slideDown {
   from {
     transform: translateY(-10px);
