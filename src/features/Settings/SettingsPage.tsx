@@ -16,7 +16,9 @@ import {
   TextInput,
   Toggle,
 } from '@/components/Form';
-import { languageOptions, type TimeFormat } from '@/constants/languages';
+import { getLanguageName, type TimeFormat } from '@/constants/languages';
+import { useTheme } from '@/features/Theme';
+import { locales } from '@/utils/locales';
 import { CompareTable } from './CompareTable';
 import { type SettingsFormValues, settingsSchema } from './schema';
 
@@ -108,6 +110,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 }) => {
   const t = useTranslations('Settings');
   const currentLocale = useLocale();
+  const { theme: committedTheme, setTheme, previewTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<SectionId>('account');
   const [exportStatus, setExportStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
@@ -121,9 +124,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const initialValues: SettingsFormValues = useMemo(
     () => ({
       ...defaultValues,
+      theme: committedTheme,
       timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
     }),
-    [defaultValues],
+    [defaultValues, committedTheme],
   );
 
   const {
@@ -162,6 +166,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         window.dispatchEvent(new Event('timeFormatChanged'));
       }
 
+      setTheme(data.theme);
       reset(data);
     } catch {
       setSaveStatus('error');
@@ -176,6 +181,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const handleDiscard = () => {
     reset();
+    previewTheme(committedTheme);
     setExportStatus('idle');
     setDeleteStatus('idle');
     setSaveStatus('idle');
@@ -211,9 +217,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const localizedLanguageOptions = useMemo(
     () =>
-      languageOptions(currentLocale).map((option) => ({
-        ...option,
-        label: `${option.label} (${option.value.toUpperCase()})`,
+      locales.map((locale) => ({
+        value: locale,
+        label: `${getLanguageName(locale, currentLocale)} (${locale.toUpperCase()})`,
       })),
     [currentLocale],
   );
@@ -537,7 +543,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   render={({ field }) => (
                     <Select
                       options={themeOptions}
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        previewTheme(value as 'dark' | 'light');
+                      }}
                       value={field.value}
                       ariaLabel={t('themeLabel')}
                       className="w-[170px]"
