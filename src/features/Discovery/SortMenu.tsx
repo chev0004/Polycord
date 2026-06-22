@@ -18,6 +18,7 @@ const sortOptionLabelKeys: Record<DiscoverySortValue, string> = {
   'name-asc': 'sortNameAsc',
   'name-desc': 'sortNameDesc',
   'overlap-desc': 'sortMostOverlap',
+  'complete-desc': 'sortMostComplete',
 };
 
 export const SortMenu = ({

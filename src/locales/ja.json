@@ -350,6 +350,7 @@
     "sortNameAsc": "名前 (A-Z)",
     "sortNameDesc": "名前 (Z-A)",
     "sortMostOverlap": "時間が合う順",
+    "sortMostComplete": "充実している順",
     "paginationLabel": "{page}/{total}",
     "paginationPrevious": "前のページ",
     "paginationNext": "次のページ",

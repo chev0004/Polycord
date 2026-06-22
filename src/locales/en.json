@@ -350,6 +350,7 @@
     "sortNameAsc": "Name (A-Z)",
     "sortNameDesc": "Name (Z-A)",
     "sortMostOverlap": "Most overlap",
+    "sortMostComplete": "Most complete",
     "paginationLabel": "Page {page} of {total}",
     "paginationPrevious": "Previous page",
     "paginationNext": "Next page",

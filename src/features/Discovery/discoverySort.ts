@@ -1,3 +1,4 @@
+import { computeProfileCompleteness } from '@/lib/profileCompleteness';
 import {
   type AvailabilityContext,
   overlapMinutes,
@@ -10,11 +11,22 @@ export const SORT_OPTIONS = [
   'name-asc',
   'name-desc',
   'overlap-desc',
+  'complete-desc',
 ] as const;
 
 export type DiscoverySortValue = (typeof SORT_OPTIONS)[number];
 
 export const DEFAULT_SORT: DiscoverySortValue = 'bumped-desc';
+
+const completenessScore = (profile: DiscoveryProfile): number =>
+  computeProfileCompleteness({
+    primaryLanguage: profile.primaryLanguage,
+    targetLanguages: profile.targetLanguages,
+    bio: profile.about,
+    availability: profile.availability,
+    tags: profile.interests,
+    country: profile.country,
+  }).score;
 
 const bumpRank = (profile: DiscoveryProfile): number =>
   profile.bumpedMinutesAgo ??
@@ -70,5 +82,12 @@ export const applyDiscoverySort = (
           a.displayName.localeCompare(b.displayName),
       );
     }
+    case 'complete-desc':
+      return sorted.sort(
+        (a, b) =>
+          completenessScore(b) - completenessScore(a) ||
+          bumpRank(a) - bumpRank(b) ||
+          a.displayName.localeCompare(b.displayName),
+      );
   }
 };
