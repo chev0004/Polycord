@@ -5,6 +5,7 @@ import {
   type SettingsFormValues,
   SettingsPage,
 } from '@/features/Settings/SettingsPage';
+import { locales } from '@/utils/locales';
 
 type SettingsRouteClientProps = {
   defaultEmail: string;
@@ -28,7 +29,7 @@ type SettingsRouteClientProps = {
   userDisplayName: string;
 };
 
-const saveSettings = async (data: SettingsFormValues) => {
+const postSettings = async (data: SettingsFormValues) => {
   const response = await fetch('/api/settings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -39,6 +40,9 @@ const saveSettings = async (data: SettingsFormValues) => {
     throw new Error('Settings save failed');
   }
 };
+
+const isSupportedLocale = (value: string): value is (typeof locales)[number] =>
+  locales.includes(value as (typeof locales)[number]);
 
 const downloadAccountData = async () => {
   const response = await fetch('/api/account/export');
@@ -67,6 +71,19 @@ export const SettingsRouteClient = ({
   userDisplayName,
 }: SettingsRouteClientProps) => {
   const router = useRouteProgressRouter();
+
+  const saveSettings = async (data: SettingsFormValues) => {
+    await postSettings(data);
+
+    if (
+      isSupportedLocale(data.applicationLanguage) &&
+      data.applicationLanguage !== locale
+    ) {
+      router.push(`/${data.applicationLanguage}/settings`);
+      router.refresh();
+    }
+  };
+
   const defaultSettings: SettingsFormValues = {
     isPublic: initialPrivacySettings?.isPublic ?? true,
     allowAnonymousCopy: initialPrivacySettings?.allowAnonymousCopy ?? true,
