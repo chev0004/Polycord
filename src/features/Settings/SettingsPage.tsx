@@ -6,7 +6,6 @@ import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaDiscord } from 'react-icons/fa';
-import { z } from 'zod';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import {
@@ -19,26 +18,9 @@ import {
 } from '@/components/Form';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
 import { CompareTable } from './CompareTable';
+import { type SettingsFormValues, settingsSchema } from './schema';
 
-const settingsSchema = z.object({
-  isPublic: z.boolean(),
-  allowAnonymousCopy: z.boolean(),
-  displayTimezone: z.boolean(),
-  activityStatus: z.boolean(),
-  pushNotifications: z.boolean(),
-  matchAlert: z.boolean(),
-  profileInteractionAlert: z.boolean(),
-  profileViewAlert: z.boolean(),
-  theme: z.enum(['dark', 'light']),
-  applicationLanguage: z.string().min(1),
-  timeFormat: z.enum(['12hr', '24hr']),
-  email: z
-    .string()
-    .email({ message: 'emailInvalid' })
-    .min(1, { message: 'emailRequired' }),
-});
-
-export type SettingsFormValues = z.infer<typeof settingsSchema>;
+export type { SettingsFormValues };
 
 export type SettingsPageProps = {
   defaultValues: SettingsFormValues;
@@ -133,6 +115,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const [deleteStatus, setDeleteStatus] = useState<
     'idle' | 'confirming' | 'loading' | 'error'
   >('idle');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
   const initialValues: SettingsFormValues = useMemo(
@@ -169,13 +152,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   const onSubmit = async (data: SettingsFormValues) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('polycord_timeFormat', data.timeFormat);
-      window.dispatchEvent(new Event('timeFormatChanged'));
-    }
+    setSaveStatus('idle');
 
-    await onSubmitProp?.(data);
-    reset(data);
+    try {
+      await onSubmitProp?.(data);
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('polycord_timeFormat', data.timeFormat);
+        window.dispatchEvent(new Event('timeFormatChanged'));
+      }
+
+      reset(data);
+    } catch {
+      setSaveStatus('error');
+    }
   };
 
   const onInvalid = (formErrors: typeof errors) => {
@@ -188,6 +178,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     reset();
     setExportStatus('idle');
     setDeleteStatus('idle');
+    setSaveStatus('idle');
     setDeleteConfirmation('');
   };
 
@@ -750,11 +741,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           )}
 
           <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
-            <span
-              className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
-            >
-              {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
-            </span>
+            {saveStatus === 'error' ? (
+              <span className="text-[13px] text-red-400">{t('saveError')}</span>
+            ) : (
+              <span
+                className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
+              >
+                {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
+              </span>
+            )}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"

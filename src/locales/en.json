@@ -262,6 +262,7 @@
     "saving": "Saving...",
     "unsavedChanges": "You have unsaved changes",
     "allChangesSaved": "All changes saved",
+    "saveError": "Could not save your settings. Please try again.",
     "discard": "Discard",
     "makeProfilePublicLabel": "Make Profile Public",
     "makeProfilePublicDescription": "Allow other users to find your profile in search results.",
