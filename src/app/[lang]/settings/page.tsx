@@ -1,5 +1,9 @@
 import { redirect } from 'next/navigation';
-import { getProfileByDiscordUserId } from '@/db';
+import {
+  getProfileByDiscordUserId,
+  getUserByDiscordId,
+  getUserSettingsByDiscordUserId,
+} from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import { SettingsRouteClient } from './SettingsRouteClient';
 
@@ -15,18 +19,36 @@ export default async function SettingsRoute({
     redirect(`/${lang}`);
   }
 
-  const profile = await getProfileByDiscordUserId(user.id);
+  const [account, profile, settings] = await Promise.all([
+    getUserByDiscordId(user.id),
+    getProfileByDiscordUserId(user.id),
+    getUserSettingsByDiscordUserId(user.id),
+  ]);
 
   return (
     <main className="min-h-screen bg-background-main">
       <SettingsRouteClient
-        defaultEmail={user.email ?? ''}
+        defaultEmail={account?.email ?? user.email ?? ''}
         initialPrivacySettings={
           profile
             ? {
                 allowAnonymousCopy: profile.profile.allowAnonymousCopy,
                 displayTimezone: profile.profile.displayTimezone,
                 isPublic: profile.profile.isPublic,
+              }
+            : undefined
+        }
+        initialSettings={
+          settings
+            ? {
+                activityStatus: settings.activityStatus,
+                applicationLanguage: settings.applicationLanguage,
+                matchAlert: settings.matchAlert,
+                profileInteractionAlert: settings.profileInteractionAlert,
+                profileViewAlert: settings.profileViewAlert,
+                pushNotifications: settings.pushNotifications,
+                theme: settings.theme,
+                timeFormat: settings.timeFormat,
               }
             : undefined
         }

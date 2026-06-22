@@ -12,9 +12,32 @@ type SettingsRouteClientProps = {
     SettingsFormValues,
     'allowAnonymousCopy' | 'displayTimezone' | 'isPublic'
   >;
+  initialSettings?: Pick<
+    SettingsFormValues,
+    | 'activityStatus'
+    | 'applicationLanguage'
+    | 'matchAlert'
+    | 'profileInteractionAlert'
+    | 'profileViewAlert'
+    | 'pushNotifications'
+    | 'theme'
+    | 'timeFormat'
+  >;
   locale: string;
   userAvatarUrl?: string;
   userDisplayName: string;
+};
+
+const saveSettings = async (data: SettingsFormValues) => {
+  const response = await fetch('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Settings save failed');
+  }
 };
 
 const downloadAccountData = async () => {
@@ -38,6 +61,7 @@ const downloadAccountData = async () => {
 export const SettingsRouteClient = ({
   defaultEmail,
   initialPrivacySettings,
+  initialSettings,
   locale,
   userAvatarUrl,
   userDisplayName,
@@ -47,14 +71,14 @@ export const SettingsRouteClient = ({
     isPublic: initialPrivacySettings?.isPublic ?? true,
     allowAnonymousCopy: initialPrivacySettings?.allowAnonymousCopy ?? true,
     displayTimezone: initialPrivacySettings?.displayTimezone ?? true,
-    activityStatus: true,
-    pushNotifications: true,
-    matchAlert: true,
-    profileInteractionAlert: true,
-    profileViewAlert: false,
-    theme: 'dark',
-    applicationLanguage: locale,
-    timeFormat: '24hr',
+    activityStatus: initialSettings?.activityStatus ?? true,
+    pushNotifications: initialSettings?.pushNotifications ?? true,
+    matchAlert: initialSettings?.matchAlert ?? true,
+    profileInteractionAlert: initialSettings?.profileInteractionAlert ?? true,
+    profileViewAlert: initialSettings?.profileViewAlert ?? false,
+    theme: initialSettings?.theme ?? 'dark',
+    applicationLanguage: initialSettings?.applicationLanguage ?? locale,
+    timeFormat: initialSettings?.timeFormat ?? '24hr',
     email: defaultEmail,
   };
 
@@ -78,7 +102,7 @@ export const SettingsRouteClient = ({
         router.refresh();
       }}
       onExportData={downloadAccountData}
-      onSubmit={() => undefined}
+      onSubmit={saveSettings}
       onUpdateDiscordConnection={() =>
         window.location.assign(`/api/auth/discord?locale=${locale}`)
       }
