@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { upsertDiscordUser } from '@/db';
+import { getUserSettingsByDiscordUserId, upsertDiscordUser } from '@/db';
+import { resolveTheme, THEME_COOKIE } from '@/features/Theme';
 import {
   AUTH_ERROR_PARAM,
   clearOAuthStateCookie,
@@ -7,6 +8,26 @@ import {
   readOAuthStateCookie,
   setSessionCookie,
 } from '@/lib/auth';
+import { locales } from '@/utils/locales';
+
+const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+const isSupportedLocale = (value: string): value is (typeof locales)[number] =>
+  locales.includes(value as (typeof locales)[number]);
+
+const applyPreferredLocale = (redirectTo: string, preferred: string) => {
+  if (!isSupportedLocale(preferred)) {
+    return redirectTo;
+  }
+
+  const segments = redirectTo.split('/');
+  if (segments[1] && isSupportedLocale(segments[1])) {
+    segments[1] = preferred;
+    return segments.join('/');
+  }
+
+  return `/${preferred}${redirectTo}`;
+};
 
 type DiscordTokenResponse = {
   access_token?: string;
@@ -112,11 +133,24 @@ export const GET = async (request: NextRequest) => {
     const currentUser = normalizeDiscordUser(discordUser);
     await upsertDiscordUser(currentUser);
 
+    const settings = await getUserSettingsByDiscordUserId(currentUser.id);
+    const destination = settings
+      ? applyPreferredLocale(redirectTo, settings.applicationLanguage)
+      : redirectTo;
+
     const response = NextResponse.redirect(
-      new URL(redirectTo, request.nextUrl.origin),
+      new URL(destination, request.nextUrl.origin),
     );
     await setSessionCookie(response, currentUser);
     clearOAuthStateCookie(response);
+
+    if (settings) {
+      response.cookies.set(THEME_COOKIE, resolveTheme(settings.theme), {
+        path: '/',
+        maxAge: THEME_COOKIE_MAX_AGE,
+        sameSite: 'lax',
+      });
+    }
 
     return response;
   } catch {
