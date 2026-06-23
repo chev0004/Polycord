@@ -4,6 +4,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -183,6 +184,7 @@ export const userSettings = pgTable(
       .default(true)
       .notNull(),
     profileViewAlert: boolean('profile_view_alert').default(false).notNull(),
+    productAnalytics: boolean('product_analytics').default(true).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -191,6 +193,28 @@ export const userSettings = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex('user_settings_user_id_idx').on(table.userId)],
+);
+
+export const analyticsEvents = pgTable(
+  'analytics_events',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: varchar('name', { length: 64 }).notNull(),
+    userId: uuid('user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    anonymousId: varchar('anonymous_id', { length: 64 }),
+    locale: varchar('locale', { length: 16 }),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('analytics_events_name_idx').on(table.name),
+    index('analytics_events_created_at_idx').on(table.createdAt),
+    index('analytics_events_user_id_idx').on(table.userId),
+  ],
 );
 
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -247,3 +271,5 @@ export type SavedProfile = typeof savedProfiles.$inferSelect;
 export type NewSavedProfile = typeof savedProfiles.$inferInsert;
 export type UserSettings = typeof userSettings.$inferSelect;
 export type NewUserSettings = typeof userSettings.$inferInsert;
+export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
+export type NewAnalyticsEvent = typeof analyticsEvents.$inferInsert;
