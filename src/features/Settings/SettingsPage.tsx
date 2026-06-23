@@ -636,6 +636,22 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     )}
                   />
                 </SettingRow>
+
+                <SettingRow
+                  label={t('productAnalyticsLabel')}
+                  description={t('productAnalyticsDescription')}
+                >
+                  <Controller
+                    name="productAnalytics"
+                    control={control}
+                    render={({ field }) => (
+                      <Toggle
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
+                  />
+                </SettingRow>
               </div>
             </SectionCard>
           )}

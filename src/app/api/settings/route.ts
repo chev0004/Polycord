@@ -50,6 +50,7 @@ export const POST = async (request: Request) => {
     matchAlert: values.matchAlert,
     profileInteractionAlert: values.profileInteractionAlert,
     profileViewAlert: values.profileViewAlert,
+    productAnalytics: values.productAnalytics,
   });
 
   return NextResponse.json({ saved: true });

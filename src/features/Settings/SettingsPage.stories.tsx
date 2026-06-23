@@ -11,6 +11,7 @@ const defaultSettings: SettingsFormValues = {
   matchAlert: true,
   profileInteractionAlert: true,
   profileViewAlert: true,
+  productAnalytics: true,
   theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
@@ -79,6 +80,23 @@ export const SwitchTabs: Story = {
       expect(canvas.getByText('New Match Alert')).toBeInTheDocument(),
     );
     expect(canvas.queryByText('Make Profile Public')).not.toBeInTheDocument();
+  },
+};
+
+export const PrivacyTab: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+
+    await waitFor(() =>
+      expect(canvas.getByText('Product analytics')).toBeInTheDocument(),
+    );
+    await expect(
+      canvas.getByText(
+        'Help improve Polycord by sharing anonymous, non-personal usage events.',
+      ),
+    ).toBeInTheDocument();
   },
 };
 
