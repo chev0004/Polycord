@@ -7,6 +7,7 @@ import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
+import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
@@ -500,6 +501,13 @@ export const DiscoveryPage = ({
                 currentProfileId={currentProfileId}
                 viewerTimezone={viewerTimezone}
                 onSaveProfile={saveProfileRequest}
+                onCopyUsername={
+                  isLoggedIn
+                    ? (_username, profileId) => {
+                        notifyUsernameCopied(profileId).catch(() => {});
+                      }
+                    : undefined
+                }
                 onViewProfile={handleViewProfile}
                 onShare={handleShareProfile}
                 onTagClick={(tag) => handleAddTagFilter(tag)}
