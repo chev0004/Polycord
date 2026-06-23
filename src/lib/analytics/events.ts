@@ -24,10 +24,9 @@ export const ANALYTICS_EVENT_NAMES = Object.values(
 
 export const ACTIVATION_FUNNEL: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.authSignup,
+  ANALYTICS_EVENTS.onboardingStart,
   ANALYTICS_EVENTS.onboardingComplete,
   ANALYTICS_EVENTS.profileSave,
-  ANALYTICS_EVENTS.discoveryView,
-  ANALYTICS_EVENTS.profileView,
 ];
 
 const CLIENT_ANALYTICS_EVENTS: AnalyticsEventName[] = [
