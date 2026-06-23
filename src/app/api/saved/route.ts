@@ -6,6 +6,9 @@ import {
   unsaveProfile,
   upsertDiscordUser,
 } from '@/db';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromRequest } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 
 const readProfileId = async (request: Request): Promise<string | null> => {
@@ -59,6 +62,12 @@ export const POST = async (request: Request) => {
   }
 
   await saveProfile(user.id, profileId);
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.profileSaveFavorite,
+    userId: user.id,
+    locale: localeFromRequest(request),
+  });
 
   return NextResponse.json({ saved: true });
 };

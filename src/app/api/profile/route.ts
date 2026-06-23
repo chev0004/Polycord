@@ -7,6 +7,9 @@ import {
   upsertProfileForUser,
 } from '@/db';
 import { FREE_LANGUAGE_CAP, profileSchema } from '@/features/Profile/schema';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromRequest } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 
 export const POST = async (request: Request) => {
@@ -68,6 +71,17 @@ export const POST = async (request: Request) => {
       level: targetLanguage.level as ProfileTargetLanguageValue['level'],
     })),
     timezone: values.timezone || null,
+  });
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.profileSave,
+    userId: user.id,
+    locale: localeFromRequest(request),
+    metadata: {
+      isPublic: values.isPublic,
+      targetLanguageCount: values.targetLanguages.length,
+      tagCount: (values.tags ?? []).length,
+    },
   });
 
   return NextResponse.json({ profileId: profile.id });
