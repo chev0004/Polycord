@@ -8,6 +8,8 @@ import {
 } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { hasPremiumEntitlement } from '@/lib/entitlements';
 import { DiscoveryFeed } from './DiscoveryFeed';
@@ -28,9 +30,11 @@ export default async function Home({
   let bumpReadyAt: string | undefined;
   let viewerTimezone: string | undefined;
   let viewerAvailability: AvailabilityPattern | undefined;
+  let viewerUserId: string | undefined;
 
   if (user) {
     const persistedUser = await upsertDiscordUser(user);
+    viewerUserId = persistedUser.id;
     const profile = await getProfileByUserId(persistedUser.id);
     needsOnboarding = !profile;
     currentProfileId = profile?.profile.id;
@@ -52,6 +56,12 @@ export default async function Home({
   }
 
   const isLoggedIn = Boolean(user);
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.discoveryView,
+    userId: viewerUserId ?? null,
+    locale: lang,
+  });
 
   return (
     <Suspense
