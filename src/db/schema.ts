@@ -24,6 +24,11 @@ export const themeEnum = pgEnum('theme', ['dark', 'light']);
 
 export const timeFormatEnum = pgEnum('time_format', ['12hr', '24hr']);
 
+export const notificationKindEnum = pgEnum('notification_kind', [
+  'copy',
+  'view',
+]);
+
 export const users = pgTable(
   'users',
   {
@@ -193,10 +198,36 @@ export const userSettings = pgTable(
   (table) => [uniqueIndex('user_settings_user_id_idx').on(table.userId)],
 );
 
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    kind: notificationKindEnum('kind').notNull(),
+    actorName: text('actor_name'),
+    actorAvatarUrl: text('actor_avatar_url'),
+    isGuest: boolean('is_guest').default(false).notNull(),
+    read: boolean('read').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('notifications_user_id_created_at_idx').on(
+      table.userId,
+      table.createdAt.desc(),
+    ),
+    index('notifications_user_id_read_idx').on(table.userId, table.read),
+  ],
+);
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(profiles),
   savedProfiles: many(savedProfiles),
   settings: one(userSettings),
+  notifications: many(notifications),
 }));
 
 export const profilesRelations = relations(profiles, ({ many, one }) => ({
@@ -236,6 +267,13 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
   }),
 }));
 
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
@@ -247,3 +285,5 @@ export type SavedProfile = typeof savedProfiles.$inferSelect;
 export type NewSavedProfile = typeof savedProfiles.$inferInsert;
 export type UserSettings = typeof userSettings.$inferSelect;
 export type NewUserSettings = typeof userSettings.$inferInsert;
+export type NotificationRecord = typeof notifications.$inferSelect;
+export type NewNotificationRecord = typeof notifications.$inferInsert;
