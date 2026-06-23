@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { ACTIVATION_FUNNEL } from '@/lib/analytics/events';
 
+const DAILY_CHART_HEIGHT = 152;
+
 const EVENT_LABEL_KEYS: Record<string, string> = {
   'auth.signup': 'eventAuthSignup',
   'auth.login': 'eventAuthLogin',
@@ -179,26 +181,35 @@ export const AnalyticsDashboard = ({
             <h2 className="mb-1 font-figtree font-semibold text-[19px] text-primary">
               {t('dailyTitle', { days: dailyDays })}
             </h2>
-            <div className="mt-4 flex h-40 items-end gap-1.5">
-              {days.map((day) => (
-                <div
-                  key={day.date}
-                  className="flex flex-1 flex-col items-center gap-1.5"
-                >
-                  <div className="flex w-full flex-1 items-end">
-                    <div
-                      className="w-full rounded-t-md bg-primary/70"
-                      style={{
-                        height: `${Math.max((day.total / maxDaily) * 100, 2)}%`,
-                      }}
-                      title={`${day.date}: ${day.total}`}
-                    />
-                  </div>
-                  <span className="text-[10px] text-gray-600 tabular-nums">
+            <div className="mt-4">
+              <div
+                className="flex items-end gap-1.5"
+                style={{ height: `${DAILY_CHART_HEIGHT}px` }}
+              >
+                {days.map((day) => (
+                  <div
+                    key={day.date}
+                    className="flex-1 rounded-t-md bg-primary"
+                    style={{
+                      height: `${Math.max(
+                        Math.round((day.total / maxDaily) * DAILY_CHART_HEIGHT),
+                        3,
+                      )}px`,
+                    }}
+                    title={`${day.date}: ${day.total}`}
+                  />
+                ))}
+              </div>
+              <div className="mt-1.5 flex gap-1.5">
+                {days.map((day) => (
+                  <span
+                    key={day.date}
+                    className="flex-1 text-center text-[10px] text-gray-600 tabular-nums"
+                  >
                     {day.date.slice(8)}
                   </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </section>
 
@@ -214,7 +225,7 @@ export const AnalyticsDashboard = ({
                   </span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-background-darker">
                     <div
-                      className="h-full rounded-full bg-primary/60"
+                      className="h-full rounded-full bg-primary"
                       style={{
                         width: `${(event.total / maxEventCount) * 100}%`,
                       }}
