@@ -1,4 +1,5 @@
 import {
+  type ReactNode,
   type RefObject,
   useCallback,
   useEffect,
@@ -11,7 +12,7 @@ const ANIMATION_DURATION = 300;
 export type ToastData = {
   id: number;
   title: string;
-  description: string;
+  description: ReactNode;
   duration?: number;
   iconUrl?: string;
 };
