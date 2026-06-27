@@ -118,7 +118,7 @@ export const ReportDialog = ({
                     value={value}
                     checked={isSelected}
                     onChange={() => setReason(value)}
-                    className="h-4 w-4 accent-primary"
+                    className="h-4 w-4 flex-shrink-0 appearance-none rounded-full border border-gray-500/50 bg-transparent transition-colors checked:border-primary checked:bg-primary"
                   />
                   {t(reasonLabelKeys[value])}
                 </label>
