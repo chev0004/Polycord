@@ -41,6 +41,7 @@
     "saved": "保存済み",
     "bumpProfile": "プロフィールをバンプ",
     "bumpProfileCooldown": "あと{time}でバンプ可能",
+    "activity": "アクティビティ",
     "settings": "設定",
     "logout": "ログアウト"
   },
@@ -292,6 +293,24 @@
     "deleteAccountConfirmationPlaceholder": "DELETE",
     "deleteAccountRetentionNote": "プロフィールとアカウントの行は削除されます。安全対策、通報、モデレーション、請求、法的記録は、該当する仕組みが存在する場合に保持されることがあります。",
     "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。"
+  },
+  "Activity": {
+    "title": "アクティビティ",
+    "subtitle": "過去{days}日間のあなたの活動です。",
+    "profilesViewedLabel": "閲覧したプロフィール",
+    "profilesViewedHint": "開いたディスカバリーカードとプロフィールの数。",
+    "usernamesCopiedLabel": "コピーしたユーザー名",
+    "usernamesCopiedHint": "プロフィールからコピーしたDiscordユーザー名。",
+    "profilesSavedLabel": "保存したプロフィール",
+    "profilesSavedHint": "お気に入りに追加したプロフィール。",
+    "profileBumpsLabel": "プロフィールのバンプ",
+    "profileBumpsHint": "ディスカバリーでプロフィールをバンプした回数。",
+    "disabledTitle": "アクティビティを見るにはプロダクト分析をオンにしてください",
+    "disabledDescription": "アクティビティの統計はプロダクト分析のイベントから作成されます。設定でプロダクト分析を有効にすると、閲覧、コピー、保存の記録が始まります。",
+    "enableButton": "プライバシー設定へ",
+    "premiumTitle": "誰があなたに関心を持ったかを見る",
+    "premiumDescription": "プレミアムでは、自分の活動だけでなく、誰があなたのプロフィールを閲覧し、ユーザー名をコピーしたかを表示します。",
+    "premiumUpgradeButton": "プレミアムにアップグレード"
   },
   "Analytics": {
     "title": "プロダクト分析",

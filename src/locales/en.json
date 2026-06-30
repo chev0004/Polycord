@@ -41,6 +41,7 @@
     "saved": "Saved",
     "bumpProfile": "Bump profile",
     "bumpProfileCooldown": "Bump in {time}",
+    "activity": "Your activity",
     "settings": "Settings",
     "logout": "Logout"
   },
@@ -292,6 +293,24 @@
     "deleteAccountConfirmationPlaceholder": "DELETE",
     "deleteAccountRetentionNote": "Profile and account rows are deleted. Safety, report, moderation, billing, and legal records may be retained when those systems exist.",
     "deleteAccountError": "Account could not be deleted. Please try again."
+  },
+  "Activity": {
+    "title": "Your activity",
+    "subtitle": "What you have been up to over the last {days} days.",
+    "profilesViewedLabel": "Profiles viewed",
+    "profilesViewedHint": "Discovery cards and full profiles you opened.",
+    "usernamesCopiedLabel": "Usernames copied",
+    "usernamesCopiedHint": "Discord usernames you copied from profiles.",
+    "profilesSavedLabel": "Profiles saved",
+    "profilesSavedHint": "Profiles you added to your favorites.",
+    "profileBumpsLabel": "Profile bumps",
+    "profileBumpsHint": "Times you bumped your profile up discovery.",
+    "disabledTitle": "Turn on product analytics to see your activity",
+    "disabledDescription": "Your activity stats are built from product analytics events. Enable product analytics in settings to start tracking what you view, copy, and save.",
+    "enableButton": "Go to privacy settings",
+    "premiumTitle": "See who engaged with you",
+    "premiumDescription": "Premium shows who viewed your profile and who copied your username, not just your own activity.",
+    "premiumUpgradeButton": "Upgrade to Premium"
   },
   "Analytics": {
     "title": "Product analytics",
