@@ -6,7 +6,8 @@ export type Notification = {
   actorName?: string;
   actorAvatarUrl?: string;
   isGuest?: boolean;
-  timestamp: string;
+  timestamp?: string;
+  createdAt?: string;
 };
 
 export type Notifications = Notification[];

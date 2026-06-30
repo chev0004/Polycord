@@ -173,7 +173,8 @@ export const ProfileGrid = ({
   };
 
   const renderProfileCard = ({ profile, index }: ProfileGridItem) => {
-    const canSaveProfile = saveEnabled && profile.id !== currentProfileId;
+    const isOwnProfile = profile.id === currentProfileId;
+    const canSaveProfile = saveEnabled && !isOwnProfile;
 
     return (
       <ProfileCard
@@ -191,8 +192,8 @@ export const ProfileGrid = ({
         onLanguageClick={onLanguageClick}
         onCountryClick={onCountryClick}
         onViewProfile={onViewProfile}
-        onReport={onReport}
-        onBlock={onBlock}
+        onReport={isOwnProfile ? undefined : onReport}
+        onBlock={isOwnProfile ? undefined : onBlock}
         onShare={onShare}
       />
     );
