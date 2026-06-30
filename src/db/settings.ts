@@ -21,6 +21,7 @@ export type UserSettingsValues = Pick<
   | 'matchAlert'
   | 'profileInteractionAlert'
   | 'profileViewAlert'
+  | 'productAnalytics'
 >;
 
 export type ProfilePrivacyValues = Pick<

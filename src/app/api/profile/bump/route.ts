@@ -5,10 +5,13 @@ import {
   upsertDiscordUser,
 } from '@/db';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromRequest } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { hasPremiumEntitlement } from '@/lib/entitlements';
 
-export const POST = async () => {
+export const POST = async (request: Request) => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -44,6 +47,13 @@ export const POST = async () => {
 
   const bumpedAt = new Date();
   await bumpProfileForUser(user.id, bumpedAt);
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.profileBump,
+    userId: user.id,
+    locale: localeFromRequest(request),
+    metadata: { premium },
+  });
 
   return NextResponse.json({
     lastBumpedAt: bumpedAt.toISOString(),

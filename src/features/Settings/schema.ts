@@ -9,6 +9,7 @@ export const settingsSchema = z.object({
   matchAlert: z.boolean(),
   profileInteractionAlert: z.boolean(),
   profileViewAlert: z.boolean(),
+  productAnalytics: z.boolean(),
   theme: z.enum(['dark', 'light']),
   applicationLanguage: z.string().min(1),
   timeFormat: z.enum(['12hr', '24hr']),

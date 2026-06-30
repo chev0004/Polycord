@@ -71,6 +71,13 @@
       "when": 1782833918261,
       "tag": "0009_ambitious_landau",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782835712871,
+      "tag": "0010_curvy_shard",
+      "breakpoints": true
     }
   ]
 }

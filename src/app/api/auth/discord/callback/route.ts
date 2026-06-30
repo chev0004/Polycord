@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { upsertDiscordUser } from '@/db';
+import { getUserByDiscordId, upsertDiscordUser } from '@/db';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromPath } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
 import {
   AUTH_ERROR_PARAM,
   clearOAuthStateCookie,
@@ -110,7 +113,17 @@ export const GET = async (request: NextRequest) => {
     }
 
     const currentUser = normalizeDiscordUser(discordUser);
-    await upsertDiscordUser(currentUser);
+    const existingUser = await getUserByDiscordId(currentUser.id);
+    const user = await upsertDiscordUser(currentUser);
+
+    await trackEvent({
+      name: existingUser
+        ? ANALYTICS_EVENTS.authLogin
+        : ANALYTICS_EVENTS.authSignup,
+      userId: user.id,
+      locale: localeFromPath(redirectTo),
+      metadata: { isNewUser: !existingUser },
+    });
 
     const response = NextResponse.redirect(
       new URL(redirectTo, request.nextUrl.origin),

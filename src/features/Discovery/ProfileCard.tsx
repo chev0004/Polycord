@@ -28,6 +28,8 @@ import {
   type Proficiency,
   type TimeFormat,
 } from '@/constants/languages';
+import { trackClientEvent } from '@/lib/analytics/client';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
 import {
   type CardTheme,
@@ -186,6 +188,7 @@ export const ProfileCard = ({
     try {
       await navigator.clipboard.writeText(profile.discordUsername);
       setCopied(true);
+      trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
 
       if (onCopyUsername) {
         onCopyUsername(profile.discordUsername, profile.id, profile.avatarUrl);

@@ -7,6 +7,8 @@ import {
   toViewerAvailabilityContext,
   upsertDiscordUser,
 } from '@/db';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { PublicProfileClient } from './PublicProfileClient';
 
@@ -29,10 +31,12 @@ export default async function PublicProfileRoute({
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
   let viewerTimezone: string | undefined;
+  let viewerUserId: string | undefined;
 
   if (user) {
     isLoggedIn = true;
     const persistedUser = await upsertDiscordUser(user);
+    viewerUserId = persistedUser.id;
     const viewerProfile = await getProfileByUserId(persistedUser.id);
     currentProfileId = viewerProfile?.profile.id;
     savedProfileIds = await listSavedProfileIds(persistedUser.id);
@@ -43,6 +47,12 @@ export default async function PublicProfileRoute({
       ).timezone;
     }
   }
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.profileView,
+    userId: viewerUserId ?? null,
+    locale: lang,
+  });
 
   return (
     <PublicProfileClient

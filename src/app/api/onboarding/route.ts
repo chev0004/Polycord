@@ -6,6 +6,9 @@ import {
   upsertProfileForUser,
 } from '@/db';
 import { onboardingSchema } from '@/features/Onboarding/schema';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromRequest } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 
 export const POST = async (request: Request) => {
@@ -56,6 +59,18 @@ export const POST = async (request: Request) => {
       },
     ],
     timezone: values.timezone,
+  });
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.onboardingComplete,
+    userId: user.id,
+    locale: localeFromRequest(request),
+    metadata: {
+      primaryLanguage: values.primaryLanguage,
+      targetLanguage: values.targetLanguage,
+      proficiencyLevel: values.proficiencyLevel,
+      tagCount: (values.tags ?? []).length,
+    },
   });
 
   return NextResponse.json({ profileId: profile.id });

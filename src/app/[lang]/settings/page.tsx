@@ -46,6 +46,7 @@ export default async function SettingsRoute({
                 matchAlert: settings.matchAlert,
                 profileInteractionAlert: settings.profileInteractionAlert,
                 profileViewAlert: settings.profileViewAlert,
+                productAnalytics: settings.productAnalytics,
                 pushNotifications: settings.pushNotifications,
                 theme: settings.theme,
                 timeFormat: settings.timeFormat,

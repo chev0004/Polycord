@@ -19,6 +19,7 @@ type SettingsRouteClientProps = {
     | 'matchAlert'
     | 'profileInteractionAlert'
     | 'profileViewAlert'
+    | 'productAnalytics'
     | 'pushNotifications'
     | 'theme'
     | 'timeFormat'
@@ -76,6 +77,7 @@ export const SettingsRouteClient = ({
     matchAlert: initialSettings?.matchAlert ?? true,
     profileInteractionAlert: initialSettings?.profileInteractionAlert ?? true,
     profileViewAlert: initialSettings?.profileViewAlert ?? false,
+    productAnalytics: initialSettings?.productAnalytics ?? true,
     theme: initialSettings?.theme ?? 'dark',
     applicationLanguage: initialSettings?.applicationLanguage ?? locale,
     timeFormat: initialSettings?.timeFormat ?? '24hr',
