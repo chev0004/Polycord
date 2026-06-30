@@ -346,3 +346,20 @@ export const MenuActions: Story = {
     await expect(args.onViewProfile).toHaveBeenCalledWith('1');
   },
 };
+
+export const MenuOpen: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return <ProfileCard {...args} profile={createMockProfile(t)} />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Card menu' }));
+
+    await expect(
+      await body.findByRole('button', { name: 'Block user' }),
+    ).toBeInTheDocument();
+  },
+};
