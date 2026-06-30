@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { count, countDistinct, desc, gte, sql } from 'drizzle-orm';
+import { and, count, countDistinct, desc, eq, gte, sql } from 'drizzle-orm';
 import { db } from './client';
 import { analyticsEvents, type NewAnalyticsEvent } from './schema';
 
@@ -33,6 +33,24 @@ export const getAnalyticsEventCounts = async (sinceDays = 30) => {
     .where(gte(analyticsEvents.createdAt, daysAgo(sinceDays)))
     .groupBy(analyticsEvents.name)
     .orderBy(desc(count()));
+
+  return rows;
+};
+
+export const getUserAnalyticsEventCounts = async (
+  userId: string,
+  sinceDays = 30,
+) => {
+  const rows = await db
+    .select({ name: analyticsEvents.name, total: count() })
+    .from(analyticsEvents)
+    .where(
+      and(
+        eq(analyticsEvents.userId, userId),
+        gte(analyticsEvents.createdAt, daysAgo(sinceDays)),
+      ),
+    )
+    .groupBy(analyticsEvents.name);
 
   return rows;
 };

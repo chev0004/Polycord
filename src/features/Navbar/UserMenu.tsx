@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   MdArrowUpward,
   MdBookmarkBorder,
+  MdInsights,
   MdOutlineExitToApp,
   MdOutlineSettings,
   MdPersonOutline,
@@ -16,6 +17,7 @@ type UserMenuProps = {
   onBumpProfileClick?: () => void;
   bumpReadyAt?: string;
   onSavedClick?: () => void;
+  onActivityClick?: () => void;
   onSettingsClick: () => void;
   onLogoutClick: () => void;
 };
@@ -64,6 +66,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   onBumpProfileClick,
   bumpReadyAt,
   onSavedClick,
+  onActivityClick,
   onSettingsClick,
   onLogoutClick,
 }) => {
@@ -146,6 +149,11 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                   })
                 : t('bumpProfile')}
             </MenuItem>
+            {onActivityClick ? (
+              <MenuItem icon={MdInsights} onClick={onActivityClick}>
+                {t('activity')}
+              </MenuItem>
+            ) : null}
             <MenuItem icon={MdOutlineSettings} onClick={onSettingsClick}>
               {t('settings')}
             </MenuItem>

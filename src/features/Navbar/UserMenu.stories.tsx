@@ -10,6 +10,7 @@ const meta: Meta<typeof UserMenu> = {
     iconUrl: MOCK_USER_AVATAR_URL,
     onProfileClick: fn(),
     onBumpProfileClick: fn(),
+    onActivityClick: fn(),
     onSettingsClick: fn(),
     onLogoutClick: fn(),
   },
@@ -33,6 +34,7 @@ export const Default: Story = {
     await userEvent.click(trigger);
 
     await expect(await screen.findByText('Profile')).toBeInTheDocument();
+    await expect(await screen.findByText('Your activity')).toBeInTheDocument();
     await expect(await screen.findByText('Settings')).toBeInTheDocument();
     await expect(await screen.findByText('Logout')).toBeInTheDocument();
 

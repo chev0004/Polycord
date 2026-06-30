@@ -19,6 +19,7 @@ type NavbarProps = {
   onBumpProfileClick?: () => void;
   bumpReadyAt?: string;
   onSavedClick?: () => void;
+  onActivityClick?: () => void;
   onSettingsClick: () => void;
   onLogoutClick: () => void;
 };
@@ -35,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onBumpProfileClick,
   bumpReadyAt,
   onSavedClick,
+  onActivityClick,
   onSettingsClick,
   onLogoutClick,
 }) => {
@@ -76,6 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onBumpProfileClick={onBumpProfileClick}
               bumpReadyAt={bumpReadyAt}
               onSavedClick={onSavedClick}
+              onActivityClick={onActivityClick}
               onSettingsClick={onSettingsClick}
               onLogoutClick={onLogoutClick}
             />
