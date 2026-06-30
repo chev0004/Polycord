@@ -8,29 +8,71 @@ import {
   MdOutlineKeyboardArrowRight,
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
-import type { Notifications } from '@/types';
+import type { Notification, Notifications } from '@/types';
 import { NotificationEntry } from './NotificationEntry';
+import {
+  clearNotificationsRequest,
+  deleteNotificationRequest,
+  fetchNotifications,
+  markAllNotificationsReadRequest,
+  setNotificationReadRequest,
+} from './notificationRequests';
 
-const initializeNotifications = (initial: Notifications, premium: boolean) =>
-  initial
-    .filter((notification) => premium || notification.kind === 'copy')
-    .map((n) => ({ ...n, read: false, isDeleting: false }));
+type InboxNotification = Notification & {
+  read: boolean;
+  isDeleting?: boolean;
+};
+
+const visibleForPremium = <T extends { kind: Notification['kind'] }>(
+  items: T[],
+  premium: boolean,
+) => items.filter((item) => premium || item.kind === 'copy');
+
+const initializeControlled = (
+  initial: Notifications,
+  premium: boolean,
+): InboxNotification[] =>
+  visibleForPremium(initial, premium).map((n) => ({
+    ...n,
+    read: false,
+    isDeleting: false,
+  }));
 
 const notificationsSignature = (initial: Notifications, premium: boolean) =>
   `${premium}:${initial.map((n) => n.id).join(',')}`;
 
+const formatRelativeTime = (
+  createdAt: string,
+  t: ReturnType<typeof useTranslations<'Inbox'>>,
+) => {
+  const minutes = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000),
+  );
+
+  if (minutes < 1) return t('justNow');
+  if (minutes < 60) return t('minutesAgo', { count: minutes });
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return t('hoursAgo', { count: hours });
+
+  return t('daysAgo', { count: Math.floor(hours / 24) });
+};
+
 export const Inbox = ({
   notifications: initialNotifications,
   premium = false,
+  persist = true,
 }: {
   notifications: Notifications;
   premium?: boolean;
+  persist?: boolean;
 }) => {
   const t = useTranslations('Inbox');
   const locale = useLocale();
 
-  const [notifications, setNotifications] = useState(() =>
-    initializeNotifications(initialNotifications, premium),
+  const [notifications, setNotifications] = useState<InboxNotification[]>(() =>
+    persist ? [] : initializeControlled(initialNotifications, premium),
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [isMounted, setIsMounted] = useState(false);
@@ -43,11 +85,41 @@ export const Inbox = ({
     setIsMounted(true);
   }, []);
 
-  const nextSignature = notificationsSignature(initialNotifications, premium);
-  if (nextSignature !== signature) {
-    setSignature(nextSignature);
-    setNotifications(initializeNotifications(initialNotifications, premium));
-    setCurrentPage(1);
+  useEffect(() => {
+    if (!persist) return;
+
+    let active = true;
+
+    fetchNotifications().then((stored) => {
+      if (!active) return;
+
+      setNotifications(
+        visibleForPremium(stored, premium).map((n) => ({
+          id: n.id,
+          kind: n.kind,
+          actorName: n.actorName,
+          actorAvatarUrl: n.actorAvatarUrl,
+          isGuest: n.isGuest,
+          createdAt: n.createdAt,
+          read: n.read,
+          isDeleting: false,
+        })),
+      );
+      setCurrentPage(1);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [persist, premium]);
+
+  if (!persist) {
+    const nextSignature = notificationsSignature(initialNotifications, premium);
+    if (nextSignature !== signature) {
+      setSignature(nextSignature);
+      setNotifications(initializeControlled(initialNotifications, premium));
+      setCurrentPage(1);
+    }
   }
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -58,9 +130,17 @@ export const Inbox = ({
   const currentNotifications = notifications.slice(startIndex, endIndex);
 
   const handleMarkAsRead = (id: string) => {
+    const target = notifications.find((n) => n.id === id);
+    if (!target) return;
+
+    const nextRead = !target.read;
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)),
+      prev.map((n) => (n.id === id ? { ...n, read: nextRead } : n)),
     );
+
+    if (persist) {
+      setNotificationReadRequest(id, nextRead).catch(() => {});
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -70,10 +150,18 @@ export const Inbox = ({
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     }, 400); // Matched to slideOutRight animation duration
+
+    if (persist) {
+      deleteNotificationRequest(id).catch(() => {});
+    }
   };
 
   const handleMarkAllAsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+
+    if (persist) {
+      markAllNotificationsReadRequest().catch(() => {});
+    }
   };
 
   const handleClearAll = () => {
@@ -94,6 +182,10 @@ export const Inbox = ({
       setNotifications([]);
       setCurrentPage(1);
     }, totalDuration);
+
+    if (persist) {
+      clearNotificationsRequest().catch(() => {});
+    }
   };
 
   const handleNextPage = () => {
@@ -174,7 +266,12 @@ export const Inbox = ({
               {currentNotifications.length > 0 ? (
                 currentNotifications.map((notification, index) => (
                   <NotificationEntry
-                    notification={notification}
+                    notification={{
+                      ...notification,
+                      timestamp: notification.createdAt
+                        ? formatRelativeTime(notification.createdAt, t)
+                        : (notification.timestamp ?? ''),
+                    }}
                     premium={premium}
                     key={notification.id}
                     onMarkAsRead={() => handleMarkAsRead(notification.id)}

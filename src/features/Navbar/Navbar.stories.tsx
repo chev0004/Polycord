@@ -38,6 +38,7 @@ export const LoggedIn: Story = {
           iconUrl={MOCK_USER_AVATAR_URL}
           isLoggedIn
           premium
+          persistNotifications={false}
           notifications={[
             {
               id: '1',
@@ -82,6 +83,7 @@ export const LoggedOut: Story = {
         iconUrl={undefined}
         isLoggedIn={false}
         notifications={[]}
+        persistNotifications={false}
       />
     );
   },

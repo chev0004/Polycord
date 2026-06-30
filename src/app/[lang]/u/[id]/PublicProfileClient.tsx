@@ -20,6 +20,7 @@ import {
   buildPublicProfileUrl,
   shareProfileUrl,
 } from '@/features/Discovery/shareProfile';
+import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { useToastStack } from '@/hooks/useToast';
@@ -187,6 +188,13 @@ export const PublicProfileClient = ({
           isSaved={isSaved}
           viewerTimezone={viewerTimezone}
           onToggleSave={canSave ? handleToggleSave : undefined}
+          onCopyUsername={
+            isLoggedIn
+              ? (_username, profileId) => {
+                  notifyUsernameCopied(profileId).catch(() => {});
+                }
+              : undefined
+          }
           onShare={handleShare}
           onReport={isOwnProfile ? undefined : handleReport}
           onBlock={isOwnProfile ? undefined : handleBlock}
