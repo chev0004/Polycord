@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import {
   type AvailabilityPattern,
   availabilityPatternToPreset,
@@ -279,7 +279,17 @@ export const getPublicProfileById = async (profileId: string) => {
   return row;
 };
 
-export const listPublicProfiles = async () => {
+export const listPublicProfiles = async (
+  options: { blockedUserIds?: string[] } = {},
+) => {
+  const { blockedUserIds = [] } = options;
+  const visibility = blockedUserIds.length
+    ? and(
+        eq(profiles.isPublic, true),
+        notInArray(profiles.userId, blockedUserIds),
+      )
+    : eq(profiles.isPublic, true);
+
   const rows = await db
     .select({
       profile: profiles,
@@ -287,7 +297,7 @@ export const listPublicProfiles = async () => {
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .where(eq(profiles.isPublic, true))
+    .where(visibility)
     .orderBy(
       sql`${profiles.lastBumpedAt} desc nulls last`,
       desc(profiles.updatedAt),

@@ -9,11 +9,18 @@ import {
   type DiscoveryProfile,
   ProfileCard,
 } from '@/features/Discovery/ProfileCard';
+import { ReportDialog } from '@/features/Discovery/ReportDialog';
+import {
+  blockProfileRequest,
+  type ReportReason,
+  reportProfileRequest,
+} from '@/features/Discovery/safetyRequests';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
 import {
   buildPublicProfileUrl,
   shareProfileUrl,
 } from '@/features/Discovery/shareProfile';
+import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { useToastStack } from '@/hooks/useToast';
@@ -44,8 +51,10 @@ export const PublicProfileClient = ({
   const tPublic = useTranslations('PublicProfile');
   const { toasts, addToast, dismissToast } = useToastStack();
   const [isSaved, setIsSaved] = useState(initialSaved);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
-  const canSave = isLoggedIn && profile.id !== currentProfileId;
+  const isOwnProfile = profile.id === currentProfileId;
+  const canSave = isLoggedIn && !isOwnProfile;
 
   const handleToggleSave = async () => {
     if (!isLoggedIn) {
@@ -67,6 +76,59 @@ export const PublicProfileClient = ({
       addToast({
         title: t('saveError'),
         description: t('saveErrorDescription'),
+        duration: TOAST_DURATION,
+      });
+    }
+  };
+
+  const handleReport = () => {
+    if (!isLoggedIn) {
+      addToast({
+        title: t('reportLoginTitle'),
+        description: t('reportLoginDescription'),
+        duration: TOAST_DURATION,
+      });
+      return;
+    }
+
+    setIsReportOpen(true);
+  };
+
+  const handleSubmitReport = async (reason: ReportReason, details: string) => {
+    try {
+      await reportProfileRequest(profile.id, reason, details || undefined);
+      addToast({
+        title: t('reportSuccessTitle'),
+        description: t('reportSuccessDescription'),
+        duration: TOAST_DURATION,
+      });
+    } catch (error) {
+      addToast({
+        title: t('reportErrorTitle'),
+        description: t('reportErrorDescription'),
+        duration: TOAST_DURATION,
+      });
+      throw error;
+    }
+  };
+
+  const handleBlock = async () => {
+    if (!isLoggedIn) {
+      addToast({
+        title: t('blockLoginTitle'),
+        description: t('blockLoginDescription'),
+        duration: TOAST_DURATION,
+      });
+      return;
+    }
+
+    try {
+      await blockProfileRequest(profile.id, true);
+      router.push(`/${locale}`);
+    } catch {
+      addToast({
+        title: t('blockErrorTitle'),
+        description: t('blockErrorDescription'),
         duration: TOAST_DURATION,
       });
     }
@@ -126,7 +188,16 @@ export const PublicProfileClient = ({
           isSaved={isSaved}
           viewerTimezone={viewerTimezone}
           onToggleSave={canSave ? handleToggleSave : undefined}
+          onCopyUsername={
+            isLoggedIn
+              ? (_username, profileId) => {
+                  notifyUsernameCopied(profileId).catch(() => {});
+                }
+              : undefined
+          }
           onShare={handleShare}
+          onReport={isOwnProfile ? undefined : handleReport}
+          onBlock={isOwnProfile ? undefined : handleBlock}
           onTagClick={(tag) =>
             router.push(buildDiscoveryFilterHref(locale, 'tag', tag))
           }
@@ -144,6 +215,13 @@ export const PublicProfileClient = ({
           }
         />
       </main>
+
+      <ReportDialog
+        open={isReportOpen}
+        onOpenChange={setIsReportOpen}
+        profileName={profile.displayName}
+        onSubmit={handleSubmitReport}
+      />
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>

@@ -273,20 +273,12 @@ export const ProfileCard = ({
   };
 
   const handleReport = () => {
-    if (onReport) {
-      onReport(profile.id);
-    } else {
-      console.log('Report profile:', profile.id);
-    }
+    onReport?.(profile.id);
     setIsMenuOpen(false);
   };
 
   const handleBlock = () => {
-    if (onBlock) {
-      onBlock(profile.id);
-    } else {
-      console.log('Block profile:', profile.id);
-    }
+    onBlock?.(profile.id);
     setIsMenuOpen(false);
   };
 
@@ -466,23 +458,29 @@ export const ProfileCard = ({
                           {t('shareProfile')}
                         </MenuItem>
                       ) : null}
-                      <div className="my-1 h-[1px] bg-gray-500/50" />
-                      <MenuItem
-                        icon={MdFlag}
-                        onClick={handleReport}
-                        className="hover:!text-red-300 text-red-400"
-                        iconClassName="text-red-400"
-                      >
-                        {t('reportProfile')}
-                      </MenuItem>
-                      <MenuItem
-                        icon={MdBlock}
-                        onClick={handleBlock}
-                        className="hover:!text-red-300 text-red-400"
-                        iconClassName="text-red-400"
-                      >
-                        {t('blockProfile')}
-                      </MenuItem>
+                      {onReport || onBlock ? (
+                        <div className="my-1 h-[1px] bg-gray-500/50" />
+                      ) : null}
+                      {onReport ? (
+                        <MenuItem
+                          icon={MdFlag}
+                          onClick={handleReport}
+                          className="hover:!text-red-300 text-red-400"
+                          iconClassName="text-red-400"
+                        >
+                          {t('reportProfile')}
+                        </MenuItem>
+                      ) : null}
+                      {onBlock ? (
+                        <MenuItem
+                          icon={MdBlock}
+                          onClick={handleBlock}
+                          className="hover:!text-red-300 text-red-400"
+                          iconClassName="text-red-400"
+                        >
+                          {t('blockProfile')}
+                        </MenuItem>
+                      ) : null}
                     </div>
                     <Popover.Arrow className="fill-gray-500/50" />
                   </Popover.Content>

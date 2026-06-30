@@ -25,6 +25,25 @@ export const themeEnum = pgEnum('theme', ['dark', 'light']);
 
 export const timeFormatEnum = pgEnum('time_format', ['12hr', '24hr']);
 
+export const notificationKindEnum = pgEnum('notification_kind', [
+  'copy',
+  'view',
+]);
+
+export const reportReasonEnum = pgEnum('report_reason', [
+  'spam',
+  'harassment',
+  'inappropriate',
+  'impersonation',
+  'other',
+]);
+
+export const reportStatusEnum = pgEnum('report_status', [
+  'pending',
+  'reviewed',
+  'dismissed',
+]);
+
 export const users = pgTable(
   'users',
   {
@@ -217,10 +236,104 @@ export const analyticsEvents = pgTable(
   ],
 );
 
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    kind: notificationKindEnum('kind').notNull(),
+    actorName: text('actor_name'),
+    actorAvatarUrl: text('actor_avatar_url'),
+    isGuest: boolean('is_guest').default(false).notNull(),
+    read: boolean('read').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('notifications_user_id_created_at_idx').on(
+      table.userId,
+      table.createdAt.desc(),
+    ),
+    index('notifications_user_id_read_idx').on(table.userId, table.read),
+  ],
+);
+
+export const reports = pgTable(
+  'reports',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    reporterUserId: uuid('reporter_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reportedUserId: uuid('reported_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reportedProfileId: uuid('reported_profile_id').references(
+      () => profiles.id,
+      { onDelete: 'set null' },
+    ),
+    reason: reportReasonEnum('reason').notNull(),
+    details: text('details'),
+    status: reportStatusEnum('status').default('pending').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('reports_reported_user_id_idx').on(table.reportedUserId),
+    index('reports_reporter_user_id_idx').on(table.reporterUserId),
+    index('reports_status_idx').on(table.status),
+    check(
+      'reports_details_length_check',
+      sql`${table.details} is null or char_length(${table.details}) <= 1000`,
+    ),
+    check(
+      'reports_no_self_report_check',
+      sql`${table.reporterUserId} <> ${table.reportedUserId}`,
+    ),
+  ],
+);
+
+export const userBlocks = pgTable(
+  'user_blocks',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    blockerUserId: uuid('blocker_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    blockedUserId: uuid('blocked_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('user_blocks_blocker_blocked_idx').on(
+      table.blockerUserId,
+      table.blockedUserId,
+    ),
+    index('user_blocks_blocker_user_id_idx').on(table.blockerUserId),
+    index('user_blocks_blocked_user_id_idx').on(table.blockedUserId),
+    check(
+      'user_blocks_no_self_block_check',
+      sql`${table.blockerUserId} <> ${table.blockedUserId}`,
+    ),
+  ],
+);
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(profiles),
   savedProfiles: many(savedProfiles),
   settings: one(userSettings),
+  notifications: many(notifications),
+  reportsFiled: many(reports, { relationName: 'reporter' }),
+  reportsReceived: many(reports, { relationName: 'reported' }),
+  blocksCreated: many(userBlocks, { relationName: 'blocker' }),
+  blocksReceived: many(userBlocks, { relationName: 'blocked' }),
 }));
 
 export const profilesRelations = relations(profiles, ({ many, one }) => ({
@@ -260,6 +373,43 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
   }),
 }));
 
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
+export const reportsRelations = relations(reports, ({ one }) => ({
+  reporter: one(users, {
+    fields: [reports.reporterUserId],
+    references: [users.id],
+    relationName: 'reporter',
+  }),
+  reported: one(users, {
+    fields: [reports.reportedUserId],
+    references: [users.id],
+    relationName: 'reported',
+  }),
+  profile: one(profiles, {
+    fields: [reports.reportedProfileId],
+    references: [profiles.id],
+  }),
+}));
+
+export const userBlocksRelations = relations(userBlocks, ({ one }) => ({
+  blocker: one(users, {
+    fields: [userBlocks.blockerUserId],
+    references: [users.id],
+    relationName: 'blocker',
+  }),
+  blocked: one(users, {
+    fields: [userBlocks.blockedUserId],
+    references: [users.id],
+    relationName: 'blocked',
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
@@ -273,3 +423,10 @@ export type UserSettings = typeof userSettings.$inferSelect;
 export type NewUserSettings = typeof userSettings.$inferInsert;
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type NewAnalyticsEvent = typeof analyticsEvents.$inferInsert;
+export type NotificationRecord = typeof notifications.$inferSelect;
+export type NewNotificationRecord = typeof notifications.$inferInsert;
+export type Report = typeof reports.$inferSelect;
+export type NewReport = typeof reports.$inferInsert;
+export type ReportReason = (typeof reportReasonEnum.enumValues)[number];
+export type UserBlock = typeof userBlocks.$inferSelect;
+export type NewUserBlock = typeof userBlocks.$inferInsert;

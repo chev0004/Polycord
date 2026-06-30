@@ -28,6 +28,7 @@ const FreeNotificationsStory = () => {
   const t = useTranslations('Inbox');
   return (
     <Inbox
+      persist={false}
       notifications={[
         {
           id: '1',
@@ -88,6 +89,7 @@ const PremiumNotificationsStory = () => {
   return (
     <Inbox
       premium
+      persist={false}
       notifications={[
         {
           id: '1',
@@ -155,6 +157,7 @@ export const PremiumNotifications: Story = {
 export const Empty: Story = {
   args: {
     notifications: [],
+    persist: false,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -232,7 +235,7 @@ const LiveUpdateStory = () => {
           </div>
         </div>
         <div className="relative flex h-24 w-full items-center justify-end rounded-md bg-background-darker p-4">
-          <Inbox notifications={notifications} />
+          <Inbox notifications={notifications} persist={false} />
         </div>
       </div>
 
