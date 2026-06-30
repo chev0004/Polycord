@@ -424,6 +424,7 @@ export const DiscoveryPage = ({
         onBumpProfileClick={handleBumpProfile}
         bumpReadyAt={bumpReadyAt}
         onSavedClick={() => router.push(`/${locale}/saved`)}
+        onActivityClick={() => router.push(`/${locale}/activity`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
         onLogoutClick={() =>
           window.location.assign(`/api/auth/logout?locale=${locale}`)

@@ -104,6 +104,7 @@ export const PublicProfileClient = ({
         }
         onProfileClick={() => router.push(`/${locale}/profile`)}
         onSavedClick={() => router.push(`/${locale}/saved`)}
+        onActivityClick={() => router.push(`/${locale}/activity`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
         onLogoutClick={() =>
           window.location.assign(`/api/auth/logout?locale=${locale}`)
