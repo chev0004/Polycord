@@ -472,8 +472,15 @@
   "Footer": {
     "brand": "Polycord",
     "tagline": "Find language partners on Discord, one profile at a time.",
+    "safetyNote": "Polycord is for finding language partners. NSFW content and anything Discord's Terms of Service does not allow has no place here.",
+    "exploreHeading": "Explore",
+    "homeLink": "Discovery",
+    "savedLink": "Saved profiles",
+    "settingsLink": "Settings",
     "legalHeading": "Legal",
-    "copyright": "© {year} Polycord. All rights reserved."
+    "languageHeading": "Language",
+    "copyright": "© {year} Polycord. All rights reserved.",
+    "notAffiliated": "Polycord is not affiliated with Discord Inc."
   },
   "Legal": {
     "eyebrow": "Legal",

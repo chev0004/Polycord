@@ -472,8 +472,15 @@
   "Footer": {
     "brand": "Polycord",
     "tagline": "Discordで言語パートナーを見つけよう。プロフィールから始まる出会い。",
+    "safetyNote": "Polycordは言語パートナーを見つけるためのサービスです。NSFWコンテンツやDiscordの利用規約で認められていない行為は一切禁止です。",
+    "exploreHeading": "探す",
+    "homeLink": "ディスカバリー",
+    "savedLink": "保存済みプロフィール",
+    "settingsLink": "設定",
     "legalHeading": "法的情報",
-    "copyright": "© {year} Polycord. All rights reserved."
+    "languageHeading": "言語",
+    "copyright": "© {year} Polycord. All rights reserved.",
+    "notAffiliated": "PolycordはDiscord Inc.とは提携・関連していません。"
   },
   "Legal": {
     "eyebrow": "法的情報",
