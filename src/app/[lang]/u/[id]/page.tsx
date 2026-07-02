@@ -10,6 +10,7 @@ import {
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
+import { notifyProfileView } from '@/lib/notifications/profileView';
 import { PublicProfileClient } from './PublicProfileClient';
 
 export default async function PublicProfileRoute({
@@ -32,11 +33,16 @@ export default async function PublicProfileRoute({
   let currentProfileId: string | undefined;
   let viewerTimezone: string | undefined;
   let viewerUserId: string | undefined;
+  let viewerActor: { name: string; avatarUrl: string | null } | null = null;
 
   if (user) {
     isLoggedIn = true;
     const persistedUser = await upsertDiscordUser(user);
     viewerUserId = persistedUser.id;
+    viewerActor = {
+      name: persistedUser.displayName,
+      avatarUrl: persistedUser.avatarUrl,
+    };
     const viewerProfile = await getProfileByUserId(persistedUser.id);
     currentProfileId = viewerProfile?.profile.id;
     savedProfileIds = await listSavedProfileIds(persistedUser.id);
@@ -53,6 +59,13 @@ export default async function PublicProfileRoute({
     userId: viewerUserId ?? null,
     locale: lang,
   });
+
+  if (viewerUserId !== row.profile.userId) {
+    await notifyProfileView({
+      ownerUserId: row.profile.userId,
+      actor: viewerActor,
+    });
+  }
 
   return (
     <PublicProfileClient
