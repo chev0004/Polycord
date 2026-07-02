@@ -20,7 +20,7 @@ export const LEGAL_DOCUMENT_IDS: LegalDocumentId[] = [
 
 export const LEGAL_CANONICAL_LOCALE = 'en';
 
-const LAST_UPDATED = '2026-06-22';
+const LAST_UPDATED = '2026-07-02';
 
 const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
@@ -53,11 +53,21 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         heading: 'Acceptable use',
         paragraphs: ['You agree not to:'],
         list: [
+          'post sexual, pornographic, or otherwise NSFW content anywhere on your profile',
+          'use discovery for anything other than finding language partners, including dating, hookups, or promotion',
+          'solicit, advertise, trade, sell, or buy sexual content or services, or use your profile to arrange any of that',
+          'post, link to, or request illegal content or activity of any kind',
           'harass, threaten, or abuse other members',
           'use Polycord to spam, scam, or advertise unrelated services',
           'scrape, copy, or republish member profiles in bulk',
           'attempt to break, overload, or reverse engineer the service',
           'impersonate another person or misrepresent who you are',
+        ],
+      },
+      {
+        heading: "Discord's rules apply too",
+        paragraphs: [
+          "Polycord is built on top of Discord: every profile belongs to a Discord account and every connection happens there. Anything that Discord's Terms of Service or Community Guidelines prohibit is also prohibited on Polycord, and we treat it exactly like a breach of these terms.",
         ],
       },
       {
@@ -164,7 +174,8 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Keep it about language learning',
         paragraphs: [
-          'Polycord is for finding language partners and study buddies. It is not a dating service. Keep your profile and your first messages focused on learning, and respect people who only want a study partner.',
+          'Polycord is for finding language partners and study buddies. It is not a dating service, and it is never a place for adult content. Keep your profile and your first messages focused on learning, and respect people who only want a study partner.',
+          'Profiles exist to find language partners, full stop. Profiles set up for anything else, whether that is seeking dates, self-promotion, or advertising, trading, selling, or buying explicit material, will be removed even when nothing explicit appears on the profile itself.',
         ],
       },
       {
@@ -180,10 +191,21 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         ],
         list: [
           'harassment, hate speech, or threats of any kind',
-          'sexual content, or any sexual interest in minors',
+          'sexual or otherwise NSFW content anywhere on a profile',
+          'soliciting, advertising, trading, selling, or buying sexual content or services',
+          'any sexual content involving minors, or any sexual interest in minors',
+          'illegal content or activity of any kind',
+          'using discovery for dating, hookups, or anything else that is not language learning',
           'spam, scams, phishing, or unsolicited advertising',
           'sharing private information about others without consent',
           'impersonation or deliberately misleading profiles',
+          "anything that Discord's Terms of Service or Community Guidelines prohibit",
+        ],
+      },
+      {
+        heading: "Discord's rules apply here",
+        paragraphs: [
+          "Every Polycord profile is attached to a Discord account, so Discord's Terms of Service and Community Guidelines are the baseline everywhere on Polycord. If something would get you actioned on Discord, it gets you actioned here too, and we may also report it to Discord.",
         ],
       },
       {
