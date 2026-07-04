@@ -11,6 +11,11 @@ import {
   upsertDiscordUser,
 } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
+import {
+  enforceRateLimit,
+  rateLimitedResponse,
+  requestIp,
+} from '@/lib/rateLimit';
 
 const parseBody = async (
   request: Request,
@@ -77,6 +82,15 @@ export const POST = async (request: Request) => {
 
   if (target.profile.userId === actor.id) {
     return NextResponse.json({ created: false });
+  }
+
+  const limit = await enforceRateLimit('copy', {
+    userId: actor.id,
+    ip: requestIp(request),
+  });
+
+  if (!limit.allowed) {
+    return rateLimitedResponse(limit.retryAfterMs);
   }
 
   await createNotification({

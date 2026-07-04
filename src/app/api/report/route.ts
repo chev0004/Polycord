@@ -6,6 +6,11 @@ import {
   upsertDiscordUser,
 } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
+import {
+  enforceRateLimit,
+  rateLimitedResponse,
+  requestIp,
+} from '@/lib/rateLimit';
 
 const REPORT_REASONS: ReportReason[] = [
   'spam',
@@ -85,6 +90,15 @@ export const POST = async (request: Request) => {
       { error: 'Cannot report your own profile' },
       { status: 400 },
     );
+  }
+
+  const limit = await enforceRateLimit('report', {
+    userId: reporter.id,
+    ip: requestIp(request),
+  });
+
+  if (!limit.allowed) {
+    return rateLimitedResponse(limit.retryAfterMs);
   }
 
   await createReport({

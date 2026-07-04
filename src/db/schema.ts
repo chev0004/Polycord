@@ -7,6 +7,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -325,6 +326,36 @@ export const userBlocks = pgTable(
   ],
 );
 
+export const rateLimitCounters = pgTable(
+  'rate_limit_counters',
+  {
+    scope: varchar('scope', { length: 32 }).notNull(),
+    subject: varchar('subject', { length: 128 }).notNull(),
+    windowStart: timestamp('window_start', { withTimezone: true }).notNull(),
+    count: integer('count').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.scope, table.subject] })],
+);
+
+export const suspiciousActivity = pgTable(
+  'suspicious_activity',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    action: varchar('action', { length: 32 }).notNull(),
+    userId: uuid('user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    ip: varchar('ip', { length: 64 }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('suspicious_activity_created_at_idx').on(table.createdAt),
+    index('suspicious_activity_user_id_idx').on(table.userId),
+  ],
+);
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(profiles),
   savedProfiles: many(savedProfiles),
@@ -397,6 +428,16 @@ export const reportsRelations = relations(reports, ({ one }) => ({
   }),
 }));
 
+export const suspiciousActivityRelations = relations(
+  suspiciousActivity,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [suspiciousActivity.userId],
+      references: [users.id],
+    }),
+  }),
+);
+
 export const userBlocksRelations = relations(userBlocks, ({ one }) => ({
   blocker: one(users, {
     fields: [userBlocks.blockerUserId],
@@ -430,3 +471,6 @@ export type NewReport = typeof reports.$inferInsert;
 export type ReportReason = (typeof reportReasonEnum.enumValues)[number];
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type NewUserBlock = typeof userBlocks.$inferInsert;
+export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
+export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
+export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;

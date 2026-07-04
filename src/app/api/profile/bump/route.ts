@@ -10,6 +10,7 @@ import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { hasPremiumEntitlement } from '@/lib/entitlements';
+import { enforceRateLimit, requestIp } from '@/lib/rateLimit';
 
 export const POST = async (request: Request) => {
   const currentUser = await getCurrentUser();
@@ -19,6 +20,19 @@ export const POST = async (request: Request) => {
   }
 
   const user = await upsertDiscordUser(currentUser);
+
+  const limit = await enforceRateLimit('bump', {
+    userId: user.id,
+    ip: requestIp(request),
+  });
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests', remainingMs: limit.retryAfterMs },
+      { status: 429 },
+    );
+  }
+
   const row = await getProfileByUserId(user.id);
 
   if (!row?.profile.isPublic) {

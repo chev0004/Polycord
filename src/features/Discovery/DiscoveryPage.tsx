@@ -44,6 +44,7 @@ import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
 import {
   blockProfileRequest,
+  ReportProfileError,
   type ReportReason,
   reportProfileRequest,
 } from './safetyRequests';
@@ -370,9 +371,13 @@ export const DiscoveryPage = ({
         duration: BUMP_TOAST_DURATION,
       });
     } catch (error) {
+      const limited =
+        error instanceof ReportProfileError && error.status === 429;
       addToast({
-        title: t('reportErrorTitle'),
-        description: t('reportErrorDescription'),
+        title: limited ? t('reportCooldownTitle') : t('reportErrorTitle'),
+        description: limited
+          ? t('reportCooldownDescription')
+          : t('reportErrorDescription'),
         duration: BUMP_TOAST_DURATION,
       });
       throw error;
