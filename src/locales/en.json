@@ -441,6 +441,8 @@
     "reportSuccessDescription": "Thanks for helping keep Polycord safe. Our team will review it.",
     "reportErrorTitle": "Couldn't submit report",
     "reportErrorDescription": "Something went wrong. Please try again.",
+    "reportCooldownTitle": "Too many reports",
+    "reportCooldownDescription": "You've reached the report limit. Please try again later.",
     "blockLoginTitle": "Log in to block users",
     "blockLoginDescription": "Sign in with Discord to hide profiles from your discovery feed.",
     "blockSuccessTitle": "User blocked",

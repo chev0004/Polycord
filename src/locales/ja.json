@@ -441,6 +441,8 @@
     "reportSuccessDescription": "Polycordの安全維持にご協力いただきありがとうございます。チームが確認します。",
     "reportErrorTitle": "報告を送信できませんでした",
     "reportErrorDescription": "問題が発生しました。もう一度お試しください。",
+    "reportCooldownTitle": "報告が多すぎます",
+    "reportCooldownDescription": "報告の上限に達しました。しばらくしてからもう一度お試しください。",
     "blockLoginTitle": "ログインしてブロック",
     "blockLoginDescription": "Discordでログインすると、プロフィールをディスカバリーから非表示にできます。",
     "blockSuccessTitle": "ユーザーをブロックしました",

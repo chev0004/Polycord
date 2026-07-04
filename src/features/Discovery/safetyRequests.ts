@@ -5,6 +5,15 @@ export type ReportReason =
   | 'impersonation'
   | 'other';
 
+export class ReportProfileError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 export const reportProfileRequest = async (
   profileId: string,
   reason: ReportReason,
@@ -17,7 +26,7 @@ export const reportProfileRequest = async (
   });
 
   if (!response.ok) {
-    throw new Error('Report submission failed');
+    throw new ReportProfileError('Report submission failed', response.status);
   }
 };
 

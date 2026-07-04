@@ -12,6 +12,7 @@ import {
 import { ReportDialog } from '@/features/Discovery/ReportDialog';
 import {
   blockProfileRequest,
+  ReportProfileError,
   type ReportReason,
   reportProfileRequest,
 } from '@/features/Discovery/safetyRequests';
@@ -103,9 +104,13 @@ export const PublicProfileClient = ({
         duration: TOAST_DURATION,
       });
     } catch (error) {
+      const limited =
+        error instanceof ReportProfileError && error.status === 429;
       addToast({
-        title: t('reportErrorTitle'),
-        description: t('reportErrorDescription'),
+        title: limited ? t('reportCooldownTitle') : t('reportErrorTitle'),
+        description: limited
+          ? t('reportCooldownDescription')
+          : t('reportErrorDescription'),
         duration: TOAST_DURATION,
       });
       throw error;
