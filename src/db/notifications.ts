@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte } from 'drizzle-orm';
 import { db } from './client';
 import {
   type NewNotificationRecord,
@@ -56,6 +56,29 @@ export const createNotification = async (values: NewNotificationRecord) => {
   const [created] = await db.insert(notifications).values(values).returning();
 
   return created;
+};
+
+export const hasRecentViewNotification = async (
+  userId: string,
+  actorName: string | null,
+  windowStart: Date,
+): Promise<boolean> => {
+  const [existing] = await db
+    .select({ id: notifications.id })
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.userId, userId),
+        eq(notifications.kind, 'view'),
+        actorName === null
+          ? eq(notifications.isGuest, true)
+          : eq(notifications.actorName, actorName),
+        gte(notifications.createdAt, windowStart),
+      ),
+    )
+    .limit(1);
+
+  return existing !== undefined;
 };
 
 export const setNotificationRead = async (
