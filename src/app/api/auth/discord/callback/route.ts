@@ -10,6 +10,7 @@ import {
   readOAuthStateCookie,
   setSessionCookie,
 } from '@/lib/auth';
+import { enforceRateLimit, isRateLimited, requestIp } from '@/lib/rateLimit';
 
 type DiscordTokenResponse = {
   access_token?: string;
@@ -87,20 +88,34 @@ export const GET = async (request: NextRequest) => {
   const state = request.nextUrl.searchParams.get('state');
   const storedState = await readOAuthStateCookie();
   const redirectTo = storedState?.redirectTo ?? '/en';
+  const ip = requestIp(request);
+
+  const redirectWithFailure = async (failure: string) => {
+    const limit = await enforceRateLimit('auth-failure', { ip });
+    return redirectWithError(
+      request,
+      redirectTo,
+      limit.allowed ? failure : 'oauth_rate_limited',
+    );
+  };
 
   if (error) {
-    return redirectWithError(request, redirectTo, 'oauth_cancelled');
+    return redirectWithFailure('oauth_cancelled');
   }
 
   if (!code || !state || state !== storedState?.nonce) {
-    return redirectWithError(request, redirectTo, 'oauth_invalid_state');
+    return redirectWithFailure('oauth_invalid_state');
+  }
+
+  if (await isRateLimited('auth-failure', { ip })) {
+    return redirectWithError(request, redirectTo, 'oauth_rate_limited');
   }
 
   try {
     const token = await exchangeCodeForToken(request, code);
 
     if (!token?.access_token) {
-      return redirectWithError(request, redirectTo, 'oauth_failed');
+      return redirectWithFailure('oauth_failed');
     }
 
     const discordUser = await fetchDiscordUser(
@@ -109,7 +124,7 @@ export const GET = async (request: NextRequest) => {
     );
 
     if (!discordUser) {
-      return redirectWithError(request, redirectTo, 'oauth_failed');
+      return redirectWithFailure('oauth_failed');
     }
 
     const currentUser = normalizeDiscordUser(discordUser);
@@ -133,6 +148,6 @@ export const GET = async (request: NextRequest) => {
 
     return response;
   } catch {
-    return redirectWithError(request, redirectTo, 'oauth_failed');
+    return redirectWithFailure('oauth_failed');
   }
 };
