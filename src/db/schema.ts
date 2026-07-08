@@ -326,6 +326,26 @@ export const userBlocks = pgTable(
   ],
 );
 
+export const pushSubscriptions = pgTable(
+  'push_subscriptions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('push_subscriptions_endpoint_idx').on(table.endpoint),
+    index('push_subscriptions_user_id_idx').on(table.userId),
+  ],
+);
+
 export const rateLimitCounters = pgTable(
   'rate_limit_counters',
   {
@@ -472,5 +492,6 @@ export type ReportReason = (typeof reportReasonEnum.enumValues)[number];
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type NewUserBlock = typeof userBlocks.$inferInsert;
 export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
+export type PushSubscriptionRecord = typeof pushSubscriptions.$inferSelect;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;
