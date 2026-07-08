@@ -29,6 +29,18 @@ export const timeFormatEnum = pgEnum('time_format', ['12hr', '24hr']);
 export const notificationKindEnum = pgEnum('notification_kind', [
   'copy',
   'view',
+  'warning',
+]);
+
+export const moderationActionEnum = pgEnum('moderation_action', [
+  'dismiss',
+  'warn',
+  'hide_profile',
+  'unhide_profile',
+  'suspend',
+  'unsuspend',
+  'ban',
+  'unban',
 ]);
 
 export const reportReasonEnum = pgEnum('report_reason', [
@@ -54,6 +66,8 @@ export const users = pgTable(
     displayName: text('display_name').notNull(),
     avatarUrl: text('avatar_url'),
     email: text('email'),
+    suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
+    bannedAt: timestamp('banned_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -72,6 +86,9 @@ export const profiles = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     isPublic: boolean('is_public').default(false).notNull(),
+    hiddenByModeration: boolean('hidden_by_moderation')
+      .default(false)
+      .notNull(),
     allowAnonymousCopy: boolean('allow_anonymous_copy').default(true).notNull(),
     displayTimezone: boolean('display_timezone').default(true).notNull(),
     displayAvailability: boolean('display_availability')
@@ -326,6 +343,35 @@ export const userBlocks = pgTable(
   ],
 );
 
+export const moderationActions = pgTable(
+  'moderation_actions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    adminUserId: uuid('admin_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    targetUserId: uuid('target_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    reportId: uuid('report_id').references(() => reports.id, {
+      onDelete: 'set null',
+    }),
+    action: moderationActionEnum('action').notNull(),
+    note: text('note'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('moderation_actions_created_at_idx').on(table.createdAt),
+    index('moderation_actions_target_user_id_idx').on(table.targetUserId),
+    check(
+      'moderation_actions_note_length_check',
+      sql`${table.note} is null or char_length(${table.note}) <= 500`,
+    ),
+  ],
+);
+
 export const rateLimitCounters = pgTable(
   'rate_limit_counters',
   {
@@ -472,5 +518,9 @@ export type ReportReason = (typeof reportReasonEnum.enumValues)[number];
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type NewUserBlock = typeof userBlocks.$inferInsert;
 export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
+export type ModerationAction = typeof moderationActions.$inferSelect;
+export type NewModerationAction = typeof moderationActions.$inferInsert;
+export type ModerationActionKind =
+  (typeof moderationActionEnum.enumValues)[number];
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;
