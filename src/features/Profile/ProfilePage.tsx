@@ -37,6 +37,7 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { entitlementLimit } from '@/lib/entitlements';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
 import { type ProfileFormValues, profileSchema } from './schema';
@@ -57,8 +58,8 @@ type ProfilePageProps = {
   userDisplayName?: string;
 };
 
-const FREE_TAG_CAP = 5;
-const PREMIUM_TAG_CAP = 8;
+const FREE_TAG_CAP = entitlementLimit('profile.tags', false);
+const PREMIUM_TAG_CAP = entitlementLimit('profile.tags', true);
 const PREVIEW_TEASE_VOICE_SECONDS = 12;
 
 const defaultValues: ProfileFormValues = {
