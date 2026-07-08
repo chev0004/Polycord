@@ -672,6 +672,45 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   />
                 </SettingRow>
 
+                {premium ? (
+                  <SettingRow
+                    label={t('hideProfileVisitsLabel')}
+                    description={t('hideProfileVisitsDescriptionPremium')}
+                  >
+                    <Controller
+                      name="hideProfileVisits"
+                      control={control}
+                      render={({ field }) => (
+                        <Toggle
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </SettingRow>
+                ) : (
+                  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-2 font-medium text-[15px] text-white">
+                        {t('hideProfileVisitsLabel')}
+                        <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                          {t('premiumTag')}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-[12px] text-gray-500">
+                        {t('hideProfileVisitsDescriptionFree')}
+                      </p>
+                    </div>
+                    <div className="shrink-0">
+                      <Toggle
+                        checked={false}
+                        onCheckedChange={() => jumpToSection('premium')}
+                        aria-label={t('hideProfileVisitsLabel')}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <SettingRow
                   label={t('productAnalyticsLabel')}
                   description={t('productAnalyticsDescription')}

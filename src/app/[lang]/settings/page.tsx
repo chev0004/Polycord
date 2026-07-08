@@ -53,6 +53,7 @@ export default async function SettingsRoute({
                 matchAlert: settings.matchAlert,
                 profileInteractionAlert: settings.profileInteractionAlert,
                 profileViewAlert: settings.profileViewAlert,
+                hideProfileVisits: settings.hideProfileVisits,
                 productAnalytics: settings.productAnalytics,
                 pushNotifications: settings.pushNotifications,
                 theme: settings.theme,
