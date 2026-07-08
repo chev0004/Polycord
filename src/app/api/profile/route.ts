@@ -6,11 +6,13 @@ import {
   upsertDiscordUser,
   upsertProfileForUser,
 } from '@/db';
-import { FREE_LANGUAGE_CAP, profileSchema } from '@/features/Profile/schema';
+import { profileSchema } from '@/features/Profile/schema';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
+import { entitlementLimit } from '@/lib/entitlements';
+import { isPremiumUser } from '@/lib/entitlements.server';
 
 export const POST = async (request: Request) => {
   const currentUser = await getCurrentUser();
@@ -37,17 +39,37 @@ export const POST = async (request: Request) => {
   }
 
   const values = payload.data;
+  const premium = await isPremiumUser(currentUser);
+  const languageCap = entitlementLimit('profile.targetLanguages', premium);
+  const tagCap = entitlementLimit('profile.tags', premium);
 
-  if (values.targetLanguages.length > FREE_LANGUAGE_CAP) {
+  if (values.targetLanguages.length > languageCap) {
     return NextResponse.json(
       {
         error: 'Invalid profile',
         issues: [
           {
             code: 'too_big',
-            maximum: FREE_LANGUAGE_CAP,
+            maximum: languageCap,
             path: ['targetLanguages'],
             message: 'maxLanguages',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+  }
+
+  if ((values.tags ?? []).length > tagCap) {
+    return NextResponse.json(
+      {
+        error: 'Invalid profile',
+        issues: [
+          {
+            code: 'too_big',
+            maximum: tagCap,
+            path: ['tags'],
+            message: 'maxTags',
           },
         ],
       },
