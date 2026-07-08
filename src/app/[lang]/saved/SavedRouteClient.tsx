@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { MdBookmarkBorder } from 'react-icons/md';
+import { MdBookmarkBorder, MdErrorOutline } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { ProfileGrid } from '@/features/Discovery/ProfileGrid';
@@ -14,6 +14,7 @@ type SavedRouteClientProps = {
   locale: string;
   profiles: DiscoveryProfile[];
   currentProfileId?: string;
+  loadError?: boolean;
   userAvatarUrl?: string;
 };
 
@@ -21,6 +22,7 @@ export const SavedRouteClient = ({
   locale,
   profiles: initialProfiles,
   currentProfileId,
+  loadError = false,
   userAvatarUrl,
 }: SavedRouteClientProps) => {
   const router = useRouteProgressRouter();
@@ -62,7 +64,25 @@ export const SavedRouteClient = ({
           <p className="text-gray-400 text-sm">{t('subtitle')}</p>
         </header>
 
-        {profiles.length > 0 ? (
+        {loadError ? (
+          <div
+            role="alert"
+            className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-red-800 bg-red-950/40 px-6 py-12 text-center"
+          >
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-300">
+              <MdErrorOutline size={24} />
+            </span>
+            <h2 className="font-figtree font-semibold text-2xl text-white">
+              {t('errorTitle')}
+            </h2>
+            <p className="max-w-[440px] text-gray-400 text-sm">
+              {t('errorDescription')}
+            </p>
+            <Button variant="primary" onClick={() => router.refresh()}>
+              {t('errorRetry')}
+            </Button>
+          </div>
+        ) : profiles.length > 0 ? (
           <ProfileGrid
             profiles={profiles}
             isLoggedIn
