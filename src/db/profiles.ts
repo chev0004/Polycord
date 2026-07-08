@@ -160,6 +160,10 @@ const toDiscoveryProfile = ({
 }: ProfileWithUser): DiscoveryProfile => ({
   premium: isPremiumOwner(user, subscription),
   cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
+  boosted:
+    isPremiumOwner(user, subscription) &&
+    profile.boostedUntil !== null &&
+    profile.boostedUntil.getTime() > Date.now(),
   id: profile.id,
   displayName: user.displayName,
   discordUsername: user.discordUsername,

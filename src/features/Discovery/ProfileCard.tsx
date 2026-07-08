@@ -61,6 +61,7 @@ export type DiscoveryProfile = {
   lastBumpRelative?: string;
   lastBumpedAt?: string;
   bumpedMinutesAgo?: number;
+  boosted?: boolean;
   premium?: boolean;
   cardTheme?: CardTheme;
   availability?: AvailabilityPattern;

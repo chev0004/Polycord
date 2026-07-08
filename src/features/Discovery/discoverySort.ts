@@ -38,6 +38,7 @@ export const applyDiscoverySort = (
     case 'bumped-desc':
       return sorted.sort(
         (a, b) =>
+          Number(b.boosted ?? false) - Number(a.boosted ?? false) ||
           bumpRank(a) - bumpRank(b) ||
           a.displayName.localeCompare(b.displayName),
       );
