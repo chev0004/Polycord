@@ -116,3 +116,20 @@ export const getCurrentUser = async (): Promise<CurrentUser | null> => {
 
   return readSessionFromCookieValue(sessionCookie);
 };
+
+export const getActiveUser = async (): Promise<CurrentUser | null> => {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return null;
+  }
+
+  const { getUserByDiscordId, isUserRestricted } = await import('@/db');
+  const user = await getUserByDiscordId(currentUser.id);
+
+  if (user && isUserRestricted(user)) {
+    return null;
+  }
+
+  return currentUser;
+};
