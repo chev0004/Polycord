@@ -7,6 +7,7 @@ export const ENTITLEMENT_LIMITS = {
     free: 3 * 60 * 60 * 1000,
     premium: 90 * 60 * 1000,
   },
+  'discovery.monthlyBoosts': { free: 0, premium: 3 },
 } as const;
 
 export type LimitEntitlement = keyof typeof ENTITLEMENT_LIMITS;
