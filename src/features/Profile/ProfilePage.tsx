@@ -13,6 +13,7 @@ import {
   MdDeleteOutline,
   MdErrorOutline,
   MdMoreVert,
+  MdRocketLaunch,
   MdVisibility,
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
@@ -48,7 +49,10 @@ import {
 import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
+  boostedUntil?: string;
+  boostsRemaining?: number;
   initialValues?: ProfileFormValues;
+  onBoostProfile?: () => Promise<void> | void;
   onBumpProfile?: () => void;
   onDeleteProfile?: () => Promise<void> | void;
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
@@ -147,7 +151,10 @@ const MenuItem = ({
 );
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
+  boostedUntil,
+  boostsRemaining,
   initialValues,
+  onBoostProfile,
   onSubmit: onSubmitProp,
   onBumpProfile,
   onDeleteProfile,
@@ -166,7 +173,28 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [saveFailed, setSaveFailed] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isBoosting, setIsBoosting] = useState(false);
+  const [boostFailed, setBoostFailed] = useState(false);
   const [tease, setTease] = useState<string | null>(null);
+
+  const boostActive = boostedUntil
+    ? new Date(boostedUntil).getTime() > Date.now()
+    : false;
+
+  const handleBoostProfile = async () => {
+    if (!onBoostProfile || isBoosting) return;
+
+    setIsBoosting(true);
+    setBoostFailed(false);
+
+    try {
+      await onBoostProfile();
+    } catch {
+      setBoostFailed(true);
+    } finally {
+      setIsBoosting(false);
+    }
+  };
 
   const tagCap = premium ? PREMIUM_TAG_CAP : FREE_TAG_CAP;
 
@@ -344,7 +372,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     tagError ??
     tagsSchemaError ??
     (saveFailed ? t('saveError') : null) ??
-    (deleteFailed ? t('deleteError') : null);
+    (deleteFailed ? t('deleteError') : null) ??
+    (boostFailed ? t('boostError') : null);
 
   return (
     <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
@@ -379,6 +408,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <MenuItem icon={MdArrowUpward} onClick={onBumpProfile}>
                   {t('bumpProfile')}
                 </MenuItem>
+                {premium && onBoostProfile ? (
+                  <MenuItem
+                    icon={MdRocketLaunch}
+                    onClick={handleBoostProfile}
+                    disabled={
+                      isBoosting || boostActive || (boostsRemaining ?? 0) <= 0
+                    }
+                  >
+                    {boostActive
+                      ? t('boostActive')
+                      : t('boostProfile', { count: boostsRemaining ?? 0 })}
+                  </MenuItem>
+                ) : null}
                 {onViewPublicProfile ? (
                   <MenuItem icon={MdVisibility} onClick={onViewPublicProfile}>
                     {t('viewPublicProfile')}
