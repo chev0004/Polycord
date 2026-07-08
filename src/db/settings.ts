@@ -16,6 +16,7 @@ export type UserSettingsValues = Pick<
   | 'theme'
   | 'applicationLanguage'
   | 'timeFormat'
+  | 'languageDisplay'
   | 'activityStatus'
   | 'pushNotifications'
   | 'matchAlert'

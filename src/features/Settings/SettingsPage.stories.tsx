@@ -15,6 +15,7 @@ const defaultSettings: SettingsFormValues = {
   theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
+  languageDisplay: 'long',
   email: 'xhev@polycord.app',
 };
 

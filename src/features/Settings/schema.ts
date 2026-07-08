@@ -13,6 +13,7 @@ export const settingsSchema = z.object({
   theme: z.enum(['dark', 'light']),
   applicationLanguage: z.string().min(1),
   timeFormat: z.enum(['12hr', '24hr']),
+  languageDisplay: z.enum(['long', 'short']),
   email: z
     .string()
     .email({ message: 'emailInvalid' })

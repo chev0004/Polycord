@@ -23,6 +23,7 @@ type SettingsRouteClientProps = {
     | 'pushNotifications'
     | 'theme'
     | 'timeFormat'
+    | 'languageDisplay'
   >;
   locale: string;
   userAvatarUrl?: string;
@@ -81,6 +82,7 @@ export const SettingsRouteClient = ({
     theme: initialSettings?.theme ?? 'dark',
     applicationLanguage: initialSettings?.applicationLanguage ?? locale,
     timeFormat: initialSettings?.timeFormat ?? '24hr',
+    languageDisplay: initialSettings?.languageDisplay ?? 'long',
     email: defaultEmail,
   };
 

@@ -45,6 +45,7 @@ export const POST = async (request: Request) => {
     theme: values.theme,
     applicationLanguage: values.applicationLanguage,
     timeFormat: values.timeFormat,
+    languageDisplay: values.languageDisplay,
     activityStatus: values.activityStatus,
     pushNotifications: values.pushNotifications,
     matchAlert: values.matchAlert,

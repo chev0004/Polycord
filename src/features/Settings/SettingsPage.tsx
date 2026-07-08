@@ -55,6 +55,12 @@ const getStoredTimeFormat = (): TimeFormat => {
   return stored === '12hr' || stored === '24hr' ? stored : '24hr';
 };
 
+const getStoredLanguageDisplay = (): 'long' | 'short' => {
+  if (typeof window === 'undefined') return 'long';
+  const stored = localStorage.getItem('polycord_languageDisplay');
+  return stored === 'short' ? 'short' : 'long';
+};
+
 const SectionCard = ({
   title,
   description,
@@ -122,6 +128,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     () => ({
       ...defaultValues,
       timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
+      languageDisplay:
+        defaultValues.languageDisplay || getStoredLanguageDisplay(),
     }),
     [defaultValues],
   );
@@ -160,6 +168,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       if (typeof window !== 'undefined') {
         localStorage.setItem('polycord_timeFormat', data.timeFormat);
         window.dispatchEvent(new Event('timeFormatChanged'));
+        localStorage.setItem('polycord_languageDisplay', data.languageDisplay);
+        window.dispatchEvent(new Event('languageDisplayChanged'));
       }
 
       reset(data);
@@ -226,6 +236,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const timeFormatOptions = [
     { label: t('timeFormat24hr'), value: '24hr' },
     { label: t('timeFormat12hr'), value: '12hr' },
+  ];
+
+  const languageDisplayOptions = [
+    { label: t('languageDisplayLong'), value: 'long' },
+    { label: t('languageDisplayShort'), value: 'short' },
   ];
 
   const emailValue = watch('email');
@@ -559,6 +574,25 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       onValueChange={field.onChange}
                       value={field.value}
                       ariaLabel={t('timeFormatLabel')}
+                      className="w-[170px]"
+                    />
+                  )}
+                />
+              </SettingRow>
+
+              <SettingRow
+                label={t('languageDisplayLabel')}
+                description={t('languageDisplayDescription')}
+              >
+                <Controller
+                  name="languageDisplay"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      options={languageDisplayOptions}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      ariaLabel={t('languageDisplayLabel')}
                       className="w-[170px]"
                     />
                   )}
