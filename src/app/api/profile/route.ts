@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import {
   deleteProfileForUser,
+  deleteVoiceIntroForUser,
   getUserByDiscordId,
   type ProfileTargetLanguageValue,
   upsertDiscordUser,
@@ -148,6 +149,7 @@ export const DELETE = async () => {
   }
 
   const deleted = await deleteProfileForUser(user.id);
+  await deleteVoiceIntroForUser(user.id);
 
   return NextResponse.json({ deleted });
 };
