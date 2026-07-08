@@ -91,6 +91,10 @@ export const profiles = pgTable(
       .default(false)
       .notNull(),
     tags: text('tags').array().default(sql`'{}'::text[]`).notNull(),
+    cardColor: varchar('card_color', { length: 32 }),
+    customGradientFrom: varchar('custom_gradient_from', { length: 7 }),
+    customGradientTo: varchar('custom_gradient_to', { length: 7 }),
+    accentOverride: varchar('accent_override', { length: 7 }),
     country: varchar('country', { length: 2 }),
     timezone: varchar('timezone', { length: 64 }),
     lastBumpedAt: timestamp('last_bumped_at', { withTimezone: true }),
