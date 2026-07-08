@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 
 export type ComboboxProps = {
+  id?: string;
   placeholder?: string;
   options: { label: string; value: string }[];
   className?: string;
@@ -20,6 +21,7 @@ export type ComboboxProps = {
 export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
   (
     {
+      id,
       placeholder,
       options,
       className,
@@ -200,6 +202,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
           >
             <input
               ref={forwardedRef}
+              id={id}
               name={name}
               type="text"
               value={inputValue}

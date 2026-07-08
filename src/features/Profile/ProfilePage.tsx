@@ -136,7 +136,7 @@ const MenuItem = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${
+    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none focus-visible:bg-background-main disabled:cursor-not-allowed disabled:opacity-60 ${
       danger ? 'hover:!text-red-300 text-red-400' : 'text-white'
     }`}
   >
@@ -361,7 +361,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <Popover.Trigger asChild>
             <button
               type="button"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-gray-300 transition-colors hover:bg-background-darker hover:text-white focus:outline-none"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-gray-300 transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:bg-background-darker focus-visible:text-white"
               aria-label={t('profileOptions')}
             >
               <MdMoreVert size={20} />
@@ -431,6 +431,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 render={({ field }) => (
                   <Combobox
                     {...field}
+                    id="primaryLanguage"
                     value={field.value || ''}
                     onValueChange={field.onChange}
                     options={localizedLanguageOptions}
@@ -456,6 +457,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 render={({ field }) => (
                   <Combobox
                     {...field}
+                    id="country"
                     value={field.value || ''}
                     onValueChange={field.onChange}
                     options={localizedCountryOptions}
@@ -680,6 +682,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <Toggle
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      aria-label={t('makeProfilePublicLabel')}
                     />
                   )}
                 />
@@ -696,6 +699,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <Toggle
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      aria-label={t('allowAnonymousCopyingLabel')}
                     />
                   )}
                 />
@@ -712,6 +716,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <Toggle
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      aria-label={t('displayTimezoneLabel')}
                     />
                   )}
                 />
@@ -728,6 +733,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <Toggle
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      aria-label={t('displayAvailabilityLabel')}
                     />
                   )}
                 />

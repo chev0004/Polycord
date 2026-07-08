@@ -267,10 +267,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     type="button"
                     onClick={() => jumpToSection(section.id)}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center rounded-full px-3 py-2.5 text-left font-medium text-[14px] transition-colors focus:outline-none ${
+                    className={`flex items-center rounded-full px-3 py-2.5 text-left font-medium text-[14px] transition-colors focus:outline-none focus-visible:bg-background-main ${
                       isActive
                         ? 'bg-primary-darker text-primary-light'
-                        : 'text-gray-400 hover:bg-background-main hover:text-white'
+                        : 'text-gray-400 hover:bg-background-main hover:text-white focus-visible:text-white'
                     }`}
                   >
                     {t(section.labelKey)}
@@ -584,6 +584,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('makeProfilePublicLabel')}
                       />
                     )}
                   />
@@ -600,6 +601,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('activityStatusLabel')}
                       />
                     )}
                   />
@@ -616,6 +618,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('allowAnonymousCopyingLabel')}
                       />
                     )}
                   />
@@ -632,6 +635,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('displayTimezoneLabel')}
                       />
                     )}
                   />
@@ -648,6 +652,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('productAnalyticsLabel')}
                       />
                     )}
                   />
@@ -673,6 +678,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('pushNotificationsLabel')}
                       />
                     )}
                   />
@@ -689,6 +695,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('matchAlertLabel')}
                       />
                     )}
                   />
@@ -709,6 +716,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       <Toggle
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        aria-label={t('profileInteractionAlertLabel')}
                       />
                     )}
                   />
@@ -726,6 +734,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                         <Toggle
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          aria-label={t('profileViewAlertLabel')}
                         />
                       )}
                     />
