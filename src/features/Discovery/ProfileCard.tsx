@@ -608,7 +608,10 @@ export const ProfileCard = ({
       )}
 
       {profile.premium && profile.voiceIntroSeconds ? (
-        <VoiceChip seconds={profile.voiceIntroSeconds} />
+        <VoiceChip
+          seconds={profile.voiceIntroSeconds}
+          src={isPreview ? undefined : `/api/voice/${profile.id}`}
+        />
       ) : null}
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">

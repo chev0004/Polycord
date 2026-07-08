@@ -164,6 +164,10 @@ const toDiscoveryProfile = ({
     isPremiumOwner(user, subscription) &&
     profile.boostedUntil !== null &&
     profile.boostedUntil.getTime() > Date.now(),
+  voiceIntroSeconds:
+    isPremiumOwner(user, subscription) && profile.voiceIntroSeconds
+      ? profile.voiceIntroSeconds
+      : undefined,
   id: profile.id,
   displayName: user.displayName,
   discordUsername: user.discordUsername,
