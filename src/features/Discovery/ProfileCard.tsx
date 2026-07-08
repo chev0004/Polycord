@@ -20,10 +20,12 @@ import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
+  capitalizeLanguageCode,
   formatCurrentTime,
   getLanguageName,
   getProficiencyTranslationKey,
   type IANATimezone,
+  isValidLanguageCode,
   type LanguageCode,
   type Proficiency,
   type TimeFormat,
@@ -131,6 +133,14 @@ const getTimeFormat = (): TimeFormat => {
   return stored === '12hr' || stored === '24hr' ? stored : '24hr';
 };
 
+const LANGUAGE_DISPLAY_STORAGE_KEY = 'polycord_languageDisplay';
+
+const getLanguageDisplay = (): 'long' | 'short' => {
+  if (typeof window === 'undefined') return 'long';
+  const stored = localStorage.getItem(LANGUAGE_DISPLAY_STORAGE_KEY);
+  return stored === 'short' ? 'short' : 'long';
+};
+
 export const ProfileCard = ({
   profile,
   variant = 'discovery',
@@ -158,6 +168,9 @@ export const ProfileCard = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
     getTimeFormat(),
+  );
+  const [languageDisplay, setLanguageDisplay] = useState<'long' | 'short'>(() =>
+    getLanguageDisplay(),
   );
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
@@ -207,12 +220,15 @@ export const ProfileCard = ({
   useEffect(() => {
     const handleStorageChange = () => {
       setTimeFormat(getTimeFormat());
+      setLanguageDisplay(getLanguageDisplay());
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('timeFormatChanged', handleStorageChange);
+    window.addEventListener('languageDisplayChanged', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('timeFormatChanged', handleStorageChange);
+      window.removeEventListener('languageDisplayChanged', handleStorageChange);
     };
   }, []);
 
@@ -314,7 +330,11 @@ export const ProfileCard = ({
     isPrimary: boolean,
     key?: string,
   ) => {
-    const label = `${getLanguageName(language, locale)}${
+    const languageLabel =
+      languageDisplay === 'short' && isValidLanguageCode(language)
+        ? capitalizeLanguageCode(language)
+        : getLanguageName(language, locale);
+    const label = `${languageLabel}${
       level ? ` / ${tProfile(getProficiencyTranslationKey(level))}` : ''
     }`;
     const classes = isPrimary
