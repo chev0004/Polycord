@@ -9,6 +9,8 @@ import {
 import { isValidAvailability } from '@/constants/languages';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
+import { isPremiumDiscordId } from '@/lib/entitlements';
+import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import {
   type NewProfile,
@@ -16,6 +18,8 @@ import {
   type Profile,
   profiles,
   profileTargetLanguages,
+  type Subscription,
+  subscriptions,
   type User,
   users,
 } from './schema';
@@ -45,7 +49,15 @@ type ProfileWithUser = {
   profile: Profile;
   targetLanguages: ProfileTargetLanguageValue[];
   user: User;
+  subscription?: Subscription | null;
 };
+
+const isPremiumOwner = (
+  user: User,
+  subscription: Subscription | null | undefined,
+) =>
+  isPremiumDiscordId(user.discordUserId) ||
+  isSubscriptionActive(subscription ?? null);
 
 const toUserValues = (user: CurrentUser): NewUser => ({
   discordUserId: user.id,
@@ -101,7 +113,9 @@ const toDiscoveryProfile = ({
   profile,
   targetLanguages,
   user,
+  subscription,
 }: ProfileWithUser): DiscoveryProfile => ({
+  premium: isPremiumOwner(user, subscription),
   id: profile.id,
   displayName: user.displayName,
   discordUsername: user.discordUsername,
@@ -232,9 +246,11 @@ export const getProfileById = async (profileId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.id, profileId))
     .limit(1);
 
@@ -246,9 +262,11 @@ export const getProfileByUserId = async (userId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.userId, userId))
     .limit(1);
 
@@ -260,9 +278,11 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(users.discordUserId, discordUserId))
     .limit(1);
 
@@ -294,9 +314,11 @@ export const listPublicProfiles = async (
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(visibility)
     .orderBy(
       sql`${profiles.lastBumpedAt} desc nulls last`,
@@ -329,9 +351,11 @@ export const listPublicProfilesByIds = async (
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(and(inArray(profiles.id, profileIds), eq(profiles.isPublic, true)));
 
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
