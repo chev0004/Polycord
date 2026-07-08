@@ -1,5 +1,6 @@
 export * from './account';
 export * from './analytics';
+export * from './moderation';
 export * from './notifications';
 export * from './profiles';
 export * from './rateLimits';

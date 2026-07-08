@@ -1,6 +1,17 @@
 import 'server-only';
 
-import { and, asc, desc, eq, inArray, notInArray, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  lt,
+  notInArray,
+  or,
+  sql,
+} from 'drizzle-orm';
 import {
   type AvailabilityPattern,
   availabilityPatternToPreset,
@@ -269,10 +280,25 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
   return row ? attachTargetLanguages(row) : null;
 };
 
+const publiclyVisible = () =>
+  and(
+    eq(profiles.isPublic, true),
+    eq(profiles.hiddenByModeration, false),
+    isNull(users.bannedAt),
+    or(isNull(users.suspendedUntil), lt(users.suspendedUntil, new Date())),
+  );
+
+const isVisibleProfile = (row: { profile: Profile; user: User }) =>
+  row.profile.isPublic &&
+  !row.profile.hiddenByModeration &&
+  row.user.bannedAt === null &&
+  (row.user.suspendedUntil === null ||
+    row.user.suspendedUntil.getTime() < Date.now());
+
 export const getPublicProfileById = async (profileId: string) => {
   const row = await getProfileById(profileId);
 
-  if (!row?.profile.isPublic) {
+  if (!row || !isVisibleProfile(row)) {
     return null;
   }
 
@@ -284,11 +310,8 @@ export const listPublicProfiles = async (
 ) => {
   const { blockedUserIds = [] } = options;
   const visibility = blockedUserIds.length
-    ? and(
-        eq(profiles.isPublic, true),
-        notInArray(profiles.userId, blockedUserIds),
-      )
-    : eq(profiles.isPublic, true);
+    ? and(publiclyVisible(), notInArray(profiles.userId, blockedUserIds))
+    : publiclyVisible();
 
   const rows = await db
     .select({
@@ -332,7 +355,7 @@ export const listPublicProfilesByIds = async (
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .where(and(inArray(profiles.id, profileIds), eq(profiles.isPublic, true)));
+    .where(and(inArray(profiles.id, profileIds), publiclyVisible()));
 
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
     rows.map((row) => row.profile.id),
