@@ -17,6 +17,10 @@ import {
   Toggle,
 } from '@/components/Form';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+} from '@/lib/push/client';
 import { CompareTable } from './CompareTable';
 import { type SettingsFormValues, settingsSchema } from './schema';
 
@@ -116,7 +120,35 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'confirming' | 'loading' | 'error'
   >('idle');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
+  const [pushStatus, setPushStatus] = useState<
+    'idle' | 'denied' | 'unsupported' | 'error'
+  >('idle');
+  const [pushBusy, setPushBusy] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+
+  const handlePushToggle = async (
+    checked: boolean,
+    onChange: (value: boolean) => void,
+  ) => {
+    setPushStatus('idle');
+
+    if (!checked) {
+      onChange(false);
+      void disablePushNotifications();
+      return;
+    }
+
+    setPushBusy(true);
+    const result = await enablePushNotifications();
+    setPushBusy(false);
+
+    if (result === 'enabled') {
+      onChange(true);
+    } else {
+      onChange(false);
+      setPushStatus(result);
+    }
+  };
 
   const initialValues: SettingsFormValues = useMemo(
     () => ({
@@ -672,11 +704,24 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     render={({ field }) => (
                       <Toggle
                         checked={field.value}
-                        onCheckedChange={field.onChange}
+                        disabled={pushBusy}
+                        onCheckedChange={(checked) =>
+                          handlePushToggle(checked, field.onChange)
+                        }
                       />
                     )}
                   />
                 </SettingRow>
+
+                {pushStatus !== 'idle' ? (
+                  <p className="px-4 text-[12px] text-amber-400/90">
+                    {pushStatus === 'denied'
+                      ? t('pushPermissionDenied')
+                      : pushStatus === 'unsupported'
+                        ? t('pushUnsupported')
+                        : t('pushError')}
+                  </p>
+                ) : null}
 
                 <SettingRow
                   label={t('matchAlertLabel')}
