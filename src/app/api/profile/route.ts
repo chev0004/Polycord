@@ -6,13 +6,24 @@ import {
   upsertDiscordUser,
   upsertProfileForUser,
 } from '@/db';
+import {
+  CUSTOM_CARD_THEME_ID,
+  FREE_CARD_COLORS,
+  PREMIUM_CARD_THEMES,
+} from '@/features/Discovery/cardTheme';
 import { profileSchema } from '@/features/Profile/schema';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
-import { entitlementLimit } from '@/lib/entitlements';
+import { entitlementLimit, hasEntitlement } from '@/lib/entitlements';
 import { isPremiumUser } from '@/lib/entitlements.server';
+
+const isAllowedCardColor = (id: string, premiumThemes: boolean) =>
+  FREE_CARD_COLORS.some((color) => color.id === id) ||
+  (premiumThemes &&
+    (id === CUSTOM_CARD_THEME_ID ||
+      PREMIUM_CARD_THEMES.some((theme) => theme.id === id)));
 
 export const POST = async (request: Request) => {
   const currentUser = await getCurrentUser();
@@ -77,11 +88,25 @@ export const POST = async (request: Request) => {
     );
   }
 
+  const premiumThemes = hasEntitlement('profile.cardThemes', premium);
+  const cardColor =
+    values.cardColor && isAllowedCardColor(values.cardColor, premiumThemes)
+      ? values.cardColor
+      : null;
+  const customGradient =
+    premiumThemes && cardColor === CUSTOM_CARD_THEME_ID
+      ? values.customGradient
+      : undefined;
+
   const user = await upsertDiscordUser(currentUser);
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: values.allowAnonymousCopy,
     availability: values.availability ?? null,
     bio: values.bio.trim(),
+    cardColor,
+    customGradientFrom: customGradient?.from ?? null,
+    customGradientTo: customGradient?.to ?? null,
+    accentOverride: premiumThemes ? (values.accentOverride ?? null) : null,
     country: values.country || null,
     displayAvailability: values.displayAvailability,
     displayTimezone: values.displayTimezone,
