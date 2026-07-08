@@ -58,6 +58,7 @@ type ProfilePageProps = {
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
   onViewPublicProfile?: () => void;
   premium?: boolean;
+  stats?: { views30d: number; copies30d: number; saves: number };
   userAvatarUrl?: string;
   userDisplayName?: string;
 };
@@ -160,6 +161,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onDeleteProfile,
   onViewPublicProfile,
   premium = false,
+  stats,
   userAvatarUrl,
   userDisplayName,
 }) => {
@@ -816,6 +818,57 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               bioFallback={t('previewBioFallback')}
               emptyTagsLabel={t('previewNoTags')}
             />
+
+            {premium && stats ? (
+              <div className="mt-2 flex flex-col gap-3 rounded-3xl bg-background-dark p-5 shadow-xl">
+                <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+                  {t('insightsTitle')}
+                </span>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl bg-background-darker px-2 py-3">
+                    <p className="font-bold text-[20px] text-white">
+                      {stats.views30d}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">
+                      {t('insightsViews')}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-background-darker px-2 py-3">
+                    <p className="font-bold text-[20px] text-white">
+                      {stats.copies30d}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">
+                      {t('insightsCopies')}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-background-darker px-2 py-3">
+                    <p className="font-bold text-[20px] text-white">
+                      {stats.saves}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">
+                      {t('insightsSaves')}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-500">
+                  {t('insightsWindowNote')}
+                </p>
+              </div>
+            ) : null}
+
+            {!premium && initialValues ? (
+              <div className="mt-2 flex flex-col gap-2 rounded-3xl bg-background-dark p-5 shadow-xl">
+                <span className="flex items-center gap-2 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+                  {t('insightsTitle')}
+                  <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                    {t('voiceIntroPremiumTag')}
+                  </span>
+                </span>
+                <p className="text-[13px] text-gray-400">
+                  {t('insightsUpsell')}
+                </p>
+              </div>
+            ) : null}
           </div>
         </aside>
       </form>

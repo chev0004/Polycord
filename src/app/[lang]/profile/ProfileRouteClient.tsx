@@ -12,6 +12,7 @@ type ProfileRouteClientProps = {
   locale: string;
   premium?: boolean;
   profileId?: string;
+  stats?: { views30d: number; copies30d: number; saves: number };
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -23,6 +24,7 @@ export const ProfileRouteClient = ({
   locale,
   premium = false,
   profileId,
+  stats,
   userAvatarUrl,
   userDisplayName,
 }: ProfileRouteClientProps) => {
@@ -65,6 +67,7 @@ export const ProfileRouteClient = ({
             : undefined
         }
         premium={premium}
+        stats={stats}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
         onViewPublicProfile={

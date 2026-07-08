@@ -3,6 +3,7 @@ export * from './analytics';
 export * from './billing';
 export * from './boosts';
 export * from './notifications';
+export * from './profileStats';
 export * from './profiles';
 export * from './rateLimits';
 export * from './safety';
