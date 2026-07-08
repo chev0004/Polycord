@@ -99,7 +99,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   const triggerButton = (
     <button
       type="button"
-      className="rounded-full transition-opacity duration-200 hover:opacity-80 focus:outline-none"
+      className="rounded-full transition-opacity duration-200 hover:opacity-80 focus:outline-none focus-visible:opacity-80"
     >
       <Avatar avatarUrl={iconUrl} size="sm" />
     </button>

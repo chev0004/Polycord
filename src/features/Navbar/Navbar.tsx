@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={onHomeClick}
-          className="flex select-none items-center gap-2.5 font-black font-figtree text-[28px] text-white tracking-[-0.01em] no-underline focus:outline-none"
+          className="flex select-none items-center gap-2.5 font-black font-figtree text-[28px] text-white tracking-[-0.01em] no-underline focus:outline-none focus-visible:opacity-80"
         >
           <Image
             src="/polycord-logo.svg"
