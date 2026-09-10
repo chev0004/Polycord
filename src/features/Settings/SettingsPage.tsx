@@ -28,8 +28,10 @@ export type SettingsPageProps = {
   onExportData: () => Promise<void> | void;
   onSubmit?: (data: SettingsFormValues) => Promise<void> | void;
   onUpdateDiscordConnection: () => void;
-  onManageSubscription: () => void;
+  onManageSubscription: () => Promise<void> | void;
   premium?: boolean;
+  subscriptionRenewsAt?: string;
+  subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -103,6 +105,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onUpdateDiscordConnection,
   onManageSubscription,
   premium = false,
+  subscriptionRenewsAt,
+  subscriptionCancelAtPeriodEnd = false,
   userAvatarUrl,
   userDisplayName,
 }) => {
@@ -116,7 +120,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'confirming' | 'loading' | 'error'
   >('idle');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
+  const [billingStatus, setBillingStatus] = useState<
+    'idle' | 'loading' | 'error'
+  >('idle');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+
+  const handleManageSubscription = async () => {
+    setBillingStatus('loading');
+
+    try {
+      await onManageSubscription();
+      setBillingStatus('idle');
+    } catch {
+      setBillingStatus('error');
+    }
+  };
 
   const initialValues: SettingsFormValues = useMemo(
     () => ({
@@ -329,7 +347,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 {premium ? (
                   <Button
                     variant="outline"
-                    onClick={onManageSubscription}
+                    onClick={handleManageSubscription}
+                    disabled={billingStatus === 'loading'}
                     className="h-10 whitespace-nowrap"
                   >
                     {t('manageBillingButton')}
@@ -474,10 +493,25 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <p className="mt-0.5 text-[12.5px] text-gray-500">
                       {t('premiumPlanNote')}
                     </p>
+                    {subscriptionRenewsAt ? (
+                      <p className="mt-0.5 text-[12.5px] text-gray-500">
+                        {t(
+                          subscriptionCancelAtPeriodEnd
+                            ? 'billingEnds'
+                            : 'billingRenews',
+                          {
+                            date: new Date(
+                              subscriptionRenewsAt,
+                            ).toLocaleDateString(currentLocale),
+                          },
+                        )}
+                      </p>
+                    ) : null}
                   </div>
                   <Button
                     variant="outline"
-                    onClick={onManageSubscription}
+                    onClick={handleManageSubscription}
+                    disabled={billingStatus === 'loading'}
                     className="h-10 whitespace-nowrap"
                   >
                     {t('manageBillingButton')}
@@ -493,7 +527,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     {t('premiumUpgradeNote')}
                   </span>
                   <Button
-                    onClick={onManageSubscription}
+                    onClick={handleManageSubscription}
+                    disabled={billingStatus === 'loading'}
                     className="h-9 whitespace-nowrap text-[13px]"
                   >
                     {t('premiumUpgradeButton')}
@@ -759,6 +794,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
             {saveStatus === 'error' ? (
               <span className="text-[13px] text-red-400">{t('saveError')}</span>
+            ) : billingStatus === 'error' ? (
+              <span className="text-[13px] text-red-400">
+                {t('billingError')}
+              </span>
             ) : (
               <span
                 className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}

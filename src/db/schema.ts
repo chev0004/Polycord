@@ -326,6 +326,33 @@ export const userBlocks = pgTable(
   ],
 );
 
+export const subscriptions = pgTable(
+  'subscriptions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    stripeCustomerId: varchar('stripe_customer_id', { length: 64 }).notNull(),
+    stripeSubscriptionId: varchar('stripe_subscription_id', { length: 64 }),
+    status: varchar('status', { length: 32 }).default('none').notNull(),
+    currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
+    cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('subscriptions_user_id_idx').on(table.userId),
+    uniqueIndex('subscriptions_stripe_customer_id_idx').on(
+      table.stripeCustomerId,
+    ),
+  ],
+);
+
 export const rateLimitCounters = pgTable(
   'rate_limit_counters',
   {
@@ -472,5 +499,7 @@ export type ReportReason = (typeof reportReasonEnum.enumValues)[number];
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type NewUserBlock = typeof userBlocks.$inferInsert;
 export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;
