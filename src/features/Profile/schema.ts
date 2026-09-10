@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
+import { entitlementLimit } from '@/lib/entitlements';
 import {
   bioField,
   hasUniqueTags,
@@ -8,8 +9,14 @@ import {
   tagItemField,
 } from '@/lib/profileFields';
 
-export const FREE_LANGUAGE_CAP = 2;
-export const PREMIUM_LANGUAGE_CAP = 10;
+export const FREE_LANGUAGE_CAP = entitlementLimit(
+  'profile.targetLanguages',
+  false,
+);
+export const PREMIUM_LANGUAGE_CAP = entitlementLimit(
+  'profile.targetLanguages',
+  true,
+);
 
 const hexColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
 

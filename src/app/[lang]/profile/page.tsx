@@ -6,6 +6,7 @@ import {
 } from '@/db';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 import { getCurrentUser } from '@/lib/auth';
+import { isPremiumUser } from '@/lib/entitlements.server';
 import { ProfileRouteClient } from './ProfileRouteClient';
 
 const toProfileFormValues = ({
@@ -41,11 +42,13 @@ export default async function ProfileRoute({
 
   const persistedUser = await upsertDiscordUser(user);
   const profile = await getProfileByUserId(persistedUser.id);
+  const premium = await isPremiumUser(user);
 
   return (
     <main className="min-h-screen bg-background-main">
       <ProfileRouteClient
         locale={lang}
+        premium={premium}
         initialValues={profile ? toProfileFormValues(profile) : undefined}
         profileId={profile?.profile.isPublic ? profile.profile.id : undefined}
         userAvatarUrl={user.avatarUrl}

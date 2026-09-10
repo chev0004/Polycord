@@ -8,6 +8,7 @@ import type { ProfileFormValues } from '@/features/Profile/schema';
 type ProfileRouteClientProps = {
   initialValues?: ProfileFormValues;
   locale: string;
+  premium?: boolean;
   profileId?: string;
   userAvatarUrl?: string;
   userDisplayName: string;
@@ -16,6 +17,7 @@ type ProfileRouteClientProps = {
 export const ProfileRouteClient = ({
   initialValues,
   locale,
+  premium = false,
   profileId,
   userAvatarUrl,
   userDisplayName,
@@ -41,6 +43,7 @@ export const ProfileRouteClient = ({
       />
       <ProfilePage
         initialValues={initialValues}
+        premium={premium}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
         onViewPublicProfile={
