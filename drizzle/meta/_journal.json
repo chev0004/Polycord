@@ -127,6 +127,13 @@
       "when": 1789053723268,
       "tag": "0017_massive_the_hunter",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1789054100833,
+      "tag": "0018_plain_loki",
+      "breakpoints": true
     }
   ]
 }

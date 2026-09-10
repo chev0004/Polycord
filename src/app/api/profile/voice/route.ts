@@ -5,7 +5,7 @@ import {
   upsertDiscordUser,
   upsertVoiceIntroForUser,
 } from '@/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getActiveUser } from '@/lib/auth';
 import { hasEntitlement } from '@/lib/entitlements';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { inspectVoiceMedia } from '@/lib/voiceMedia';
@@ -31,7 +31,7 @@ const voiceIntroSchema = z.object({
 });
 
 export const POST = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -97,7 +97,7 @@ export const POST = async (request: Request) => {
 };
 
 export const DELETE = async () => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -34,6 +34,18 @@ export const languageDisplayEnum = pgEnum('language_display', [
 export const notificationKindEnum = pgEnum('notification_kind', [
   'copy',
   'view',
+  'warning',
+]);
+
+export const moderationActionEnum = pgEnum('moderation_action', [
+  'dismiss',
+  'warn',
+  'hide_profile',
+  'unhide_profile',
+  'suspend',
+  'unsuspend',
+  'ban',
+  'unban',
 ]);
 
 export const reportReasonEnum = pgEnum('report_reason', [
@@ -59,6 +71,8 @@ export const users = pgTable(
     displayName: text('display_name').notNull(),
     avatarUrl: text('avatar_url'),
     email: text('email'),
+    suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
+    bannedAt: timestamp('banned_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -69,6 +83,13 @@ export const users = pgTable(
   (table) => [uniqueIndex('users_discord_user_id_idx').on(table.discordUserId)],
 );
 
+export const moderationRestrictions = pgTable('moderation_restrictions', {
+  discordUserId: varchar('discord_user_id', { length: 32 }).primaryKey(),
+  bannedAt: timestamp('banned_at', { withTimezone: true }),
+  suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
+  hiddenByModeration: boolean('hidden_by_moderation').default(false).notNull(),
+});
+
 export const profiles = pgTable(
   'profiles',
   {
@@ -77,6 +98,9 @@ export const profiles = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     isPublic: boolean('is_public').default(false).notNull(),
+    hiddenByModeration: boolean('hidden_by_moderation')
+      .default(false)
+      .notNull(),
     allowAnonymousCopy: boolean('allow_anonymous_copy').default(true).notNull(),
     displayTimezone: boolean('display_timezone').default(true).notNull(),
     displayAvailability: boolean('display_availability')
@@ -341,6 +365,35 @@ export const userBlocks = pgTable(
   ],
 );
 
+export const moderationActions = pgTable(
+  'moderation_actions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    adminUserId: uuid('admin_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    targetUserId: uuid('target_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    reportId: uuid('report_id').references(() => reports.id, {
+      onDelete: 'set null',
+    }),
+    action: moderationActionEnum('action').notNull(),
+    note: text('note'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('moderation_actions_created_at_idx').on(table.createdAt),
+    index('moderation_actions_target_user_id_idx').on(table.targetUserId),
+    check(
+      'moderation_actions_note_length_check',
+      sql`${table.note} is null or char_length(${table.note}) <= 500`,
+    ),
+  ],
+);
+
 export const subscriptions = pgTable(
   'subscriptions',
   {
@@ -552,6 +605,10 @@ export type ReportReason = (typeof reportReasonEnum.enumValues)[number];
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type NewUserBlock = typeof userBlocks.$inferInsert;
 export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
+export type ModerationAction = typeof moderationActions.$inferSelect;
+export type NewModerationAction = typeof moderationActions.$inferInsert;
+export type ModerationActionKind =
+  (typeof moderationActionEnum.enumValues)[number];
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 export type ProfileBoost = typeof profileBoosts.$inferSelect;

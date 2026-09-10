@@ -56,6 +56,11 @@ export const boostProfileForUser = async (userId: string) => {
       .where(eq(users.id, userId))
       .for('update');
     if (!user) return { error: 'Public profile required', status: 404 };
+    if (
+      user.bannedAt ||
+      (user.suspendedUntil && user.suspendedUntil > new Date())
+    )
+      return { error: 'Unauthorized', status: 403 };
     const [subscription] = await tx
       .select()
       .from(subscriptions)
@@ -69,7 +74,7 @@ export const boostProfileForUser = async (userId: string) => {
       .from(profiles)
       .where(eq(profiles.userId, userId))
       .for('update');
-    if (!profile?.isPublic)
+    if (!profile?.isPublic || profile.hiddenByModeration)
       return { error: 'Public profile required', status: 404 };
     const now = new Date();
     const [usage] = await tx
