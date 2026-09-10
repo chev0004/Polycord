@@ -92,6 +92,13 @@
       "when": 1783533184844,
       "tag": "0012_typical_squirrel_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1783533955453,
+      "tag": "0013_strange_vindicator",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,13 @@ import {
   availabilityPresetToPattern,
 } from '@/constants/availability';
 import { isValidAvailability } from '@/constants/languages';
+import {
+  type CardTheme,
+  CUSTOM_CARD_THEME_ID,
+  findCardTheme,
+  getCustomCardTheme,
+  PREMIUM_CARD_THEMES,
+} from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
 import { isPremiumDiscordId } from '@/lib/entitlements';
@@ -26,9 +33,13 @@ import {
 
 export type ProfileValues = Pick<
   NewProfile,
+  | 'accentOverride'
   | 'allowAnonymousCopy'
   | 'bio'
+  | 'cardColor'
   | 'country'
+  | 'customGradientFrom'
+  | 'customGradientTo'
   | 'displayAvailability'
   | 'displayTimezone'
   | 'isPublic'
@@ -58,6 +69,38 @@ const isPremiumOwner = (
 ) =>
   isPremiumDiscordId(user.discordUserId) ||
   isSubscriptionActive(subscription ?? null);
+
+const toCardTheme = (
+  profile: Profile,
+  premium: boolean,
+): CardTheme | undefined => {
+  if (!profile.cardColor) {
+    return undefined;
+  }
+
+  let theme: CardTheme | undefined;
+
+  if (profile.cardColor === CUSTOM_CARD_THEME_ID) {
+    theme =
+      premium && profile.customGradientFrom && profile.customGradientTo
+        ? getCustomCardTheme({
+            from: profile.customGradientFrom,
+            to: profile.customGradientTo,
+          })
+        : undefined;
+  } else if (
+    premium ||
+    !PREMIUM_CARD_THEMES.some((candidate) => candidate.id === profile.cardColor)
+  ) {
+    theme = findCardTheme(profile.cardColor);
+  }
+
+  if (theme && premium && profile.accentOverride) {
+    return { ...theme, accent: profile.accentOverride };
+  }
+
+  return theme;
+};
 
 const toUserValues = (user: CurrentUser): NewUser => ({
   discordUserId: user.id,
@@ -116,6 +159,7 @@ const toDiscoveryProfile = ({
   subscription,
 }: ProfileWithUser): DiscoveryProfile => ({
   premium: isPremiumOwner(user, subscription),
+  cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
   id: profile.id,
   displayName: user.displayName,
   discordUsername: user.discordUsername,
