@@ -32,7 +32,8 @@ export const enablePushNotifications = async (): Promise<PushEnableResult> => {
       return 'denied';
     }
 
-    const registration = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.register('/sw.js');
+    const registration = await navigator.serviceWorker.ready;
     const subscription =
       (await registration.pushManager.getSubscription()) ??
       (await registration.pushManager.subscribe({
@@ -53,14 +54,38 @@ export const enablePushNotifications = async (): Promise<PushEnableResult> => {
 };
 
 export const disablePushNotifications = async (): Promise<void> => {
+  const response = await fetch('/api/push/subscription', { method: 'DELETE' });
+  if (!response.ok) throw new Error('Push unsubscribe failed');
   try {
     const registration =
       await navigator.serviceWorker.getRegistration('/sw.js');
     const subscription = await registration?.pushManager.getSubscription();
     await subscription?.unsubscribe();
   } catch {}
+};
 
+export const getPushNotificationState = async (): Promise<
+  PushEnableResult | 'disabled'
+> => {
+  if (!isPushSupported() || !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY)
+    return 'unsupported';
+  if (Notification.permission === 'denied') return 'denied';
+  if (Notification.permission !== 'granted') return 'disabled';
   try {
-    await fetch('/api/push/subscription', { method: 'DELETE' });
-  } catch {}
+    const registration =
+      await navigator.serviceWorker.getRegistration('/sw.js');
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) return 'disabled';
+    const response = await fetch('/api/push/subscription');
+    if (!response.ok) return 'error';
+    const state = (await response.json()) as {
+      enabled: boolean;
+      endpoints: string[];
+    };
+    return state.enabled && state.endpoints.includes(subscription.endpoint)
+      ? 'enabled'
+      : 'disabled';
+  } catch {
+    return 'error';
+  }
 };

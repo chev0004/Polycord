@@ -6,17 +6,25 @@ import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 
 type ProfileRouteClientProps = {
+  boostedUntil?: string;
+  boostsRemaining?: number;
   initialValues?: ProfileFormValues;
   locale: string;
+  premium?: boolean;
   profileId?: string;
+  stats?: { views30d: number; copies30d: number; saves: number };
   userAvatarUrl?: string;
   userDisplayName: string;
 };
 
 export const ProfileRouteClient = ({
+  boostedUntil,
+  boostsRemaining,
   initialValues,
   locale,
+  premium = false,
   profileId,
+  stats,
   userAvatarUrl,
   userDisplayName,
 }: ProfileRouteClientProps) => {
@@ -40,7 +48,27 @@ export const ProfileRouteClient = ({
         }
       />
       <ProfilePage
+        boostedUntil={boostedUntil}
+        boostsRemaining={boostsRemaining}
         initialValues={initialValues}
+        onBoostProfile={
+          premium && initialValues
+            ? async () => {
+                const response = await fetch('/api/profile/boost', {
+                  method: 'POST',
+                });
+
+                if (!response.ok) {
+                  throw new Error('Boost failed');
+                }
+
+                router.refresh();
+              }
+            : undefined
+        }
+        premium={premium}
+        profileId={profileId}
+        stats={stats}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
         onViewPublicProfile={

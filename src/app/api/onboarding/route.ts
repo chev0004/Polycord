@@ -9,10 +9,10 @@ import { onboardingSchema } from '@/features/Onboarding/schema';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
-import { getCurrentUser } from '@/lib/auth';
+import { getActiveUser } from '@/lib/auth';
 
 export const POST = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

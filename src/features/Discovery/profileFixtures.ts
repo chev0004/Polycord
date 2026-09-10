@@ -18,12 +18,10 @@ export const createSampleProfiles = (
       {
         language: 'en',
         level: Proficiency.ADVANCED,
-        goal: t('goalConversation'),
       },
       {
         language: 'ko',
         level: Proficiency.BEGINNER,
-        goal: t('goalGrammar'),
       },
       {
         language: 'zh',
@@ -62,7 +60,6 @@ export const createSampleProfiles = (
       {
         language: 'en',
         level: Proficiency.INTERMEDIATE,
-        goal: t('goalBusiness'),
       },
     ],
     about: 'Football fan from Buenos Aires. Looking for conversation partners!',
@@ -83,7 +80,6 @@ export const createSampleProfiles = (
       {
         language: 'fr',
         level: Proficiency.ADVANCED,
-        goal: t('goalExam'),
       },
       {
         language: 'en',
@@ -137,7 +133,6 @@ export const createSampleProfiles = (
       {
         language: 'en',
         level: Proficiency.INTERMEDIATE,
-        goal: t('goalConversation'),
       },
       {
         language: 'fr',
@@ -162,7 +157,6 @@ export const createSampleProfiles = (
       {
         language: 'ja',
         level: Proficiency.INTERMEDIATE,
-        goal: t('goalGrammar'),
       },
       {
         language: 'ko',
@@ -213,7 +207,6 @@ export const createSampleProfiles = (
       {
         language: 'en',
         level: Proficiency.ADVANCED,
-        goal: t('goalBusiness'),
       },
       {
         language: 'fr',
@@ -239,7 +232,6 @@ export const createSampleProfiles = (
       {
         language: 'en',
         level: Proficiency.ADVANCED,
-        goal: t('goalConversation'),
       },
       {
         language: 'es',
@@ -264,7 +256,6 @@ export const createSampleProfiles = (
       {
         language: 'en',
         level: Proficiency.INTERMEDIATE,
-        goal: t('goalExam'),
       },
       {
         language: 'zh',
@@ -306,7 +297,6 @@ export const createSampleProfiles = (
       {
         language: 'en',
         level: Proficiency.ADVANCED,
-        goal: t('goalBusiness'),
       },
       {
         language: 'pt',
