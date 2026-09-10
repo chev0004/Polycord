@@ -10,6 +10,7 @@ export const ANALYTICS_EVENTS = {
   discoveryView: 'discovery.view',
   profileView: 'profile.view',
   profileUsernameCopy: 'profile.username_copy',
+  profileCopyReceived: 'profile.copy_received',
   profileSaveFavorite: 'profile.save_favorite',
   connectionIntroRequest: 'connection.intro_request',
   safetyReport: 'safety.report',

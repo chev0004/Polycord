@@ -2,12 +2,7 @@ import 'server-only';
 
 import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { db } from './client';
-import {
-  analyticsEvents,
-  notifications,
-  profiles,
-  savedProfiles,
-} from './schema';
+import { analyticsEvents, profiles, savedProfiles } from './schema';
 
 export type ProfileStats = {
   views30d: number;
@@ -36,12 +31,12 @@ export const getProfileStatsForUser = async (
       ),
     db
       .select({ value: count() })
-      .from(notifications)
+      .from(analyticsEvents)
       .where(
         and(
-          eq(notifications.userId, userId),
-          eq(notifications.kind, 'copy'),
-          gte(notifications.createdAt, since),
+          eq(analyticsEvents.name, 'profile.copy_received'),
+          sql`${analyticsEvents.metadata} ->> 'ownerUserId' = ${userId}`,
+          gte(analyticsEvents.createdAt, since),
         ),
       ),
     db
