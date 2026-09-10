@@ -74,5 +74,5 @@ export const isSubscriptionActive = (
 ): boolean =>
   subscription !== null &&
   (subscription.status === 'active' || subscription.status === 'trialing') &&
-  (subscription.currentPeriodEnd === null ||
-    subscription.currentPeriodEnd.getTime() > Date.now());
+  subscription.currentPeriodEnd !== null &&
+  subscription.currentPeriodEnd.getTime() > Date.now();
