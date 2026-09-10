@@ -58,6 +58,7 @@ export default async function SettingsRoute({
                 pushNotifications: settings.pushNotifications,
                 theme: settings.theme,
                 timeFormat: settings.timeFormat,
+                languageDisplay: settings.languageDisplay,
               }
             : undefined
         }

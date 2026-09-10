@@ -26,6 +26,11 @@ export const themeEnum = pgEnum('theme', ['dark', 'light']);
 
 export const timeFormatEnum = pgEnum('time_format', ['12hr', '24hr']);
 
+export const languageDisplayEnum = pgEnum('language_display', [
+  'long',
+  'short',
+]);
+
 export const notificationKindEnum = pgEnum('notification_kind', [
   'copy',
   'view',
@@ -203,6 +208,9 @@ export const userSettings = pgTable(
       .default('en')
       .notNull(),
     timeFormat: timeFormatEnum('time_format').default('24hr').notNull(),
+    languageDisplay: languageDisplayEnum('language_display')
+      .default('long')
+      .notNull(),
     activityStatus: boolean('activity_status').default(true).notNull(),
     pushNotifications: boolean('push_notifications').default(true).notNull(),
     matchAlert: boolean('match_alert').default(true).notNull(),

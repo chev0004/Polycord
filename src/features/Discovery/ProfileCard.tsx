@@ -20,14 +20,17 @@ import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
+  capitalizeLanguageCode,
   formatCurrentTime,
   getLanguageName,
   getProficiencyTranslationKey,
   type IANATimezone,
+  isValidLanguageCode,
   type LanguageCode,
   type Proficiency,
   type TimeFormat,
 } from '@/constants/languages';
+import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
@@ -156,6 +159,7 @@ export const ProfileCard = ({
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
     getTimeFormat(),
   );
+  const languageDisplay = useLanguageDisplay();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -309,7 +313,11 @@ export const ProfileCard = ({
     isPrimary: boolean,
     key?: string,
   ) => {
-    const label = `${getLanguageName(language, locale)}${
+    const languageLabel =
+      languageDisplay === 'short' && isValidLanguageCode(language)
+        ? capitalizeLanguageCode(language)
+        : getLanguageName(language, locale);
+    const label = `${languageLabel}${
       level ? ` / ${tProfile(getProficiencyTranslationKey(level))}` : ''
     }`;
     const classes = isPrimary

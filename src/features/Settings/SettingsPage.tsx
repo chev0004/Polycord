@@ -140,6 +140,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     () => ({
       ...defaultValues,
       timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
+      languageDisplay: defaultValues.languageDisplay ?? 'long',
     }),
     [defaultValues],
   );
@@ -244,6 +245,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const timeFormatOptions = [
     { label: t('timeFormat24hr'), value: '24hr' },
     { label: t('timeFormat12hr'), value: '12hr' },
+  ];
+
+  const languageDisplayOptions = [
+    { label: t('languageDisplayLong'), value: 'long' },
+    { label: t('languageDisplayShort'), value: 'short' },
   ];
 
   const emailValue = watch('email');
@@ -594,6 +600,25 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       onValueChange={field.onChange}
                       value={field.value}
                       ariaLabel={t('timeFormatLabel')}
+                      className="w-[170px]"
+                    />
+                  )}
+                />
+              </SettingRow>
+
+              <SettingRow
+                label={t('languageDisplayLabel')}
+                description={t('languageDisplayDescription')}
+              >
+                <Controller
+                  name="languageDisplay"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      options={languageDisplayOptions}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      ariaLabel={t('languageDisplayLabel')}
                       className="w-[170px]"
                     />
                   )}

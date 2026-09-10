@@ -24,6 +24,7 @@ type SettingsRouteClientProps = {
     | 'pushNotifications'
     | 'theme'
     | 'timeFormat'
+    | 'languageDisplay'
   >;
   locale: string;
   premium?: boolean;
@@ -89,6 +90,7 @@ export const SettingsRouteClient = ({
     theme: initialSettings?.theme ?? 'dark',
     applicationLanguage: initialSettings?.applicationLanguage ?? locale,
     timeFormat: initialSettings?.timeFormat ?? '24hr',
+    languageDisplay: initialSettings?.languageDisplay ?? 'long',
     email: defaultEmail,
   };
 
@@ -112,7 +114,10 @@ export const SettingsRouteClient = ({
         router.refresh();
       }}
       onExportData={downloadAccountData}
-      onSubmit={saveSettings}
+      onSubmit={async (data) => {
+        await saveSettings(data);
+        router.refresh();
+      }}
       onUpdateDiscordConnection={() =>
         window.location.assign(`/api/auth/discord?locale=${locale}`)
       }
