@@ -3,19 +3,19 @@ import {
   updateSubscriptionByCustomerId,
   upsertSubscriptionForUser,
 } from '@/db';
-import { getStripeSubscription, verifyStripeSignature } from '@/lib/stripe';
+import {
+  getStripeSubscription,
+  getSubscriptionPeriodEnd,
+  verifyStripeSignature,
+} from '@/lib/stripe';
 
 type StripeEvent = {
   type: string;
   data: { object: Record<string, unknown> };
 };
 
-const toPeriodEnd = (value: unknown): Date | null =>
-  typeof value === 'number' ? new Date(value * 1000) : null;
-
 export const POST = async (request: Request) => {
   const payload = await request.text();
-
   if (
     !verifyStripeSignature(payload, request.headers.get('stripe-signature'))
   ) {
@@ -23,79 +23,78 @@ export const POST = async (request: Request) => {
   }
 
   let event: StripeEvent;
-
   try {
     event = JSON.parse(payload) as StripeEvent;
   } catch {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
-  const object = event.data?.object ?? {};
+  const object = event?.data?.object;
+  if (!object || typeof event.type !== 'string') {
+    return NextResponse.json({ error: 'Invalid event' }, { status: 400 });
+  }
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
+  const checkout = event.type === 'checkout.session.completed';
+  if (
+    !checkout &&
+    ![
+      'customer.subscription.created',
+      'customer.subscription.updated',
+      'customer.subscription.deleted',
+    ].includes(event.type)
+  ) {
+    return NextResponse.json({ received: true });
+  }
+
+  const subscriptionId = checkout ? object.subscription : object.id;
+  if (typeof subscriptionId !== 'string') {
+    return NextResponse.json(
+      { error: 'Missing subscription' },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const subscription = await getStripeSubscription(subscriptionId);
+    const customerId = subscription.customer;
+    const status = subscription.status;
+    if (typeof customerId !== 'string' || typeof status !== 'string') {
+      throw new Error('Invalid subscription');
+    }
+    const values = {
+      stripeSubscriptionId: subscriptionId,
+      status,
+      currentPeriodEnd: ['canceled', 'incomplete_expired'].includes(status)
+        ? null
+        : getSubscriptionPeriodEnd(subscription),
+      cancelAtPeriodEnd: subscription.cancel_at_period_end === true,
+    };
+    if (checkout) {
       const userId = object.client_reference_id;
-      const customerId = object.customer;
-      const subscriptionId = object.subscription;
-
-      if (typeof userId !== 'string' || typeof customerId !== 'string') {
-        break;
+      if (typeof userId !== 'string' || object.customer !== customerId) {
+        return NextResponse.json(
+          { error: 'Invalid customer' },
+          { status: 400 },
+        );
       }
-
-      let status = 'active';
-      let currentPeriodEnd: Date | null = null;
-
-      if (typeof subscriptionId === 'string') {
-        try {
-          const subscription = await getStripeSubscription(subscriptionId);
-          status = (subscription.status as string) ?? 'active';
-          currentPeriodEnd = toPeriodEnd(subscription.current_period_end);
-        } catch {}
-      }
-
       await upsertSubscriptionForUser(userId, {
         stripeCustomerId: customerId,
-        stripeSubscriptionId:
-          typeof subscriptionId === 'string' ? subscriptionId : null,
-        status,
-        currentPeriodEnd,
-        cancelAtPeriodEnd: false,
+        ...values,
       });
-      break;
-    }
-    case 'customer.subscription.created':
-    case 'customer.subscription.updated': {
-      const customerId = object.customer;
-
-      if (typeof customerId !== 'string') {
-        break;
+    } else {
+      const updated = await updateSubscriptionByCustomerId(customerId, values);
+      if (!updated) {
+        return NextResponse.json(
+          { error: 'Customer is not synchronized' },
+          { status: 503 },
+        );
       }
-
-      await updateSubscriptionByCustomerId(customerId, {
-        stripeSubscriptionId:
-          typeof object.id === 'string' ? object.id : undefined,
-        status: (object.status as string) ?? 'active',
-        currentPeriodEnd: toPeriodEnd(object.current_period_end),
-        cancelAtPeriodEnd: object.cancel_at_period_end === true,
-      });
-      break;
     }
-    case 'customer.subscription.deleted': {
-      const customerId = object.customer;
-
-      if (typeof customerId !== 'string') {
-        break;
-      }
-
-      await updateSubscriptionByCustomerId(customerId, {
-        status: 'canceled',
-        currentPeriodEnd: toPeriodEnd(object.current_period_end),
-        cancelAtPeriodEnd: false,
-      });
-      break;
-    }
-    default:
-      break;
+  } catch {
+    return NextResponse.json(
+      { error: 'Subscription synchronization failed' },
+      { status: 502 },
+    );
   }
 
   return NextResponse.json({ received: true });
