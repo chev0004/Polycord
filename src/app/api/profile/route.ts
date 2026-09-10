@@ -1,16 +1,30 @@
 import { NextResponse } from 'next/server';
 import {
   deleteProfileForUser,
+  deleteVoiceIntroForUser,
   getUserByDiscordId,
   type ProfileTargetLanguageValue,
   upsertDiscordUser,
   upsertProfileForUser,
 } from '@/db';
-import { FREE_LANGUAGE_CAP, profileSchema } from '@/features/Profile/schema';
+import {
+  CUSTOM_CARD_THEME_ID,
+  FREE_CARD_COLORS,
+  PREMIUM_CARD_THEMES,
+} from '@/features/Discovery/cardTheme';
+import { profileSchema } from '@/features/Profile/schema';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser } from '@/lib/auth';
+import { entitlementLimit, hasEntitlement } from '@/lib/entitlements';
+import { isPremiumUser } from '@/lib/entitlements.server';
+
+const isAllowedCardColor = (id: string, premiumThemes: boolean) =>
+  FREE_CARD_COLORS.some((color) => color.id === id) ||
+  (premiumThemes &&
+    (id === CUSTOM_CARD_THEME_ID ||
+      PREMIUM_CARD_THEMES.some((theme) => theme.id === id)));
 
 export const POST = async (request: Request) => {
   const currentUser = await getActiveUser();
@@ -37,15 +51,18 @@ export const POST = async (request: Request) => {
   }
 
   const values = payload.data;
+  const premium = await isPremiumUser(currentUser);
+  const languageCap = entitlementLimit('profile.targetLanguages', premium);
+  const tagCap = entitlementLimit('profile.tags', premium);
 
-  if (values.targetLanguages.length > FREE_LANGUAGE_CAP) {
+  if (values.targetLanguages.length > languageCap) {
     return NextResponse.json(
       {
         error: 'Invalid profile',
         issues: [
           {
             code: 'too_big',
-            maximum: FREE_LANGUAGE_CAP,
+            maximum: languageCap,
             path: ['targetLanguages'],
             message: 'maxLanguages',
           },
@@ -55,11 +72,42 @@ export const POST = async (request: Request) => {
     );
   }
 
+  if ((values.tags ?? []).length > tagCap) {
+    return NextResponse.json(
+      {
+        error: 'Invalid profile',
+        issues: [
+          {
+            code: 'too_big',
+            maximum: tagCap,
+            path: ['tags'],
+            message: 'maxTags',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+  }
+
+  const premiumThemes = hasEntitlement('profile.cardThemes', premium);
+  const cardColor =
+    values.cardColor && isAllowedCardColor(values.cardColor, premiumThemes)
+      ? values.cardColor
+      : null;
+  const customGradient =
+    premiumThemes && cardColor === CUSTOM_CARD_THEME_ID
+      ? values.customGradient
+      : undefined;
+
   const user = await upsertDiscordUser(currentUser);
   const profile = await upsertProfileForUser(user.id, {
     allowAnonymousCopy: values.allowAnonymousCopy,
     availability: values.availability ?? null,
     bio: values.bio.trim(),
+    cardColor,
+    customGradientFrom: customGradient?.from ?? null,
+    customGradientTo: customGradient?.to ?? null,
+    accentOverride: premiumThemes ? (values.accentOverride ?? null) : null,
     country: values.country || null,
     displayAvailability: values.displayAvailability,
     displayTimezone: values.displayTimezone,
@@ -101,6 +149,7 @@ export const DELETE = async () => {
   }
 
   const deleted = await deleteProfileForUser(user.id);
+  await deleteVoiceIntroForUser(user.id);
 
   return NextResponse.json({ deleted });
 };

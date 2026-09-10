@@ -11,10 +11,12 @@ const defaultSettings: SettingsFormValues = {
   matchAlert: true,
   profileInteractionAlert: true,
   profileViewAlert: true,
+  hideProfileVisits: false,
   productAnalytics: true,
   theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
+  languageDisplay: 'long',
   email: 'xhev@polycord.app',
 };
 

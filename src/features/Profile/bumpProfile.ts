@@ -1,8 +1,7 @@
-export const FREE_BUMP_COOLDOWN_MS = 3 * 60 * 60 * 1000;
-export const PREMIUM_BUMP_COOLDOWN_MS = 90 * 60 * 1000;
+import { entitlementLimit } from '@/lib/entitlements';
 
 export const getBumpCooldownMs = (premium: boolean) =>
-  premium ? PREMIUM_BUMP_COOLDOWN_MS : FREE_BUMP_COOLDOWN_MS;
+  entitlementLimit('discovery.bumpCooldownMs', premium);
 
 export const getBumpCooldown = (
   lastBumpedAt: Date | null | undefined,

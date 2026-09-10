@@ -1,10 +1,11 @@
 import 'server-only';
 
-import { aliasedTable, desc, eq } from 'drizzle-orm';
+import { aliasedTable, asc, desc, eq, ne } from 'drizzle-orm';
 import { db } from './client';
 import {
   type ModerationActionKind,
   moderationActions,
+  moderationRestrictions,
   profiles,
   type Report,
   reports,
@@ -33,6 +34,8 @@ const reporterUsers = aliasedTable(users, 'reporter_users');
 
 export const listReportsWithContext = async (
   limit = 100,
+  page = 1,
+  resolved = false,
 ): Promise<ReportQueueEntry[]> => {
   const rows = await db
     .select({
@@ -60,7 +63,11 @@ export const listReportsWithContext = async (
     .innerJoin(users, eq(reports.reportedUserId, users.id))
     .innerJoin(reporterUsers, eq(reports.reporterUserId, reporterUsers.id))
     .leftJoin(profiles, eq(reports.reportedProfileId, profiles.id))
-    .orderBy(desc(reports.createdAt))
+    .where(
+      resolved ? ne(reports.status, 'pending') : eq(reports.status, 'pending'),
+    )
+    .orderBy(asc(reports.createdAt), asc(reports.id))
+    .offset((page - 1) * limit)
     .limit(limit);
 
   return rows;
@@ -83,32 +90,68 @@ export const setReportStatus = async (
   await db.update(reports).set({ status }).where(eq(reports.id, reportId));
 };
 
+export const getModerationRestrictionByDiscordId = async (
+  discordUserId: string,
+) => {
+  const [restriction] = await db
+    .select()
+    .from(moderationRestrictions)
+    .where(eq(moderationRestrictions.discordUserId, discordUserId));
+  return restriction ?? null;
+};
+
+const setRestriction = async (
+  userId: string,
+  values: Partial<
+    Omit<typeof moderationRestrictions.$inferInsert, 'discordUserId'>
+  >,
+) =>
+  db.transaction(async (tx) => {
+    const [user] = await tx
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .for('update');
+    if (!user) throw new Error('User not found');
+    await tx
+      .insert(moderationRestrictions)
+      .values({ discordUserId: user.discordUserId, ...values })
+      .onConflictDoUpdate({
+        target: moderationRestrictions.discordUserId,
+        set: values,
+      });
+    if (values.hiddenByModeration !== undefined) {
+      await tx
+        .update(profiles)
+        .set({
+          hiddenByModeration: values.hiddenByModeration,
+          updatedAt: new Date(),
+        })
+        .where(eq(profiles.userId, userId));
+    } else {
+      await tx
+        .update(users)
+        .set({
+          bannedAt: values.bannedAt,
+          suspendedUntil: values.suspendedUntil,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId));
+    }
+  });
+
 export const setProfileHiddenByModeration = async (
   userId: string,
   hidden: boolean,
-) => {
-  await db
-    .update(profiles)
-    .set({ hiddenByModeration: hidden, updatedAt: new Date() })
-    .where(eq(profiles.userId, userId));
-};
+) => setRestriction(userId, { hiddenByModeration: hidden });
 
 export const setUserSuspendedUntil = async (
   userId: string,
   suspendedUntil: Date | null,
-) => {
-  await db
-    .update(users)
-    .set({ suspendedUntil, updatedAt: new Date() })
-    .where(eq(users.id, userId));
-};
+) => setRestriction(userId, { suspendedUntil });
 
-export const setUserBanned = async (userId: string, banned: boolean) => {
-  await db
-    .update(users)
-    .set({ bannedAt: banned ? new Date() : null, updatedAt: new Date() })
-    .where(eq(users.id, userId));
-};
+export const setUserBanned = async (userId: string, banned: boolean) =>
+  setRestriction(userId, { bannedAt: banned ? new Date() : null });
 
 export const logModerationAction = async (values: {
   adminUserId: string;

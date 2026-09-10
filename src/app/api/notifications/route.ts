@@ -10,6 +10,9 @@ import {
   setNotificationRead,
   upsertDiscordUser,
 } from '@/db';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromRequest } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser } from '@/lib/auth';
 import {
   enforceRateLimit,
@@ -92,6 +95,13 @@ export const POST = async (request: Request) => {
   if (!limit.allowed) {
     return rateLimitedResponse(limit.retryAfterMs);
   }
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.profileCopyReceived,
+    userId: actor.id,
+    locale: localeFromRequest(request),
+    metadata: { ownerUserId: target.profile.userId },
+  });
 
   await createNotification({
     userId: target.profile.userId,

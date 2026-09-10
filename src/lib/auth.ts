@@ -124,10 +124,18 @@ export const getActiveUser = async (): Promise<CurrentUser | null> => {
     return null;
   }
 
-  const { getUserByDiscordId, isUserRestricted } = await import('@/db');
+  const {
+    getUserByDiscordId,
+    getModerationRestrictionByDiscordId,
+    isUserRestricted,
+  } = await import('@/db');
   const user = await getUserByDiscordId(currentUser.id);
+  const restriction = await getModerationRestrictionByDiscordId(currentUser.id);
 
-  if (user && isUserRestricted(user)) {
+  if (
+    (user && isUserRestricted(user)) ||
+    (restriction && isUserRestricted(restriction))
+  ) {
     return null;
   }
 

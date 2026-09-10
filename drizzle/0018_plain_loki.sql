@@ -11,6 +11,13 @@ CREATE TABLE "moderation_actions" (
 	CONSTRAINT "moderation_actions_note_length_check" CHECK ("moderation_actions"."note" is null or char_length("moderation_actions"."note") <= 500)
 );
 --> statement-breakpoint
+CREATE TABLE "moderation_restrictions" (
+	"discord_user_id" varchar(32) PRIMARY KEY NOT NULL,
+	"banned_at" timestamp with time zone,
+	"suspended_until" timestamp with time zone,
+	"hidden_by_moderation" boolean DEFAULT false NOT NULL
+);
+--> statement-breakpoint
 ALTER TABLE "profiles" ADD COLUMN "hidden_by_moderation" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "suspended_until" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "banned_at" timestamp with time zone;--> statement-breakpoint

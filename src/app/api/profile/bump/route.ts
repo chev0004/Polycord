@@ -9,7 +9,7 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser } from '@/lib/auth';
-import { hasPremiumEntitlement } from '@/lib/entitlements';
+import { isPremiumUser } from '@/lib/entitlements.server';
 import { enforceRateLimit, requestIp } from '@/lib/rateLimit';
 
 export const POST = async (request: Request) => {
@@ -42,7 +42,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const premium = hasPremiumEntitlement(currentUser);
+  const premium = await isPremiumUser(currentUser);
   const { nextBumpAt, remainingMs } = getBumpCooldown(
     row.profile.lastBumpedAt,
     premium,
