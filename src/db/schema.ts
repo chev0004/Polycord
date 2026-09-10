@@ -209,6 +209,7 @@ export const userSettings = pgTable(
       .default(true)
       .notNull(),
     profileViewAlert: boolean('profile_view_alert').default(false).notNull(),
+    hideProfileVisits: boolean('hide_profile_visits').default(false).notNull(),
     productAnalytics: boolean('product_analytics').default(true).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()

@@ -19,6 +19,7 @@ type SettingsRouteClientProps = {
     | 'matchAlert'
     | 'profileInteractionAlert'
     | 'profileViewAlert'
+    | 'hideProfileVisits'
     | 'productAnalytics'
     | 'pushNotifications'
     | 'theme'
@@ -83,6 +84,7 @@ export const SettingsRouteClient = ({
     matchAlert: initialSettings?.matchAlert ?? true,
     profileInteractionAlert: initialSettings?.profileInteractionAlert ?? true,
     profileViewAlert: initialSettings?.profileViewAlert ?? false,
+    hideProfileVisits: initialSettings?.hideProfileVisits ?? false,
     productAnalytics: initialSettings?.productAnalytics ?? true,
     theme: initialSettings?.theme ?? 'dark',
     applicationLanguage: initialSettings?.applicationLanguage ?? locale,

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import {
   getProfileByUserId,
   getPublicProfileById,
+  getUserSettingsByUserId,
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
@@ -10,6 +11,8 @@ import {
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
+import { hasEntitlement } from '@/lib/entitlements';
+import { isPremiumUser } from '@/lib/entitlements.server';
 import { notifyProfileView } from '@/lib/notifications/profileView';
 import { PublicProfileClient } from './PublicProfileClient';
 
@@ -52,12 +55,25 @@ export default async function PublicProfileRoute({
         viewerProfile.profile,
       ).timezone;
     }
+
+    const [viewerSettings, viewerPremium] = await Promise.all([
+      getUserSettingsByUserId(persistedUser.id),
+      isPremiumUser(user),
+    ]);
+
+    if (
+      hasEntitlement('privacy.hiddenVisits', viewerPremium) &&
+      viewerSettings?.hideProfileVisits
+    ) {
+      viewerActor = null;
+    }
   }
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileView,
     userId: viewerUserId ?? null,
     locale: lang,
+    metadata: { ownerUserId: row.profile.userId },
   });
 
   if (viewerUserId !== row.profile.userId) {
