@@ -98,6 +98,7 @@ export const profiles = pgTable(
     country: varchar('country', { length: 2 }),
     timezone: varchar('timezone', { length: 64 }),
     lastBumpedAt: timestamp('last_bumped_at', { withTimezone: true }),
+    boostedUntil: timestamp('boosted_until', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -357,6 +358,20 @@ export const subscriptions = pgTable(
   ],
 );
 
+export const profileBoosts = pgTable(
+  'profile_boosts',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    usedAt: timestamp('used_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('profile_boosts_user_id_used_at_idx').on(table.userId, table.usedAt),
+  ],
+);
+
 export const rateLimitCounters = pgTable(
   'rate_limit_counters',
   {
@@ -505,5 +520,6 @@ export type NewUserBlock = typeof userBlocks.$inferInsert;
 export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
+export type ProfileBoost = typeof profileBoosts.$inferSelect;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;

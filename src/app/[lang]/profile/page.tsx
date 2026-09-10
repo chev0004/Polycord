@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import {
+  getBoostStatusForUser,
   getProfileByUserId,
   mapProfileAvailability,
   upsertDiscordUser,
@@ -53,12 +54,17 @@ export default async function ProfileRoute({
   const persistedUser = await upsertDiscordUser(user);
   const profile = await getProfileByUserId(persistedUser.id);
   const premium = await isPremiumUser(user);
+  const boostStatus = premium
+    ? await getBoostStatusForUser(persistedUser.id, premium)
+    : undefined;
 
   return (
     <main className="min-h-screen bg-background-main">
       <ProfileRouteClient
         locale={lang}
         premium={premium}
+        boostedUntil={boostStatus?.boostedUntil?.toISOString()}
+        boostsRemaining={boostStatus?.remaining}
         initialValues={profile ? toProfileFormValues(profile) : undefined}
         profileId={profile?.profile.isPublic ? profile.profile.id : undefined}
         userAvatarUrl={user.avatarUrl}

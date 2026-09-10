@@ -5,6 +5,8 @@ export const ANALYTICS_EVENTS = {
   onboardingComplete: 'onboarding.complete',
   profileSave: 'profile.save',
   profileBump: 'profile.bump',
+  profileBoost: 'profile.boost',
+  discoveryBoostImpressions: 'discovery.boost_impressions',
   discoveryView: 'discovery.view',
   profileView: 'profile.view',
   profileUsernameCopy: 'profile.username_copy',
