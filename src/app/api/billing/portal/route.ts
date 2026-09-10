@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  getSubscriptionByUserId,
-  isSubscriptionActive,
-  upsertDiscordUser,
-} from '@/db';
+import { getSubscriptionByUserId, upsertDiscordUser } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import {
   createCheckoutSession,
@@ -40,19 +36,18 @@ export const POST = async (request: Request) => {
   const subscription = await getSubscriptionByUserId(user.id);
 
   try {
-    const url =
-      subscription && isSubscriptionActive(subscription)
-        ? await createPortalSession({
-            customerId: subscription.stripeCustomerId,
-            returnUrl: settingsUrl,
-          })
-        : await createCheckoutSession({
-            userId: user.id,
-            customerId: subscription?.stripeCustomerId,
-            email: user.email ?? undefined,
-            successUrl: settingsUrl,
-            cancelUrl: settingsUrl,
-          });
+    const url = subscription?.stripeCustomerId
+      ? await createPortalSession({
+          customerId: subscription.stripeCustomerId,
+          returnUrl: settingsUrl,
+        })
+      : await createCheckoutSession({
+          userId: user.id,
+          customerId: subscription?.stripeCustomerId,
+          email: user.email ?? undefined,
+          successUrl: settingsUrl,
+          cancelUrl: settingsUrl,
+        });
 
     return NextResponse.json({ url });
   } catch {
