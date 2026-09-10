@@ -4,6 +4,10 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./next-intl.config.ts');
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['ffprobe-static'],
+  outputFileTracingIncludes: {
+    '/api/profile/voice': ['node_modules/ffprobe-static/bin/**/*'],
+  },
   images: {
     remotePatterns: [
       {

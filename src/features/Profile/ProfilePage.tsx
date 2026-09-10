@@ -58,6 +58,7 @@ type ProfilePageProps = {
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
   onViewPublicProfile?: () => void;
   premium?: boolean;
+  profileId?: string;
   stats?: { views30d: number; copies30d: number; saves: number };
   userAvatarUrl?: string;
   userDisplayName?: string;
@@ -161,6 +162,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onDeleteProfile,
   onViewPublicProfile,
   premium = false,
+  profileId,
   stats,
   userAvatarUrl,
   userDisplayName,
@@ -320,7 +322,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     ) => options.find((option) => option.value === value)?.label ?? '';
 
     return {
-      id: 'profile-preview',
+      id: profileId ?? 'profile-preview',
       displayName,
       discordUsername: displayName,
       avatarUrl: userAvatarUrl,
@@ -365,6 +367,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     timezone,
     userAvatarUrl,
     voiceIntroSeconds,
+    profileId,
   ]);
 
   const tagsSchemaError = errors.tags?.message

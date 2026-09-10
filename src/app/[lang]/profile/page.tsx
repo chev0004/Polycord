@@ -35,6 +35,7 @@ const toProfileFormValues = ({
   displayTimezone: profile.displayTimezone,
   isPublic: profile.isPublic,
   primaryLanguage: profile.primaryLanguage,
+  voiceIntroSeconds: profile.voiceIntroSeconds ?? 0,
   tags: profile.tags,
   targetLanguages,
   timezone: profile.timezone ?? '',

@@ -100,9 +100,6 @@ const baseLanguagePillClasses =
   'rounded-md px-2.5 py-[5px] text-xs font-medium whitespace-nowrap flex-shrink-0';
 const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-gray-200`;
 const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip-bg,var(--color-primary-darker))] text-[var(--ct-chip-text,#fff)]`;
-
-// The card surface and avatar ring layer the premium tint over the dark
-// card colour; the transparent fallback keeps free cards untouched.
 const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
@@ -167,8 +164,6 @@ export const ProfileCard = ({
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
 
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
-  // Free profiles always use the neutral slate accent regardless of
-  // banner colour; only premium themes carry their own accent.
   const accent = profile.premium ? theme.accent : FREE_ACCENT;
   const themeStyle = {
     ...deriveCardAccent(accent),
@@ -607,7 +602,14 @@ export const ProfileCard = ({
       )}
 
       {profile.premium && profile.voiceIntroSeconds ? (
-        <VoiceChip seconds={profile.voiceIntroSeconds} />
+        <VoiceChip
+          seconds={profile.voiceIntroSeconds}
+          src={
+            profile.id === 'profile-preview'
+              ? undefined
+              : `/api/voice/${profile.id}`
+          }
+        />
       ) : null}
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">

@@ -99,6 +99,7 @@ export const profiles = pgTable(
     timezone: varchar('timezone', { length: 64 }),
     lastBumpedAt: timestamp('last_bumped_at', { withTimezone: true }),
     boostedUntil: timestamp('boosted_until', { withTimezone: true }),
+    voiceIntroSeconds: integer('voice_intro_seconds'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -359,6 +360,30 @@ export const subscriptions = pgTable(
   ],
 );
 
+export const voiceIntros = pgTable(
+  'voice_intros',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    mimeType: varchar('mime_type', { length: 64 }).notNull(),
+    durationSeconds: integer('duration_seconds').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    data: text('data').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('voice_intros_user_id_idx').on(table.userId),
+    check(
+      'voice_intros_duration_check',
+      sql`${table.durationSeconds} between 1 and 20`,
+    ),
+  ],
+);
+
 export const profileBoosts = pgTable(
   'profile_boosts',
   {
@@ -522,5 +547,6 @@ export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 export type ProfileBoost = typeof profileBoosts.$inferSelect;
+export type VoiceIntro = typeof voiceIntros.$inferSelect;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;
