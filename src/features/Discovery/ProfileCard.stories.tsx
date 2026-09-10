@@ -47,12 +47,10 @@ const createMockProfile = (t: ReturnType<typeof useTranslations>) =>
       {
         language: 'en',
         level: Proficiency.ADVANCED,
-        goal: t('goalConversation'),
       },
       {
         language: 'ko',
         level: Proficiency.BEGINNER,
-        goal: t('goalGrammar'),
       },
     ],
     about: longBio,

@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  boostProfileForUser,
-  getBoostStatusForUser,
-  getProfileByUserId,
-  upsertDiscordUser,
-} from '@/db';
+import { boostProfileForUser, upsertDiscordUser } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -25,50 +20,26 @@ export const POST = async (request: Request) => {
   }
 
   const user = await upsertDiscordUser(currentUser);
-  const row = await getProfileByUserId(user.id);
-
-  if (!row?.profile.isPublic) {
-    return NextResponse.json(
-      { error: 'Public profile required' },
-      { status: 404 },
-    );
-  }
-
-  const status = await getBoostStatusForUser(user.id, premium);
-
-  if (status.boostedUntil) {
+  const result = await boostProfileForUser(user.id);
+  if ('error' in result) {
     return NextResponse.json(
       {
-        error: 'Boost already active',
-        boostedUntil: status.boostedUntil.toISOString(),
-        remaining: status.remaining,
+        error: result.error,
+        remaining: result.remaining,
+        boostedUntil: result.boostedUntil?.toISOString(),
       },
-      { status: 409 },
+      { status: result.status },
     );
   }
-
-  if (status.remaining <= 0) {
-    return NextResponse.json(
-      { error: 'No boosts remaining', remaining: 0 },
-      { status: 429 },
-    );
-  }
-
-  const boostedUntil = await boostProfileForUser(user.id);
-
-  if (!boostedUntil) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
-  }
-
   await trackEvent({
     name: ANALYTICS_EVENTS.profileBoost,
     userId: user.id,
     locale: localeFromRequest(request),
-    metadata: { remaining: status.remaining - 1 },
+    metadata: { remaining: result.remaining },
   });
 
   return NextResponse.json({
-    boostedUntil: boostedUntil.toISOString(),
-    remaining: status.remaining - 1,
+    boostedUntil: result.boostedUntil.toISOString(),
+    remaining: result.remaining,
   });
 };

@@ -42,7 +42,6 @@ import { VoiceChip } from './VoiceChip';
 export type DiscoveryTargetLanguage = {
   language: LanguageCode | string;
   level?: Proficiency | string;
-  goal?: string;
 };
 
 export type DiscoveryProfile = {
