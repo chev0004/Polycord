@@ -28,8 +28,10 @@ export type SettingsPageProps = {
   onExportData: () => Promise<void> | void;
   onSubmit?: (data: SettingsFormValues) => Promise<void> | void;
   onUpdateDiscordConnection: () => void;
-  onManageSubscription: () => void;
+  onManageSubscription: () => Promise<void> | void;
   premium?: boolean;
+  subscriptionRenewsAt?: string;
+  subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -53,12 +55,6 @@ const getStoredTimeFormat = (): TimeFormat => {
   if (typeof window === 'undefined') return '24hr';
   const stored = localStorage.getItem('polycord_timeFormat');
   return stored === '12hr' || stored === '24hr' ? stored : '24hr';
-};
-
-const getStoredLanguageDisplay = (): 'long' | 'short' => {
-  if (typeof window === 'undefined') return 'long';
-  const stored = localStorage.getItem('polycord_languageDisplay');
-  return stored === 'short' ? 'short' : 'long';
 };
 
 const SectionCard = ({
@@ -109,6 +105,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onUpdateDiscordConnection,
   onManageSubscription,
   premium = false,
+  subscriptionRenewsAt,
+  subscriptionCancelAtPeriodEnd = false,
   userAvatarUrl,
   userDisplayName,
 }) => {
@@ -122,14 +120,27 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'confirming' | 'loading' | 'error'
   >('idle');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
+  const [billingStatus, setBillingStatus] = useState<
+    'idle' | 'loading' | 'error'
+  >('idle');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+
+  const handleManageSubscription = async () => {
+    setBillingStatus('loading');
+
+    try {
+      await onManageSubscription();
+      setBillingStatus('idle');
+    } catch {
+      setBillingStatus('error');
+    }
+  };
 
   const initialValues: SettingsFormValues = useMemo(
     () => ({
       ...defaultValues,
       timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
-      languageDisplay:
-        defaultValues.languageDisplay || getStoredLanguageDisplay(),
+      languageDisplay: defaultValues.languageDisplay ?? 'long',
     }),
     [defaultValues],
   );
@@ -168,8 +179,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       if (typeof window !== 'undefined') {
         localStorage.setItem('polycord_timeFormat', data.timeFormat);
         window.dispatchEvent(new Event('timeFormatChanged'));
-        localStorage.setItem('polycord_languageDisplay', data.languageDisplay);
-        window.dispatchEvent(new Event('languageDisplayChanged'));
       }
 
       reset(data);
@@ -344,7 +353,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 {premium ? (
                   <Button
                     variant="outline"
-                    onClick={onManageSubscription}
+                    onClick={handleManageSubscription}
+                    disabled={billingStatus === 'loading'}
                     className="h-10 whitespace-nowrap"
                   >
                     {t('manageBillingButton')}
@@ -489,10 +499,25 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <p className="mt-0.5 text-[12.5px] text-gray-500">
                       {t('premiumPlanNote')}
                     </p>
+                    {subscriptionRenewsAt ? (
+                      <p className="mt-0.5 text-[12.5px] text-gray-500">
+                        {t(
+                          subscriptionCancelAtPeriodEnd
+                            ? 'billingEnds'
+                            : 'billingRenews',
+                          {
+                            date: new Date(
+                              subscriptionRenewsAt,
+                            ).toLocaleDateString(currentLocale),
+                          },
+                        )}
+                      </p>
+                    ) : null}
                   </div>
                   <Button
                     variant="outline"
-                    onClick={onManageSubscription}
+                    onClick={handleManageSubscription}
+                    disabled={billingStatus === 'loading'}
                     className="h-10 whitespace-nowrap"
                   >
                     {t('manageBillingButton')}
@@ -508,7 +533,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     {t('premiumUpgradeNote')}
                   </span>
                   <Button
-                    onClick={onManageSubscription}
+                    onClick={handleManageSubscription}
+                    disabled={billingStatus === 'loading'}
                     className="h-9 whitespace-nowrap text-[13px]"
                   >
                     {t('premiumUpgradeButton')}
@@ -671,6 +697,45 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   />
                 </SettingRow>
 
+                {premium ? (
+                  <SettingRow
+                    label={t('hideProfileVisitsLabel')}
+                    description={t('hideProfileVisitsDescriptionPremium')}
+                  >
+                    <Controller
+                      name="hideProfileVisits"
+                      control={control}
+                      render={({ field }) => (
+                        <Toggle
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </SettingRow>
+                ) : (
+                  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-2 font-medium text-[15px] text-white">
+                        {t('hideProfileVisitsLabel')}
+                        <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                          {t('premiumTag')}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-[12px] text-gray-500">
+                        {t('hideProfileVisitsDescriptionFree')}
+                      </p>
+                    </div>
+                    <div className="shrink-0">
+                      <Toggle
+                        checked={false}
+                        onCheckedChange={() => jumpToSection('premium')}
+                        aria-label={t('hideProfileVisitsLabel')}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <SettingRow
                   label={t('productAnalyticsLabel')}
                   description={t('productAnalyticsDescription')}
@@ -793,6 +858,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
             {saveStatus === 'error' ? (
               <span className="text-[13px] text-red-400">{t('saveError')}</span>
+            ) : billingStatus === 'error' ? (
+              <span className="text-[13px] text-red-400">
+                {t('billingError')}
+              </span>
             ) : (
               <span
                 className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}

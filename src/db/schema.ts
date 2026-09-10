@@ -96,9 +96,15 @@ export const profiles = pgTable(
       .default(false)
       .notNull(),
     tags: text('tags').array().default(sql`'{}'::text[]`).notNull(),
+    cardColor: varchar('card_color', { length: 32 }),
+    customGradientFrom: varchar('custom_gradient_from', { length: 7 }),
+    customGradientTo: varchar('custom_gradient_to', { length: 7 }),
+    accentOverride: varchar('accent_override', { length: 7 }),
     country: varchar('country', { length: 2 }),
     timezone: varchar('timezone', { length: 64 }),
     lastBumpedAt: timestamp('last_bumped_at', { withTimezone: true }),
+    boostedUntil: timestamp('boosted_until', { withTimezone: true }),
+    voiceIntroSeconds: integer('voice_intro_seconds'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -212,6 +218,7 @@ export const userSettings = pgTable(
       .default(true)
       .notNull(),
     profileViewAlert: boolean('profile_view_alert').default(false).notNull(),
+    hideProfileVisits: boolean('hide_profile_visits').default(false).notNull(),
     productAnalytics: boolean('product_analytics').default(true).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -331,6 +338,71 @@ export const userBlocks = pgTable(
       'user_blocks_no_self_block_check',
       sql`${table.blockerUserId} <> ${table.blockedUserId}`,
     ),
+  ],
+);
+
+export const subscriptions = pgTable(
+  'subscriptions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    stripeCustomerId: varchar('stripe_customer_id', { length: 64 }).notNull(),
+    stripeSubscriptionId: varchar('stripe_subscription_id', { length: 64 }),
+    status: varchar('status', { length: 32 }).default('none').notNull(),
+    currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
+    cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('subscriptions_user_id_idx').on(table.userId),
+    uniqueIndex('subscriptions_stripe_customer_id_idx').on(
+      table.stripeCustomerId,
+    ),
+  ],
+);
+
+export const voiceIntros = pgTable(
+  'voice_intros',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    mimeType: varchar('mime_type', { length: 64 }).notNull(),
+    durationSeconds: integer('duration_seconds').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    data: text('data').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('voice_intros_user_id_idx').on(table.userId),
+    check(
+      'voice_intros_duration_check',
+      sql`${table.durationSeconds} between 1 and 20`,
+    ),
+  ],
+);
+
+export const profileBoosts = pgTable(
+  'profile_boosts',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    usedAt: timestamp('used_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('profile_boosts_user_id_used_at_idx').on(table.userId, table.usedAt),
   ],
 );
 
@@ -480,5 +552,9 @@ export type ReportReason = (typeof reportReasonEnum.enumValues)[number];
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type NewUserBlock = typeof userBlocks.$inferInsert;
 export type RateLimitCounter = typeof rateLimitCounters.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
+export type ProfileBoost = typeof profileBoosts.$inferSelect;
+export type VoiceIntro = typeof voiceIntros.$inferSelect;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;

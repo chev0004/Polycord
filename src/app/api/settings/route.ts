@@ -51,6 +51,7 @@ export const POST = async (request: Request) => {
     matchAlert: values.matchAlert,
     profileInteractionAlert: values.profileInteractionAlert,
     profileViewAlert: values.profileViewAlert,
+    hideProfileVisits: values.hideProfileVisits,
     productAnalytics: values.productAnalytics,
   });
 

@@ -7,8 +7,17 @@ import {
   availabilityPresetToPattern,
 } from '@/constants/availability';
 import { isValidAvailability } from '@/constants/languages';
+import {
+  type CardTheme,
+  CUSTOM_CARD_THEME_ID,
+  findCardTheme,
+  getCustomCardTheme,
+  PREMIUM_CARD_THEMES,
+} from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
+import { isPremiumDiscordId } from '@/lib/entitlements';
+import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import {
   type NewProfile,
@@ -16,15 +25,22 @@ import {
   type Profile,
   profiles,
   profileTargetLanguages,
+  type Subscription,
+  subscriptions,
   type User,
   users,
+  voiceIntros,
 } from './schema';
 
 export type ProfileValues = Pick<
   NewProfile,
+  | 'accentOverride'
   | 'allowAnonymousCopy'
   | 'bio'
+  | 'cardColor'
   | 'country'
+  | 'customGradientFrom'
+  | 'customGradientTo'
   | 'displayAvailability'
   | 'displayTimezone'
   | 'isPublic'
@@ -45,6 +61,46 @@ type ProfileWithUser = {
   profile: Profile;
   targetLanguages: ProfileTargetLanguageValue[];
   user: User;
+  subscription?: Subscription | null;
+};
+
+const isPremiumOwner = (
+  user: User,
+  subscription: Subscription | null | undefined,
+) =>
+  isPremiumDiscordId(user.discordUserId) ||
+  isSubscriptionActive(subscription ?? null);
+
+const toCardTheme = (
+  profile: Profile,
+  premium: boolean,
+): CardTheme | undefined => {
+  if (!profile.cardColor) {
+    return undefined;
+  }
+
+  let theme: CardTheme | undefined;
+
+  if (profile.cardColor === CUSTOM_CARD_THEME_ID) {
+    theme =
+      premium && profile.customGradientFrom && profile.customGradientTo
+        ? getCustomCardTheme({
+            from: profile.customGradientFrom,
+            to: profile.customGradientTo,
+          })
+        : undefined;
+  } else if (
+    premium ||
+    !PREMIUM_CARD_THEMES.some((candidate) => candidate.id === profile.cardColor)
+  ) {
+    theme = findCardTheme(profile.cardColor);
+  }
+
+  if (theme && premium && profile.accentOverride) {
+    return { ...theme, accent: profile.accentOverride };
+  }
+
+  return theme;
 };
 
 const toUserValues = (user: CurrentUser): NewUser => ({
@@ -101,7 +157,18 @@ const toDiscoveryProfile = ({
   profile,
   targetLanguages,
   user,
+  subscription,
 }: ProfileWithUser): DiscoveryProfile => ({
+  premium: isPremiumOwner(user, subscription),
+  cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
+  boosted:
+    isPremiumOwner(user, subscription) &&
+    profile.boostedUntil !== null &&
+    profile.boostedUntil.getTime() > Date.now(),
+  voiceIntroSeconds:
+    isPremiumOwner(user, subscription) && profile.voiceIntroSeconds
+      ? profile.voiceIntroSeconds
+      : undefined,
   id: profile.id,
   displayName: user.displayName,
   discordUsername: user.discordUsername,
@@ -232,9 +299,11 @@ export const getProfileById = async (profileId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.id, profileId))
     .limit(1);
 
@@ -246,9 +315,11 @@ export const getProfileByUserId = async (userId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.userId, userId))
     .limit(1);
 
@@ -260,9 +331,11 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(users.discordUserId, discordUserId))
     .limit(1);
 
@@ -294,9 +367,11 @@ export const listPublicProfiles = async (
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(visibility)
     .orderBy(
       sql`${profiles.lastBumpedAt} desc nulls last`,
@@ -329,9 +404,11 @@ export const listPublicProfilesByIds = async (
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(and(inArray(profiles.id, profileIds), eq(profiles.isPublic, true)));
 
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
@@ -408,12 +485,14 @@ export const upsertProfileForUser = async (
 };
 
 export const deleteProfileForUser = async (userId: string) => {
-  const deletedProfiles = await db
-    .delete(profiles)
-    .where(eq(profiles.userId, userId))
-    .returning({ id: profiles.id });
-
-  return deletedProfiles.length > 0;
+  return db.transaction(async (tx) => {
+    const deletedProfiles = await tx
+      .delete(profiles)
+      .where(eq(profiles.userId, userId))
+      .returning({ id: profiles.id });
+    await tx.delete(voiceIntros).where(eq(voiceIntros.userId, userId));
+    return deletedProfiles.length > 0;
+  });
 };
 
 export const bumpProfileForUser = async (

@@ -30,6 +30,7 @@ import {
   type Proficiency,
   type TimeFormat,
 } from '@/constants/languages';
+import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
@@ -44,7 +45,6 @@ import { VoiceChip } from './VoiceChip';
 export type DiscoveryTargetLanguage = {
   language: LanguageCode | string;
   level?: Proficiency | string;
-  goal?: string;
 };
 
 export type DiscoveryProfile = {
@@ -63,6 +63,7 @@ export type DiscoveryProfile = {
   lastBumpRelative?: string;
   lastBumpedAt?: string;
   bumpedMinutesAgo?: number;
+  boosted?: boolean;
   premium?: boolean;
   cardTheme?: CardTheme;
   availability?: AvailabilityPattern;
@@ -102,9 +103,6 @@ const baseLanguagePillClasses =
   'rounded-md px-2.5 py-[5px] text-xs font-medium whitespace-nowrap flex-shrink-0';
 const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-gray-200`;
 const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip-bg,var(--color-primary-darker))] text-[var(--ct-chip-text,#fff)]`;
-
-// The card surface and avatar ring layer the premium tint over the dark
-// card colour; the transparent fallback keeps free cards untouched.
 const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
@@ -131,14 +129,6 @@ const getTimeFormat = (): TimeFormat => {
   if (typeof window === 'undefined') return '24hr';
   const stored = localStorage.getItem(TIME_FORMAT_STORAGE_KEY);
   return stored === '12hr' || stored === '24hr' ? stored : '24hr';
-};
-
-const LANGUAGE_DISPLAY_STORAGE_KEY = 'polycord_languageDisplay';
-
-const getLanguageDisplay = (): 'long' | 'short' => {
-  if (typeof window === 'undefined') return 'long';
-  const stored = localStorage.getItem(LANGUAGE_DISPLAY_STORAGE_KEY);
-  return stored === 'short' ? 'short' : 'long';
 };
 
 export const ProfileCard = ({
@@ -169,9 +159,7 @@ export const ProfileCard = ({
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
     getTimeFormat(),
   );
-  const [languageDisplay, setLanguageDisplay] = useState<'long' | 'short'>(() =>
-    getLanguageDisplay(),
-  );
+  const languageDisplay = useLanguageDisplay();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -180,8 +168,6 @@ export const ProfileCard = ({
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
 
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
-  // Free profiles always use the neutral slate accent regardless of
-  // banner colour; only premium themes carry their own accent.
   const accent = profile.premium ? theme.accent : FREE_ACCENT;
   const themeStyle = {
     ...deriveCardAccent(accent),
@@ -220,15 +206,12 @@ export const ProfileCard = ({
   useEffect(() => {
     const handleStorageChange = () => {
       setTimeFormat(getTimeFormat());
-      setLanguageDisplay(getLanguageDisplay());
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('timeFormatChanged', handleStorageChange);
-    window.addEventListener('languageDisplayChanged', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('timeFormatChanged', handleStorageChange);
-      window.removeEventListener('languageDisplayChanged', handleStorageChange);
     };
   }, []);
 
@@ -627,7 +610,14 @@ export const ProfileCard = ({
       )}
 
       {profile.premium && profile.voiceIntroSeconds ? (
-        <VoiceChip seconds={profile.voiceIntroSeconds} />
+        <VoiceChip
+          seconds={profile.voiceIntroSeconds}
+          src={
+            profile.id === 'profile-preview'
+              ? undefined
+              : `/api/voice/${profile.id}`
+          }
+        />
       ) : null}
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">

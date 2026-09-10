@@ -1,10 +1,13 @@
 import { redirect } from 'next/navigation';
 import {
   getProfileByDiscordUserId,
+  getSubscriptionByDiscordUserId,
   getUserByDiscordId,
   getUserSettingsByDiscordUserId,
+  isSubscriptionActive,
 } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
+import { hasPremiumEntitlement } from '@/lib/entitlements';
 import { SettingsRouteClient } from './SettingsRouteClient';
 
 export default async function SettingsRoute({
@@ -19,11 +22,15 @@ export default async function SettingsRoute({
     redirect(`/${lang}`);
   }
 
-  const [account, profile, settings] = await Promise.all([
+  const [account, profile, settings, subscription] = await Promise.all([
     getUserByDiscordId(user.id),
     getProfileByDiscordUserId(user.id),
     getUserSettingsByDiscordUserId(user.id),
+    getSubscriptionByDiscordUserId(user.id),
   ]);
+
+  const premium =
+    hasPremiumEntitlement(user) || isSubscriptionActive(subscription);
 
   return (
     <main className="min-h-screen bg-background-main">
@@ -46,6 +53,7 @@ export default async function SettingsRoute({
                 matchAlert: settings.matchAlert,
                 profileInteractionAlert: settings.profileInteractionAlert,
                 profileViewAlert: settings.profileViewAlert,
+                hideProfileVisits: settings.hideProfileVisits,
                 productAnalytics: settings.productAnalytics,
                 pushNotifications: settings.pushNotifications,
                 theme: settings.theme,
@@ -55,6 +63,11 @@ export default async function SettingsRoute({
             : undefined
         }
         locale={lang}
+        premium={premium}
+        subscriptionRenewsAt={
+          subscription?.currentPeriodEnd?.toISOString() ?? undefined
+        }
+        subscriptionCancelAtPeriodEnd={subscription?.cancelAtPeriodEnd}
         userAvatarUrl={user.avatarUrl}
         userDisplayName={user.name}
       />

@@ -19,6 +19,7 @@ type SettingsRouteClientProps = {
     | 'matchAlert'
     | 'profileInteractionAlert'
     | 'profileViewAlert'
+    | 'hideProfileVisits'
     | 'productAnalytics'
     | 'pushNotifications'
     | 'theme'
@@ -26,6 +27,9 @@ type SettingsRouteClientProps = {
     | 'languageDisplay'
   >;
   locale: string;
+  premium?: boolean;
+  subscriptionRenewsAt?: string;
+  subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -65,6 +69,9 @@ export const SettingsRouteClient = ({
   initialPrivacySettings,
   initialSettings,
   locale,
+  premium = false,
+  subscriptionRenewsAt,
+  subscriptionCancelAtPeriodEnd,
   userAvatarUrl,
   userDisplayName,
 }: SettingsRouteClientProps) => {
@@ -78,6 +85,7 @@ export const SettingsRouteClient = ({
     matchAlert: initialSettings?.matchAlert ?? true,
     profileInteractionAlert: initialSettings?.profileInteractionAlert ?? true,
     profileViewAlert: initialSettings?.profileViewAlert ?? false,
+    hideProfileVisits: initialSettings?.hideProfileVisits ?? false,
     productAnalytics: initialSettings?.productAnalytics ?? true,
     theme: initialSettings?.theme ?? 'dark',
     applicationLanguage: initialSettings?.applicationLanguage ?? locale,
@@ -106,11 +114,30 @@ export const SettingsRouteClient = ({
         router.refresh();
       }}
       onExportData={downloadAccountData}
-      onSubmit={saveSettings}
+      onSubmit={async (data) => {
+        await saveSettings(data);
+        router.refresh();
+      }}
       onUpdateDiscordConnection={() =>
         window.location.assign(`/api/auth/discord?locale=${locale}`)
       }
-      onManageSubscription={() => undefined}
+      onManageSubscription={async () => {
+        const response = await fetch('/api/billing/portal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ locale }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Billing session failed');
+        }
+
+        const { url } = (await response.json()) as { url: string };
+        window.location.assign(url);
+      }}
+      premium={premium}
+      subscriptionRenewsAt={subscriptionRenewsAt}
+      subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
     />
   );
 };
