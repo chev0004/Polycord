@@ -150,7 +150,8 @@ export const VoiceIntroEditor = ({
         throw new Error('Voice intro save failed');
       }
 
-      onChange(pending.seconds);
+      const saved = (await response.json()) as { durationSeconds: number };
+      onChange(saved.durationSeconds);
       URL.revokeObjectURL(pending.url);
       setPending(null);
     } catch {

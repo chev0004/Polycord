@@ -29,6 +29,7 @@ import {
   subscriptions,
   type User,
   users,
+  voiceIntros,
 } from './schema';
 
 export type ProfileValues = Pick<
@@ -484,12 +485,14 @@ export const upsertProfileForUser = async (
 };
 
 export const deleteProfileForUser = async (userId: string) => {
-  const deletedProfiles = await db
-    .delete(profiles)
-    .where(eq(profiles.userId, userId))
-    .returning({ id: profiles.id });
-
-  return deletedProfiles.length > 0;
+  return db.transaction(async (tx) => {
+    const deletedProfiles = await tx
+      .delete(profiles)
+      .where(eq(profiles.userId, userId))
+      .returning({ id: profiles.id });
+    await tx.delete(voiceIntros).where(eq(voiceIntros.userId, userId));
+    return deletedProfiles.length > 0;
+  });
 };
 
 export const bumpProfileForUser = async (

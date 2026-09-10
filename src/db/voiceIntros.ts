@@ -26,6 +26,13 @@ export const upsertVoiceIntroForUser = async (
   },
 ) =>
   db.transaction(async (tx) => {
+    const [profile] = await tx
+      .update(profiles)
+      .set({ voiceIntroSeconds: values.durationSeconds })
+      .where(eq(profiles.userId, userId))
+      .returning({ id: profiles.id });
+    if (!profile) return false;
+
     await tx
       .insert(voiceIntros)
       .values({ userId, ...values })
@@ -34,10 +41,7 @@ export const upsertVoiceIntroForUser = async (
         set: { ...values, updatedAt: new Date() },
       });
 
-    await tx
-      .update(profiles)
-      .set({ voiceIntroSeconds: values.durationSeconds })
-      .where(eq(profiles.userId, userId));
+    return true;
   });
 
 export const deleteVoiceIntroForUser = async (userId: string) =>

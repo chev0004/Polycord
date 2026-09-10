@@ -67,6 +67,7 @@ export const ProfileRouteClient = ({
             : undefined
         }
         premium={premium}
+        profileId={profileId}
         stats={stats}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}

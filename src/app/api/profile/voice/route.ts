@@ -8,6 +8,7 @@ import {
 import { getCurrentUser } from '@/lib/auth';
 import { hasEntitlement } from '@/lib/entitlements';
 import { isPremiumUser } from '@/lib/entitlements.server';
+import { inspectVoiceMedia } from '@/lib/voiceMedia';
 
 const ALLOWED_MIME_TYPES = [
   'audio/webm',
@@ -26,7 +27,7 @@ const voiceIntroSchema = z.object({
       { message: 'unsupported type' },
     ),
   durationSeconds: z.number().int().min(1).max(20),
-  audio: z.string().min(1),
+  audio: z.string().min(1).max(1400000),
 });
 
 export const POST = async (request: Request) => {
@@ -70,15 +71,29 @@ export const POST = async (request: Request) => {
   }
 
   const user = await upsertDiscordUser(currentUser);
+  let media: Awaited<ReturnType<typeof inspectVoiceMedia>>;
+  try {
+    media = await inspectVoiceMedia(Buffer.from(base64, 'base64'));
+  } catch {
+    return NextResponse.json(
+      { error: 'Invalid audio content or duration' },
+      { status: 400 },
+    );
+  }
 
-  await upsertVoiceIntroForUser(user.id, {
-    mimeType: payload.data.mimeType.split(';')[0].trim(),
-    durationSeconds: payload.data.durationSeconds,
+  const saved = await upsertVoiceIntroForUser(user.id, {
+    ...media,
     sizeBytes,
     data: base64,
   });
+  if (!saved) {
+    return NextResponse.json(
+      { error: 'Save your profile before adding a voice intro' },
+      { status: 409 },
+    );
+  }
 
-  return NextResponse.json({ durationSeconds: payload.data.durationSeconds });
+  return NextResponse.json({ durationSeconds: media.durationSeconds });
 };
 
 export const DELETE = async () => {

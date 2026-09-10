@@ -4,6 +4,7 @@ import { asc, eq } from 'drizzle-orm';
 import { db } from './client';
 import { mapProfileAvailability } from './profiles';
 import { profiles, profileTargetLanguages, users } from './schema';
+import { getVoiceIntroByUserId } from './voiceIntros';
 
 export const getAccountExportByDiscordId = async (discordUserId: string) => {
   const [user] = await db
@@ -35,6 +36,7 @@ export const getAccountExportByDiscordId = async (discordUserId: string) => {
 
   return {
     exportedAt: new Date().toISOString(),
+    voiceIntro: await getVoiceIntroByUserId(user.id),
     account: {
       id: user.id,
       discordUserId: user.discordUserId,
