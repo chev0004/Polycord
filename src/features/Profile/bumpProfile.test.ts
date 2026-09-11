@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import {
-  FREE_BUMP_COOLDOWN_MS,
-  getBumpCooldown,
-  PREMIUM_BUMP_COOLDOWN_MS,
-} from './bumpProfile';
+import { getBumpCooldown } from './bumpProfile';
 
 describe('getBumpCooldown', () => {
   const now = new Date('2026-07-08T12:00:00Z');
@@ -19,15 +15,14 @@ describe('getBumpCooldown', () => {
     const lastBumpedAt = new Date(now.getTime() - 60 * 60 * 1000);
     const { remainingMs } = getBumpCooldown(lastBumpedAt, false, now);
 
-    expect(remainingMs).toBe(FREE_BUMP_COOLDOWN_MS - 60 * 60 * 1000);
+    expect(remainingMs).toBe(2 * 60 * 60 * 1000);
   });
 
   it('applies the shorter premium cooldown', () => {
     const lastBumpedAt = new Date(now.getTime() - 60 * 60 * 1000);
     const { remainingMs } = getBumpCooldown(lastBumpedAt, true, now);
 
-    expect(remainingMs).toBe(PREMIUM_BUMP_COOLDOWN_MS - 60 * 60 * 1000);
-    expect(PREMIUM_BUMP_COOLDOWN_MS).toBeLessThan(FREE_BUMP_COOLDOWN_MS);
+    expect(remainingMs).toBe(30 * 60 * 1000);
   });
 
   it('never returns a negative remaining time', () => {

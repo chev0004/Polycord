@@ -11,10 +11,12 @@ const validSettings: SettingsFormValues = {
   matchAlert: true,
   profileInteractionAlert: true,
   profileViewAlert: false,
+  hideProfileVisits: false,
   productAnalytics: true,
   theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
+  languageDisplay: 'long',
   email: 'user@example.com',
 };
 

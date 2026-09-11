@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:e2e": "playwright test",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
@@ -52,6 +53,7 @@
     "@biomejs/biome": "^2.2.5",
     "@chromatic-com/storybook": "^3.2.4",
     "@notionhq/client": "^5.22.0",
+    "@playwright/test": "^1.63.0",
     "@storybook/addon-essentials": "^8.5.3",
     "@storybook/addon-interactions": "^8.5.3",
     "@storybook/addon-onboarding": "^8.5.3",
