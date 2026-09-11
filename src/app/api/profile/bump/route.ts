@@ -8,12 +8,12 @@ import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
-import { getCurrentUser } from '@/lib/auth';
-import { hasPremiumEntitlement } from '@/lib/entitlements';
+import { getActiveUser } from '@/lib/auth';
+import { isPremiumUser } from '@/lib/entitlements.server';
 import { enforceRateLimit, requestIp } from '@/lib/rateLimit';
 
 export const POST = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -42,7 +42,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const premium = hasPremiumEntitlement(currentUser);
+  const premium = await isPremiumUser(currentUser);
   const { nextBumpAt, remainingMs } = getBumpCooldown(
     row.profile.lastBumpedAt,
     premium,

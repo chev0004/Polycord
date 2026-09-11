@@ -1,4 +1,4 @@
-export type NotificationKind = 'copy' | 'view';
+export type NotificationKind = 'copy' | 'view' | 'warning';
 
 export type Notification = {
   id: string;

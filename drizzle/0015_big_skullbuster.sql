@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "hide_profile_visits" boolean DEFAULT false NOT NULL;

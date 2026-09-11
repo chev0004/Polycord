@@ -5,7 +5,7 @@ import {
   type ReportReason,
   upsertDiscordUser,
 } from '@/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getActiveUser } from '@/lib/auth';
 import {
   enforceRateLimit,
   rateLimitedResponse,
@@ -65,7 +65,7 @@ const readReportBody = async (request: Request): Promise<ReportBody | null> => {
 };
 
 export const POST = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
