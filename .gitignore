@@ -52,3 +52,5 @@ next-env.d.ts
 # Local design-system extracts
 /Polycord Design System/
 /polycord-design-system/
+/test-results/
+/playwright-report/
