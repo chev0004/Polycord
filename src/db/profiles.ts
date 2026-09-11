@@ -293,7 +293,6 @@ export const upsertDiscordUser = async (currentUser: CurrentUser) => {
         discordUsername: values.discordUsername,
         displayName: values.displayName,
         avatarUrl: values.avatarUrl,
-        email: values.email,
         updatedAt: new Date(),
       },
     })
