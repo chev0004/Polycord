@@ -20,7 +20,7 @@ export const LEGAL_DOCUMENT_IDS: LegalDocumentId[] = [
 
 export const LEGAL_CANONICAL_LOCALE = 'en';
 
-const LAST_UPDATED = '2026-07-02';
+const LAST_UPDATED = '2026-09-11';
 
 const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
@@ -91,7 +91,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Contact',
         paragraphs: [
-          'Questions about these terms can go to support@polycord.app. This is a draft pending formal legal review and is not yet legal advice.',
+          'Questions about these terms can go to support@polycord.app.',
         ],
       },
     ],
@@ -103,11 +103,15 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
     sections: [
       {
         heading: 'Information we collect',
-        paragraphs: ['We collect three kinds of information:'],
+        paragraphs: [
+          'We collect information when you sign in and use Polycord:',
+        ],
         list: [
           'Discord account data you authorise at sign-in: your Discord ID, username, avatar, and email address.',
-          'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, interests, and card styling.',
-          'Usage data: anonymised product events such as page views and feature use, plus basic technical logs needed to keep the service running.',
+          'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, interests, card styling, and voice introductions.',
+          'Usage data: product events, timestamps, locale, and limited feature metadata. Events from signed-in users can be linked to their account.',
+          'Service data: saved profiles, blocks, reports, moderation records, notifications, preferences, and technical logs, including IP addresses for abuse prevention.',
+          'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Premium, we store Stripe customer and subscription identifiers and billing status; Stripe processes payment details.',
         ],
       },
       {
@@ -125,25 +129,32 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Analytics',
         paragraphs: [
-          'We use privacy-aware product analytics to count events such as sign-ups, profile saves, and searches. These events include non-sensitive metadata like locale, but never the private content of your profile or messages. Where required, analytics can be limited or disabled.',
+          'Product analytics records events such as sign-ups, profile saves, searches, views, and username copies. Events may include your account ID, locale, language selections, country, and the profile owner’s account ID. We do not collect Discord message content.',
+          'Turn off Product analytics in Settings to stop future product events associated with your signed-in account, including browser and server events. This does not erase earlier events or disable records needed for features, notifications, security, or billing. Signed-out events are not associated with your signed-in preference.',
+        ],
+      },
+      {
+        heading: 'Cookies and browser storage',
+        paragraphs: [
+          'We use cookies to keep you signed in and support sign-in security and language preferences. Browser storage also remembers preferences and unfinished onboarding details.',
         ],
       },
       {
         heading: 'How we share information',
         paragraphs: [
-          'We share data with the service providers that host and operate Polycord, and with Discord for sign-in. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
+          'We share data with providers that host and operate Polycord, Discord for sign-in, Stripe for payments, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
         ],
       },
       {
         heading: 'Data retention',
         paragraphs: [
-          'We keep your profile and account data for as long as your account exists. When you delete your account, your profile and account rows are removed from Polycord. Limited records tied to safety, moderation, billing, or legal obligations may be kept where those systems require it.',
+          'Deleting your account removes your account, profile, voice introduction, settings, and related saved profiles, blocks, reports, and push subscriptions. Analytics events, moderation logs, abuse-prevention logs, and payment-provider records may remain. Analytics account links are cleared on deletion, but event metadata can retain internal profile-owner identifiers. Discord IDs and moderation restrictions are retained to prevent ban evasion.',
         ],
       },
       {
         heading: 'Export and deletion',
         paragraphs: [
-          'You can download a copy of your account, profile, and privacy settings as JSON from Settings at any time. You can also delete your account from Settings, which removes your profile from discovery and deletes your account data.',
+          'You can download your account, profile, profile-visibility settings, and voice introduction as JSON from Settings. You can also delete your account there. For access, correction, deletion, or restriction requests beyond those controls, contact privacy@polycord.app.',
         ],
       },
       {
@@ -154,9 +165,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       },
       {
         heading: 'Contact',
-        paragraphs: [
-          'Privacy questions can go to privacy@polycord.app. This is a draft pending formal legal review and is not yet legal advice.',
-        ],
+        paragraphs: ['Privacy questions can go to privacy@polycord.app.'],
       },
     ],
   },
@@ -229,7 +238,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Contact',
         paragraphs: [
-          'You can reach the safety team at safety@polycord.app. This is a draft pending formal legal review and is not yet legal advice.',
+          'You can report a profile in the app or contact safety@polycord.app.',
         ],
       },
     ],

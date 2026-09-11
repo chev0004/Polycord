@@ -355,7 +355,7 @@
     "displayTimezoneLabel": "Display timezone",
     "displayTimezoneDescription": "Show your timezone on your public profile.",
     "productAnalyticsLabel": "Product analytics",
-    "productAnalyticsDescription": "Help improve Polycord by sharing anonymous, non-personal usage events.",
+    "productAnalyticsDescription": "Help improve Polycord by sharing usage events linked to your account. Turning this off stops future product analytics while signed in.",
     "appLanguagePlaceholder": "Select app language",
     "exportDataLabel": "Export account data",
     "exportDataDescription": "Download your account, profile, and saved privacy settings as JSON.",

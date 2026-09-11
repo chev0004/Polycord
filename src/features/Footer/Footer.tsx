@@ -34,7 +34,7 @@ const FooterLink = ({ href, isCurrent, children }: FooterLinkProps) => {
           start();
         }
       }}
-      className={`w-fit text-sm no-underline transition-colors ${
+      className={`w-fit text-sm no-underline transition-colors focus-visible:text-white focus-visible:underline ${
         isCurrent ? 'text-primary-light' : 'text-gray-400 hover:text-white'
       }`}
     >

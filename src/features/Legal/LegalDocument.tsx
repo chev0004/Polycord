@@ -40,7 +40,7 @@ export const LegalDocument = ({
         <button
           type="button"
           onClick={() => router.push(`/${locale}/legal`)}
-          className="mb-6 inline-flex items-center gap-1.5 text-gray-400 text-sm transition-colors hover:text-white"
+          className="mb-6 inline-flex items-center gap-1.5 text-gray-400 text-sm transition-colors hover:text-white focus-visible:text-white focus-visible:underline"
         >
           <MdArrowBack size={18} />
           {t('backToLegal')}

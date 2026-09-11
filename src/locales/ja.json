@@ -355,7 +355,7 @@
     "displayTimezoneLabel": "タイムゾーンを表示",
     "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。",
     "productAnalyticsLabel": "プロダクト分析",
-    "productAnalyticsDescription": "匿名で個人を特定しない利用イベントを共有して、Polycordの改善に協力します。",
+    "productAnalyticsDescription": "アカウントに紐づく利用イベントを共有して、Polycordの改善に協力します。オフにすると、ログイン中の今後のプロダクト分析が停止します。",
     "appLanguagePlaceholder": "アプリの言語を選択",
     "exportDataLabel": "アカウントデータをエクスポート",
     "exportDataDescription": "アカウント、プロフィール、保存済みのプライバシー設定をJSONとしてダウンロードします。",

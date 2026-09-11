@@ -43,7 +43,7 @@ export const LegalHub = ({
               key={id}
               type="button"
               onClick={() => router.push(`/${locale}/legal/${id}`)}
-              className="group flex items-center justify-between gap-4 rounded-lg border border-primary-darker bg-background-darker/40 px-5 py-4 text-left transition-colors hover:border-primary-dark hover:bg-background-darker"
+              className="group flex items-center justify-between gap-4 rounded-lg border border-primary-darker bg-background-darker px-5 py-4 text-left transition-colors hover:border-primary-dark focus-visible:border-primary focus-visible:bg-background-dark"
             >
               <span>
                 <span className="block font-bold text-lg text-white">
