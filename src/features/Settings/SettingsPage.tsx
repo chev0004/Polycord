@@ -93,7 +93,7 @@ const SettingRow = ({
   description: string;
   children: React.ReactNode;
 }) => (
-  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+  <div className="flex flex-col items-start justify-between gap-4 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617] sm:flex-row sm:items-center sm:gap-6">
     <div className="min-w-0">
       <p className="font-medium text-[15px] text-white">{label}</p>
       <p className="mt-0.5 text-[12px] text-gray-500">{description}</p>
@@ -448,7 +448,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               </SettingRow>
 
               <div className="rounded-xl bg-background-darker px-4 py-3.5">
-                <div className="flex items-center justify-between gap-6">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-6">
                   <div className="min-w-0">
                     <p className="font-medium text-[15px] text-white">
                       {t('deleteAccountLabel')}
@@ -490,7 +490,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                         {t('deleteAccountError')}
                       </p>
                     ) : null}
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="outline"
                         onClick={() => {
@@ -917,7 +917,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </SectionCard>
           )}
 
-          <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
+          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             {saveStatus === 'error' ? (
               <span className="text-[13px] text-red-400">{t('saveError')}</span>
             ) : billingStatus === 'error' ? (
@@ -931,7 +931,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
               </span>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap">
               <Button
                 variant="outline"
                 onClick={handleDiscard}

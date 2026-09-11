@@ -783,13 +783,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </SectionCard>
 
-          <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
+          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <span
               className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
             >
               {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap">
               <Button
                 variant="outline"
                 onClick={handleDiscard}
