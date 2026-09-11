@@ -27,12 +27,13 @@ export const SavedRouteClient = ({
 }: SavedRouteClientProps) => {
   const router = useRouteProgressRouter();
   const t = useTranslations('Saved');
-  const [profiles, setProfiles] = useState(initialProfiles);
+  const [removedIds, setRemovedIds] = useState<string[]>([]);
+  const profiles = initialProfiles.filter(
+    (profile) => !removedIds.includes(profile.id),
+  );
 
   const handleProfileUnsaved = (profileId: string) => {
-    setProfiles((previous) =>
-      previous.filter((profile) => profile.id !== profileId),
-    );
+    setRemovedIds((previous) => [...previous, profileId]);
   };
 
   return (
