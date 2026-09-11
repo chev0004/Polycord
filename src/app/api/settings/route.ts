@@ -6,10 +6,10 @@ import {
   upsertUserSettings,
 } from '@/db';
 import { settingsSchema } from '@/features/Settings/schema';
-import { getCurrentUser } from '@/lib/auth';
+import { getActiveUser } from '@/lib/auth';
 
 export const POST = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -45,11 +45,13 @@ export const POST = async (request: Request) => {
     theme: values.theme,
     applicationLanguage: values.applicationLanguage,
     timeFormat: values.timeFormat,
+    languageDisplay: values.languageDisplay,
     activityStatus: values.activityStatus,
-    pushNotifications: values.pushNotifications,
     matchAlert: values.matchAlert,
     profileInteractionAlert: values.profileInteractionAlert,
     profileViewAlert: values.profileViewAlert,
+    hideProfileVisits: values.hideProfileVisits,
+    productAnalytics: values.productAnalytics,
   });
 
   return NextResponse.json({ saved: true });

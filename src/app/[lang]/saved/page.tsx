@@ -17,13 +17,22 @@ export default async function SavedRoute({
 
   const persistedUser = await upsertDiscordUser(user);
   const profile = await getProfileByUserId(persistedUser.id);
-  const savedProfiles = await listSavedProfiles(persistedUser.id);
+  let savedProfiles: Awaited<ReturnType<typeof listSavedProfiles>> = [];
+  let loadError = false;
+
+  try {
+    savedProfiles = await listSavedProfiles(persistedUser.id);
+  } catch (error) {
+    console.error('Failed to load saved profiles:', error);
+    loadError = true;
+  }
 
   return (
     <SavedRouteClient
       locale={lang}
       profiles={savedProfiles}
       currentProfileId={profile?.profile.id}
+      loadError={loadError}
       userAvatarUrl={user.avatarUrl}
     />
   );

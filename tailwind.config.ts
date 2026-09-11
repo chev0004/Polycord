@@ -10,6 +10,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        gray: { 500: '#929aa7' },
         primary: {
           DEFAULT: 'var(--color-primary)',
           light: 'var(--color-primary-light)',

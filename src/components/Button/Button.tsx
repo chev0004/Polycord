@@ -23,11 +23,13 @@ export const Button = ({
   const baseClasses = `flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`;
 
   const variants = {
-    primary: 'bg-primary text-black hover:bg-primary-light',
+    primary:
+      'bg-primary text-black hover:bg-primary-light focus-visible:bg-primary-light',
     outline:
-      'border border-primary-dark bg-transparent text-primary-light hover:bg-primary-darker',
-    discord: 'bg-discord-blue text-white hover:bg-discord-blue-light',
-    white: 'bg-white text-black hover:bg-gray-200',
+      'border border-primary-dark bg-transparent text-primary-light hover:bg-primary-darker focus-visible:bg-primary-darker',
+    discord:
+      'bg-discord-blue text-white hover:bg-discord-blue-light focus-visible:bg-discord-blue-light',
+    white: 'bg-white text-black hover:bg-gray-200 focus-visible:bg-gray-200',
   };
 
   return (

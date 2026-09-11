@@ -1,0 +1,34 @@
+import { describe, expect, it } from 'bun:test';
+import { getBumpCooldown } from './bumpProfile';
+
+describe('getBumpCooldown', () => {
+  const now = new Date('2026-07-08T12:00:00Z');
+
+  it('allows an immediate bump when never bumped', () => {
+    const { remainingMs, nextBumpAt } = getBumpCooldown(null, false, now);
+
+    expect(remainingMs).toBe(0);
+    expect(nextBumpAt).toEqual(now);
+  });
+
+  it('applies the free cooldown', () => {
+    const lastBumpedAt = new Date(now.getTime() - 60 * 60 * 1000);
+    const { remainingMs } = getBumpCooldown(lastBumpedAt, false, now);
+
+    expect(remainingMs).toBe(2 * 60 * 60 * 1000);
+  });
+
+  it('applies the shorter premium cooldown', () => {
+    const lastBumpedAt = new Date(now.getTime() - 60 * 60 * 1000);
+    const { remainingMs } = getBumpCooldown(lastBumpedAt, true, now);
+
+    expect(remainingMs).toBe(30 * 60 * 1000);
+  });
+
+  it('never returns a negative remaining time', () => {
+    const lastBumpedAt = new Date(now.getTime() - 10 * 60 * 60 * 1000);
+    const { remainingMs } = getBumpCooldown(lastBumpedAt, false, now);
+
+    expect(remainingMs).toBe(0);
+  });
+});

@@ -8,6 +8,7 @@ import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { Footer } from '@/features/Footer';
+import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
@@ -39,8 +40,15 @@ import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
+import { ReportDialog } from './ReportDialog';
 import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
+import {
+  blockProfileRequest,
+  ReportProfileError,
+  type ReportReason,
+  reportProfileRequest,
+} from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl, shareProfileUrl } from './shareProfile';
 import { TagCloud } from './TagCloud';
@@ -134,6 +142,10 @@ export const DiscoveryPage = ({
   const [profileItems, setProfileItems] = useState(profiles);
   const [isBumping, setIsBumping] = useState(false);
   const [bumpReadyAt, setBumpReadyAt] = useState(initialBumpReadyAt);
+  const [reportTarget, setReportTarget] = useState<{
+    id: string;
+    name?: string;
+  } | null>(null);
   const { toasts, addToast, dismissToast } = useToastStack();
 
   useEffect(() => {
@@ -330,6 +342,131 @@ export const DiscoveryPage = ({
     }
   };
 
+  const handleReportProfile = (profileId: string) => {
+    if (!isLoggedIn) {
+      addToast({
+        title: t('reportLoginTitle'),
+        description: t('reportLoginDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+      return;
+    }
+
+    const target = profileItems.find((profile) => profile.id === profileId);
+    setReportTarget({ id: profileId, name: target?.displayName });
+  };
+
+  const handleSubmitReport = async (
+    reason: ReportReason,
+    details: string,
+  ): Promise<void> => {
+    if (!reportTarget) {
+      return;
+    }
+
+    try {
+      await reportProfileRequest(reportTarget.id, reason, details || undefined);
+      addToast({
+        title: t('reportSuccessTitle'),
+        description: t('reportSuccessDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+    } catch (error) {
+      const limited =
+        error instanceof ReportProfileError && error.status === 429;
+      addToast({
+        title: limited ? t('reportCooldownTitle') : t('reportErrorTitle'),
+        description: limited
+          ? t('reportCooldownDescription')
+          : t('reportErrorDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+      throw error;
+    }
+  };
+
+  const handleUndoBlock = async (
+    profileId: string,
+    profile: DiscoveryProfile,
+    index: number,
+  ) => {
+    try {
+      await blockProfileRequest(profileId, false);
+      setProfileItems((previous) => {
+        if (previous.some((item) => item.id === profileId)) {
+          return previous;
+        }
+
+        const next = [...previous];
+        next.splice(Math.min(index, next.length), 0, profile);
+        return next;
+      });
+    } catch {
+      addToast({
+        title: t('unblockErrorTitle'),
+        description: t('unblockErrorDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+    }
+  };
+
+  const handleBlockProfile = async (profileId: string) => {
+    if (!isLoggedIn) {
+      addToast({
+        title: t('blockLoginTitle'),
+        description: t('blockLoginDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+      return;
+    }
+
+    const index = profileItems.findIndex((profile) => profile.id === profileId);
+
+    if (index === -1) {
+      return;
+    }
+
+    const blocked = profileItems[index];
+    setProfileItems((previous) =>
+      previous.filter((profile) => profile.id !== profileId),
+    );
+
+    try {
+      await blockProfileRequest(profileId, true);
+      addToast({
+        title: t('blockSuccessTitle'),
+        description: (
+          <span className="flex items-center gap-2">
+            {t('blockSuccessDescription')}
+            <button
+              type="button"
+              onClick={() => handleUndoBlock(profileId, blocked, index)}
+              className="font-semibold text-primary underline-offset-2 hover:underline"
+            >
+              {t('blockUndo')}
+            </button>
+          </span>
+        ),
+        duration: BUMP_TOAST_DURATION,
+      });
+    } catch {
+      setProfileItems((previous) => {
+        if (previous.some((item) => item.id === profileId)) {
+          return previous;
+        }
+
+        const next = [...previous];
+        next.splice(Math.min(index, next.length), 0, blocked);
+        return next;
+      });
+      addToast({
+        title: t('blockErrorTitle'),
+        description: t('blockErrorDescription'),
+        duration: BUMP_TOAST_DURATION,
+      });
+    }
+  };
+
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage);
     resultsHeadRef.current?.scrollIntoView({
@@ -501,8 +638,17 @@ export const DiscoveryPage = ({
                 currentProfileId={currentProfileId}
                 viewerTimezone={viewerTimezone}
                 onSaveProfile={saveProfileRequest}
+                onCopyUsername={
+                  isLoggedIn
+                    ? (_username, profileId) => {
+                        notifyUsernameCopied(profileId).catch(() => {});
+                      }
+                    : undefined
+                }
                 onViewProfile={handleViewProfile}
                 onShare={handleShareProfile}
+                onReport={handleReportProfile}
+                onBlock={handleBlockProfile}
                 onTagClick={(tag) => handleAddTagFilter(tag)}
                 onLanguageClick={(language, _level, isPrimary) =>
                   handleAddMultiFilter(
@@ -539,7 +685,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               onClick={() => router.push(`/${locale}/onboarding`)}
-              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
             >
               <p className="font-figtree font-semibold text-white">
                 {t('onboardingPromptTitle')}
@@ -564,7 +710,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               onClick={() => setIsPromptDismissed(true)}
-              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
               aria-label={t('onboardingPromptDismiss')}
             >
               <MdClose size={16} />
@@ -572,6 +718,17 @@ export const DiscoveryPage = ({
           </div>
         </aside>
       ) : null}
+
+      <ReportDialog
+        open={reportTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setReportTarget(null);
+          }
+        }}
+        profileName={reportTarget?.name}
+        onSubmit={handleSubmitReport}
+      />
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>

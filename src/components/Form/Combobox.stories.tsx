@@ -62,9 +62,8 @@ export const Default: Story = {
     const input = canvas.getByPlaceholderText('Enter a language...');
 
     await userEvent.type(input, 'japan');
-    // The option list debounces typing, so allow slow environments to settle.
     const option = await screen.findByRole(
-      'button',
+      'option',
       { name: japanese.label },
       { timeout: 5000 },
     );

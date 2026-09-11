@@ -95,3 +95,47 @@ export const WithAvatar: Story = {
     />
   ),
 };
+
+const BlockToastDemo = () => {
+  const { toasts, addToast, dismissToast } = useToastStack();
+
+  return (
+    <>
+      <div className="p-10">
+        <Button
+          onClick={() =>
+            addToast({
+              title: 'User blocked',
+              description: (
+                <span className="flex items-center gap-2">
+                  Their profiles won't appear in your discovery feed.
+                  <button
+                    type="button"
+                    className="font-semibold text-primary underline-offset-2 hover:underline"
+                  >
+                    Undo
+                  </button>
+                </span>
+              ),
+              duration: 60000,
+            })
+          }
+        >
+          Block user
+        </Button>
+      </div>
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
+    </>
+  );
+};
+
+export const BlockUndo: Story = {
+  render: () => <BlockToastDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByText('Block user'));
+
+    await expect(await canvas.findByText('User blocked')).toBeInTheDocument();
+  },
+};

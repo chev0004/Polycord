@@ -16,11 +16,14 @@ export type UserSettingsValues = Pick<
   | 'theme'
   | 'applicationLanguage'
   | 'timeFormat'
+  | 'languageDisplay'
   | 'activityStatus'
   | 'pushNotifications'
   | 'matchAlert'
   | 'profileInteractionAlert'
   | 'profileViewAlert'
+  | 'hideProfileVisits'
+  | 'productAnalytics'
 >;
 
 export type ProfilePrivacyValues = Pick<

@@ -5,17 +5,34 @@ import {
   upsertDiscordUser,
 } from '@/db';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
-import { getCurrentUser } from '@/lib/auth';
-import { hasPremiumEntitlement } from '@/lib/entitlements';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromRequest } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
+import { getActiveUser } from '@/lib/auth';
+import { isPremiumUser } from '@/lib/entitlements.server';
+import { enforceRateLimit, requestIp } from '@/lib/rateLimit';
 
-export const POST = async () => {
-  const currentUser = await getCurrentUser();
+export const POST = async (request: Request) => {
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const user = await upsertDiscordUser(currentUser);
+
+  const limit = await enforceRateLimit('bump', {
+    userId: user.id,
+    ip: requestIp(request),
+  });
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests', remainingMs: limit.retryAfterMs },
+      { status: 429 },
+    );
+  }
+
   const row = await getProfileByUserId(user.id);
 
   if (!row?.profile.isPublic) {
@@ -25,7 +42,7 @@ export const POST = async () => {
     );
   }
 
-  const premium = hasPremiumEntitlement(currentUser);
+  const premium = await isPremiumUser(currentUser);
   const { nextBumpAt, remainingMs } = getBumpCooldown(
     row.profile.lastBumpedAt,
     premium,
@@ -44,6 +61,13 @@ export const POST = async () => {
 
   const bumpedAt = new Date();
   await bumpProfileForUser(user.id, bumpedAt);
+
+  await trackEvent({
+    name: ANALYTICS_EVENTS.profileBump,
+    userId: user.id,
+    locale: localeFromRequest(request),
+    metadata: { premium },
+  });
 
   return NextResponse.json({
     lastBumpedAt: bumpedAt.toISOString(),

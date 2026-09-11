@@ -28,7 +28,7 @@ type Story = StoryObj<typeof UserMenu>;
 export const Default: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
-    const trigger = await canvas.findByRole('button');
+    const trigger = await canvas.findByRole('button', { name: 'Account menu' });
 
     await userEvent.click(trigger);
 
