@@ -328,6 +328,42 @@ export const ValidationErrors: Story = {
   },
 };
 
+export const SaveError: Story = {
+  args: {
+    initialValues: sampleProfile,
+    onSubmit: fn(async () => {
+      throw new Error('save failed');
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
+    setFieldValue(bio, `${sampleProfile.bio} Updated for the error path.`);
+
+    await waitFor(
+      () =>
+        expect(
+          canvas.getByText('You have unsaved changes'),
+        ).toBeInTheDocument(),
+      { timeout: 5000 },
+    );
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Profile' }));
+
+    await waitFor(
+      () =>
+        expect(
+          canvas.getByText('Profile could not be saved. Please try again.'),
+        ).toBeInTheDocument(),
+      { timeout: 5000 },
+    );
+    await expect(
+      canvas.getByText('You have unsaved changes'),
+    ).toBeInTheDocument();
+  },
+};
+
 export const DirtySaveFlow: Story = {
   args: {
     initialValues: sampleProfile,

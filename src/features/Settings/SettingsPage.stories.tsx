@@ -11,10 +11,12 @@ const defaultSettings: SettingsFormValues = {
   matchAlert: true,
   profileInteractionAlert: true,
   profileViewAlert: true,
+  hideProfileVisits: false,
   productAnalytics: true,
   theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
+  languageDisplay: 'long',
   email: 'xhev@polycord.app',
 };
 
@@ -159,6 +161,40 @@ export const SaveFlow: Story = {
     });
     await waitFor(
       () => expect(canvas.getByText('All changes saved')).toBeInTheDocument(),
+      { timeout: 5000 },
+    );
+  },
+};
+
+export const SaveError: Story = {
+  args: {
+    onSubmit: fn(async () => {
+      throw new Error('save failed');
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const email = canvas.getByPlaceholderText(
+      'Enter your email for recovery',
+    ) as HTMLInputElement;
+    setFieldValue(email, 'error.path@polycord.app');
+
+    await waitFor(
+      () =>
+        expect(
+          canvas.getByText('You have unsaved changes'),
+        ).toBeInTheDocument(),
+      { timeout: 5000 },
+    );
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Settings' }));
+
+    await waitFor(
+      () =>
+        expect(
+          canvas.getByText('Could not save your settings. Please try again.'),
+        ).toBeInTheDocument(),
       { timeout: 5000 },
     );
   },

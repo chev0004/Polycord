@@ -1,30 +1,59 @@
 import 'server-only';
 
-import { and, asc, desc, eq, inArray, notInArray, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  lt,
+  notInArray,
+  or,
+  sql,
+} from 'drizzle-orm';
 import {
   type AvailabilityPattern,
   availabilityPatternToPreset,
   availabilityPresetToPattern,
 } from '@/constants/availability';
 import { isValidAvailability } from '@/constants/languages';
+import {
+  type CardTheme,
+  CUSTOM_CARD_THEME_ID,
+  findCardTheme,
+  getCustomCardTheme,
+  PREMIUM_CARD_THEMES,
+} from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
+import { isPremiumDiscordId } from '@/lib/entitlements';
+import { isSubscriptionActive } from './billing';
 import { db } from './client';
+import { getModerationRestrictionByDiscordId } from './moderation';
 import {
+  moderationRestrictions,
   type NewProfile,
   type NewUser,
   type Profile,
   profiles,
   profileTargetLanguages,
+  type Subscription,
+  subscriptions,
   type User,
   users,
+  voiceIntros,
 } from './schema';
 
 export type ProfileValues = Pick<
   NewProfile,
+  | 'accentOverride'
   | 'allowAnonymousCopy'
   | 'bio'
+  | 'cardColor'
   | 'country'
+  | 'customGradientFrom'
+  | 'customGradientTo'
   | 'displayAvailability'
   | 'displayTimezone'
   | 'isPublic'
@@ -45,6 +74,46 @@ type ProfileWithUser = {
   profile: Profile;
   targetLanguages: ProfileTargetLanguageValue[];
   user: User;
+  subscription?: Subscription | null;
+};
+
+const isPremiumOwner = (
+  user: User,
+  subscription: Subscription | null | undefined,
+) =>
+  isPremiumDiscordId(user.discordUserId) ||
+  isSubscriptionActive(subscription ?? null);
+
+const toCardTheme = (
+  profile: Profile,
+  premium: boolean,
+): CardTheme | undefined => {
+  if (!profile.cardColor) {
+    return undefined;
+  }
+
+  let theme: CardTheme | undefined;
+
+  if (profile.cardColor === CUSTOM_CARD_THEME_ID) {
+    theme =
+      premium && profile.customGradientFrom && profile.customGradientTo
+        ? getCustomCardTheme({
+            from: profile.customGradientFrom,
+            to: profile.customGradientTo,
+          })
+        : undefined;
+  } else if (
+    premium ||
+    !PREMIUM_CARD_THEMES.some((candidate) => candidate.id === profile.cardColor)
+  ) {
+    theme = findCardTheme(profile.cardColor);
+  }
+
+  if (theme && premium && profile.accentOverride) {
+    return { ...theme, accent: profile.accentOverride };
+  }
+
+  return theme;
 };
 
 const toUserValues = (user: CurrentUser): NewUser => ({
@@ -101,7 +170,18 @@ const toDiscoveryProfile = ({
   profile,
   targetLanguages,
   user,
+  subscription,
 }: ProfileWithUser): DiscoveryProfile => ({
+  premium: isPremiumOwner(user, subscription),
+  cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
+  boosted:
+    isPremiumOwner(user, subscription) &&
+    profile.boostedUntil !== null &&
+    profile.boostedUntil.getTime() > Date.now(),
+  voiceIntroSeconds:
+    isPremiumOwner(user, subscription) && profile.voiceIntroSeconds
+      ? profile.voiceIntroSeconds
+      : undefined,
   id: profile.id,
   displayName: user.displayName,
   discordUsername: user.discordUsername,
@@ -199,9 +279,14 @@ const attachTargetLanguages = async (
 
 export const upsertDiscordUser = async (currentUser: CurrentUser) => {
   const values = toUserValues(currentUser);
+  const restriction = await getModerationRestrictionByDiscordId(currentUser.id);
   const [user] = await db
     .insert(users)
-    .values(values)
+    .values({
+      ...values,
+      bannedAt: restriction?.bannedAt,
+      suspendedUntil: restriction?.suspendedUntil,
+    })
     .onConflictDoUpdate({
       target: users.discordUserId,
       set: {
@@ -232,9 +317,11 @@ export const getProfileById = async (profileId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.id, profileId))
     .limit(1);
 
@@ -246,9 +333,11 @@ export const getProfileByUserId = async (userId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.userId, userId))
     .limit(1);
 
@@ -260,19 +349,36 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(users.discordUserId, discordUserId))
     .limit(1);
 
   return row ? attachTargetLanguages(row) : null;
 };
 
+const publiclyVisible = () =>
+  and(
+    eq(profiles.isPublic, true),
+    eq(profiles.hiddenByModeration, false),
+    isNull(users.bannedAt),
+    or(isNull(users.suspendedUntil), lt(users.suspendedUntil, new Date())),
+  );
+
+const isVisibleProfile = (row: { profile: Profile; user: User }) =>
+  row.profile.isPublic &&
+  !row.profile.hiddenByModeration &&
+  row.user.bannedAt === null &&
+  (row.user.suspendedUntil === null ||
+    row.user.suspendedUntil.getTime() < Date.now());
+
 export const getPublicProfileById = async (profileId: string) => {
   const row = await getProfileById(profileId);
 
-  if (!row?.profile.isPublic) {
+  if (!row || !isVisibleProfile(row)) {
     return null;
   }
 
@@ -284,19 +390,18 @@ export const listPublicProfiles = async (
 ) => {
   const { blockedUserIds = [] } = options;
   const visibility = blockedUserIds.length
-    ? and(
-        eq(profiles.isPublic, true),
-        notInArray(profiles.userId, blockedUserIds),
-      )
-    : eq(profiles.isPublic, true);
+    ? and(publiclyVisible(), notInArray(profiles.userId, blockedUserIds))
+    : publiclyVisible();
 
   const rows = await db
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(visibility)
     .orderBy(
       sql`${profiles.lastBumpedAt} desc nulls last`,
@@ -329,10 +434,12 @@ export const listPublicProfilesByIds = async (
     .select({
       profile: profiles,
       user: users,
+      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .where(and(inArray(profiles.id, profileIds), eq(profiles.isPublic, true)));
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
+    .where(and(inArray(profiles.id, profileIds), publiclyVisible()));
 
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
     rows.map((row) => row.profile.id),
@@ -375,11 +482,21 @@ export const upsertProfileForUser = async (
   };
 
   return db.transaction(async (tx) => {
+    const [owner] = await tx
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .for('update');
+    const [restriction] = await tx
+      .select()
+      .from(moderationRestrictions)
+      .where(eq(moderationRestrictions.discordUserId, owner.discordUserId));
     const [profile] = await tx
       .insert(profiles)
       .values({
         ...writableProfileValues,
         userId,
+        hiddenByModeration: restriction?.hiddenByModeration ?? false,
       })
       .onConflictDoUpdate({
         target: profiles.userId,
@@ -408,12 +525,14 @@ export const upsertProfileForUser = async (
 };
 
 export const deleteProfileForUser = async (userId: string) => {
-  const deletedProfiles = await db
-    .delete(profiles)
-    .where(eq(profiles.userId, userId))
-    .returning({ id: profiles.id });
-
-  return deletedProfiles.length > 0;
+  return db.transaction(async (tx) => {
+    const deletedProfiles = await tx
+      .delete(profiles)
+      .where(eq(profiles.userId, userId))
+      .returning({ id: profiles.id });
+    await tx.delete(voiceIntros).where(eq(voiceIntros.userId, userId));
+    return deletedProfiles.length > 0;
+  });
 };
 
 export const bumpProfileForUser = async (
