@@ -420,7 +420,7 @@ export const ProfileCard = ({
                   <button
                     type="button"
                     suppressHydrationWarning
-                    className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
+                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-white"
                     aria-label={t('cardMenu')}
                   >
                     <MdMoreVert size={17} />
@@ -518,7 +518,7 @@ export const ProfileCard = ({
           <button
             type="button"
             onClick={handleCopyUsername}
-            className="group flex items-center gap-1.5 self-start text-left transition-colors"
+            className="-my-2 group flex items-center gap-1.5 self-start py-2 text-left transition-colors"
             aria-label={t('copyUsername')}
           >
             <div
@@ -662,7 +662,7 @@ export const ProfileCard = ({
               <button
                 type="button"
                 onClick={handleCountryClick}
-                className="flex items-center gap-1.5 transition-opacity hover:opacity-80 active:opacity-60"
+                className="-my-2 flex items-center gap-1.5 py-2 transition-opacity hover:opacity-80 active:opacity-60"
               >
                 {renderLocationContent()}
               </button>

@@ -225,12 +225,15 @@ export const Inbox = ({
 
   return (
     <Popover.Root>
-      <Popover.Trigger className="relative" aria-label={t('notifications')}>
+      <Popover.Trigger
+        className="-m-2 relative p-2"
+        aria-label={t('notifications')}
+      >
         {triggerContent}
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent w-[420px] overflow-hidden rounded-[18px] border border-gray-500/50 bg-background-dark shadow-lg"
+          className="PopoverContent w-[420px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[18px] border border-gray-500/50 bg-background-dark shadow-lg"
           side="bottom"
           align="end"
           sideOffset={5}
