@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { and, desc, eq, gte } from 'drizzle-orm';
+import { sendPushForNotification } from '@/lib/push/server';
 import { db } from './client';
 import {
   type NewNotificationRecord,
@@ -54,6 +55,7 @@ export const listNotificationsForUser = async (
 
 export const createNotification = async (values: NewNotificationRecord) => {
   const [created] = await db.insert(notifications).values(values).returning();
+  await sendPushForNotification(created);
 
   return created;
 };

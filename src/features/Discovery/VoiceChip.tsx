@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MdPlayArrow, MdStop } from 'react-icons/md';
 
 const VOICE_BARS = [45, 30, 70, 95, 30, 70, 45, 95, 70, 45, 30, 95, 45, 30].map(
@@ -14,18 +14,31 @@ const VOICE_BARS = [45, 30, 70, 95, 30, 70, 45, 95, 70, 45, 30, 95, 45, 30].map(
 
 type VoiceChipProps = {
   seconds: number;
+  src?: string;
   className?: string;
 };
 
 const formatRemaining = (value: number) =>
   `0:${String(Math.max(0, Math.ceil(value))).padStart(2, '0')}`;
 
-export const VoiceChip = ({ seconds, className }: VoiceChipProps) => {
+export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
   const t = useTranslations('Discovery');
   const [playing, setPlaying] = useState(false);
   const [remaining, setRemaining] = useState(seconds);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (!src) return;
+
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, [src]);
+
+  useEffect(() => {
+    if (src) return;
+
     if (!playing) {
       setRemaining(seconds);
       return;
@@ -42,12 +55,51 @@ export const VoiceChip = ({ seconds, className }: VoiceChipProps) => {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [playing, seconds]);
+  }, [playing, seconds, src]);
+
+  const togglePlayback = () => {
+    if (!src) {
+      setPlaying((value) => !value);
+      return;
+    }
+
+    if (playing) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      setPlaying(false);
+      setRemaining(seconds);
+      return;
+    }
+
+    const audio = new Audio(src);
+    audioRef.current = audio;
+
+    audio.ontimeupdate = () => {
+      setRemaining(Math.max(0, seconds - audio.currentTime));
+    };
+    audio.onended = () => {
+      setPlaying(false);
+      setRemaining(seconds);
+      audioRef.current = null;
+    };
+    audio.onerror = () => {
+      setPlaying(false);
+      setRemaining(seconds);
+      audioRef.current = null;
+    };
+
+    void audio.play().then(
+      () => setPlaying(true),
+      () => {
+        audioRef.current = null;
+      },
+    );
+  };
 
   return (
     <button
       type="button"
-      onClick={() => setPlaying((value) => !value)}
+      onClick={togglePlayback}
       aria-label={playing ? t('voiceIntroStop') : t('voiceIntroPlay')}
       className={`inline-flex h-8 shrink-0 items-center gap-[9px] self-start rounded-full bg-background-darker py-0 pr-3 pl-[9px] transition-colors hover:bg-background-main hover:text-white ${playing ? 'text-primary-light' : 'text-gray-300'} ${className ?? ''}`}
     >
