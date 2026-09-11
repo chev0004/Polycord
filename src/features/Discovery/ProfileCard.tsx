@@ -410,7 +410,7 @@ export const ProfileCard = ({
         >
           <div className="flex items-center gap-1.5">
             {lastBumpRelative && (
-              <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
+              <span className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
                 {lastBumpRelative}
               </span>
             )}

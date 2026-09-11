@@ -496,7 +496,7 @@ export const OnboardingPage = ({
                   <button
                     type="button"
                     onClick={addTag}
-                    className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
                   >
                     {t('addTag')}
                   </button>

@@ -1,11 +1,12 @@
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 
 export type ComboboxProps = {
   id?: string;
+  ariaLabel?: string;
   placeholder?: string;
   options: { label: string; value: string }[];
   className?: string;
@@ -22,6 +23,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
   (
     {
       id,
+      ariaLabel,
       placeholder,
       options,
       className,
@@ -36,6 +38,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     forwardedRef,
   ) => {
     const t = useTranslations('Combobox');
+    const listboxId = useId();
     const [open, setOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -150,10 +153,20 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (disabled || readOnly) return;
-      if (!open) return;
-
       const { key } = event;
+      if (!open) {
+        if (key === 'ArrowDown' || key === 'ArrowUp') {
+          event.preventDefault();
+          setOpen(true);
+        }
+        return;
+      }
       const optionsLength = filteredOptions.length;
+
+      if (key === 'Tab') {
+        setOpen(false);
+        return;
+      }
 
       if (key === 'Escape') {
         event.preventDefault();
@@ -161,7 +174,6 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         return;
       }
 
-      // Prevent keyboard navigation while results are loading
       if (optionsLength > 0 && !loading) {
         switch (key) {
           case 'ArrowDown':
@@ -174,8 +186,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
               (prev) => (prev - 1 + optionsLength) % optionsLength,
             );
             break;
-          case 'Enter':
-          case 'Tab': {
+          case 'Enter': {
             event.preventDefault();
             const highlightedOption = filteredOptions[highlightedIndex];
             if (highlightedOption) {
@@ -205,6 +216,17 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
               id={id}
               name={name}
               type="text"
+              role="combobox"
+              aria-label={ariaLabel}
+              aria-autocomplete="list"
+              aria-expanded={open}
+              aria-controls={open ? listboxId : undefined}
+              aria-activedescendant={
+                open && !loading && filteredOptions[highlightedIndex]
+                  ? `${listboxId}-${highlightedIndex}`
+                  : undefined
+              }
+              aria-invalid={error || undefined}
               value={inputValue}
               disabled={disabled}
               readOnly={readOnly}
@@ -224,9 +246,14 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
             sideOffset={6}
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            role="presentation"
           >
             <div
               ref={setScrollElement}
+              id={listboxId}
+              role="listbox"
+              aria-label={ariaLabel ?? placeholder}
               className="max-h-60 overflow-y-auto p-1.5"
             >
               {loading ? (
@@ -246,6 +273,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                     return (
                       <button
                         type="button"
+                        role="option"
+                        id={`${listboxId}-${virtualItem.index}`}
+                        aria-selected={value === option.value}
+                        tabIndex={-1}
                         key={option.value}
                         style={{
                           position: 'absolute',

@@ -86,6 +86,7 @@
     "unknownUser": "不明なユーザー"
   },
   "UserMenu": {
+    "accountMenu": "アカウントメニュー",
     "profile": "プロフィール",
     "saved": "保存済み",
     "bumpProfile": "プロフィールをバンプ",

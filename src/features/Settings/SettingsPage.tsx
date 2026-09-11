@@ -609,6 +609,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       value={field.value}
                       error={!!errors.applicationLanguage}
                       placeholder={t('appLanguagePlaceholder')}
+                      ariaLabel={t('applicationLanguageLabel')}
                     />
                   )}
                 />

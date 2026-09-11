@@ -36,7 +36,7 @@ const MenuItem = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors ${
+      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors focus-visible:bg-background-main ${
         disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-background-main'
       }`}
     >
@@ -99,6 +99,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   const triggerButton = (
     <button
       type="button"
+      aria-label={t('accountMenu')}
       className="rounded-full transition-opacity duration-200 hover:opacity-80 focus:outline-none focus-visible:opacity-80"
     >
       <Avatar avatarUrl={iconUrl} size="sm" />

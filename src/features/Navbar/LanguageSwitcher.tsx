@@ -33,7 +33,7 @@ const MenuItem = ({
           start();
         }
       }}
-      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors ${
+      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors focus-visible:bg-background-main ${
         isSelected
           ? 'bg-background-main text-primary-light'
           : 'text-white hover:bg-background-main'
@@ -74,7 +74,7 @@ export const LanguageSwitcher: React.FC = () => {
       <button
         type="button"
         aria-hidden="true"
-        className="relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 hover:text-gray-400"
+        className="relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 hover:text-gray-400 focus-visible:bg-primary-dark"
         tabIndex={-1}
       >
         {triggerContent}
@@ -88,7 +88,7 @@ export const LanguageSwitcher: React.FC = () => {
         <button
           type="button"
           aria-label={t('changeLanguage')}
-          className="after:-inset-x-2 relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 after:absolute after:inset-y-0 after:content-[''] hover:text-gray-400"
+          className="after:-inset-x-2 relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 after:absolute after:inset-y-0 after:content-[''] hover:text-gray-400 focus-visible:bg-primary-dark"
         >
           {triggerContent}
         </button>
