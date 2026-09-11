@@ -360,7 +360,7 @@ export const ProfileCard = ({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 ${className || 'text-white'}`}
+      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 focus:outline-none focus-visible:bg-background-main ${className || 'text-white'}`}
     >
       <Icon size={20} className={iconClassName || 'text-gray-400'} />
       {children}
@@ -410,7 +410,7 @@ export const ProfileCard = ({
         >
           <div className="flex items-center gap-1.5">
             {lastBumpRelative && (
-              <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
+              <span className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
                 {lastBumpRelative}
               </span>
             )}
@@ -568,7 +568,7 @@ export const ProfileCard = ({
               <button
                 type="button"
                 suppressHydrationWarning
-                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white"
+                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white focus-visible:text-white"
                 aria-label={t('showMoreLanguages', {
                   count: remainingLanguagesCount,
                 })}

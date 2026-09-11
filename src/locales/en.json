@@ -86,6 +86,7 @@
     "unknownUser": "Unknown user"
   },
   "UserMenu": {
+    "accountMenu": "Account menu",
     "profile": "Profile",
     "saved": "Saved",
     "bumpProfile": "Bump profile",

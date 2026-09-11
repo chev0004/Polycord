@@ -98,7 +98,9 @@ export const TargetLanguagesEditor = ({
 
   return (
     <FormGroup>
-      <Label required>{t('targetLanguagesLabel')}</Label>
+      <Label htmlFor="target-language-0" required>
+        {t('targetLanguagesLabel')}
+      </Label>
       <div className="flex flex-col gap-2.5">
         {fields.map((rowField, index) => {
           const currentLanguage = rows[index]?.language ?? '';
@@ -111,7 +113,7 @@ export const TargetLanguagesEditor = ({
           return (
             <div
               key={rowField.id}
-              className="grid grid-cols-[minmax(0,1fr)_170px_40px] items-center gap-2"
+              className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_170px_40px]"
             >
               <Controller
                 control={control}
@@ -119,6 +121,9 @@ export const TargetLanguagesEditor = ({
                 render={({ field }) => (
                   <Combobox
                     {...field}
+                    id={`target-language-${index}`}
+                    ariaLabel={`${t('targetLanguagesLabel')} ${index + 1}`}
+                    className="col-span-2 sm:col-span-1"
                     value={field.value || ''}
                     onValueChange={field.onChange}
                     options={options}

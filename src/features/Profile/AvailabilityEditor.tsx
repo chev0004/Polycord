@@ -116,7 +116,7 @@ export const AvailabilityEditor = ({
             type="button"
             onClick={() => patch({ anyTime: !pattern.anyTime })}
             aria-pressed={Boolean(pattern.anyTime)}
-            className={`inline-flex w-fit items-center gap-[5px] text-[12px] transition-colors focus:outline-none ${
+            className={`inline-flex w-fit items-center gap-[5px] text-[12px] transition-colors focus:outline-none focus-visible:text-gray-300 ${
               pattern.anyTime
                 ? 'text-primary-light'
                 : 'text-gray-500 hover:text-gray-300'

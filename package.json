@@ -50,6 +50,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "^2.2.5",
     "@chromatic-com/storybook": "^3.2.4",
     "@notionhq/client": "^5.22.0",

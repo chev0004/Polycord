@@ -85,6 +85,17 @@ for (const width of [320, 375, 390]) {
       for (const route of ['profile', 'settings']) {
         await page.goto(`/en/${route}`);
         await fits();
+        if (route === 'profile') {
+          const language = page.getByRole('combobox', {
+            name: 'Target Languages 1',
+          });
+          await expect(language).toBeVisible();
+          expect((await language.boundingBox())?.width).toBeGreaterThan(150);
+          await page.screenshot({
+            path: testInfo.outputPath('profile-fields.png'),
+            animations: 'disabled',
+          });
+        }
         const field =
           route === 'profile'
             ? page.getByLabel('Bio', { exact: true })

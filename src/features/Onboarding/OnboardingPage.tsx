@@ -284,13 +284,16 @@ export const OnboardingPage = ({
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormGroup>
-                  <Label required>{t('primaryLanguageLabel')}</Label>
+                  <Label htmlFor="primaryLanguage" required>
+                    {t('primaryLanguageLabel')}
+                  </Label>
                   <Controller
                     control={control}
                     name="primaryLanguage"
                     render={({ field }) => (
                       <Combobox
                         {...field}
+                        id="primaryLanguage"
                         value={field.value}
                         onValueChange={field.onChange}
                         options={localizedLanguageOptions}
@@ -305,13 +308,16 @@ export const OnboardingPage = ({
                 </FormGroup>
 
                 <FormGroup>
-                  <Label required>{t('targetLanguageLabel')}</Label>
+                  <Label htmlFor="targetLanguage" required>
+                    {t('targetLanguageLabel')}
+                  </Label>
                   <Controller
                     control={control}
                     name="targetLanguage"
                     render={({ field }) => (
                       <Combobox
                         {...field}
+                        id="targetLanguage"
                         value={field.value}
                         onValueChange={field.onChange}
                         options={localizedLanguageOptions}
@@ -333,6 +339,7 @@ export const OnboardingPage = ({
                     render={({ field }) => (
                       <Select
                         {...field}
+                        ariaLabel={t('currentLevelLabel')}
                         options={localizedProficiencyOptions}
                         placeholder={t('currentLevelPlaceholder')}
                         onValueChange={field.onChange}
@@ -347,13 +354,14 @@ export const OnboardingPage = ({
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>{t('countryLabel')}</Label>
+                  <Label htmlFor="country">{t('countryLabel')}</Label>
                   <Controller
                     control={control}
                     name="country"
                     render={({ field }) => (
                       <Combobox
                         {...field}
+                        id="country"
                         value={field.value ?? ''}
                         onValueChange={field.onChange}
                         options={localizedCountryOptions}
@@ -488,7 +496,7 @@ export const OnboardingPage = ({
                   <button
                     type="button"
                     onClick={addTag}
-                    className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
                   >
                     {t('addTag')}
                   </button>
