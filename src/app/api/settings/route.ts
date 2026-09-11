@@ -47,7 +47,6 @@ export const POST = async (request: Request) => {
     timeFormat: values.timeFormat,
     languageDisplay: values.languageDisplay,
     activityStatus: values.activityStatus,
-    pushNotifications: values.pushNotifications,
     matchAlert: values.matchAlert,
     profileInteractionAlert: values.profileInteractionAlert,
     profileViewAlert: values.profileViewAlert,

@@ -236,7 +236,7 @@ export const userSettings = pgTable(
       .default('long')
       .notNull(),
     activityStatus: boolean('activity_status').default(true).notNull(),
-    pushNotifications: boolean('push_notifications').default(true).notNull(),
+    pushNotifications: boolean('push_notifications').default(false).notNull(),
     matchAlert: boolean('match_alert').default(true).notNull(),
     profileInteractionAlert: boolean('profile_interaction_alert')
       .default(true)
@@ -459,6 +459,26 @@ export const profileBoosts = pgTable(
   ],
 );
 
+export const pushSubscriptions = pgTable(
+  'push_subscriptions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('push_subscriptions_endpoint_idx').on(table.endpoint),
+    index('push_subscriptions_user_id_idx').on(table.userId),
+  ],
+);
+
 export const rateLimitCounters = pgTable(
   'rate_limit_counters',
   {
@@ -615,3 +635,5 @@ export type ProfileBoost = typeof profileBoosts.$inferSelect;
 export type VoiceIntro = typeof voiceIntros.$inferSelect;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;
+
+export type PushSubscriptionRecord = typeof pushSubscriptions.$inferSelect;

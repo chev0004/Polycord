@@ -17,6 +17,11 @@ import {
   Toggle,
 } from '@/components/Form';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+  getPushNotificationState,
+} from '@/lib/push/client';
 import { CompareTable } from './CompareTable';
 import { type SettingsFormValues, settingsSchema } from './schema';
 
@@ -120,6 +125,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'confirming' | 'loading' | 'error'
   >('idle');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
+  const [pushStatus, setPushStatus] = useState<
+    'idle' | 'denied' | 'unsupported' | 'error'
+  >('idle');
+  const [pushBusy, setPushBusy] = useState(false);
   const [billingStatus, setBillingStatus] = useState<
     'idle' | 'loading' | 'error'
   >('idle');
@@ -150,12 +159,49 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     handleSubmit,
     control,
     reset,
+    resetField,
     watch,
     formState: { isSubmitting, isDirty, errors },
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: initialValues,
   });
+  register('pushNotifications');
+
+  useEffect(() => {
+    let active = true;
+    void getPushNotificationState().then((state) => {
+      if (!active) return;
+      resetField('pushNotifications', { defaultValue: state === 'enabled' });
+      setPushStatus(
+        state === 'enabled' || state === 'disabled' ? 'idle' : state,
+      );
+    });
+    return () => {
+      active = false;
+    };
+  }, [resetField]);
+
+  const handlePushToggle = async (checked: boolean) => {
+    setPushBusy(true);
+    setPushStatus('idle');
+    try {
+      if (checked) {
+        const result = await enablePushNotifications();
+        if (result !== 'enabled') {
+          setPushStatus(result);
+          return;
+        }
+      } else {
+        await disablePushNotifications();
+      }
+      resetField('pushNotifications', { defaultValue: checked });
+    } catch {
+      setPushStatus('error');
+    } finally {
+      setPushBusy(false);
+    }
+  };
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -771,11 +817,27 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     render={({ field }) => (
                       <Toggle
                         checked={field.value}
-                        onCheckedChange={field.onChange}
+                        onCheckedChange={(checked) => {
+                          void handlePushToggle(checked);
+                        }}
+                        disabled={pushBusy || pushStatus === 'unsupported'}
+                        aria-label={t('pushNotificationsLabel')}
                       />
                     )}
                   />
                 </SettingRow>
+
+                {pushStatus !== 'idle' ? (
+                  <output className="text-[13px] text-gray-400">
+                    {t(
+                      pushStatus === 'denied'
+                        ? 'pushDenied'
+                        : pushStatus === 'unsupported'
+                          ? 'pushUnsupported'
+                          : 'pushError',
+                    )}
+                  </output>
+                ) : null}
 
                 <SettingRow
                   label={t('matchAlertLabel')}
