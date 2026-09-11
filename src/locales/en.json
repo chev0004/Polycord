@@ -551,7 +551,10 @@
     "subtitle": "Profiles you saved to revisit. Private or removed profiles drop off automatically.",
     "emptyTitle": "No saved profiles yet",
     "emptyDescription": "Use the save action in any profile card menu to keep it here for later.",
-    "emptyAction": "Browse profiles"
+    "emptyAction": "Browse profiles",
+    "errorTitle": "Saved profiles could not load",
+    "errorDescription": "Something went wrong while loading your saved profiles. They are still safe.",
+    "errorRetry": "Try again"
   },
   "PublicProfile": {
     "backToDiscovery": "Back to discovery"
