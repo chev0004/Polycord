@@ -355,7 +355,7 @@
     "displayTimezoneLabel": "タイムゾーンを表示",
     "displayTimezoneDescription": "公開プロフィールにタイムゾーンを表示する。",
     "productAnalyticsLabel": "プロダクト分析",
-    "productAnalyticsDescription": "匿名で個人を特定しない利用イベントを共有して、Polycordの改善に協力します。",
+    "productAnalyticsDescription": "アカウントに紐づく利用イベントを共有して、Polycordの改善に協力します。オフにすると、ログイン中の今後のプロダクト分析が停止します。",
     "appLanguagePlaceholder": "アプリの言語を選択",
     "exportDataLabel": "アカウントデータをエクスポート",
     "exportDataDescription": "アカウント、プロフィール、保存済みのプライバシー設定をJSONとしてダウンロードします。",
@@ -609,5 +609,32 @@
     "bumpFiveHours": "5時間前",
     "bumpTwoDays": "2日前",
     "bumpOneWeek": "1週間前"
+  },
+  "Footer": {
+    "brand": "Polycord",
+    "tagline": "Discordで言語パートナーを見つけよう。プロフィールから始まる出会い。",
+    "safetyNote": "Polycordは言語パートナーを見つけるためのサービスです。NSFWコンテンツやDiscordの利用規約で認められていない行為は一切禁止です。",
+    "exploreHeading": "探す",
+    "homeLink": "ディスカバリー",
+    "savedLink": "保存済みプロフィール",
+    "settingsLink": "設定",
+    "legalHeading": "法的情報",
+    "languageHeading": "言語",
+    "copyright": "© {year} Polycord. All rights reserved.",
+    "notAffiliated": "PolycordはDiscord Inc.とは提携・関連していません。"
+  },
+  "Legal": {
+    "eyebrow": "法的情報",
+    "backToLegal": "法的情報に戻る",
+    "lastUpdated": "最終更新日 {date}",
+    "fallbackNotice": "このページは現在英語のみで提供されています。翻訳は準備中です。",
+    "termsTitle": "利用規約",
+    "termsSummary": "Polycordの利用ルールと同意事項。",
+    "privacyTitle": "プライバシーポリシー",
+    "privacySummary": "収集する情報、その利用方法、設定できる項目。",
+    "guidelinesTitle": "コミュニティガイドライン",
+    "guidelinesSummary": "安心してつながるためのマナーと安全の心得。",
+    "hubTitle": "ポリシーとガイドライン",
+    "hubDescription": "データ、プロフィール、Polycordの安全性に関するわかりやすいポリシーをまとめています。"
   }
 }
