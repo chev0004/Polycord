@@ -32,6 +32,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         heading: 'Who can use Polycord',
         paragraphs: [
           'You must be at least 13 years old, or the minimum digital-consent age in your country if it is higher, to use Polycord. Polycord is built for finding language partners, not for dating or any adult activity.',
+          'If you are under the age of majority where you live, your parent or guardian must review and agree to these terms.',
           'If you use Polycord on behalf of an organisation, you confirm that you may accept these terms for it.',
         ],
       },
@@ -57,6 +58,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'use discovery for anything other than finding language partners, including dating, hookups, or promotion',
           'solicit, advertise, trade, sell, or buy sexual content or services, or use your profile to arrange any of that',
           'post, link to, or request illegal content or activity of any kind',
+          'share, request, or promote child sexual abuse material, or engage in grooming, sexual solicitation of minors, or child exploitation or abuse',
           'harass, threaten, or abuse other members',
           'use Polycord to spam, scam, or advertise unrelated services',
           'scrape, copy, or republish member profiles in bulk',
@@ -68,6 +70,12 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         heading: "Discord's rules apply too",
         paragraphs: [
           "Polycord is built on top of Discord: every profile belongs to a Discord account and every connection happens there. Anything that Discord's Terms of Service or Community Guidelines prohibit is also prohibited on Polycord, and we treat it exactly like a breach of these terms.",
+        ],
+      },
+      {
+        heading: 'Reports and enforcement',
+        paragraphs: [
+          'Use the report action on a profile to flag violations. We may hide profiles, remove content, suspend or ban accounts, and report unlawful activity to Discord or the appropriate authorities. For suspected child exploitation, report the profile or account without downloading, copying, or forwarding abusive material.',
         ],
       },
       {
@@ -101,6 +109,12 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
     intro:
       'This policy explains what Polycord collects, why, and the control you have over it. We try to collect as little as we need to run a language-partner discovery service, and we never sell your personal data.',
     sections: [
+      {
+        heading: 'Minors',
+        paragraphs: [
+          'Polycord is for users aged 13 and above, subject to any higher minimum age where they live. We do not knowingly collect personal information from users below that age. If you believe an underage child has provided information, contact privacy@polycord.app so we can review and remove the account and personal data as appropriate.',
+        ],
+      },
       {
         heading: 'Information we collect',
         paragraphs: [
@@ -202,7 +216,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'harassment, hate speech, or threats of any kind',
           'sexual or otherwise NSFW content anywhere on a profile',
           'soliciting, advertising, trading, selling, or buying sexual content or services',
-          'any sexual content involving minors, or any sexual interest in minors',
+          'child sexual abuse material, grooming, sexual solicitation of minors, or any child exploitation or abuse',
           'illegal content or activity of any kind',
           'using discovery for dating, hookups, or anything else that is not language learning',
           'spam, scams, phishing, or unsolicited advertising',
@@ -221,6 +235,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         heading: 'Reporting and blocking',
         paragraphs: [
           'If someone makes you uncomfortable, you can block them so they no longer appear for you, and you can report a profile so our team can review it. Reports are confidential. Blocking is immediate and does not notify the other person.',
+          'For suspected child exploitation, report the profile or account. Do not download, copy, or forward abusive material.',
         ],
       },
       {
