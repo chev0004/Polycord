@@ -13,6 +13,7 @@ import {
   MdDeleteOutline,
   MdErrorOutline,
   MdMoreVert,
+  MdRocketLaunch,
   MdVisibility,
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
@@ -37,6 +38,7 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { entitlementLimit } from '@/lib/entitlements';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
 import { type ProfileFormValues, profileSchema } from './schema';
@@ -47,18 +49,23 @@ import {
 import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
+  boostedUntil?: string;
+  boostsRemaining?: number;
   initialValues?: ProfileFormValues;
+  onBoostProfile?: () => Promise<void> | void;
   onBumpProfile?: () => void;
   onDeleteProfile?: () => Promise<void> | void;
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
   onViewPublicProfile?: () => void;
   premium?: boolean;
+  profileId?: string;
+  stats?: { views30d: number; copies30d: number; saves: number };
   userAvatarUrl?: string;
   userDisplayName?: string;
 };
 
-const FREE_TAG_CAP = 5;
-const PREMIUM_TAG_CAP = 8;
+const FREE_TAG_CAP = entitlementLimit('profile.tags', false);
+const PREMIUM_TAG_CAP = entitlementLimit('profile.tags', true);
 const PREVIEW_TEASE_VOICE_SECONDS = 12;
 
 const defaultValues: ProfileFormValues = {
@@ -146,12 +153,17 @@ const MenuItem = ({
 );
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
+  boostedUntil,
+  boostsRemaining,
   initialValues,
+  onBoostProfile,
   onSubmit: onSubmitProp,
   onBumpProfile,
   onDeleteProfile,
   onViewPublicProfile,
   premium = false,
+  profileId,
+  stats,
   userAvatarUrl,
   userDisplayName,
 }) => {
@@ -165,7 +177,28 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [saveFailed, setSaveFailed] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isBoosting, setIsBoosting] = useState(false);
+  const [boostFailed, setBoostFailed] = useState(false);
   const [tease, setTease] = useState<string | null>(null);
+
+  const boostActive = boostedUntil
+    ? new Date(boostedUntil).getTime() > Date.now()
+    : false;
+
+  const handleBoostProfile = async () => {
+    if (!onBoostProfile || isBoosting) return;
+
+    setIsBoosting(true);
+    setBoostFailed(false);
+
+    try {
+      await onBoostProfile();
+    } catch {
+      setBoostFailed(true);
+    } finally {
+      setIsBoosting(false);
+    }
+  };
 
   const tagCap = premium ? PREMIUM_TAG_CAP : FREE_TAG_CAP;
 
@@ -289,7 +322,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     ) => options.find((option) => option.value === value)?.label ?? '';
 
     return {
-      id: 'profile-preview',
+      id: profileId ?? 'profile-preview',
       displayName,
       discordUsername: displayName,
       avatarUrl: userAvatarUrl,
@@ -334,6 +367,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     timezone,
     userAvatarUrl,
     voiceIntroSeconds,
+    profileId,
   ]);
 
   const tagsSchemaError = errors.tags?.message
@@ -343,7 +377,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     tagError ??
     tagsSchemaError ??
     (saveFailed ? t('saveError') : null) ??
-    (deleteFailed ? t('deleteError') : null);
+    (deleteFailed ? t('deleteError') : null) ??
+    (boostFailed ? t('boostError') : null);
 
   return (
     <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
@@ -378,6 +413,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <MenuItem icon={MdArrowUpward} onClick={onBumpProfile}>
                   {t('bumpProfile')}
                 </MenuItem>
+                {premium && onBoostProfile ? (
+                  <MenuItem
+                    icon={MdRocketLaunch}
+                    onClick={handleBoostProfile}
+                    disabled={
+                      isBoosting || boostActive || (boostsRemaining ?? 0) <= 0
+                    }
+                  >
+                    {boostActive
+                      ? t('boostActive')
+                      : t('boostProfile', { count: boostsRemaining ?? 0 })}
+                  </MenuItem>
+                ) : null}
                 {onViewPublicProfile ? (
                   <MenuItem icon={MdVisibility} onClick={onViewPublicProfile}>
                     {t('viewPublicProfile')}
@@ -741,13 +789,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </SectionCard>
 
-          <div className="sticky bottom-5 z-[6] flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg">
+          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <span
               className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
             >
               {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap">
               <Button
                 variant="outline"
                 onClick={handleDiscard}
@@ -779,6 +827,57 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               bioFallback={t('previewBioFallback')}
               emptyTagsLabel={t('previewNoTags')}
             />
+
+            {premium && stats ? (
+              <div className="mt-2 flex flex-col gap-3 rounded-3xl bg-background-dark p-5 shadow-xl">
+                <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+                  {t('insightsTitle')}
+                </span>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl bg-background-darker px-2 py-3">
+                    <p className="font-bold text-[20px] text-white">
+                      {stats.views30d}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">
+                      {t('insightsViews')}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-background-darker px-2 py-3">
+                    <p className="font-bold text-[20px] text-white">
+                      {stats.copies30d}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">
+                      {t('insightsCopies')}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-background-darker px-2 py-3">
+                    <p className="font-bold text-[20px] text-white">
+                      {stats.saves}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-500">
+                      {t('insightsSaves')}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-500">
+                  {t('insightsWindowNote')}
+                </p>
+              </div>
+            ) : null}
+
+            {!premium && initialValues ? (
+              <div className="mt-2 flex flex-col gap-2 rounded-3xl bg-background-dark p-5 shadow-xl">
+                <span className="flex items-center gap-2 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+                  {t('insightsTitle')}
+                  <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                    {t('voiceIntroPremiumTag')}
+                  </span>
+                </span>
+                <p className="text-[13px] text-gray-400">
+                  {t('insightsUpsell')}
+                </p>
+              </div>
+            ) : null}
           </div>
         </aside>
       </form>

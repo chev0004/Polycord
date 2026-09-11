@@ -9,7 +9,7 @@ import {
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
-import { getCurrentUser } from '@/lib/auth';
+import { getActiveUser } from '@/lib/auth';
 
 const readProfileId = async (request: Request): Promise<string | null> => {
   let body: unknown;
@@ -34,7 +34,7 @@ const readProfileId = async (request: Request): Promise<string | null> => {
 };
 
 export const POST = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -73,7 +73,7 @@ export const POST = async (request: Request) => {
 };
 
 export const DELETE = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

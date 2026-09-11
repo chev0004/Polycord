@@ -88,7 +88,7 @@ export const LanguageSwitcher: React.FC = () => {
         <button
           type="button"
           aria-label={t('changeLanguage')}
-          className="relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 hover:text-gray-400"
+          className="after:-inset-x-2 relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-white outline-none transition-colors duration-200 after:absolute after:inset-y-0 after:content-[''] hover:text-gray-400"
         >
           {triggerContent}
         </button>

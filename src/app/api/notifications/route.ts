@@ -10,7 +10,10 @@ import {
   setNotificationRead,
   upsertDiscordUser,
 } from '@/db';
-import { getCurrentUser } from '@/lib/auth';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { localeFromRequest } from '@/lib/analytics/locale';
+import { trackEvent } from '@/lib/analytics/track.server';
+import { getActiveUser } from '@/lib/auth';
 import {
   enforceRateLimit,
   rateLimitedResponse,
@@ -31,7 +34,7 @@ const parseBody = async (
 };
 
 export const GET = async () => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -59,7 +62,7 @@ export const GET = async () => {
 };
 
 export const POST = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -93,6 +96,13 @@ export const POST = async (request: Request) => {
     return rateLimitedResponse(limit.retryAfterMs);
   }
 
+  await trackEvent({
+    name: ANALYTICS_EVENTS.profileCopyReceived,
+    userId: actor.id,
+    locale: localeFromRequest(request),
+    metadata: { ownerUserId: target.profile.userId },
+  });
+
   await createNotification({
     userId: target.profile.userId,
     kind: 'copy',
@@ -105,7 +115,7 @@ export const POST = async (request: Request) => {
 };
 
 export const PATCH = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -134,7 +144,7 @@ export const PATCH = async (request: Request) => {
 };
 
 export const DELETE = async (request: Request) => {
-  const currentUser = await getCurrentUser();
+  const currentUser = await getActiveUser();
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -20,6 +20,8 @@ const getNotificationMessage = (
   premium: boolean,
   t: ReturnType<typeof useTranslations<'Inbox'>>,
 ) => {
+  if (notification.kind === 'warning') return t('moderationWarning');
+
   if (!premium) return t('anonymousCopyAlert');
 
   if (notification.kind === 'view') {

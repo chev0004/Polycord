@@ -12,7 +12,7 @@ import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
-import { hasPremiumEntitlement } from '@/lib/entitlements';
+import { isPremiumUser } from '@/lib/entitlements.server';
 import { DiscoveryFeed } from './DiscoveryFeed';
 
 export default async function Home({
@@ -51,7 +51,7 @@ export default async function Home({
       if (profile.profile.isPublic) {
         const { nextBumpAt } = getBumpCooldown(
           profile.profile.lastBumpedAt,
-          hasPremiumEntitlement(user),
+          await isPremiumUser(user),
         );
         bumpReadyAt = nextBumpAt.toISOString();
       }
