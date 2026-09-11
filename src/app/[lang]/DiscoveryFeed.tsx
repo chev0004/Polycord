@@ -2,6 +2,8 @@ import type { AvailabilityPattern } from '@/constants/availability';
 import { listPublicProfiles } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { trackEvent } from '@/lib/analytics/track.server';
 
 type DiscoveryFeedProps = {
   authError?: string;
@@ -38,6 +40,16 @@ export const DiscoveryFeed = async ({
   } catch (error) {
     console.error('Failed to load public profiles:', error);
     feedError = true;
+  }
+
+  const boostedCount = profiles.filter((profile) => profile.boosted).length;
+
+  if (boostedCount > 0) {
+    await trackEvent({
+      name: ANALYTICS_EVENTS.discoveryBoostImpressions,
+      locale,
+      metadata: { count: boostedCount },
+    });
   }
 
   return (

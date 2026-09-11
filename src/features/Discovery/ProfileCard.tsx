@@ -20,14 +20,17 @@ import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
+  capitalizeLanguageCode,
   formatCurrentTime,
   getLanguageName,
   getProficiencyTranslationKey,
   type IANATimezone,
+  isValidLanguageCode,
   type LanguageCode,
   type Proficiency,
   type TimeFormat,
 } from '@/constants/languages';
+import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
@@ -42,7 +45,6 @@ import { VoiceChip } from './VoiceChip';
 export type DiscoveryTargetLanguage = {
   language: LanguageCode | string;
   level?: Proficiency | string;
-  goal?: string;
 };
 
 export type DiscoveryProfile = {
@@ -61,6 +63,7 @@ export type DiscoveryProfile = {
   lastBumpRelative?: string;
   lastBumpedAt?: string;
   bumpedMinutesAgo?: number;
+  boosted?: boolean;
   premium?: boolean;
   cardTheme?: CardTheme;
   availability?: AvailabilityPattern;
@@ -100,9 +103,6 @@ const baseLanguagePillClasses =
   'rounded-md px-2.5 py-[5px] text-xs font-medium whitespace-nowrap flex-shrink-0';
 const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-gray-200`;
 const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip-bg,var(--color-primary-darker))] text-[var(--ct-chip-text,#fff)]`;
-
-// The card surface and avatar ring layer the premium tint over the dark
-// card colour; the transparent fallback keeps free cards untouched.
 const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
@@ -159,6 +159,7 @@ export const ProfileCard = ({
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
     getTimeFormat(),
   );
+  const languageDisplay = useLanguageDisplay();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -167,8 +168,6 @@ export const ProfileCard = ({
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
 
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
-  // Free profiles always use the neutral slate accent regardless of
-  // banner colour; only premium themes carry their own accent.
   const accent = profile.premium ? theme.accent : FREE_ACCENT;
   const themeStyle = {
     ...deriveCardAccent(accent),
@@ -314,7 +313,11 @@ export const ProfileCard = ({
     isPrimary: boolean,
     key?: string,
   ) => {
-    const label = `${getLanguageName(language, locale)}${
+    const languageLabel =
+      languageDisplay === 'short' && isValidLanguageCode(language)
+        ? capitalizeLanguageCode(language)
+        : getLanguageName(language, locale);
+    const label = `${languageLabel}${
       level ? ` / ${tProfile(getProficiencyTranslationKey(level))}` : ''
     }`;
     const classes = isPrimary
@@ -357,7 +360,7 @@ export const ProfileCard = ({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 ${className || 'text-white'}`}
+      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 focus:outline-none focus-visible:bg-background-main ${className || 'text-white'}`}
     >
       <Icon size={20} className={iconClassName || 'text-gray-400'} />
       {children}
@@ -407,7 +410,7 @@ export const ProfileCard = ({
         >
           <div className="flex items-center gap-1.5">
             {lastBumpRelative && (
-              <span className="whitespace-nowrap rounded-full bg-black/30 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
+              <span className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
                 {lastBumpRelative}
               </span>
             )}
@@ -417,7 +420,7 @@ export const ProfileCard = ({
                   <button
                     type="button"
                     suppressHydrationWarning
-                    className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white"
+                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-white"
                     aria-label={t('cardMenu')}
                   >
                     <MdMoreVert size={17} />
@@ -515,7 +518,7 @@ export const ProfileCard = ({
           <button
             type="button"
             onClick={handleCopyUsername}
-            className="group flex items-center gap-1.5 self-start text-left transition-colors"
+            className="-my-2 group flex items-center gap-1.5 self-start py-2 text-left transition-colors"
             aria-label={t('copyUsername')}
           >
             <div
@@ -565,7 +568,7 @@ export const ProfileCard = ({
               <button
                 type="button"
                 suppressHydrationWarning
-                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white"
+                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white focus-visible:text-white"
                 aria-label={t('showMoreLanguages', {
                   count: remainingLanguagesCount,
                 })}
@@ -607,7 +610,14 @@ export const ProfileCard = ({
       )}
 
       {profile.premium && profile.voiceIntroSeconds ? (
-        <VoiceChip seconds={profile.voiceIntroSeconds} />
+        <VoiceChip
+          seconds={profile.voiceIntroSeconds}
+          src={
+            profile.id === 'profile-preview'
+              ? undefined
+              : `/api/voice/${profile.id}`
+          }
+        />
       ) : null}
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
@@ -652,7 +662,7 @@ export const ProfileCard = ({
               <button
                 type="button"
                 onClick={handleCountryClick}
-                className="flex items-center gap-1.5 transition-opacity hover:opacity-80 active:opacity-60"
+                className="-my-2 flex items-center gap-1.5 py-2 transition-opacity hover:opacity-80 active:opacity-60"
               >
                 {renderLocationContent()}
               </button>

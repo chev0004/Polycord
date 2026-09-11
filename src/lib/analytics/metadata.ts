@@ -11,6 +11,9 @@ const ALLOWED_METADATA_KEYS = new Set([
   'tagCount',
   'availability',
   'country',
+  'count',
+  'remaining',
+  'ownerUserId',
 ]);
 
 export type AnalyticsMetadata = Record<string, unknown>;

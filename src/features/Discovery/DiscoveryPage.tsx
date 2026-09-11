@@ -7,6 +7,7 @@ import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
+import { Footer } from '@/features/Footer';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
@@ -676,13 +677,15 @@ export const DiscoveryPage = ({
         )}
       </main>
 
+      <Footer locale={locale} />
+
       {needsOnboarding && !isPromptDismissed ? (
         <aside className="fixed right-4 bottom-4 z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
           <div className="flex items-start">
             <button
               type="button"
               onClick={() => router.push(`/${locale}/onboarding`)}
-              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
             >
               <p className="font-figtree font-semibold text-white">
                 {t('onboardingPromptTitle')}
@@ -707,7 +710,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               onClick={() => setIsPromptDismissed(true)}
-              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
               aria-label={t('onboardingPromptDismiss')}
             >
               <MdClose size={16} />

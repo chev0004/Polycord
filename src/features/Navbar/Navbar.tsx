@@ -42,12 +42,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   const loginText = t('loginWithDiscord');
 
   return (
-    <nav className="flex h-16 w-full items-center justify-between bg-background-darker px-10 font-zen">
+    <nav className="flex h-16 w-full items-center justify-between gap-4 bg-background-darker px-4 font-zen sm:px-10">
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={onHomeClick}
-          className="flex select-none items-center gap-2.5 font-black font-figtree text-[28px] text-white tracking-[-0.01em] no-underline focus:outline-none"
+          aria-label={t('disspeak')}
+          className="flex select-none items-center gap-2.5 font-black font-figtree text-2xl text-white tracking-[-0.01em] no-underline focus:outline-none focus-visible:opacity-80 sm:text-[28px]"
         >
           <Image
             src="/polycord-logo.svg"
@@ -56,7 +57,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             height={28}
             className="block"
           />
-          {t('disspeak')}
+          <span className={isLoggedIn ? '' : 'hidden sm:inline'}>
+            {t('disspeak')}
+          </span>
         </button>
       </div>
 
