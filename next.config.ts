@@ -4,6 +4,15 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./next-intl.config.ts');
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'polycord\\.chev\\.dev' }],
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ];
+  },
   serverExternalPackages: ['ffprobe-static'],
   outputFileTracingIncludes: {
     '/api/profile/voice': ['node_modules/ffprobe-static/bin/**/*'],

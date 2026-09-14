@@ -94,8 +94,9 @@ Staging has its own `AUTH_SECRET` and VAPID keys. Set
 the subject is `https://polycord.chev.dev`. Rebuild after changing the public key.
 Product analytics is disabled with `POLYCORD_ANALYTICS_DISABLED=true`, and Stripe
 variables are left unset. `netlify.toml` pins the build runtimes and adds a
-`noindex, nofollow` response header. Remove that header when configuring a public
-production site.
+`noindex, nofollow` response header for static files. `next.config.ts` adds the
+same header to server-rendered responses on `polycord.chev.dev`. Remove staging
+indexing rules when configuring a public production site.
 
 ## Database
 
