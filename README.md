@@ -70,6 +70,33 @@ bun run build
 bun run start
 ```
 
+## Staging
+
+Staging runs at https://polycord.chev.dev on the Netlify project
+`polycord-staging`. Merges to `develop` deploy automatically. Netlify calls this
+project's live deployment the production context; it is still Polycord staging.
+Deploy previews are disabled for this project.
+
+Staging uses the existing Supabase database, so profile edits and deletions affect
+the same data used locally. Database migrations remain an explicit operation;
+the hosting build does not run them.
+
+Set runtime values in Netlify's environment variables for the production context,
+never in Git. Use the required variables above, with this Discord redirect URI:
+
+```text
+https://polycord.chev.dev/api/auth/discord/callback
+```
+
+The Discord application must allow that URI as well as the localhost callback.
+Staging has its own `AUTH_SECRET` and VAPID keys. Set
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` for push;
+the subject is `https://polycord.chev.dev`. Rebuild after changing the public key.
+Product analytics is disabled with `POLYCORD_ANALYTICS_DISABLED=true`, and Stripe
+variables are left unset. `netlify.toml` pins the build runtimes and adds a
+`noindex, nofollow` response header. Remove that header when configuring a public
+production site.
+
 ## Database
 
 Drizzle is configured in `drizzle.config.ts`, with schema definitions in
