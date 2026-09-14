@@ -15,7 +15,15 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['ffprobe-static'],
   outputFileTracingIncludes: {
-    '/api/profile/voice': ['node_modules/ffprobe-static/bin/**/*'],
+    '/api/profile/voice': [
+      `node_modules/ffprobe-static/bin/${process.platform}/${process.arch}/*`,
+    ],
+  },
+  outputFileTracingExcludes: {
+    '*': [
+      `node_modules/ffprobe-static/bin/!(${process.platform})/**/*`,
+      `node_modules/ffprobe-static/bin/${process.platform}/!(${process.arch})/**/*`,
+    ],
   },
   images: {
     remotePatterns: [
