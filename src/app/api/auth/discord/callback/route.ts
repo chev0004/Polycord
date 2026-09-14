@@ -29,9 +29,9 @@ const redirectWithError = (
   redirectTo: string,
   error: string,
 ) => {
-  const redirectUrl = new URL(redirectTo, request.nextUrl.origin);
+  const redirectUrl = new URL(redirectTo, getRedirectUri(request));
   redirectUrl.searchParams.set(AUTH_ERROR_PARAM, error);
-  const response = NextResponse.redirect(redirectUrl);
+  const response = NextResponse.redirect(redirectUrl, 303);
   clearOAuthStateCookie(response);
 
   return response;
@@ -141,7 +141,8 @@ export const GET = async (request: NextRequest) => {
     });
 
     const response = NextResponse.redirect(
-      new URL(redirectTo, request.nextUrl.origin),
+      new URL(redirectTo, getRedirectUri(request)),
+      303,
     );
     await setSessionCookie(response, currentUser);
     clearOAuthStateCookie(response);
