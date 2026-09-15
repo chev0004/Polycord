@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import type { NextResponse } from 'next/server';
+import { getUserByDiscordId } from '@/db';
 import {
   AUTH_ERROR_PARAM,
   AUTH_SESSION_COOKIE,
@@ -74,8 +75,9 @@ export const clearOAuthStateCookie = (response: NextResponse) => {
 export const setSessionCookie = async (
   response: NextResponse,
   user: CurrentUser,
+  accountId: string,
 ) => {
-  const value = await createSessionCookieValue(user);
+  const value = await createSessionCookieValue(user, accountId);
 
   if (!value) {
     return;
@@ -106,7 +108,7 @@ export const normalizeDiscordUser = (discordUser: DiscordUser): CurrentUser => {
   };
 };
 
-export const getCurrentUser = async (): Promise<CurrentUser | null> => {
+export const getCurrentUser = async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
 
@@ -114,10 +116,16 @@ export const getCurrentUser = async (): Promise<CurrentUser | null> => {
     return null;
   }
 
-  return readSessionFromCookieValue(sessionCookie);
+  const session = await readSessionFromCookieValue(sessionCookie);
+  if (!session) return null;
+
+  const user = await getUserByDiscordId(session.id);
+  return user?.id === session.accountId
+    ? { ...session, email: user.email ?? undefined }
+    : null;
 };
 
-export const getActiveUser = async (): Promise<CurrentUser | null> => {
+export const getActiveUser = async () => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {

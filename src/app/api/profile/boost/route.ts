@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { boostProfileForUser, upsertDiscordUser } from '@/db';
+import { boostProfileForUser } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -19,8 +19,7 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Premium required' }, { status: 403 });
   }
 
-  const user = await upsertDiscordUser(currentUser);
-  const result = await boostProfileForUser(user.id);
+  const result = await boostProfileForUser(currentUser.accountId);
   if ('error' in result) {
     return NextResponse.json(
       {
@@ -33,7 +32,7 @@ export const POST = async (request: Request) => {
   }
   await trackEvent({
     name: ANALYTICS_EVENTS.profileBoost,
-    userId: user.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
     metadata: { remaining: result.remaining },
   });

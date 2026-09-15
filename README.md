@@ -151,6 +151,28 @@ before running them.
 | `drizzle` | Generated database migrations and Drizzle metadata. |
 | `.storybook` | Storybook configuration. |
 
+## Account sessions and data
+
+Session cookies expire after 30 days and carry the unique Polycord account ID as well as the Discord identity. Server authentication requires that account record to still exist with the same ID. Only the Discord OAuth callback creates accounts; ordinary page reads and API writes cannot recreate one. Cookies issued before account binding was introduced require a new sign-in. No database migration is needed for this change.
+
+Deleting an account invalidates all of its existing sessions. A deliberate OAuth sign-in can create a new account with a different ID; old cookies remain invalid and deleted data is not restored. Discord-keyed moderation restrictions still apply. Logout clears the current browser cookie; it does not revoke copied cookies or other devices. Deletion does not delete the Discord account or revoke Discord authorization. Users can remove Polycord under Discord User Settings > Authorized Apps separately.
+
+The version 2 JSON export includes the account, complete editable profile and styling, settings, voice data, saved links, blocks created, submitted reports, inbox state, local subscription state, boosts, push registration IDs/dates, and account-linked activity. It excludes notification actor identities, other users' account data, reports filed by others, internal moderation/abuse records, analytics metadata, and push endpoints/keys. Exports are served with `Cache-Control: no-store`.
+
+| Data category | Account deletion behavior |
+| --- | --- |
+| Account, profile, target languages, settings, voice | Deleted. |
+| Saved links, blocks, reports involving the account | Deleted, including links from other accounts. |
+| Account's inbox, local subscription mapping, boosts, push registrations | Deleted. Active Stripe subscriptions must first be confirmed canceled; cancellation failure preserves the account and allows retry. |
+| Analytics events | Account link cleared; events, metadata and anonymous identifiers remain. |
+| Moderation actions | Account and deleted-report links cleared; actions and notes remain. |
+| Suspicious-activity logs | Account link cleared; action and IP data remain. |
+| Rate-limit counters and Discord-keyed moderation restrictions | Remain. |
+| Actor names/avatars already stored in another user's inbox | Remain. |
+| Payment-provider records and backups | This deletion operation does not purge them. Provider retention and backup expiry require separate operational verification. |
+
+Regression coverage uses an isolated localhost PostgreSQL database via `TEST_DATABASE_URL`: `bun test` checks export boundaries, cascades, retained records, failed billing cancellation and account recreation; `bun run test:e2e` checks old cookies in two browser contexts, read/write rejection, logout and localized cancellation recovery. The tests must never point at the shared staging database. Deployed Stripe lifecycle verification and public-policy reconciliation remain tracked in BILLING-002 and LEGAL-002.
+
 ## Scripts
 
 | Script | Description |

@@ -21,10 +21,19 @@ test('profile and settings persist through discovery and locale navigation', asy
   context,
 }) => {
   const id = randomUUID().replaceAll('-', '');
+  const accountId = randomUUID();
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const name = `Test ${id.slice(0, 8)}`;
+  await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, ${id}, ${name})`;
   const payload = Buffer.from(
     JSON.stringify({
-      user: { id, name, username: name, email: 'original@example.com' },
+      user: {
+        id,
+        accountId,
+        name,
+        username: name,
+        email: 'original@example.com',
+      },
       expiresAt: Date.now() + 3600000,
     }),
   ).toString('base64url');
@@ -39,7 +48,6 @@ test('profile and settings persist through discovery and locale navigation', asy
       path: '/',
     },
   ]);
-  const sql = postgres(process.env.TEST_DATABASE_URL as string);
   try {
     const profile = {
       isPublic: true,
