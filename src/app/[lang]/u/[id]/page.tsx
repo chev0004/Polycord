@@ -36,13 +36,18 @@ export default async function PublicProfileRoute({
   let currentProfileId: string | undefined;
   let viewerTimezone: string | undefined;
   let viewerUserId: string | undefined;
-  let viewerActor: { name: string; avatarUrl: string | null } | null = null;
+  let viewerActor: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null = null;
 
   if (user) {
     isLoggedIn = true;
     const persistedUser = await upsertDiscordUser(user);
     viewerUserId = persistedUser.id;
     viewerActor = {
+      id: persistedUser.id,
       name: persistedUser.displayName,
       avatarUrl: persistedUser.avatarUrl,
     };

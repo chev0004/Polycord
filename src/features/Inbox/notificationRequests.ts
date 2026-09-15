@@ -5,6 +5,7 @@ export type StoredNotification = {
   kind: NotificationKind;
   actorName?: string;
   actorAvatarUrl?: string;
+  actorProfileId?: string;
   isGuest?: boolean;
   read: boolean;
   createdAt: string;
@@ -17,6 +18,7 @@ const jsonRequest = async (method: string, body: unknown) => {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10000),
   });
 
   if (!response.ok) {
@@ -24,22 +26,21 @@ const jsonRequest = async (method: string, body: unknown) => {
   }
 };
 
-export const fetchNotifications = async (): Promise<StoredNotification[]> => {
-  try {
-    const response = await fetch(ENDPOINT);
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = (await response.json()) as {
-      notifications?: StoredNotification[];
-    };
-
-    return data.notifications ?? [];
-  } catch {
-    return [];
+export const fetchNotifications = async (
+  signal?: AbortSignal,
+): Promise<{
+  notifications: StoredNotification[];
+  premium: boolean;
+}> => {
+  const timeout = AbortSignal.timeout(10000);
+  const response = await fetch(ENDPOINT, {
+    cache: 'no-store',
+    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+  });
+  if (!response.ok) {
+    throw new Error(`Notification request failed: ${response.status}`);
   }
+  return response.json();
 };
 
 export const setNotificationReadRequest = (id: string, read: boolean) =>

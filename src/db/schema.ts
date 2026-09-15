@@ -284,6 +284,9 @@ export const notifications = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     kind: notificationKindEnum('kind').notNull(),
+    actorUserId: uuid('actor_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     actorName: text('actor_name'),
     actorAvatarUrl: text('actor_avatar_url'),
     isGuest: boolean('is_guest').default(false).notNull(),

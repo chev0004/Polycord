@@ -1,68 +1,73 @@
 import 'server-only';
 
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { and, desc, eq, gte, isNull, lt, notExists, or } from 'drizzle-orm';
 import { sendPushForNotification } from '@/lib/push/server';
 import { db } from './client';
 import {
   type NewNotificationRecord,
-  type NotificationRecord,
   notifications,
+  profiles,
+  userBlocks,
+  users,
 } from './schema';
+import { getUserSettingsByUserId } from './settings';
 
-const missingNotificationsStorageCodes = new Set(['42P01', '42703']);
-
-const getErrorCode = (error: unknown) =>
-  error && typeof error === 'object' && 'code' in error
-    ? String(error.code)
-    : null;
-
-const getErrorCause = (error: unknown) =>
-  error && typeof error === 'object' && 'cause' in error ? error.cause : null;
-
-const isMissingNotificationsStorageError = (error: unknown): boolean => {
-  let current: unknown = error;
-
-  while (current) {
-    const code = getErrorCode(current);
-
-    if (code && missingNotificationsStorageCodes.has(code)) {
-      return true;
-    }
-
-    current = getErrorCause(current);
-  }
-
-  return false;
-};
-
-export const listNotificationsForUser = async (
-  userId: string,
-): Promise<NotificationRecord[]> => {
-  try {
-    return await db
-      .select()
-      .from(notifications)
-      .where(eq(notifications.userId, userId))
-      .orderBy(desc(notifications.createdAt));
-  } catch (error) {
-    if (isMissingNotificationsStorageError(error)) {
-      return [];
-    }
-
-    throw error;
-  }
-};
+export const listNotificationsForUser = async (userId: string) =>
+  db
+    .select({
+      notification: notifications,
+      actorProfileId: profiles.id,
+    })
+    .from(notifications)
+    .leftJoin(users, eq(users.id, notifications.actorUserId))
+    .leftJoin(
+      profiles,
+      and(
+        eq(profiles.userId, users.id),
+        eq(profiles.isPublic, true),
+        eq(profiles.hiddenByModeration, false),
+        isNull(users.bannedAt),
+        or(isNull(users.suspendedUntil), lt(users.suspendedUntil, new Date())),
+        notExists(
+          db
+            .select({ id: userBlocks.id })
+            .from(userBlocks)
+            .where(
+              or(
+                and(
+                  eq(userBlocks.blockerUserId, userId),
+                  eq(userBlocks.blockedUserId, users.id),
+                ),
+                and(
+                  eq(userBlocks.blockerUserId, users.id),
+                  eq(userBlocks.blockedUserId, userId),
+                ),
+              ),
+            ),
+        ),
+      ),
+    )
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt), desc(notifications.id));
 
 export const createNotification = async (values: NewNotificationRecord) => {
+  const settings = await getUserSettingsByUserId(values.userId);
+  if (values.kind === 'copy' && settings?.profileInteractionAlert === false)
+    return null;
+  if (values.kind === 'view' && !settings?.profileViewAlert) return null;
   const [created] = await db.insert(notifications).values(values).returning();
-  await sendPushForNotification(created);
+  try {
+    await sendPushForNotification(created);
+  } catch (error) {
+    console.error('Notification push delivery failed', error);
+  }
 
   return created;
 };
 
 export const hasRecentViewNotification = async (
   userId: string,
-  actorName: string | null,
+  actorUserId: string | null,
   windowStart: Date,
 ): Promise<boolean> => {
   const [existing] = await db
@@ -72,9 +77,9 @@ export const hasRecentViewNotification = async (
       and(
         eq(notifications.userId, userId),
         eq(notifications.kind, 'view'),
-        actorName === null
+        actorUserId === null
           ? eq(notifications.isGuest, true)
-          : eq(notifications.actorName, actorName),
+          : eq(notifications.actorUserId, actorUserId),
         gte(notifications.createdAt, windowStart),
       ),
     )
