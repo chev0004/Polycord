@@ -1,39 +1,14 @@
 import 'server-only';
 
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq, or } from 'drizzle-orm';
 import { db } from './client';
 import {
   type NewReport,
   type ReportReason,
   reports,
   userBlocks,
+  users,
 } from './schema';
-
-const missingSafetyStorageCodes = new Set(['42P01', '42703', '42704']);
-
-const getErrorCode = (error: unknown) =>
-  error && typeof error === 'object' && 'code' in error
-    ? String(error.code)
-    : null;
-
-const getErrorCause = (error: unknown) =>
-  error && typeof error === 'object' && 'cause' in error ? error.cause : null;
-
-const isMissingSafetyStorageError = (error: unknown): boolean => {
-  let current: unknown = error;
-
-  while (current) {
-    const code = getErrorCode(current);
-
-    if (code && missingSafetyStorageCodes.has(code)) {
-      return true;
-    }
-
-    current = getErrorCause(current);
-  }
-
-  return false;
-};
 
 export type CreateReportInput = {
   reporterUserId: string;
@@ -83,21 +58,25 @@ export const unblockUser = async (
     );
 };
 
-export const listBlockedUserIds = async (
-  blockerUserId: string,
-): Promise<string[]> => {
-  try {
-    const rows = await db
-      .select({ blockedUserId: userBlocks.blockedUserId })
-      .from(userBlocks)
-      .where(eq(userBlocks.blockerUserId, blockerUserId));
-
-    return rows.map((row) => row.blockedUserId);
-  } catch (error) {
-    if (isMissingSafetyStorageError(error)) {
-      return [];
-    }
-
-    throw error;
-  }
+export const listBlockedUserIds = async (userId: string): Promise<string[]> => {
+  const rows = await db
+    .select()
+    .from(userBlocks)
+    .where(
+      or(
+        eq(userBlocks.blockerUserId, userId),
+        eq(userBlocks.blockedUserId, userId),
+      ),
+    );
+  return rows.map((row) =>
+    row.blockerUserId === userId ? row.blockedUserId : row.blockerUserId,
+  );
 };
+
+export const listBlockedUsers = async (userId: string) =>
+  db
+    .select({ id: users.id, displayName: users.displayName })
+    .from(userBlocks)
+    .innerJoin(users, eq(users.id, userBlocks.blockedUserId))
+    .where(eq(userBlocks.blockerUserId, userId))
+    .orderBy(desc(userBlocks.createdAt));

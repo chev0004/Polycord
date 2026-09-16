@@ -50,7 +50,7 @@ export type DiscoveryTargetLanguage = {
 export type DiscoveryProfile = {
   id: string;
   displayName: string;
-  discordUsername: string;
+  discordUsername?: string;
   avatarUrl?: string;
   primaryLanguage: LanguageCode | string;
   primaryLanguageLevel?: Proficiency | string;
@@ -181,7 +181,7 @@ export const ProfileCard = ({
     (bumpAge ? t(bumpAge.key, { count: bumpAge.count ?? 0 }) : undefined);
 
   const handleCopyUsername = async () => {
-    if (!canCopyUsername || isCopying) return;
+    if (!canCopyUsername || isCopying || !profile.discordUsername) return;
 
     setIsCopying(true);
     try {

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   createReport,
-  getProfileById,
+  getPublicProfileById,
   type ReportReason,
   upsertDiscordUser,
 } from '@/db';
@@ -43,7 +44,7 @@ const readReportBody = async (request: Request): Promise<ReportBody | null> => {
 
   const { profileId, reason, details } = body as Record<string, unknown>;
 
-  if (typeof profileId !== 'string' || profileId.length === 0) {
+  if (typeof profileId !== 'string' || !z.uuid().safeParse(profileId).success) {
     return null;
   }
 
@@ -77,13 +78,12 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid report' }, { status: 400 });
   }
 
-  const target = await getProfileById(body.profileId);
+  const reporter = await upsertDiscordUser(currentUser);
+  const target = await getPublicProfileById(body.profileId, reporter.id);
 
-  if (!target?.profile.isPublic) {
+  if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
-
-  const reporter = await upsertDiscordUser(currentUser);
 
   if (target.profile.userId === reporter.id) {
     return NextResponse.json(

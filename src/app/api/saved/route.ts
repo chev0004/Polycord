@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
-  getProfileById,
+  getPublicProfileById,
   getUserByDiscordId,
   saveProfile,
   unsaveProfile,
@@ -25,7 +26,7 @@ const readProfileId = async (request: Request): Promise<string | null> => {
     typeof body !== 'object' ||
     !('profileId' in body) ||
     typeof body.profileId !== 'string' ||
-    body.profileId.length === 0
+    !z.uuid().safeParse(body.profileId).success
   ) {
     return null;
   }
@@ -46,13 +47,12 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const target = await getProfileById(profileId);
+  const user = await upsertDiscordUser(currentUser);
+  const target = await getPublicProfileById(profileId, user.id);
 
-  if (!target?.profile.isPublic) {
+  if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
-
-  const user = await upsertDiscordUser(currentUser);
 
   if (target.profile.userId === user.id) {
     return NextResponse.json(

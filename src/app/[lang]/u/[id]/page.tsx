@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import {
   getProfileByUserId,
   getPublicProfileById,
+  getUserByDiscordId,
   getUserSettingsByUserId,
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
@@ -22,14 +23,15 @@ export default async function PublicProfileRoute({
   params: Promise<{ lang: string; id: string }>;
 }) {
   const { lang, id } = await params;
-  const row = await getPublicProfileById(id);
+  const user = await getCurrentUser();
+  const viewer = user ? await getUserByDiscordId(user.id) : null;
+  const row = await getPublicProfileById(id, viewer?.id);
 
   if (!row) {
     notFound();
   }
 
-  const profile = mapProfileToDiscoveryProfile(row);
-  const user = await getCurrentUser();
+  const profile = mapProfileToDiscoveryProfile(row, Boolean(user));
 
   let isLoggedIn = false;
   let savedProfileIds: string[] = [];

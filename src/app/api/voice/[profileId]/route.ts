@@ -4,7 +4,7 @@ import {
   getUserByDiscordId,
   getVoiceIntroByUserId,
 } from '@/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getActiveUser, getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 
 export const GET = async (
@@ -12,16 +12,19 @@ export const GET = async (
   { params }: { params: Promise<{ profileId: string }> },
 ) => {
   const { profileId } = await params;
-  let row = await getPublicProfileById(profileId);
+  const currentUser = await getCurrentUser();
+  const viewer = currentUser ? await getUserByDiscordId(currentUser.id) : null;
+  let row = await getPublicProfileById(profileId, viewer?.id);
 
   if (!row) {
-    const currentUser = await getCurrentUser();
-    const viewer = currentUser
-      ? await getUserByDiscordId(currentUser.id)
-      : null;
     const candidate = viewer ? await getProfileById(profileId) : null;
 
-    if (candidate && viewer && candidate.profile.userId === viewer.id) {
+    if (
+      candidate &&
+      viewer &&
+      candidate.profile.userId === viewer.id &&
+      (await getActiveUser())
+    ) {
       row = candidate;
     }
   }
@@ -51,7 +54,7 @@ export const GET = async (
     headers: {
       'Content-Type': intro.mimeType,
       'Content-Length': String(bytes.byteLength),
-      'Cache-Control': 'private, max-age=300',
+      'Cache-Control': 'private, no-store',
     },
   });
 };
