@@ -81,10 +81,18 @@ test('core pages expose named controls and support keyboard navigation', async (
       ).toEqual([]);
     }
     await page.goto('/en');
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Tab');
-    await expect(
-      page.getByRole('button', { name: 'Account menu' }),
-    ).toBeFocused();
+    const languageMenu = page.getByRole('button', { name: 'Change language' });
+    await languageMenu.click();
+    await expect(languageMenu).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(languageMenu).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('button', { name: 'Polycord', exact: true }).focus();
+    for (const name of ['Change language', 'Notifications', 'Account menu']) {
+      await page.keyboard.press('Tab');
+      await expect(
+        page.getByRole('button', { name, exact: true }),
+      ).toBeFocused();
+    }
     for (const name of [
       'Account menu',
       'Change language',
