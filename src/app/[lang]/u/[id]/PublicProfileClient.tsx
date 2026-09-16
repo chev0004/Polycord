@@ -130,6 +130,7 @@ export const PublicProfileClient = ({
     try {
       await blockProfileRequest(profile.id, true);
       router.push(`/${locale}`);
+      router.refresh();
     } catch {
       addToast({
         title: t('blockErrorTitle'),
