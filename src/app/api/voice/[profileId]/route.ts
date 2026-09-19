@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import {
   getProfileById,
   getPublicProfileById,
@@ -12,6 +13,9 @@ export const GET = async (
   { params }: { params: Promise<{ profileId: string }> },
 ) => {
   const { profileId } = await params;
+  if (!z.uuid().safeParse(profileId).success) {
+    return new Response('Not found', { status: 404 });
+  }
   let row = await getPublicProfileById(profileId);
 
   if (!row) {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   createReport,
   getProfileById,
@@ -43,7 +44,7 @@ const readReportBody = async (request: Request): Promise<ReportBody | null> => {
 
   const { profileId, reason, details } = body as Record<string, unknown>;
 
-  if (typeof profileId !== 'string' || profileId.length === 0) {
+  if (typeof profileId !== 'string' || !z.uuid().safeParse(profileId).success) {
     return null;
   }
 
