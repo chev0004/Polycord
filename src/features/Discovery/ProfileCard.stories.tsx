@@ -32,6 +32,50 @@ const meta: Meta<typeof ProfileCard> = {
 export default meta;
 type Story = StoryObj<typeof ProfileCard>;
 
+export const ClipboardDenied: Story = {
+  args: {
+    profile: {
+      id: 'clipboard',
+      displayName: 'Clipboard fixture',
+      discordUsername: 'clipboard.fixture',
+      primaryLanguage: 'ja',
+      targetLanguages: [],
+      interests: [],
+    },
+  },
+  play: async ({ canvasElement, args }) => {
+    const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error('Denied')) },
+    });
+    try {
+      const canvas = within(canvasElement);
+      await userEvent.click(
+        canvas.getByRole('button', { name: 'Copy username' }),
+      );
+      await expect(await canvas.findByRole('alert')).toHaveTextContent(
+        'clipboard.fixture',
+      );
+      await expect(args.onCopyUsername).not.toHaveBeenCalled();
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: () => Promise.resolve() },
+      });
+      await userEvent.click(
+        canvas.getByRole('button', { name: 'Copy username' }),
+      );
+      await waitFor(() =>
+        expect(canvas.queryByRole('alert')).not.toBeInTheDocument(),
+      );
+      await expect(args.onCopyUsername).toHaveBeenCalledOnce();
+    } finally {
+      if (original) Object.defineProperty(navigator, 'clipboard', original);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  },
+};
+
 const longBio =
   'I am a graphic designer in Osaka looking for a patient partner to practice everyday English with. I can already read and write fairly well, but speaking still makes me nervous, so I would love someone who does not mind a few long pauses while I find the right words. In return I am happy to help with Japanese at any level.';
 
@@ -269,8 +313,6 @@ export const CopyUsername: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // navigator.clipboard.writeText rejects when the document is not
-    // focused (headless and hidden test runs), so stub it here.
     const view = canvasElement.ownerDocument.defaultView as Window;
     Object.defineProperty(view.navigator, 'clipboard', {
       value: { writeText: async () => {} },
