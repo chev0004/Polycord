@@ -544,7 +544,8 @@
     "bumpNeedsProfileTitle": "Create a public profile first",
     "bumpNeedsProfileDescription": "Finish your profile and make it public before bumping.",
     "bumpErrorTitle": "Couldn't bump profile",
-    "bumpErrorDescription": "Something went wrong. Please try again."
+    "bumpErrorDescription": "Something went wrong. Please try again.",
+    "copyFailed": "Copy failed. Try again or copy this username manually: {username}"
   },
   "Saved": {
     "eyebrow": "Saved",
@@ -601,7 +602,9 @@
     "previewTitle": "Public card preview",
     "previewBioFallback": "Your bio will appear here.",
     "previewPrimaryFallback": "Primary",
-    "previewNoTags": "No tags yet"
+    "previewNoTags": "No tags yet",
+    "sessionExpired": "Your session expired. Sign in again to continue with your draft.",
+    "signInAgain": "Sign in again"
   },
   "DiscoveryStories": {
     "gridTitle": "Find your next language partner",
@@ -636,5 +639,14 @@
     "guidelinesSummary": "How to treat others and stay safe while you connect.",
     "hubTitle": "Policies and guidelines",
     "hubDescription": "The plain-language policies that cover your data, your profile, and how we keep Polycord safe."
+  },
+  "Recovery": {
+    "brand": "Polycord",
+    "missingTitle": "Page not found",
+    "missingDescription": "This page is unavailable or the address is incorrect. Return to discovery to find people.",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "We could not load this page. Try again, or return to discovery.",
+    "retry": "Try again",
+    "home": "Return to discovery"
   }
 }

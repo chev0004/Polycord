@@ -544,7 +544,8 @@
     "bumpNeedsProfileTitle": "先に公開プロフィールを作成してください",
     "bumpNeedsProfileDescription": "バンプする前にプロフィールを完成させ、公開してください。",
     "bumpErrorTitle": "プロフィールをバンプできませんでした",
-    "bumpErrorDescription": "問題が発生しました。もう一度お試しください。"
+    "bumpErrorDescription": "問題が発生しました。もう一度お試しください。",
+    "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}"
   },
   "Saved": {
     "eyebrow": "保存済み",
@@ -601,7 +602,9 @@
     "previewTitle": "公開カードプレビュー",
     "previewBioFallback": "自己紹介がここに表示されます。",
     "previewPrimaryFallback": "主要言語",
-    "previewNoTags": "タグはまだありません"
+    "previewNoTags": "タグはまだありません",
+    "sessionExpired": "セッションの有効期限が切れました。再度ログインして下書きから続けてください。",
+    "signInAgain": "再度ログイン"
   },
   "DiscoveryStories": {
     "gridTitle": "次の言語パートナーを見つけよう",
@@ -636,5 +639,14 @@
     "guidelinesSummary": "安心してつながるためのマナーと安全の心得。",
     "hubTitle": "ポリシーとガイドライン",
     "hubDescription": "データ、プロフィール、Polycordの安全性に関するわかりやすいポリシーをまとめています。"
+  },
+  "Recovery": {
+    "brand": "Polycord",
+    "missingTitle": "ページが見つかりません",
+    "missingDescription": "このページは利用できないか、アドレスが正しくありません。ユーザー検索に戻ってください。",
+    "errorTitle": "問題が発生しました",
+    "errorDescription": "ページを読み込めませんでした。再試行するか、ユーザー検索に戻ってください。",
+    "retry": "再試行",
+    "home": "ユーザー検索に戻る"
   }
 }
