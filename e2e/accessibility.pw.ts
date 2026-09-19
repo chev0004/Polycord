@@ -81,6 +81,9 @@ test('core pages expose named controls and support keyboard navigation', async (
       ).toEqual([]);
     }
     await page.goto('/en');
+    await expect(
+      page.getByRole('button', { name: 'Account menu' }),
+    ).toBeVisible();
     for (let i = 0; i < 4; i++) await page.keyboard.press('Tab');
     await expect(
       page.getByRole('button', { name: 'Account menu' }),

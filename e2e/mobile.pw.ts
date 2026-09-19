@@ -38,6 +38,11 @@ for (const width of [320, 375, 390]) {
     ]);
     const sql = postgres(process.env.TEST_DATABASE_URL as string);
     const fits = async () => {
+      if (!new URL(page.url()).pathname.endsWith('/settings')) {
+        await expect(
+          page.getByRole('button', { name: 'Account menu' }),
+        ).toBeVisible();
+      }
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBeLessThanOrEqual(width);
