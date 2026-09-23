@@ -9,6 +9,7 @@ import {
 } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { DiscoveryPage } from './DiscoveryPage';
 import { createSampleProfiles } from './profileFixtures';
 import 'src/app/globals.css';
@@ -16,6 +17,13 @@ import 'src/app/globals.css';
 const meta: Meta<typeof DiscoveryPage> = {
   title: 'Discovery/DiscoveryPage',
   component: DiscoveryPage,
+  decorators: [
+    (Story) => (
+      <RouteProgressProvider>
+        <Story />
+      </RouteProgressProvider>
+    ),
+  ],
   args: {
     isLoggedIn: true,
     locale: 'en',
@@ -29,6 +37,45 @@ const meta: Meta<typeof DiscoveryPage> = {
 
 export default meta;
 type Story = StoryObj<typeof DiscoveryPage>;
+
+export const RefreshError: Story = {
+  beforeEach: () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        String(args[0]).startsWith('/api/discovery')
+          ? Promise.resolve(new Response('{}', { status: 503 }))
+          : original(...args),
+      { preconnect: original.preconnect },
+    );
+    return () => {
+      globalThis.fetch = original;
+    };
+  },
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    const profiles = createSampleProfiles(t);
+    return (
+      <DiscoveryPage
+        {...args}
+        profiles={profiles}
+        discoveryData={{
+          profiles,
+          total: profiles.length,
+          page: 1,
+          tags: [],
+          savedProfileIds: [],
+        }}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
+    expect(canvasElement.querySelectorAll('article')).toHaveLength(9);
+    expect(canvas.queryByLabelText('Loading profiles')).not.toBeInTheDocument();
+  },
+};
 
 // Selecting Japanese as the primary language narrows the nine sample profiles
 // to the two Japanese speakers, then clearing restores the full feed.
