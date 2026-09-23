@@ -33,6 +33,8 @@ export default async function OnboardingRoute({
 
   return (
     <OnboardingPage
+      key={currentUser.id}
+      userId={currentUser.id}
       premium={await isPremiumUser(currentUser)}
       userAvatarUrl={currentUser.avatarUrl}
       userDisplayName={currentUser.name}

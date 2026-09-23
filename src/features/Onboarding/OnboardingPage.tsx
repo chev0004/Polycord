@@ -15,6 +15,7 @@ import {
   TextArea,
   TextInput,
 } from '@/components/Form';
+import { DraftNotice } from '@/components/Form/DraftNotice';
 import {
   availabilityValues,
   countryOptions,
@@ -25,14 +26,18 @@ import { availabilityPresetToPattern } from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
-import {
-  getOnboardingCompletion,
-  ONBOARDING_DRAFT_STORAGE_KEY,
-} from './completion';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { entitlementLimit } from '@/lib/entitlements';
-import { type OnboardingFormValues, createOnboardingSchema } from './schema';
+import { SessionExpiredError } from '@/lib/formErrors';
+import { getOnboardingCompletion } from './completion';
+import {
+  createOnboardingSchema,
+  type OnboardingFormValues,
+  onboardingDraftSchema,
+} from './schema';
 
 type OnboardingPageProps = {
+  userId: string;
   premium?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
@@ -56,22 +61,27 @@ const availabilityLabelKeys: Record<string, string> = {
 };
 
 export const OnboardingPage = ({
+  userId,
   premium = false,
   userAvatarUrl,
   userDisplayName,
 }: OnboardingPageProps) => {
-  const tagCap = entitlementLimit('profile.tags', premium);
   const bioId = useId();
   const timezoneId = useId();
   const tagsInputId = useId();
   const locale = useLocale();
   const router = useRouteProgressRouter();
   const t = useTranslations('Onboarding');
-  const [isDraftReady, setIsDraftReady] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
+  const tagCap = entitlementLimit('profile.tags', premium);
+  const form = useForm<OnboardingFormValues>({
+    resolver: zodResolver(createOnboardingSchema(premium)),
+    defaultValues,
+  });
   const {
     control,
     formState: { errors, isSubmitting },
@@ -80,10 +90,7 @@ export const OnboardingPage = ({
     reset,
     setValue,
     watch,
-  } = useForm<OnboardingFormValues>({
-    resolver: zodResolver(createOnboardingSchema(premium)),
-    defaultValues,
-  });
+  } = form;
 
   const values = watch();
   const tags = values.tags ?? [];
@@ -93,35 +100,17 @@ export const OnboardingPage = ({
 
   useEffect(() => {
     const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const rawDraft = localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY);
-
-    if (rawDraft) {
-      try {
-        const draft = JSON.parse(rawDraft) as Partial<OnboardingFormValues>;
-        reset({
-          ...defaultValues,
-          ...draft,
-          timezone: draft.timezone || detectedTimezone,
-        });
-        setIsDraftReady(true);
-        return;
-      } catch {
-        localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
-      }
-    }
-
     setValue('timezone', detectedTimezone, { shouldValidate: true });
-    setIsDraftReady(true);
-  }, [reset, setValue]);
+    try {
+      localStorage.removeItem('polycord_onboarding_draft');
+    } catch {}
+  }, [setValue]);
 
-  useEffect(() => {
-    if (!isDraftReady) {
-      return;
-    }
-
-    const draft = JSON.stringify(values);
-    localStorage.setItem(ONBOARDING_DRAFT_STORAGE_KEY, draft);
-  }, [isDraftReady, values]);
+  const draft = useFormDraft(
+    `polycord:onboarding:${userId}`,
+    form,
+    onboardingDraftSchema,
+  );
 
   const completion = useMemo(() => getOnboardingCompletion(values), [values]);
 
@@ -185,7 +174,10 @@ export const OnboardingPage = ({
       return setTagError(t('tagDuplicate'));
     }
 
-    setValue('tags', [...currentTags, nextTag], { shouldValidate: true });
+    setValue('tags', [...currentTags, nextTag], {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
     setTagInput('');
   };
 
@@ -193,31 +185,37 @@ export const OnboardingPage = ({
     setValue(
       'tags',
       tags.filter((_, index) => index !== indexToRemove),
-      { shouldValidate: true },
+      { shouldValidate: true, shouldDirty: true },
     );
   };
 
   const onSubmit = async (data: OnboardingFormValues) => {
+    setSessionExpired(false);
     setSubmitError(null);
 
-    const response = await fetch('/api/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
+    try {
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (response.status === 401) throw new SessionExpiredError();
+      if (!response.ok) throw new Error('Onboarding save failed');
+      reset(data);
+      draft.clear();
+      router.push(`/${locale}`);
+      router.refresh();
+    } catch (error) {
+      setSessionExpired(error instanceof SessionExpiredError);
       setSubmitError(t('submitError'));
-      return;
     }
-
-    localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
-    router.push(`/${locale}`);
-    router.refresh();
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-white">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="min-h-screen bg-background-main text-white"
+    >
       <Navbar
         iconUrl={userAvatarUrl}
         isLoggedIn
@@ -234,9 +232,9 @@ export const OnboardingPage = ({
         }
       />
       <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="rounded-lg border border-white/5 bg-background-dark shadow-xl"
+        <fieldset
+          disabled={!draft.ready}
+          className="min-w-0 rounded-lg border border-white/5 bg-background-dark shadow-xl"
         >
           <header className="border-white/10 border-b px-4 py-5 sm:px-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -269,6 +267,7 @@ export const OnboardingPage = ({
           </header>
 
           <div className="grid gap-6 px-4 py-6 sm:px-6">
+            <DraftNotice {...draft} sessionExpired={sessionExpired} />
             {submitError ? (
               <div
                 className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 text-red-100 text-sm"
@@ -519,13 +518,23 @@ export const OnboardingPage = ({
           </div>
 
           <div className="sticky bottom-0 border-white/10 border-t bg-background-dark px-4 py-4 sm:px-6">
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  reset();
+                  draft.clear();
+                }}
+                disabled={isSubmitting}
+              >
+                {t('discardDraft')}
+              </Button>
               <Button type="submit" disabled={isSubmitting} className="h-10">
                 {isSubmitting ? t('publishing') : t('publishButton')}
               </Button>
             </div>
           </div>
-        </form>
+        </fieldset>
 
         <aside className="lg:pt-0">
           <div className="sticky top-6 rounded-lg border border-white/5 bg-background-dark p-4 shadow-xl">
@@ -541,6 +550,6 @@ export const OnboardingPage = ({
           </div>
         </aside>
       </main>
-    </div>
+    </form>
   );
 };

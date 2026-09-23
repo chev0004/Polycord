@@ -16,18 +16,26 @@ import {
   TextInput,
   Toggle,
 } from '@/components/Form';
+import { DraftNotice } from '@/components/Form/DraftNotice';
 import { languageOptions, type TimeFormat } from '@/constants/languages';
+import { useFormDraft } from '@/hooks/useFormDraft';
+import { SessionExpiredError } from '@/lib/formErrors';
 import {
   disablePushNotifications,
   enablePushNotifications,
   getPushNotificationState,
 } from '@/lib/push/client';
 import { CompareTable } from './CompareTable';
-import { type SettingsFormValues, settingsSchema } from './schema';
+import {
+  type SettingsFormValues,
+  settingsDraftSchema,
+  settingsSchema,
+} from './schema';
 
 export type { SettingsFormValues };
 
 export type SettingsPageProps = {
+  userId?: string;
   defaultValues: SettingsFormValues;
   onDeleteAccount: () => Promise<void> | void;
   onExportData: () => Promise<void> | void;
@@ -114,6 +122,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   subscriptionCancelAtPeriodEnd = false,
   userAvatarUrl,
   userDisplayName,
+  userId,
 }) => {
   const t = useTranslations('Settings');
   const currentLocale = useLocale();
@@ -125,6 +134,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'confirming' | 'loading' | 'error'
   >('idle');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [pushStatus, setPushStatus] = useState<
     'idle' | 'denied' | 'unsupported' | 'error'
   >('idle');
@@ -154,6 +164,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     [defaultValues],
   );
 
+  const form = useForm<SettingsFormValues>({
+    resolver: zodResolver(settingsSchema),
+    defaultValues: initialValues,
+  });
   const {
     register,
     handleSubmit,
@@ -162,10 +176,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     resetField,
     watch,
     formState: { isSubmitting, isDirty, errors },
-  } = useForm<SettingsFormValues>({
-    resolver: zodResolver(settingsSchema),
-    defaultValues: initialValues,
-  });
+  } = form;
+  const draft = useFormDraft(
+    userId ? `polycord:settings:${userId}` : undefined,
+    form,
+    settingsDraftSchema,
+  );
   register('pushNotifications');
 
   useEffect(() => {
@@ -217,6 +233,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   const onSubmit = async (data: SettingsFormValues) => {
+    setSessionExpired(false);
     setSaveStatus('idle');
 
     try {
@@ -228,7 +245,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       }
 
       reset(data);
-    } catch {
+      draft.clear();
+    } catch (error) {
+      setSessionExpired(error instanceof SessionExpiredError);
       setSaveStatus('error');
     }
   };
@@ -241,6 +260,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const handleDiscard = () => {
     reset();
+    draft.clear();
     setExportStatus('idle');
     setDeleteStatus('idle');
     setSaveStatus('idle');
@@ -269,6 +289,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
     try {
       await onDeleteAccount();
+      reset();
+      draft.clear();
     } catch {
       setDeleteStatus('error');
     }
@@ -301,7 +323,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const emailValue = watch('email');
 
   return (
-    <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
+    <form
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
+    >
       <div className="mb-6">
         <h1 className="font-bold font-figtree text-[30px] text-white leading-[1.1]">
           {t('settingsTitle')}
@@ -311,9 +336,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit, onInvalid)}
-        className="grid items-start gap-6 lg:grid-cols-[232px_minmax(0,1fr)]"
+      {userId ? (
+        <DraftNotice {...draft} sessionExpired={sessionExpired} />
+      ) : null}
+      <fieldset
+        disabled={!draft.ready}
+        className="grid min-w-0 items-start gap-6 lg:grid-cols-[232px_minmax(0,1fr)]"
       >
         <aside className="lg:sticky lg:top-6">
           <nav className="flex flex-col gap-3.5 rounded-3xl bg-background-dark p-4 shadow-xl">
@@ -959,7 +987,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </div>
           </div>
         </div>
-      </form>
-    </div>
+      </fieldset>
+    </form>
   );
 };

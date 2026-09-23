@@ -67,6 +67,7 @@ export default async function ProfileRoute({
   return (
     <main className="min-h-screen bg-background-main">
       <ProfileRouteClient
+        userId={user.id}
         locale={lang}
         premium={premium}
         boostedUntil={boostStatus?.boostedUntil?.toISOString()}

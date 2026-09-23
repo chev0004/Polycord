@@ -62,3 +62,14 @@ export const createOnboardingSchema = (premium: boolean) =>
 export const onboardingSchema = createOnboardingSchema(false);
 
 export type OnboardingFormValues = z.infer<typeof onboardingSchema>;
+
+export const onboardingDraftSchema = onboardingSchema
+  .extend({
+    primaryLanguage: z.string(),
+    targetLanguage: z.string(),
+    bio: z.string(),
+    tags: z.array(z.string()),
+    country: z.string(),
+    timezone: z.string(),
+  })
+  .partial();

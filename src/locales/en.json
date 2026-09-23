@@ -1,4 +1,11 @@
 {
+  "Draft": {
+    "signInAgain": "Your session has expired. Sign in again to return to this editor.",
+    "savedLocally": "Unsaved edits are kept for this account in this browser tab. Save to apply them, or Discard to remove them.",
+    "restored": "Your unsaved draft has been restored. Review it, then Save or Discard.",
+    "unavailable": "This browser cannot keep a draft. Save or copy your edits before leaving.",
+    "leaveWarning": "This browser cannot keep your draft. Leave and lose unsaved edits?"
+  },
   "disspeak": "Polycord",
   "loginWithDiscord": "Login with Discord",
   "button": "Button",
@@ -596,6 +603,7 @@
     "tagTooShort": "Tags need 2 characters.",
     "tagTooLong": "Tags max out at 20 characters.",
     "tagLimitReached": "You can add up to {cap} tags.",
+    "discardDraft": "Discard draft",
     "tagDuplicate": "That tag is already here.",
     "publishButton": "Publish profile",
     "publishing": "Publishing...",

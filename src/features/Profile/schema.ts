@@ -103,3 +103,17 @@ export const profileSchema = z.object({
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
+
+export const profileDraftSchema = profileSchema
+  .omit({ voiceIntroSeconds: true })
+  .extend({
+    primaryLanguage: z.string(),
+    targetLanguages: z.array(
+      z.object({ language: z.string(), level: z.string() }),
+    ),
+    bio: z.string(),
+    tags: z.array(z.string()),
+    country: z.string(),
+    timezone: z.string(),
+  })
+  .partial();
