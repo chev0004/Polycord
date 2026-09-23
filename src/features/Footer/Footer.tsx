@@ -34,8 +34,8 @@ const FooterLink = ({ href, isCurrent, children }: FooterLinkProps) => {
           start();
         }
       }}
-      className={`w-fit text-sm no-underline transition-colors focus-visible:text-white focus-visible:underline ${
-        isCurrent ? 'text-primary-light' : 'text-gray-400 hover:text-white'
+      className={`w-fit text-sm no-underline transition-colors focus-visible:text-foreground focus-visible:underline ${
+        isCurrent ? 'text-primary-light' : 'text-muted hover:text-foreground'
       }`}
     >
       {children}
@@ -44,7 +44,7 @@ const FooterLink = ({ href, isCurrent, children }: FooterLinkProps) => {
 };
 
 const FooterHeading = ({ children }: { children: React.ReactNode }) => (
-  <span className="font-semibold text-[12px] text-gray-500 uppercase tracking-[0.08em]">
+  <span className="font-semibold text-[12px] text-subtle uppercase tracking-[0.08em]">
     {children}
   </span>
 );
@@ -88,13 +88,13 @@ export const Footer: React.FC<FooterProps> = ({ locale }) => {
     <footer className="w-full border-primary-darker border-t bg-background-darkest font-figtree">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-12 sm:px-8 md:flex-row md:justify-between md:gap-16">
         <div className="max-w-sm">
-          <p className="font-black text-[22px] text-white tracking-[-0.01em]">
+          <p className="font-black text-[22px] text-foreground tracking-[-0.01em]">
             {t('brand')}
           </p>
-          <p className="mt-2 text-gray-400 text-sm leading-relaxed">
+          <p className="mt-2 text-muted text-sm leading-relaxed">
             {t('tagline')}
           </p>
-          <p className="mt-4 text-gray-500 text-xs leading-relaxed">
+          <p className="mt-4 text-subtle text-xs leading-relaxed">
             {t('safetyNote')}
           </p>
         </div>
@@ -138,8 +138,8 @@ export const Footer: React.FC<FooterProps> = ({ locale }) => {
 
       <div className="border-primary-darker border-t">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p className="text-gray-500 text-xs">{t('copyright', { year })}</p>
-          <p className="text-gray-500 text-xs">{t('notAffiliated')}</p>
+          <p className="text-subtle text-xs">{t('copyright', { year })}</p>
+          <p className="text-subtle text-xs">{t('notAffiliated')}</p>
         </div>
       </div>
     </footer>

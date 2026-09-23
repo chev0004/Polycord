@@ -34,7 +34,7 @@ const COLOR_LABEL_KEYS: Record<string, string> = {
 };
 
 const SELECTED_RING =
-  '0 0 0 3px var(--color-background-dark), 0 0 0 5px #ffffff';
+  '0 0 0 3px var(--color-background-dark), 0 0 0 5px var(--color-foreground)';
 const TEASE_RING =
   '0 0 0 3px var(--color-background-dark), 0 0 0 5px rgba(255,255,255,0.45)';
 
@@ -255,18 +255,18 @@ const ColorControls = ({
       />
       <div className="flex items-center gap-1.5">
         <div
-          className="h-[26px] w-[26px] shrink-0 rounded-[7px] border border-white/10"
+          className="h-[26px] w-[26px] shrink-0 rounded-[7px] border border-line"
           style={{ background: isValidHex(color) ? color : '#888888' }}
           title={previewLabel}
         />
-        <span className="shrink-0 font-mono text-[13px] text-gray-500">#</span>
+        <span className="shrink-0 font-mono text-[13px] text-subtle">#</span>
         <input
           type="text"
           value={color.replace('#', '')}
           maxLength={6}
           spellCheck={false}
           aria-label={t('colourHexLabel')}
-          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background-main px-2 py-1.5 font-mono text-[13px] text-white tracking-[0.04em] focus:border-primary focus:outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-line bg-background-main px-2 py-1.5 font-mono text-[13px] text-foreground tracking-[0.04em] focus:border-primary focus:outline-none"
           onChange={(event) => {
             const raw = sanitizeHexInput(event.target.value);
             onHexChange(raw);
@@ -275,7 +275,7 @@ const ColorControls = ({
         {eyeDropperSupported ? (
           <button
             type="button"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-background-main text-gray-400 transition-colors hover:bg-background-dark hover:text-white focus:outline-none"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-background-main text-muted transition-colors hover:bg-background-dark hover:text-foreground focus:outline-none"
             aria-label={t('colourEyedropperLabel')}
             title={t('colourEyedropperLabel')}
             onClick={pickFromScreen}
@@ -321,7 +321,7 @@ export const GradientPickerPopover = ({
       side="top"
       align="start"
       sideOffset={8}
-      className="z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-white/10 bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      className="z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-line bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
       onOpenAutoFocus={(event) => event.preventDefault()}
     >
       <div
@@ -345,7 +345,7 @@ export const GradientPickerPopover = ({
           onClick={() => setActiveStop(1)}
         />
       </div>
-      <p className="-mt-0.5 text-center text-[11px] text-gray-500">
+      <p className="-mt-0.5 text-center text-[11px] text-subtle">
         {activeStop === 0 ? t('gradientStartStop') : t('gradientEndStop')}
       </p>
       <ColorControls
@@ -388,7 +388,7 @@ export const GradientColorPicker = ({
         >
           <MdPalette
             size={15}
-            className="text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"
+            className="text-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"
           />
         </button>
       </Popover.Trigger>
@@ -445,7 +445,7 @@ export const AccentPicker = ({
             side="top"
             align="start"
             sideOffset={8}
-            className="z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-white/10 bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+            className="z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-line bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
             onOpenAutoFocus={(event) => event.preventDefault()}
           >
             <ColorControls
@@ -461,7 +461,7 @@ export const AccentPicker = ({
       {value ? (
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12px] text-gray-500 transition-colors hover:text-white focus:outline-none"
+          className="inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12px] text-subtle transition-colors hover:text-foreground focus:outline-none"
           onClick={() => onChange(null)}
         >
           <MdRestartAlt size={15} />
@@ -528,7 +528,7 @@ export const CardColorPicker = ({
             );
           })}
 
-          <span className="h-[22px] w-px bg-white/10" />
+          <span className="h-[22px] w-px bg-overlay" />
 
           {PREMIUM_CARD_THEMES.map((color) => {
             if (premium) {
@@ -584,16 +584,18 @@ export const CardColorPicker = ({
           ) : null}
         </div>
 
-        <p className="text-[12px] text-gray-500">
+        <p className="text-[12px] text-subtle">
           {premium ? t('cardColorHintPremium') : t('cardColorHintFree')}
         </p>
 
         {!premium && tease ? (
-          <p className="text-[13px] text-gray-400 leading-relaxed">
+          <p className="text-[13px] text-muted leading-relaxed">
             {t.rich('cardColorTeaseUpsell', {
               theme: t(COLOR_LABEL_KEYS[tease]),
               strong: (chunks) => (
-                <strong className="font-semibold text-white">{chunks}</strong>
+                <strong className="font-semibold text-foreground">
+                  {chunks}
+                </strong>
               ),
               premiumLink: (chunks) => (
                 <Link
@@ -616,7 +618,7 @@ export const CardColorPicker = ({
             autoColor={autoAccent}
             onChange={(color) => onAccentOverride?.(color)}
           />
-          <p className="text-[12px] text-gray-500">{t('accentColourHint')}</p>
+          <p className="text-[12px] text-subtle">{t('accentColourHint')}</p>
         </FormGroup>
       ) : null}
     </>

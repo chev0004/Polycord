@@ -39,12 +39,12 @@ export const AvailabilityRow = ({
   if (!result) return null;
 
   return (
-    <div className="flex items-center gap-1.5 text-[12.5px] text-gray-300">
-      <MdSchedule size={15} className="shrink-0 text-gray-500" />
+    <div className="flex items-center gap-1.5 text-[12.5px] text-soft">
+      <MdSchedule size={15} className="shrink-0 text-subtle" />
       <div className="flex min-w-0 flex-col gap-px overflow-hidden">
-        <span className="truncate text-gray-300">{result.ownerStr}</span>
+        <span className="truncate text-soft">{result.ownerStr}</span>
         {result.viewerStr && (
-          <span className="text-[12px] text-gray-500">{result.viewerStr}</span>
+          <span className="text-[12px] text-subtle">{result.viewerStr}</span>
         )}
       </div>
     </div>

@@ -72,13 +72,11 @@ const SectionCard = ({
   children: React.ReactNode;
 }) => (
   <section className="flex flex-col gap-5 rounded-3xl bg-background-dark p-6 shadow-xl">
-    <div className="flex flex-col gap-[3px] border-white/10 border-b pb-3.5">
+    <div className="flex flex-col gap-[3px] border-line border-b pb-3.5">
       <h2 className="font-figtree font-semibold text-[19px] text-primary leading-[1.2]">
         {title}
       </h2>
-      {description && (
-        <p className="text-[13px] text-gray-500">{description}</p>
-      )}
+      {description && <p className="text-[13px] text-subtle">{description}</p>}
     </div>
     <div className="flex flex-col gap-[18px]">{children}</div>
   </section>
@@ -93,10 +91,10 @@ const SettingRow = ({
   description: string;
   children: React.ReactNode;
 }) => (
-  <div className="flex flex-col items-start justify-between gap-4 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617] sm:flex-row sm:items-center sm:gap-6">
+  <div className="flex flex-col items-start justify-between gap-4 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-background-main sm:flex-row sm:items-center sm:gap-6">
     <div className="min-w-0">
-      <p className="font-medium text-[15px] text-white">{label}</p>
-      <p className="mt-0.5 text-[12px] text-gray-500">{description}</p>
+      <p className="font-medium text-[15px] text-foreground">{label}</p>
+      <p className="mt-0.5 text-[12px] text-subtle">{description}</p>
     </div>
     <div className="shrink-0">{children}</div>
   </div>
@@ -303,10 +301,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   return (
     <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
       <div className="mb-6">
-        <h1 className="font-bold font-figtree text-[30px] text-white leading-[1.1]">
+        <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
           {t('settingsTitle')}
         </h1>
-        <p className="mt-1.5 font-light text-[15px] text-gray-400">
+        <p className="mt-1.5 font-light text-[15px] text-muted">
           {t('settingsSubtitle')}
         </p>
       </div>
@@ -317,15 +315,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       >
         <aside className="lg:sticky lg:top-6">
           <nav className="flex flex-col gap-3.5 rounded-3xl bg-background-dark p-4 shadow-xl">
-            <div className="hidden items-center gap-3 border-white/10 border-b px-1.5 pt-1 pb-3.5 lg:flex">
+            <div className="hidden items-center gap-3 border-line border-b px-1.5 pt-1 pb-3.5 lg:flex">
               <Avatar avatarUrl={userAvatarUrl} size="sm" />
               <div className="min-w-0">
-                <p className="truncate font-semibold text-[14px] text-white">
+                <p className="truncate font-semibold text-[14px] text-foreground">
                   {userDisplayName}
                 </p>
-                <p className="truncate text-[12px] text-gray-400">
-                  {emailValue}
-                </p>
+                <p className="truncate text-[12px] text-muted">{emailValue}</p>
               </div>
             </div>
             <div className="flex flex-row flex-wrap gap-1 lg:flex-col">
@@ -340,7 +336,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     className={`flex items-center rounded-full px-3 py-2.5 text-left font-medium text-[14px] transition-colors focus:outline-none focus-visible:bg-background-main ${
                       isActive
                         ? 'bg-primary-darker text-primary-light'
-                        : 'text-gray-400 hover:bg-background-main hover:text-white focus-visible:text-white'
+                        : 'text-muted hover:bg-background-main hover:text-foreground focus-visible:text-foreground'
                     }`}
                   >
                     {t(section.labelKey)}
@@ -435,8 +431,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <output
                       className={`text-xs ${
                         exportStatus === 'success'
-                          ? 'text-green-400'
-                          : 'text-red-400'
+                          ? 'text-success'
+                          : 'text-danger'
                       }`}
                     >
                       {exportStatus === 'success'
@@ -450,10 +446,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               <div className="rounded-xl bg-background-darker px-4 py-3.5">
                 <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-6">
                   <div className="min-w-0">
-                    <p className="font-medium text-[15px] text-white">
+                    <p className="font-medium text-[15px] text-foreground">
                       {t('deleteAccountLabel')}
                     </p>
-                    <p className="mt-0.5 text-[12px] text-gray-500">
+                    <p className="mt-0.5 text-[12px] text-subtle">
                       {t('deleteAccountDescription')}
                     </p>
                   </div>
@@ -461,7 +457,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <Button
                       variant="outline"
                       onClick={() => setDeleteStatus('confirming')}
-                      className="h-10 whitespace-nowrap border-red-500/60 text-red-300 hover:bg-red-950/40"
+                      className="h-10 whitespace-nowrap border-red-500/60 text-danger hover:bg-danger-surface"
                     >
                       {t('deleteAccountButton')}
                     </Button>
@@ -482,11 +478,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       placeholder={t('deleteAccountConfirmationPlaceholder')}
                       disabled={deleteStatus === 'loading'}
                     />
-                    <p className="text-[12px] text-gray-500 leading-relaxed">
+                    <p className="text-[12px] text-subtle leading-relaxed">
                       {t('deleteAccountRetentionNote')}
                     </p>
                     {deleteStatus === 'error' ? (
-                      <p className="text-red-400 text-xs">
+                      <p className="text-danger text-xs">
                         {t('deleteAccountError')}
                       </p>
                     ) : null}
@@ -509,7 +505,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                           deleteStatus === 'loading' ||
                           deleteConfirmation !== 'DELETE'
                         }
-                        className="h-10 whitespace-nowrap border-red-500/60 text-red-300 hover:bg-red-950/40"
+                        className="h-10 whitespace-nowrap border-red-500/60 text-danger hover:bg-danger-surface"
                       >
                         {deleteStatus === 'loading'
                           ? t('deletingAccount')
@@ -535,18 +531,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <div className="flex items-center justify-between gap-4 rounded-xl bg-background-darker px-4 py-3.5">
                   <div className="min-w-0">
                     <div className="flex items-baseline gap-[5px]">
-                      <span className="font-bold text-[26px] text-white tracking-[-0.01em]">
+                      <span className="font-bold text-[26px] text-foreground tracking-[-0.01em]">
                         {t('premiumPriceAmount')}
                       </span>
-                      <span className="text-[13px] text-gray-400">
+                      <span className="text-[13px] text-muted">
                         {t('premiumPriceRenewal')}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-[12.5px] text-gray-500">
+                    <p className="mt-0.5 text-[12.5px] text-subtle">
                       {t('premiumPlanNote')}
                     </p>
                     {subscriptionRenewsAt ? (
-                      <p className="mt-0.5 text-[12.5px] text-gray-500">
+                      <p className="mt-0.5 text-[12.5px] text-subtle">
                         {t(
                           subscriptionCancelAtPeriodEnd
                             ? 'billingEnds'
@@ -575,7 +571,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
               {premium ? null : (
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[12px] text-gray-500">
+                  <span className="text-[12px] text-subtle">
                     {t('premiumUpgradeNote')}
                   </span>
                   <Button
@@ -765,15 +761,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     />
                   </SettingRow>
                 ) : (
-                  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+                  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-background-main">
                     <div className="min-w-0">
-                      <p className="flex items-center gap-2 font-medium text-[15px] text-white">
+                      <p className="flex items-center gap-2 font-medium text-[15px] text-foreground">
                         {t('hideProfileVisitsLabel')}
-                        <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                        <span className="inline-flex items-center rounded-full bg-overlay px-[9px] py-0.5 font-bold text-[10.5px] text-soft uppercase tracking-[0.05em]">
                           {t('premiumTag')}
                         </span>
                       </p>
-                      <p className="mt-0.5 text-[12px] text-gray-500">
+                      <p className="mt-0.5 text-[12px] text-subtle">
                         {t('hideProfileVisitsDescriptionFree')}
                       </p>
                     </div>
@@ -834,7 +830,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </SettingRow>
 
                 {pushStatus !== 'idle' ? (
-                  <output className="text-[13px] text-gray-400">
+                  <output className="text-[13px] text-muted">
                     {t(
                       pushStatus === 'denied'
                         ? 'pushDenied'
@@ -901,15 +897,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     />
                   </SettingRow>
                 ) : (
-                  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+                  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-background-main">
                     <div className="min-w-0">
-                      <p className="flex items-center gap-2 font-medium text-[15px] text-white">
+                      <p className="flex items-center gap-2 font-medium text-[15px] text-foreground">
                         {t('profileViewAlertLabel')}
-                        <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                        <span className="inline-flex items-center rounded-full bg-overlay px-[9px] py-0.5 font-bold text-[10.5px] text-soft uppercase tracking-[0.05em]">
                           {t('premiumTag')}
                         </span>
                       </p>
-                      <p className="mt-0.5 text-[12px] text-gray-500">
+                      <p className="mt-0.5 text-[12px] text-subtle">
                         {t('profileViewAlertDescriptionFree')}
                       </p>
                     </div>
@@ -926,16 +922,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </SectionCard>
           )}
 
-          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             {saveStatus === 'error' ? (
-              <span className="text-[13px] text-red-400">{t('saveError')}</span>
+              <span className="text-[13px] text-danger">{t('saveError')}</span>
             ) : billingStatus === 'error' ? (
-              <span className="text-[13px] text-red-400">
+              <span className="text-[13px] text-danger">
                 {t('billingError')}
               </span>
             ) : (
               <span
-                className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
+                className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-muted'}`}
               >
                 {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
               </span>

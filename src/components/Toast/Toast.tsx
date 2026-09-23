@@ -73,16 +73,16 @@ export const Toast = ({
         )}
 
         <div>
-          <div className="mb-0.5 font-figtree font-medium text-sm text-white">
+          <div className="mb-0.5 font-figtree font-medium text-foreground text-sm">
             {title}
           </div>
-          <div className="font-figtree text-[13px] text-gray-400">
+          <div className="font-figtree text-[13px] text-muted">
             {description}
           </div>
         </div>
         <button
           type="button"
-          className="flex text-gray-400 transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-white"
+          className="flex text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground"
           onClick={() => onOpenChange?.(false)}
         >
           <MdClose />
@@ -91,7 +91,7 @@ export const Toast = ({
 
       <div
         ref={timerRef}
-        className={`absolute bottom-0 left-0 h-0.5 w-full origin-left animate-shrink bg-white ${isHovered ? 'ToastTimer--paused' : 'ToastTimer--running'}`}
+        className={`absolute bottom-0 left-0 h-0.5 w-full origin-left animate-shrink bg-foreground ${isHovered ? 'ToastTimer--paused' : 'ToastTimer--running'}`}
         style={{ '--toast-duration': `${duration}ms` } as CSSProperties}
       />
     </li>

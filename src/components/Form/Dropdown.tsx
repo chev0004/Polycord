@@ -269,8 +269,8 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
     const widthClass = fullWidth ? 'w-full' : '';
 
     const triggerClasses = isMinimalVariant
-      ? `flex h-10 items-center gap-2 whitespace-nowrap bg-transparent px-3 py-2 text-white transition-colors hover:opacity-80 ${className ?? ''}`
-      : `flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-[15px] text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-gray-500 ${error ? 'border-red-500' : 'border-white/[0.07] hover:border-white/[0.14] data-[state=open]:border-white/[0.14]'} ${className ?? ''}`;
+      ? `flex h-10 items-center gap-2 whitespace-nowrap bg-transparent px-3 py-2 text-foreground transition-colors hover:opacity-80 ${className ?? ''}`
+      : `flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-[15px] text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-subtle ${error ? 'border-red-500' : 'border-line hover:border-line-strong data-[state=open]:border-line-strong'} ${className ?? ''}`;
 
     const chevronSize = isMinimalVariant ? 12 : 20;
     const ChevronDown = isMinimalVariant
@@ -297,11 +297,11 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
           onBlur={onBlur}
         >
           {isMinimalVariant && Icon && (
-            <Icon size={18} className="flex-shrink-0 text-white" />
+            <Icon size={18} className="flex-shrink-0 text-foreground" />
           )}
 
           {isMinimalVariant && label ? (
-            <span className="font-medium text-sm text-white">{label}</span>
+            <span className="font-medium text-foreground text-sm">{label}</span>
           ) : (
             <span
               className={
@@ -315,8 +315,8 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
           <SelectPrimitive.Icon
             className={
               isMinimalVariant
-                ? 'ml-0.5 flex-shrink-0 text-white'
-                : `flex-shrink-0 text-gray-500 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'rotate-180' : ''}`
+                ? 'ml-0.5 flex-shrink-0 text-foreground'
+                : `flex-shrink-0 text-subtle transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'rotate-180' : ''}`
             }
           >
             <ChevronDown size={chevronSize} />
@@ -368,7 +368,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                 <div className="relative">
                   <MdSearch
                     size={18}
-                    className="-translate-y-1/2 absolute top-1/2 left-3 text-gray-500"
+                    className="-translate-y-1/2 absolute top-1/2 left-3 text-subtle"
                   />
                   <input
                     ref={searchInputRef}
@@ -392,7 +392,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                       }
                     }}
                     placeholder={searchPlaceholder}
-                    className="h-[38px] w-full rounded-full border border-white/[0.07] bg-background-darker pr-3.5 pl-[34px] text-sm text-white placeholder-gray-500 outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-white/[0.14] focus:border-white/[0.14] focus:outline-none"
+                    className="h-[38px] w-full rounded-full border border-line bg-background-darker pr-3.5 pl-[34px] text-foreground text-sm placeholder-subtle outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-line-strong focus:border-line-strong focus:outline-none"
                   />
                 </div>
               </div>
@@ -401,7 +401,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             {canScrollUp && (
               <button
                 type="button"
-                className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pt-2 pb-2 text-white"
+                className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pt-2 pb-2 text-foreground"
                 style={{ top: `${searchBoxHeight - 8}px` }}
                 onClick={(e) => {
                   e.preventDefault();
@@ -458,7 +458,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
                   )}
                 </>
               ) : (
-                <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
+                <div className="flex h-12 items-center justify-center text-sm text-subtle">
                   {searchable && searchTerm ? t('noResults') : t('noOptions')}
                 </div>
               )}
@@ -467,7 +467,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             {canScrollDown && (
               <button
                 type="button"
-                className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-white"
+                className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-foreground"
                 onClick={(e) => {
                   e.preventDefault();
                   viewportRef.current?.scrollBy({

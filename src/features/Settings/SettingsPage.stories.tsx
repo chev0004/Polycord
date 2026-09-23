@@ -59,6 +59,50 @@ export const Default: Story = {
   args: {},
 };
 
+export const LightAppearance: Story = {
+  parameters: { theme: 'light' },
+  args: { defaultValues: { ...defaultSettings, theme: 'light' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: 'Appearance' }));
+    await waitFor(() =>
+      expect(canvas.getByRole('combobox', { name: 'Theme' })).toHaveTextContent(
+        'Light Mode',
+      ),
+    );
+    expect(
+      canvas.getByRole('button', { name: 'Save Settings' }),
+    ).toBeDisabled();
+  },
+};
+
+export const LightSaveError: Story = {
+  parameters: { theme: 'light' },
+  args: {
+    onSubmit: fn(async () => {
+      throw new Error('save failed');
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    setFieldValue(
+      canvas.getByLabelText('Email Address') as HTMLInputElement,
+      'changed@example.com',
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Save Settings' }),
+      ).not.toBeDisabled(),
+    );
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Settings' }));
+    await waitFor(() =>
+      expect(
+        canvas.getByText('Could not save your settings. Please try again.'),
+      ).toBeInTheDocument(),
+    );
+  },
+};
+
 export const SwitchTabs: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

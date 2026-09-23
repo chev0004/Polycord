@@ -36,7 +36,7 @@ type AdminRouteClientProps = {
 };
 
 const stateChipClasses =
-  'inline-flex items-center rounded-full bg-red-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-red-300 uppercase tracking-[0.05em]';
+  'inline-flex items-center rounded-full bg-danger-surface px-2.5 py-0.5 text-[11px] font-semibold text-danger uppercase tracking-[0.05em]';
 
 const isSuspended = (report: AdminReport) =>
   report.reportedSuspendedUntil !== undefined &&
@@ -85,21 +85,21 @@ export const AdminRouteClient = ({ reports, log }: AdminRouteClientProps) => {
   return (
     <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
       <div className="mb-6">
-        <h1 className="font-bold font-figtree text-[30px] text-white leading-[1.1]">
+        <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
           {t('title')}
         </h1>
-        <p className="mt-1.5 font-light text-[15px] text-gray-400">
+        <p className="mt-1.5 font-light text-[15px] text-muted">
           {t('subtitle')}
         </p>
       </div>
 
       <section className="flex flex-col gap-4 rounded-3xl bg-background-dark p-6 shadow-xl">
-        <h2 className="border-white/10 border-b pb-3.5 font-figtree font-semibold text-[19px] text-primary">
+        <h2 className="border-line border-b pb-3.5 font-figtree font-semibold text-[19px] text-primary">
           {t('queueTitle')}
         </h2>
 
         {reports.length === 0 ? (
-          <p className="text-[14px] text-gray-400">{t('queueEmpty')}</p>
+          <p className="text-[14px] text-muted">{t('queueEmpty')}</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {reports.map((report) => (
@@ -108,13 +108,13 @@ export const AdminRouteClient = ({ reports, log }: AdminRouteClientProps) => {
                 className="flex flex-col gap-3 rounded-xl bg-background-darker p-4"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 font-semibold text-[11px] text-gray-200 uppercase tracking-[0.05em]">
+                  <span className="inline-flex items-center rounded-full bg-overlay px-2.5 py-0.5 font-semibold text-[11px] text-soft uppercase tracking-[0.05em]">
                     {t(`reason_${report.reason}`)}
                   </span>
-                  <span className="text-[12px] text-gray-500">
+                  <span className="text-[12px] text-subtle">
                     {t(`status_${report.status}`)}
                   </span>
-                  <span className="text-[12px] text-gray-500">
+                  <span className="text-[12px] text-subtle">
                     {new Date(report.createdAt).toLocaleString()}
                   </span>
                   {report.profileHidden ? (
@@ -131,22 +131,22 @@ export const AdminRouteClient = ({ reports, log }: AdminRouteClientProps) => {
                 </div>
 
                 <div className="flex flex-col gap-1 text-[14px]">
-                  <p className="text-white">
+                  <p className="text-foreground">
                     {t('reportedLabel')}{' '}
                     <span className="font-semibold">{report.reportedName}</span>{' '}
-                    <span className="text-gray-400">
+                    <span className="text-muted">
                       @{report.reportedUsername}
                     </span>
                   </p>
-                  <p className="text-gray-400">
+                  <p className="text-muted">
                     {t('reporterLabel')} {report.reporterName} @
                     {report.reporterUsername}
                   </p>
                   {report.details ? (
-                    <p className="text-gray-300">{report.details}</p>
+                    <p className="text-soft">{report.details}</p>
                   ) : null}
                   {report.profileBio ? (
-                    <p className="text-[13px] text-gray-500">
+                    <p className="text-[13px] text-subtle">
                       {t('bioLabel')} {report.profileBio}
                     </p>
                   ) : null}
@@ -169,7 +169,7 @@ export const AdminRouteClient = ({ reports, log }: AdminRouteClientProps) => {
                 </div>
 
                 {errorReportId === report.id ? (
-                  <p className="text-[13px] text-red-400">{t('actionError')}</p>
+                  <p className="text-[13px] text-danger">{t('actionError')}</p>
                 ) : null}
               </li>
             ))}
@@ -178,12 +178,12 @@ export const AdminRouteClient = ({ reports, log }: AdminRouteClientProps) => {
       </section>
 
       <section className="mt-6 flex flex-col gap-4 rounded-3xl bg-background-dark p-6 shadow-xl">
-        <h2 className="border-white/10 border-b pb-3.5 font-figtree font-semibold text-[19px] text-primary">
+        <h2 className="border-line border-b pb-3.5 font-figtree font-semibold text-[19px] text-primary">
           {t('logTitle')}
         </h2>
 
         {log.length === 0 ? (
-          <p className="text-[14px] text-gray-400">{t('logEmpty')}</p>
+          <p className="text-[14px] text-muted">{t('logEmpty')}</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {log.map((entry) => (
@@ -191,20 +191,20 @@ export const AdminRouteClient = ({ reports, log }: AdminRouteClientProps) => {
                 key={entry.id}
                 className="flex flex-wrap items-center gap-2 rounded-xl bg-background-darker px-4 py-2.5 text-[13px]"
               >
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-foreground">
                   {t(`action_${entry.action}`)}
                 </span>
-                <span className="text-gray-400">
+                <span className="text-muted">
                   {entry.targetName ?? t('unknownUser')}
                 </span>
-                <span className="text-gray-500">
+                <span className="text-subtle">
                   {t('byAdmin', { admin: entry.adminName ?? t('unknownUser') })}
                 </span>
-                <span className="ml-auto text-gray-500">
+                <span className="ml-auto text-subtle">
                   {new Date(entry.createdAt).toLocaleString()}
                 </span>
                 {entry.note ? (
-                  <span className="w-full text-gray-400">{entry.note}</span>
+                  <span className="w-full text-muted">{entry.note}</span>
                 ) : null}
               </li>
             ))}

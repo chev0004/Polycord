@@ -33,8 +33,15 @@ export default async function RootLayout({
   const settings = user ? await getUserSettingsByDiscordUserId(user.id) : null;
 
   return (
-    <html lang={lang} suppressHydrationWarning>
-      <body suppressHydrationWarning>
+    <html
+      lang={lang}
+      data-theme={settings?.theme ?? 'dark'}
+      suppressHydrationWarning
+    >
+      <body
+        className="bg-background-main text-foreground"
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider locale={lang} messages={messages}>
           <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
             <RouteProgressProvider>{children}</RouteProgressProvider>

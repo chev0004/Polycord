@@ -52,7 +52,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
     <div
       {...props}
       style={style}
-      className={`group/entry relative flex items-center gap-3 rounded-md bg-background-main p-3 text-white transition-all duration-300 ease-in-out ${notification.read ? 'opacity-60' : 'opacity-100'}
+      className={`group/entry relative flex items-center gap-3 rounded-md bg-background-main p-3 text-foreground transition-all duration-300 ease-in-out ${notification.read ? 'opacity-60' : 'opacity-100'}
       ${
         notification.isDeleting
           ? 'animate-slideOutRight'
@@ -70,14 +70,14 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
 
       <div className="flex-grow overflow-hidden">
         <p className="truncate text-sm">{message}</p>
-        <span className="text-gray-400 text-xs">{notification.timestamp}</span>
+        <span className="text-muted text-xs">{notification.timestamp}</span>
       </div>
 
       <div className="flex flex-shrink-0 items-center opacity-0 transition-opacity group-hover/entry:opacity-100">
         <button
           type="button"
           onClick={onMarkAsRead}
-          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white"
+          className="rounded-full p-1.5 text-muted transition-colors hover:bg-background-darker hover:text-foreground"
           title={notification.read ? t('markAsUnread') : t('markAsRead')}
         >
           {notification.read ? (
@@ -89,7 +89,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
         <button
           type="button"
           onClick={onDelete}
-          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white"
+          className="rounded-full p-1.5 text-muted transition-colors hover:bg-background-darker hover:text-foreground"
           title={t('delete')}
         >
           <MdClose size={18} />

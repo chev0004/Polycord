@@ -41,7 +41,7 @@ export const Chip = ({
           type="button"
           onClick={onRemove}
           aria-label={removeLabel}
-          className="flex text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-white"
+          className="flex text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground"
         >
           <MdClose size={16} />
         </button>

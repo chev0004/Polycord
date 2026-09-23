@@ -151,7 +151,7 @@ export const TargetLanguagesEditor = ({
                 onClick={() => remove(index)}
                 disabled={fields.length <= 1}
                 aria-label={t('removeLanguage')}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-background-darker hover:text-red-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-subtle transition-colors hover:bg-background-darker hover:text-danger focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <MdClose size={18} />
               </button>
@@ -164,20 +164,20 @@ export const TargetLanguagesEditor = ({
         type="button"
         onClick={() => append(createEmptyLanguageRow())}
         disabled={fields.length >= cap}
-        className="inline-flex items-center gap-2 self-start rounded-full border border-white/[0.14] border-dashed px-4 py-2.5 text-[14px] text-gray-400 transition-colors hover:border-primary-dark hover:bg-primary-darker hover:text-primary-light focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex items-center gap-2 self-start rounded-full border border-line-strong border-dashed px-4 py-2.5 text-[14px] text-muted transition-colors hover:border-primary-dark hover:bg-primary-darker hover:text-primary-light focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
       >
         <MdAdd size={18} />
         {t('addLanguage')}
       </button>
 
-      <p className="text-[12px] text-gray-500">
+      <p className="text-[12px] text-subtle">
         {t('languageCounterHint', { count: fields.length, cap })}
       </p>
 
       {errorMessage ? <FieldError>{t(errorMessage)}</FieldError> : null}
 
       {!premium && fields.length >= FREE_LANGUAGE_CAP ? (
-        <p className="text-[13px] text-gray-400 leading-relaxed">
+        <p className="text-[13px] text-muted leading-relaxed">
           {t.rich('languageCapUpsell', {
             freeCap: FREE_LANGUAGE_CAP,
             premiumCap: PREMIUM_LANGUAGE_CAP,
