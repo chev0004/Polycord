@@ -23,17 +23,13 @@ type FooterLinkProps = {
 
 const FooterLink = ({ href, isCurrent, children }: FooterLinkProps) => {
   const { start } = useRouteProgress();
-  const pathname = usePathname();
 
   return (
     <Link
       href={href}
+      prefetch={href.includes('/legal')}
       aria-current={isCurrent ? 'true' : undefined}
-      onClick={() => {
-        if (pathname !== href) {
-          start();
-        }
-      }}
+      onNavigate={() => start(href)}
       className={`w-fit text-sm no-underline transition-colors focus-visible:text-white focus-visible:underline ${
         isCurrent ? 'text-primary-light' : 'text-gray-400 hover:text-white'
       }`}

@@ -28,11 +28,8 @@ const MenuItem = ({
   return (
     <Link
       href={href}
-      onClick={() => {
-        if (!isSelected) {
-          start();
-        }
-      }}
+      prefetch={false}
+      onNavigate={() => start(href)}
       className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors focus-visible:bg-background-main ${
         isSelected
           ? 'bg-background-main text-primary-light'
