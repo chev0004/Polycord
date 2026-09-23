@@ -220,9 +220,6 @@ export const languageOptions = (locale: string): LanguageOption[] => {
     .sort((a, b) => a.label.localeCompare(b.label));
 };
 
-// Resolve a language code to its localized full name (e.g. 'en' -> 'English').
-// Strings that are not known codes are returned unchanged, so values that are
-// already full names pass through.
 export const getLanguageName = (code: string, locale: string): string => {
   const lang = languages.find((l) => l.code === code);
   return lang ? getLocalizedName(lang, locale) : code;
@@ -323,14 +320,7 @@ export const isValidIANATimezone = (
 ): timezone is IANATimezone => {
   if (!timezone || typeof timezone !== 'string') return false;
 
-  const ianaPattern = /^[A-Za-z_]+\/[A-Za-z_]+(\/[A-Za-z_]+)*$/;
-  if (!ianaPattern.test(timezone)) return false;
-
   try {
-    if (typeof Intl !== 'undefined' && 'supportedValuesOf' in Intl) {
-      const supportedTimezones = Intl.supportedValuesOf('timeZone');
-      return supportedTimezones.includes(timezone);
-    }
     Intl.DateTimeFormat(undefined, { timeZone: timezone });
     return true;
   } catch {

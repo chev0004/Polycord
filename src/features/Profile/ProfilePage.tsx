@@ -249,16 +249,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   }, [initialValues, reset]);
 
   useEffect(() => {
-    if (!displayTimezone) {
-      setValue('timezone', '', { shouldValidate: true });
-      return;
-    }
-
-    if (!timezone) {
+    if (!initialValues?.timezone && !timezone && displayTimezone) {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setValue('timezone', userTimezone, { shouldValidate: true });
     }
-  }, [setValue, displayTimezone, timezone]);
+  }, [setValue, displayTimezone, timezone, initialValues?.timezone]);
 
   const onSubmit = async (data: ProfileFormValues) => {
     setTagError(null);
