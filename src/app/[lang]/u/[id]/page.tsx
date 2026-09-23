@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation';
+import { after } from 'next/server';
 import {
   getProfileByUserId,
   getPublicProfileById,
+  getUserByDiscordId,
   getUserSettingsByUserId,
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
-  upsertDiscordUser,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -38,28 +39,29 @@ export default async function PublicProfileRoute({
   let viewerUserId: string | undefined;
   let viewerActor: { name: string; avatarUrl: string | null } | null = null;
 
-  if (user) {
+  const persistedUser = user ? await getUserByDiscordId(user.id) : null;
+  if (user && persistedUser) {
     isLoggedIn = true;
-    const persistedUser = await upsertDiscordUser(user);
     viewerUserId = persistedUser.id;
     viewerActor = {
       name: persistedUser.displayName,
       avatarUrl: persistedUser.avatarUrl,
     };
-    const viewerProfile = await getProfileByUserId(persistedUser.id);
+    const [viewerProfile, savedIds, viewerSettings, viewerPremium] =
+      await Promise.all([
+        getProfileByUserId(persistedUser.id),
+        listSavedProfileIds(persistedUser.id),
+        getUserSettingsByUserId(persistedUser.id),
+        isPremiumUser(user),
+      ]);
     currentProfileId = viewerProfile?.profile.id;
-    savedProfileIds = await listSavedProfileIds(persistedUser.id);
+    savedProfileIds = savedIds;
 
     if (viewerProfile) {
       viewerTimezone = toViewerAvailabilityContext(
         viewerProfile.profile,
       ).timezone;
     }
-
-    const [viewerSettings, viewerPremium] = await Promise.all([
-      getUserSettingsByUserId(persistedUser.id),
-      isPremiumUser(user),
-    ]);
 
     if (
       hasEntitlement('privacy.hiddenVisits', viewerPremium) &&
@@ -69,19 +71,21 @@ export default async function PublicProfileRoute({
     }
   }
 
-  await trackEvent({
-    name: ANALYTICS_EVENTS.profileView,
-    userId: viewerUserId ?? null,
-    locale: lang,
-    metadata: { ownerUserId: row.profile.userId },
-  });
-
-  if (viewerUserId !== row.profile.userId) {
-    await notifyProfileView({
-      ownerUserId: row.profile.userId,
-      actor: viewerActor,
+  after(async () => {
+    await trackEvent({
+      name: ANALYTICS_EVENTS.profileView,
+      userId: viewerUserId ?? null,
+      locale: lang,
+      metadata: { ownerUserId: row.profile.userId },
     });
-  }
+
+    if (viewerUserId !== row.profile.userId) {
+      await notifyProfileView({
+        ownerUserId: row.profile.userId,
+        actor: viewerActor,
+      });
+    }
+  });
 
   return (
     <PublicProfileClient
