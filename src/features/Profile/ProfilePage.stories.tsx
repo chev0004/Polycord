@@ -95,6 +95,44 @@ export const WithProfile: Story = {
   },
 };
 
+export const RestoredDraft: Story = {
+  args: { initialValues: sampleProfile, userId: 'profile-draft-story' },
+  loaders: [
+    async () => {
+      sessionStorage.setItem(
+        'polycord:profile:profile-draft-story',
+        JSON.stringify({
+          bio: 'Recovered edits for my next language exchange.',
+        }),
+      );
+      return {};
+    },
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() =>
+      expect(canvas.getByLabelText('Bio')).toHaveValue(
+        'Recovered edits for my next language exchange.',
+      ),
+    );
+    await expect(
+      canvas.getByText(
+        'Your unsaved draft has been restored. Review it, then Save or Discard.',
+      ),
+    ).toBeInTheDocument();
+  },
+};
+
+export const HiddenTimezone: Story = {
+  args: { initialValues: { ...sampleProfile, displayTimezone: false } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() =>
+      expect(canvas.getByLabelText('Timezone')).toHaveValue('Asia/Tokyo'),
+    );
+  },
+};
+
 export const LivePreviewUpdates: Story = {
   args: {
     initialValues: {

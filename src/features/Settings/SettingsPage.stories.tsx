@@ -59,6 +59,32 @@ export const Default: Story = {
   args: {},
 };
 
+export const RestoredDraft: Story = {
+  args: { userId: 'settings-draft-story' },
+  loaders: [
+    async () => {
+      sessionStorage.setItem(
+        'polycord:settings:settings-draft-story',
+        JSON.stringify({ email: 'unfinished-email' }),
+      );
+      return {};
+    },
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() =>
+      expect(canvas.getByLabelText('Email Address')).toHaveValue(
+        'unfinished-email',
+      ),
+    );
+    await expect(
+      canvas.getByText(
+        'Your unsaved draft has been restored. Review it, then Save or Discard.',
+      ),
+    ).toBeInTheDocument();
+  },
+};
+
 export const SwitchTabs: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
