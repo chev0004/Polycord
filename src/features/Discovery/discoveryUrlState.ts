@@ -47,7 +47,7 @@ const isSortValue = (value: string | null): value is DiscoverySortValue =>
 
 const parsePage = (value: string | null): number => {
   const page = Number(value);
-  return Number.isInteger(page) && page > 1 ? page : 1;
+  return Number.isSafeInteger(page) && page > 1 ? page : 1;
 };
 
 const toFirstValue = (value: string | string[] | undefined): string =>
@@ -59,7 +59,10 @@ export const parseDiscoveryState = (
   const filterValues: DiscoveryFilterValues = {};
 
   for (const [id, param] of MULTI_FILTER_PARAMS) {
-    const values = params.getAll(param);
+    const values = params
+      .getAll(param)
+      .slice(0, 50)
+      .map((value) => value.slice(0, 64));
     if (values.length > 0) {
       filterValues[id] = values;
     }
@@ -79,8 +82,11 @@ export const parseDiscoveryState = (
 
   return {
     filterValues,
-    searchQuery: params.get(SEARCH_PARAM) ?? '',
-    selectedTags: params.getAll(TAGS_PARAM),
+    searchQuery: (params.get(SEARCH_PARAM) ?? '').slice(0, 200),
+    selectedTags: params
+      .getAll(TAGS_PARAM)
+      .slice(0, 8)
+      .map((value) => value.slice(0, 50)),
     sortValue: isSortValue(sort) ? sort : DEFAULT_SORT,
     page: parsePage(params.get(PAGE_PARAM)),
   };

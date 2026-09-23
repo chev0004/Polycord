@@ -11,4 +11,5 @@ export const saveProfileRequest = async (
   if (!response.ok) {
     throw new Error('Saved profiles update failed');
   }
+  window.dispatchEvent(new Event('polycord:profiles-changed'));
 };

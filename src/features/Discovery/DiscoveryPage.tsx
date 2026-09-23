@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
@@ -23,6 +23,7 @@ import {
   type BumpProfileResponse,
   bumpProfileRequest,
 } from './bumpProfileRequest';
+import type { DiscoveryData } from './discoveryData';
 import {
   applyDiscoveryFilters,
   type DiscoveryFilterValues,
@@ -53,7 +54,6 @@ import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl, shareProfileUrl } from './shareProfile';
 import { TagCloud } from './TagCloud';
 
-const SEARCH_TRANSITION_MS = 320;
 const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
 
@@ -65,6 +65,7 @@ type DiscoveryPageProps = {
   locale: string;
   needsOnboarding?: boolean;
   profiles?: DiscoveryProfile[];
+  discoveryData?: DiscoveryData;
   savedProfileIds?: string[];
   currentProfileId?: string;
   bumpReadyAt?: string;
@@ -95,6 +96,7 @@ export const DiscoveryPage = ({
   locale,
   needsOnboarding = false,
   profiles = EMPTY_PROFILES,
+  discoveryData,
   savedProfileIds,
   currentProfileId,
   bumpReadyAt: initialBumpReadyAt,
@@ -136,7 +138,10 @@ export const DiscoveryPage = ({
     initialState.sortValue,
   );
   const [page, setPage] = useState(initialState.page);
-  const [isSearching, setIsSearching] = useState(false);
+  const [remoteData, setRemoteData] = useState(discoveryData);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshFailed, setRefreshFailed] = useState(feedError);
+  const requestRef = useRef<AbortController | null>(null);
   const [draft, setDraft] = useState<OnboardingDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
   const [profileItems, setProfileItems] = useState(profiles);
@@ -151,6 +156,15 @@ export const DiscoveryPage = ({
   useEffect(() => {
     setProfileItems(profiles);
   }, [profiles]);
+
+  useEffect(() => {
+    const state = parseDiscoveryState(searchParams);
+    setFilterValues(state.filterValues);
+    setSearchQuery(state.searchQuery);
+    setSelectedTags(state.selectedTags);
+    setSortValue(state.sortValue);
+    setPage(state.page);
+  }, [searchParams]);
 
   useEffect(() => {
     setBumpReadyAt(initialBumpReadyAt);
@@ -183,7 +197,10 @@ export const DiscoveryPage = ({
 
   const completion = useMemo(() => getOnboardingCompletion(draft), [draft]);
 
-  const tagCounts = useMemo(() => buildTagCounts(profileItems), [profileItems]);
+  const tagCounts = useMemo(
+    () => remoteData?.tags ?? buildTagCounts(profileItems),
+    [remoteData, profileItems],
+  );
 
   const hasActiveFilters = useMemo(
     () =>
@@ -197,18 +214,24 @@ export const DiscoveryPage = ({
 
   const filteredProfiles = useMemo(
     () =>
-      applyDiscoverySort(
-        applyTagFilter(
-          applyDiscoverySearch(
-            applyDiscoveryFilters(profileItems, filterValues, viewerContext),
-            searchQuery,
-            locale,
+      remoteData
+        ? profileItems
+        : applyDiscoverySort(
+            applyTagFilter(
+              applyDiscoverySearch(
+                applyDiscoveryFilters(
+                  profileItems,
+                  filterValues,
+                  viewerContext,
+                ),
+                searchQuery,
+                locale,
+              ),
+              selectedTags,
+            ),
+            sortValue,
+            viewerContext,
           ),
-          selectedTags,
-        ),
-        sortValue,
-        viewerContext,
-      ),
     [
       profileItems,
       filterValues,
@@ -217,20 +240,91 @@ export const DiscoveryPage = ({
       selectedTags,
       sortValue,
       viewerContext,
+      remoteData,
     ],
   );
 
-  const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PER_PAGE));
+  const totalResults = remoteData?.total ?? filteredProfiles.length;
+  const totalPages = Math.max(1, Math.ceil(totalResults / PER_PAGE));
   const safePage = Math.min(page, totalPages);
   const pageItems = useMemo(
     () =>
-      filteredProfiles.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE),
-    [filteredProfiles, safePage],
+      remoteData
+        ? profileItems
+        : filteredProfiles.slice(
+            (safePage - 1) * PER_PAGE,
+            safePage * PER_PAGE,
+          ),
+    [filteredProfiles, safePage, remoteData, profileItems],
   );
+
+  const query = buildDiscoveryQuery({
+    filterValues,
+    searchQuery,
+    selectedTags,
+    sortValue,
+    page,
+  });
+
+  const refreshDiscovery = useCallback(() => {
+    if (!discoveryData) return;
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
+    setIsRefreshing(true);
+    setRefreshFailed(false);
+    fetch(`/api/discovery?${query}&locale=${locale}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Discovery refresh failed');
+        const data: DiscoveryData = await response.json();
+        if (controller.signal.aborted) return;
+        setRemoteData(data);
+        setProfileItems(data.profiles);
+        setPage(data.page);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setRefreshFailed(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsRefreshing(false);
+      });
+  }, [discoveryData, query, locale]);
+
+  useEffect(() => {
+    const refresh = refreshDiscovery;
+    refresh();
+    window.addEventListener('focus', refresh);
+    window.addEventListener('pageshow', refresh);
+    window.addEventListener('polycord:profiles-changed', refresh);
+    return () => {
+      requestRef.current?.abort();
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('pageshow', refresh);
+      window.removeEventListener('polycord:profiles-changed', refresh);
+    };
+  }, [refreshDiscovery]);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem('polycord:discovery-return');
+      if (!stored) return;
+      const position = JSON.parse(stored);
+      if (
+        position.href ===
+        `${window.location.pathname}${window.location.search}${window.location.hash}`
+      ) {
+        window.scrollTo(0, position.scrollY);
+        sessionStorage.removeItem('polycord:discovery-return');
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const query = buildDiscoveryQuery(
-      { filterValues, searchQuery, selectedTags, sortValue, page: safePage },
+      { filterValues, searchQuery, selectedTags, sortValue, page },
       new URLSearchParams(window.location.search),
     );
 
@@ -241,23 +335,11 @@ export const DiscoveryPage = ({
     window.history.replaceState(
       null,
       '',
-      query ? `${pathname}?${query}` : pathname,
+      `${query ? `${pathname}?${query}` : pathname}${window.location.hash}`,
     );
-  }, [filterValues, searchQuery, selectedTags, sortValue, safePage, pathname]);
+  }, [filterValues, searchQuery, selectedTags, sortValue, page, pathname]);
 
-  useEffect(() => {
-    if (!searchQuery) {
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-    const timer = setTimeout(() => setIsSearching(false), SEARCH_TRANSITION_MS);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  const showSkeleton = isLoading || isSearching;
+  const showSkeleton = isLoading;
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -319,7 +401,14 @@ export const DiscoveryPage = ({
   };
 
   const handleViewProfile = (profileId: string) => {
-    router.push(`/${locale}/u/${profileId}`);
+    const href = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    try {
+      sessionStorage.setItem(
+        'polycord:discovery-return',
+        JSON.stringify({ href, scrollY: window.scrollY }),
+      );
+    } catch {}
+    router.push(`/${locale}/u/${profileId}?from=${encodeURIComponent(href)}`);
   };
 
   const handleShareProfile = async (profileId: string) => {
@@ -392,6 +481,7 @@ export const DiscoveryPage = ({
   ) => {
     try {
       await blockProfileRequest(profileId, false);
+      refreshDiscovery();
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -433,6 +523,7 @@ export const DiscoveryPage = ({
 
     try {
       await blockProfileRequest(profileId, true);
+      refreshDiscovery();
       addToast({
         title: t('blockSuccessTitle'),
         description: (
@@ -507,6 +598,7 @@ export const DiscoveryPage = ({
 
     try {
       const result = await onBumpProfile();
+      refreshDiscovery();
       setProfileItems((previous) =>
         previous.map((profile) =>
           profile.id === currentProfileId
@@ -604,15 +696,23 @@ export const DiscoveryPage = ({
           />
         </div>
 
-        {feedError ? (
+        {refreshFailed ? (
           <div
             className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
             role="alert"
           >
             <p className="font-semibold">{t('feedErrorTitle')}</p>
             <p className="mt-1 text-red-100/80">{t('feedErrorDescription')}</p>
+            <button
+              type="button"
+              className="mt-2 underline"
+              onClick={refreshDiscovery}
+            >
+              {t('retryFeed')}
+            </button>
           </div>
-        ) : (
+        ) : null}
+        {(!refreshFailed || profileItems.length > 0) && (
           <>
             <div
               ref={resultsHeadRef}
@@ -622,9 +722,9 @@ export const DiscoveryPage = ({
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
               >
-                {showSkeleton
+                {showSkeleton || isRefreshing
                   ? t('resultsSearching')
-                  : t('resultsCount', { count: filteredProfiles.length })}
+                  : t('resultsCount', { count: totalResults })}
               </span>
             </div>
 
@@ -634,7 +734,7 @@ export const DiscoveryPage = ({
               <ProfileGrid
                 profiles={pageItems}
                 isLoggedIn={isLoggedIn}
-                savedProfileIds={savedProfileIds}
+                savedProfileIds={remoteData?.savedProfileIds ?? savedProfileIds}
                 currentProfileId={currentProfileId}
                 viewerTimezone={viewerTimezone}
                 onSaveProfile={saveProfileRequest}

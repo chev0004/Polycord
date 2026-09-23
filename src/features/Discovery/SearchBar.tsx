@@ -20,6 +20,7 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
       />
       <input
         type="text"
+        maxLength={200}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={t('searchPlaceholder')}

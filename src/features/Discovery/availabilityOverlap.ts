@@ -61,7 +61,9 @@ const mergeIntervals = (intervals: Interval[]): Interval[] => {
   return merged;
 };
 
-const toUtcWeekIntervals = (context: AvailabilityContext): Interval[] => {
+export const toUtcWeekIntervals = (
+  context: AvailabilityContext,
+): Interval[] => {
   const { availability, timezone } = context;
   if (!availability) return [];
 
