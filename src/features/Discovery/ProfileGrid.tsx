@@ -44,14 +44,6 @@ type ProfileGridItem = {
   index: number;
 };
 
-const splitIntoColumns = <T,>(items: T[], columnCount: number) => {
-  const columnSize = Math.ceil(items.length / columnCount);
-
-  return Array.from({ length: columnCount }, (_, columnIndex) =>
-    items.slice(columnIndex * columnSize, (columnIndex + 1) * columnSize),
-  ).filter((column) => column.length > 0);
-};
-
 export const ProfileGrid = ({
   profiles,
   emptyState,
@@ -199,28 +191,13 @@ export const ProfileGrid = ({
     );
   };
 
-  const renderProfileColumns = (columnCount: number, className: string) => (
-    <div className={`mx-auto w-full max-w-[1180px] gap-6 ${className}`}>
-      {splitIntoColumns(displayedProfileItems, columnCount).map((column) => (
-        <div
-          key={`profile-column-${columnCount}-${column[0].profile.id}`}
-          className="flex min-w-0 flex-col"
-        >
-          {column.map(renderProfileCard)}
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <>
       <section className="flex flex-col gap-6">
         {hasProfiles ? (
-          <>
-            {renderProfileColumns(1, 'grid grid-cols-1 md:hidden')}
-            {renderProfileColumns(2, 'hidden md:grid md:grid-cols-2 lg:hidden')}
-            {renderProfileColumns(3, 'hidden lg:grid lg:grid-cols-3')}
-          </>
+          <div className="mx-auto w-full max-w-[1180px] columns-1 gap-6 md:columns-2 lg:columns-3 [&>article]:break-inside-avoid">
+            {displayedProfileItems.map(renderProfileCard)}
+          </div>
         ) : (
           <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary/30 border-dashed bg-background-darker/60 px-6 py-12 text-center">
             <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary text-xs uppercase tracking-wide">
