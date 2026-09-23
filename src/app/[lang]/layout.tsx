@@ -5,6 +5,7 @@ import { getMessages } from 'next-intl/server';
 import { getUserSettingsByDiscordUserId } from '@/db';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
+import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
 import { getCurrentUser } from '@/lib/auth';
 import { locales } from '@/utils/locales';
 import '../globals.css';
@@ -44,7 +45,9 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider locale={lang} messages={messages}>
           <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
-            <RouteProgressProvider>{children}</RouteProgressProvider>
+            <TimeFormatProvider value={settings?.timeFormat ?? '24hr'}>
+              <RouteProgressProvider>{children}</RouteProgressProvider>
+            </TimeFormatProvider>
           </LanguageDisplayProvider>
         </NextIntlClientProvider>
       </body>

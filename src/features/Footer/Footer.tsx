@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { LocaleLink } from '@/features/Navbar/LocaleLink';
 import { useRouteProgress } from '@/features/Navigation/RouteProgress';
 import { locales } from '@/utils/locales';
 
@@ -17,26 +18,22 @@ const localeNames: Record<string, string> = {
 
 type FooterLinkProps = {
   href: string;
-  isCurrent?: boolean;
   children: React.ReactNode;
 };
 
-const FooterLink = ({ href, isCurrent, children }: FooterLinkProps) => {
+const FooterLink = ({ href, children }: FooterLinkProps) => {
   const { start } = useRouteProgress();
   const pathname = usePathname();
 
   return (
     <Link
       href={href}
-      aria-current={isCurrent ? 'true' : undefined}
       onClick={() => {
         if (pathname !== href) {
           start();
         }
       }}
-      className={`w-fit text-sm no-underline transition-colors focus-visible:text-foreground focus-visible:underline ${
-        isCurrent ? 'text-primary-light' : 'text-muted hover:text-foreground'
-      }`}
+      className="w-fit text-muted text-sm no-underline transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:underline"
     >
       {children}
     </Link>
@@ -52,13 +49,7 @@ const FooterHeading = ({ children }: { children: React.ReactNode }) => (
 export const Footer: React.FC<FooterProps> = ({ locale }) => {
   const t = useTranslations('Footer');
   const tLegal = useTranslations('Legal');
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const year = new Date().getFullYear();
-
-  const pathWithoutLocale = pathname.replace(/^\/[^/]+/, '');
-  const query = searchParams.toString();
-  const queryString = query ? `?${query}` : '';
 
   const exploreLinks: { id: string; label: string; href: string }[] = [
     { id: 'home', label: t('homeLink'), href: `/${locale}` },
@@ -124,13 +115,13 @@ export const Footer: React.FC<FooterProps> = ({ locale }) => {
           >
             <FooterHeading>{t('languageHeading')}</FooterHeading>
             {locales.map((code) => (
-              <FooterLink
+              <LocaleLink
                 key={code}
-                href={`/${code}${pathWithoutLocale}${queryString}`}
-                isCurrent={code === locale}
+                locale={code}
+                className={`w-fit text-sm no-underline transition-colors focus-visible:text-foreground focus-visible:underline ${code === locale ? 'text-primary-light' : 'text-muted hover:text-foreground'}`}
               >
                 {localeNames[code] ?? code.toUpperCase()}
-              </FooterLink>
+              </LocaleLink>
             ))}
           </nav>
         </div>

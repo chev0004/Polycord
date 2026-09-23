@@ -1,58 +1,19 @@
 import * as Popover from '@radix-ui/react-popover';
-import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { languages } from '@/constants/languages';
-import { useRouteProgress } from '@/features/Navigation/RouteProgress';
 import { locales } from '@/utils/locales';
+import { LocaleLink } from './LocaleLink';
 
 const getLocaleName = (code: string) => {
   const language = languages.find((lang) => lang.code === code);
   return language?.name_en ?? code.toUpperCase();
 };
 
-const MenuItem = ({
-  locale,
-  currentLocale,
-  href,
-}: {
-  locale: string;
-  currentLocale: string;
-  href: string;
-}) => {
-  const isSelected = locale === currentLocale;
-  const name = getLocaleName(locale);
-  const { start } = useRouteProgress();
-
-  return (
-    <Link
-      href={href}
-      onClick={() => {
-        if (!isSelected) {
-          start();
-        }
-      }}
-      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors focus-visible:bg-background-main ${
-        isSelected
-          ? 'bg-background-main text-primary-light'
-          : 'text-foreground hover:bg-background-main'
-      }`}
-    >
-      <span>{name}</span>
-    </Link>
-  );
-};
-
 export const LanguageSwitcher: React.FC = () => {
   const t = useTranslations('LanguageSwitcher');
   const currentLocale = useLocale();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
-  const pathWithoutLocale = pathname.replace(/^\/[^/]+/, '') || '';
-  const query = searchParams.toString();
-  const queryString = query ? `?${query}` : '';
 
   useEffect(() => {
     setIsMounted(true);
@@ -102,12 +63,17 @@ export const LanguageSwitcher: React.FC = () => {
         >
           <div className="flex flex-col">
             {locales.map((locale) => (
-              <MenuItem
+              <LocaleLink
                 key={locale}
                 locale={locale}
-                currentLocale={currentLocale}
-                href={`/${locale}${pathWithoutLocale}${queryString}`}
-              />
+                className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors focus-visible:bg-background-main ${
+                  locale === currentLocale
+                    ? 'bg-background-main text-primary-light'
+                    : 'text-foreground hover:bg-background-main'
+                }`}
+              >
+                {getLocaleName(locale)}
+              </LocaleLink>
             ))}
           </div>
         </Popover.Content>

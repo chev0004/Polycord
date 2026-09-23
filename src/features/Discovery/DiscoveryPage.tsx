@@ -241,7 +241,7 @@ export const DiscoveryPage = ({
     window.history.replaceState(
       null,
       '',
-      query ? `${pathname}?${query}` : pathname,
+      `${query ? `${pathname}?${query}` : pathname}${window.location.hash}`,
     );
   }, [filterValues, searchQuery, selectedTags, sortValue, safePage, pathname]);
 

@@ -5,6 +5,7 @@ import {
   type SettingsFormValues,
   SettingsPage,
 } from '@/features/Settings/SettingsPage';
+import { isLocale, localizePath } from '@/utils/localePaths';
 
 type SettingsRouteClientProps = {
   defaultEmail: string;
@@ -14,9 +15,6 @@ type SettingsRouteClientProps = {
   >;
   initialSettings?: Pick<
     SettingsFormValues,
-    | 'activityStatus'
-    | 'applicationLanguage'
-    | 'matchAlert'
     | 'profileInteractionAlert'
     | 'profileViewAlert'
     | 'hideProfileVisits'
@@ -80,15 +78,13 @@ export const SettingsRouteClient = ({
     isPublic: initialPrivacySettings?.isPublic ?? true,
     allowAnonymousCopy: initialPrivacySettings?.allowAnonymousCopy ?? true,
     displayTimezone: initialPrivacySettings?.displayTimezone ?? true,
-    activityStatus: initialSettings?.activityStatus ?? true,
     pushNotifications: initialSettings?.pushNotifications ?? true,
-    matchAlert: initialSettings?.matchAlert ?? true,
     profileInteractionAlert: initialSettings?.profileInteractionAlert ?? true,
     profileViewAlert: initialSettings?.profileViewAlert ?? false,
     hideProfileVisits: initialSettings?.hideProfileVisits ?? false,
     productAnalytics: initialSettings?.productAnalytics ?? true,
     theme: initialSettings?.theme ?? 'dark',
-    applicationLanguage: initialSettings?.applicationLanguage ?? locale,
+    applicationLanguage: isLocale(locale) ? locale : 'en',
     timeFormat: initialSettings?.timeFormat ?? '24hr',
     languageDisplay: initialSettings?.languageDisplay ?? 'long',
     email: defaultEmail,
@@ -116,6 +112,12 @@ export const SettingsRouteClient = ({
       onExportData={downloadAccountData}
       onSubmit={async (data) => {
         await saveSettings(data);
+        router.replace(
+          localizePath(
+            `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            data.applicationLanguage,
+          ),
+        );
         router.refresh();
       }}
       onUpdateDiscordConnection={() =>

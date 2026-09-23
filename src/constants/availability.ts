@@ -1,4 +1,4 @@
-import type { Availability } from './languages';
+import type { Availability, TimeFormat } from './languages';
 
 export type AvailabilityDays = 'any' | 'weekdays' | 'weekends';
 
@@ -75,13 +75,18 @@ export const convertTime = (
   };
 };
 
-export const fmtHour = (h: number, m: number): string => {
-  const period = h < 12 ? 'am' : 'pm';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return m === 0
-    ? `${hour12}${period}`
-    : `${hour12}:${String(m).padStart(2, '0')}${period}`;
-};
+export const fmtHour = (
+  h: number,
+  m: number,
+  timeFormat: TimeFormat,
+  locale: string,
+): string =>
+  new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hourCycle: timeFormat === '12hr' ? 'h12' : 'h23',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(2000, 0, 1, h, m)));
 
 export const tzAbbr = (tz: string | undefined): string => {
   if (!tz) return '';
@@ -115,6 +120,8 @@ export const formatAvailability = (
   ownerTimezone: string | undefined,
   viewerTimezone: string | undefined,
   labels: AvailabilityRowLabels,
+  timeFormat: TimeFormat = '24hr',
+  locale = 'en',
 ): FormattedAvailability | null => {
   if (!pattern) return null;
 
@@ -129,7 +136,7 @@ export const formatAvailability = (
   const [fromHour, fromMin] = pattern.from.split(':').map(Number);
   const [toHour, toMin] = pattern.to.split(':').map(Number);
   const abbr = tzAbbr(ownerTimezone);
-  const ownerStr = `${daysLabel} · ${fmtHour(fromHour, fromMin)} ${labels.to} ${fmtHour(toHour, toMin)}${abbr ? ` ${abbr}` : ''}`;
+  const ownerStr = `${daysLabel} · ${fmtHour(fromHour, fromMin, timeFormat, locale)} ${labels.to} ${fmtHour(toHour, toMin, timeFormat, locale)}${abbr ? ` ${abbr}` : ''}`;
 
   if (!ownerTimezone || !viewerTimezone || viewerTimezone === ownerTimezone) {
     return { ownerStr, viewerStr: null };
@@ -139,6 +146,6 @@ export const formatAvailability = (
   const viewerTo = convertTime(pattern.to, ownerTimezone, viewerTimezone);
   return {
     ownerStr,
-    viewerStr: `${fmtHour(viewerFrom.h, viewerFrom.m)} ${labels.to} ${fmtHour(viewerTo.h, viewerTo.m)} ${labels.viewerSuffix}`,
+    viewerStr: `${fmtHour(viewerFrom.h, viewerFrom.m, timeFormat, locale)} ${labels.to} ${fmtHour(viewerTo.h, viewerTo.m, timeFormat, locale)} ${labels.viewerSuffix}`,
   };
 };

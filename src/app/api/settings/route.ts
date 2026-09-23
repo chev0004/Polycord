@@ -7,6 +7,32 @@ import {
 } from '@/db';
 import { settingsSchema } from '@/features/Settings/schema';
 import { getActiveUser } from '@/lib/auth';
+import type { locales } from '@/utils/locales';
+
+const savedResponse = (locale: (typeof locales)[number]) => {
+  const response = NextResponse.json({ saved: true });
+  response.cookies.set('NEXT_LOCALE', locale, {
+    path: '/',
+    sameSite: 'lax',
+    maxAge: 31536000,
+  });
+  return response;
+};
+
+export const PATCH = async (request: Request) => {
+  const payload = settingsSchema
+    .pick({ applicationLanguage: true })
+    .safeParse(await request.json().catch(() => null));
+  if (!payload.success) {
+    return NextResponse.json({ error: 'Invalid locale' }, { status: 400 });
+  }
+  const currentUser = await getActiveUser();
+  if (currentUser) {
+    const user = await upsertDiscordUser(currentUser);
+    await upsertUserSettings(user.id, payload.data);
+  }
+  return savedResponse(payload.data.applicationLanguage);
+};
 
 export const POST = async (request: Request) => {
   const currentUser = await getActiveUser();
@@ -46,13 +72,11 @@ export const POST = async (request: Request) => {
     applicationLanguage: values.applicationLanguage,
     timeFormat: values.timeFormat,
     languageDisplay: values.languageDisplay,
-    activityStatus: values.activityStatus,
-    matchAlert: values.matchAlert,
     profileInteractionAlert: values.profileInteractionAlert,
     profileViewAlert: values.profileViewAlert,
     hideProfileVisits: values.hideProfileVisits,
     productAnalytics: values.productAnalytics,
   });
 
-  return NextResponse.json({ saved: true });
+  return savedResponse(values.applicationLanguage);
 };

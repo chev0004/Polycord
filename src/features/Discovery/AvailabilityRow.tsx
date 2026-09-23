@@ -1,11 +1,12 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { MdSchedule } from 'react-icons/md';
 import {
   type AvailabilityPattern,
   formatAvailability,
 } from '@/constants/availability';
+import { useTimeFormat } from '@/features/Settings/TimeFormat';
 
 type AvailabilityRowProps = {
   availability: AvailabilityPattern;
@@ -19,6 +20,8 @@ export const AvailabilityRow = ({
   viewerTimezone,
 }: AvailabilityRowProps) => {
   const t = useTranslations('Discovery');
+  const locale = useLocale();
+  const timeFormat = useTimeFormat();
 
   const result = formatAvailability(
     availability,
@@ -34,6 +37,8 @@ export const AvailabilityRow = ({
       to: t('availabilityTimeSeparator'),
       viewerSuffix: t('availabilityViewerSuffix'),
     },
+    timeFormat,
+    locale,
   );
 
   if (!result) return null;

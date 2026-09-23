@@ -28,9 +28,9 @@ import {
   isValidLanguageCode,
   type LanguageCode,
   type Proficiency,
-  type TimeFormat,
 } from '@/constants/languages';
 import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
+import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
@@ -106,8 +106,6 @@ const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip
 const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
-const TIME_FORMAT_STORAGE_KEY = 'polycord_timeFormat';
-
 const getBumpAge = (value?: string) => {
   if (!value) return null;
 
@@ -123,12 +121,6 @@ const getBumpAge = (value?: string) => {
   if (hours < 24) return { key: 'bumpedHoursAgo' as const, count: hours };
 
   return { key: 'bumpedDaysAgo' as const, count: Math.floor(hours / 24) };
-};
-
-const getTimeFormat = (): TimeFormat => {
-  if (typeof window === 'undefined') return '24hr';
-  const stored = localStorage.getItem(TIME_FORMAT_STORAGE_KEY);
-  return stored === '12hr' || stored === '24hr' ? stored : '24hr';
 };
 
 export const ProfileCard = ({
@@ -156,9 +148,7 @@ export const ProfileCard = ({
   const isPreview = variant === 'preview';
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
-    getTimeFormat(),
-  );
+  const timeFormat = useTimeFormat();
   const languageDisplay = useLanguageDisplay();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
@@ -204,21 +194,13 @@ export const ProfileCard = ({
   };
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setTimeFormat(getTimeFormat());
-    };
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('timeFormatChanged', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('timeFormatChanged', handleStorageChange);
-    };
-  }, []);
-
-  useEffect(() => {
     const updateTime = () => {
       if (profile.timezone) {
-        const formatted = formatCurrentTime(profile.timezone, timeFormat);
+        const formatted = formatCurrentTime(
+          profile.timezone,
+          timeFormat,
+          locale,
+        );
         setCurrentTime(formatted);
       } else {
         setCurrentTime('');
@@ -228,7 +210,7 @@ export const ProfileCard = ({
     updateTime();
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
-  }, [profile.timezone, timeFormat]);
+  }, [profile.timezone, timeFormat, locale]);
 
   const visibleTargetLanguageCount = isPreview ? 2 : 1;
   const displayedTargetLanguages = profile.targetLanguages.slice(

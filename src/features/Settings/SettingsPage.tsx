@@ -16,12 +16,13 @@ import {
   TextInput,
   Toggle,
 } from '@/components/Form';
-import { languageOptions, type TimeFormat } from '@/constants/languages';
+import { languageOptions } from '@/constants/languages';
 import {
   disablePushNotifications,
   enablePushNotifications,
   getPushNotificationState,
 } from '@/lib/push/client';
+import { isLocale } from '@/utils/localePaths';
 import { CompareTable } from './CompareTable';
 import { type SettingsFormValues, settingsSchema } from './schema';
 
@@ -55,12 +56,6 @@ const sections: { id: SectionId; labelKey: string }[] = [
   { id: 'privacy', labelKey: 'privacyTitle' },
   { id: 'notifications', labelKey: 'notificationsTitle' },
 ];
-
-const getStoredTimeFormat = (): TimeFormat => {
-  if (typeof window === 'undefined') return '24hr';
-  const stored = localStorage.getItem('polycord_timeFormat');
-  return stored === '12hr' || stored === '24hr' ? stored : '24hr';
-};
 
 const SectionCard = ({
   title,
@@ -143,15 +138,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     }
   };
 
-  const initialValues: SettingsFormValues = useMemo(
-    () => ({
-      ...defaultValues,
-      timeFormat: defaultValues.timeFormat || getStoredTimeFormat(),
-      languageDisplay: defaultValues.languageDisplay ?? 'long',
-    }),
-    [defaultValues],
-  );
-
   const {
     register,
     handleSubmit,
@@ -162,7 +148,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     formState: { isSubmitting, isDirty, errors },
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
-    defaultValues: initialValues,
+    defaultValues,
   });
   register('pushNotifications');
 
@@ -220,11 +206,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     try {
       await onSubmitProp?.(data);
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('polycord_timeFormat', data.timeFormat);
-        window.dispatchEvent(new Event('timeFormatChanged'));
-      }
-
       reset(data);
     } catch {
       setSaveStatus('error');
@@ -274,10 +255,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const localizedLanguageOptions = useMemo(
     () =>
-      languageOptions(currentLocale).map((option) => ({
-        ...option,
-        label: `${option.label} (${option.value.toUpperCase()})`,
-      })),
+      languageOptions(currentLocale)
+        .filter((option) => isLocale(option.value))
+        .map((option) => ({
+          ...option,
+          label: `${option.label} (${option.value.toUpperCase()})`,
+        })),
     [currentLocale],
   );
 
@@ -364,6 +347,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   placeholder={t('emailPlaceholder')}
                   error={!!errors.email}
                 />
+                <p className="text-[12px] text-subtle">
+                  {t('emailDescription')}
+                </p>
                 {errors.email && (
                   <FieldError>{t(errors.email.message as string)}</FieldError>
                 )}
@@ -694,23 +680,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </SettingRow>
 
                 <SettingRow
-                  label={t('activityStatusLabel')}
-                  description={t('activityStatusDescription')}
-                >
-                  <Controller
-                    name="activityStatus"
-                    control={control}
-                    render={({ field }) => (
-                      <Toggle
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-label={t('activityStatusLabel')}
-                      />
-                    )}
-                  />
-                </SettingRow>
-
-                <SettingRow
                   label={t('allowAnonymousCopyingLabel')}
                   description={t('allowAnonymousCopyingDescription')}
                 >
@@ -840,23 +809,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     )}
                   </output>
                 ) : null}
-
-                <SettingRow
-                  label={t('matchAlertLabel')}
-                  description={t('matchAlertDescription')}
-                >
-                  <Controller
-                    name="matchAlert"
-                    control={control}
-                    render={({ field }) => (
-                      <Toggle
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-label={t('matchAlertLabel')}
-                      />
-                    )}
-                  />
-                </SettingRow>
 
                 <SettingRow
                   label={t('profileInteractionAlertLabel')}
