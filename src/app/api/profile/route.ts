@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   deleteProfileForUser,
   deleteVoiceIntroForUser,
+  getProfileByDiscordUserId,
   getUserByDiscordId,
   type ProfileTargetLanguageValue,
   upsertDiscordUser,
@@ -52,10 +53,15 @@ export const POST = async (request: Request) => {
 
   const values = payload.data;
   const premium = await isPremiumUser(currentUser);
+  const existing = await getProfileByDiscordUserId(currentUser.id);
   const languageCap = entitlementLimit('profile.targetLanguages', premium);
   const tagCap = entitlementLimit('profile.tags', premium);
 
-  if (values.targetLanguages.length > languageCap) {
+  if (
+    values.targetLanguages.length > languageCap &&
+    JSON.stringify(values.targetLanguages) !==
+      JSON.stringify(existing?.targetLanguages)
+  ) {
     return NextResponse.json(
       {
         error: 'Invalid profile',
@@ -72,7 +78,10 @@ export const POST = async (request: Request) => {
     );
   }
 
-  if ((values.tags ?? []).length > tagCap) {
+  if (
+    (values.tags ?? []).length > tagCap &&
+    JSON.stringify(values.tags) !== JSON.stringify(existing?.profile.tags)
+  ) {
     return NextResponse.json(
       {
         error: 'Invalid profile',
@@ -93,7 +102,7 @@ export const POST = async (request: Request) => {
   const cardColor =
     values.cardColor && isAllowedCardColor(values.cardColor, premiumThemes)
       ? values.cardColor
-      : null;
+      : (existing?.profile.cardColor ?? null);
   const customGradient =
     premiumThemes && cardColor === CUSTOM_CARD_THEME_ID
       ? values.customGradient
@@ -105,9 +114,15 @@ export const POST = async (request: Request) => {
     availability: values.availability ?? null,
     bio: values.bio.trim(),
     cardColor,
-    customGradientFrom: customGradient?.from ?? null,
-    customGradientTo: customGradient?.to ?? null,
-    accentOverride: premiumThemes ? (values.accentOverride ?? null) : null,
+    customGradientFrom: premiumThemes
+      ? (customGradient?.from ?? null)
+      : existing?.profile.customGradientFrom,
+    customGradientTo: premiumThemes
+      ? (customGradient?.to ?? null)
+      : existing?.profile.customGradientTo,
+    accentOverride: premiumThemes
+      ? (values.accentOverride ?? null)
+      : existing?.profile.accentOverride,
     country: values.country || null,
     displayAvailability: values.displayAvailability,
     displayTimezone: values.displayTimezone,

@@ -594,7 +594,7 @@
     "removeTag": "{tag} を削除",
     "tagTooShort": "タグは2文字以上で入力してください。",
     "tagTooLong": "タグは20文字以内で入力してください。",
-    "tagLimitReached": "タグは最大6個まで追加できます。",
+    "tagLimitReached": "タグは最大{cap}個まで追加できます。",
     "tagDuplicate": "そのタグは既に追加されています。",
     "publishButton": "プロフィールを公開",
     "publishing": "公開中...",

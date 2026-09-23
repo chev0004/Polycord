@@ -4,6 +4,7 @@ import { OnboardingPage } from '@/features/Onboarding';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
+import { isPremiumUser } from '@/lib/entitlements.server';
 
 export default async function OnboardingRoute({
   params,
@@ -32,6 +33,7 @@ export default async function OnboardingRoute({
 
   return (
     <OnboardingPage
+      premium={await isPremiumUser(currentUser)}
       userAvatarUrl={currentUser.avatarUrl}
       userDisplayName={currentUser.name}
     />

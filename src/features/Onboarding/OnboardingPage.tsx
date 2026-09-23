@@ -29,9 +29,11 @@ import {
   getOnboardingCompletion,
   ONBOARDING_DRAFT_STORAGE_KEY,
 } from './completion';
-import { type OnboardingFormValues, onboardingSchema } from './schema';
+import { entitlementLimit } from '@/lib/entitlements';
+import { type OnboardingFormValues, createOnboardingSchema } from './schema';
 
 type OnboardingPageProps = {
+  premium?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -54,9 +56,11 @@ const availabilityLabelKeys: Record<string, string> = {
 };
 
 export const OnboardingPage = ({
+  premium = false,
   userAvatarUrl,
   userDisplayName,
 }: OnboardingPageProps) => {
+  const tagCap = entitlementLimit('profile.tags', premium);
   const bioId = useId();
   const timezoneId = useId();
   const tagsInputId = useId();
@@ -77,7 +81,7 @@ export const OnboardingPage = ({
     setValue,
     watch,
   } = useForm<OnboardingFormValues>({
-    resolver: zodResolver(onboardingSchema),
+    resolver: zodResolver(createOnboardingSchema(premium)),
     defaultValues,
   });
 
@@ -171,7 +175,8 @@ export const OnboardingPage = ({
     if (!nextTag) return;
     if (nextTag.length < 2) return setTagError(t('tagTooShort'));
     if (nextTag.length > 20) return setTagError(t('tagTooLong'));
-    if (currentTags.length >= 6) return setTagError(t('tagLimitReached'));
+    if (currentTags.length >= tagCap)
+      return setTagError(t('tagLimitReached', { cap: tagCap }));
     if (
       currentTags
         .map((tag) => tag.toLowerCase())
@@ -503,7 +508,11 @@ export const OnboardingPage = ({
                 </div>
                 {tagError ? <FieldError>{tagError}</FieldError> : null}
                 {errors.tags?.message ? (
-                  <FieldError>{errors.tags.message}</FieldError>
+                  <FieldError>
+                    {errors.tags.message === 'tagLimitReached'
+                      ? t('tagLimitReached', { cap: tagCap })
+                      : errors.tags.message}
+                  </FieldError>
                 ) : null}
               </FormGroup>
             </section>

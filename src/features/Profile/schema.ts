@@ -74,7 +74,7 @@ export const profileSchema = z.object({
 
   tags: z
     .array(tagItemField({ tooShort: 'tagTooShort', tooLong: 'tagTooLong' }))
-    .max(8, { message: 'maxTags' })
+    .max(entitlementLimit('profile.tags', true), { message: 'maxTags' })
     .refine(hasUniqueTags, { message: 'duplicateTag' })
     .optional(),
 

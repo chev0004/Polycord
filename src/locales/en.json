@@ -594,7 +594,7 @@
     "removeTag": "Remove {tag}",
     "tagTooShort": "Tags need 2 characters.",
     "tagTooLong": "Tags max out at 20 characters.",
-    "tagLimitReached": "You can add up to 6 tags.",
+    "tagLimitReached": "You can add up to {cap} tags.",
     "tagDuplicate": "That tag is already here.",
     "publishButton": "Publish profile",
     "publishing": "Publishing...",

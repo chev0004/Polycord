@@ -57,13 +57,7 @@ export const TargetLanguagesEditor = ({
   const cap = premium ? PREMIUM_LANGUAGE_CAP : FREE_LANGUAGE_CAP;
 
   const allLanguageOptions = useMemo(() => languageOptions(locale), [locale]);
-  const levelOptions = useMemo(
-    () =>
-      proficiencyOptions(locale).filter(
-        (option) => option.value !== Proficiency.NATIVE_LEVEL,
-      ),
-    [locale],
-  );
+  const levelOptions = useMemo(() => proficiencyOptions(locale), [locale]);
 
   const usedLanguages = useMemo(() => {
     const used = new Set<string>();
