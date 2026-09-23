@@ -6,9 +6,7 @@ const validSettings: SettingsFormValues = {
   isPublic: true,
   allowAnonymousCopy: true,
   displayTimezone: true,
-  activityStatus: true,
   pushNotifications: true,
-  matchAlert: true,
   profileInteractionAlert: true,
   profileViewAlert: false,
   hideProfileVisits: false,
@@ -50,10 +48,16 @@ describe('settingsSchema', () => {
     ).toBe(false);
   });
 
-  it('requires an application language', () => {
+  it('accepts only supported application locales', () => {
+    for (const applicationLanguage of ['', 'de', 'en-US']) {
+      expect(
+        settingsSchema.safeParse({ ...validSettings, applicationLanguage })
+          .success,
+      ).toBe(false);
+    }
     expect(
-      settingsSchema.safeParse({ ...validSettings, applicationLanguage: '' })
+      settingsSchema.safeParse({ ...validSettings, applicationLanguage: 'ja' })
         .success,
-    ).toBe(false);
+    ).toBe(true);
   });
 });
