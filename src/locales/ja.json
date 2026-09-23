@@ -177,6 +177,7 @@
     "voiceIntroDeleteLabel": "ボイスイントロを削除",
     "voiceIntroMicError": "マイクへのアクセスが拒否されたか、利用できません。",
     "voiceIntroError": "ボイスイントロを保存できませんでした。もう一度お試しください。",
+    "voiceIntroImmediate": "イントロの保存と削除はすぐに反映されます。プロフィールの変更を破棄しても、音声の変更は元に戻りません。未公開の録音はこのページを離れると失われます。",
     "privacySettings": "プライバシー設定",
     "privacySettingsDescription": "公開プロフィールでの表示や動作を設定します。",
     "allowAnonymousCopyingLabel": "匿名コピーを許可",

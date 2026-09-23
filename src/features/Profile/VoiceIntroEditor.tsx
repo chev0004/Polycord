@@ -279,7 +279,11 @@ export const VoiceIntroEditor = ({
           </p>
         ) : null}
       </div>
-      {premium ? null : (
+      {premium ? (
+        <p className="text-[13px] text-gray-400 leading-relaxed">
+          {t('voiceIntroImmediate')}
+        </p>
+      ) : (
         <p className="text-[13px] text-gray-400 leading-relaxed">
           {t.rich('voiceIntroUpsell', {
             premiumLink: (chunks) => (

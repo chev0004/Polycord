@@ -207,6 +207,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     handleSubmit,
     control,
     reset,
+    resetField,
     setValue,
     watch,
     formState: { errors, isDirty, isSubmitting },
@@ -669,7 +670,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <VoiceIntroEditor
                   premium={premium}
                   voiceSeconds={field.value ?? 0}
-                  onChange={field.onChange}
+                  onChange={(seconds) =>
+                    resetField('voiceIntroSeconds', { defaultValue: seconds })
+                  }
                 />
               )}
             />

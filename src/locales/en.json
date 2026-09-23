@@ -177,6 +177,7 @@
     "voiceIntroDeleteLabel": "Remove voice intro",
     "voiceIntroMicError": "Microphone access was denied or unavailable.",
     "voiceIntroError": "Voice intro could not be saved. Please try again.",
+    "voiceIntroImmediate": "Save clip and Remove voice intro apply immediately. Discard does not undo these voice changes. Unpublished recordings stay here until you leave this page.",
     "privacySettings": "Privacy Settings",
     "privacySettingsDescription": "These affect how the public version of your profile behaves.",
     "allowAnonymousCopyingLabel": "Allow anonymous copying",
