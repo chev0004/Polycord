@@ -422,7 +422,7 @@
     "availabilityTimeSeparator": "〜",
     "availabilityViewerSuffix": "あなたの時間",
     "feedLoadingLabel": "プロフィールを読み込み中",
-    "emptyStateBadge": "マッチング中",
+    "emptyStateBadge": "ディスカバリー",
     "emptyStateTitle": "一致するプロフィールが見つかりません",
     "emptyStateDescription": "フィルターを調整するか、後でもう一度お試しください。",
     "emptyFeedDescription": "公開プロフィールはまだありません。プロフィールを作成して公開すると、最初のメンバーとしてここに表示されます。",
