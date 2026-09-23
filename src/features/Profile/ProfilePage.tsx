@@ -141,7 +141,7 @@ const MenuItem = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none focus-visible:bg-background-main disabled:cursor-not-allowed disabled:opacity-60 ${
+    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main disabled:cursor-not-allowed disabled:opacity-60 ${
       danger ? 'hover:!text-danger text-danger' : 'text-foreground'
     }`}
   >

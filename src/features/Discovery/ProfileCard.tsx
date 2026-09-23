@@ -342,7 +342,7 @@ export const ProfileCard = ({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 focus:outline-none focus-visible:bg-background-main ${className || 'text-foreground'}`}
+      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main ${className || 'text-foreground'}`}
     >
       <Icon size={20} className={iconClassName || 'text-muted'} />
       {children}
@@ -550,7 +550,7 @@ export const ProfileCard = ({
               <button
                 type="button"
                 suppressHydrationWarning
-                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main/50 hover:text-foreground focus-visible:text-foreground"
+                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main hover:text-foreground focus-visible:text-foreground"
                 aria-label={t('showMoreLanguages', {
                   count: remainingLanguagesCount,
                 })}

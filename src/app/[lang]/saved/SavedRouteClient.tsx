@@ -93,7 +93,7 @@ export const SavedRouteClient = ({
             onProfileUnsaved={handleProfileUnsaved}
           />
         ) : (
-          <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary/30 border-dashed bg-background-darker/60 px-6 py-12 text-center">
+          <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-darker text-primary">
               <MdBookmarkBorder size={24} />
             </span>
