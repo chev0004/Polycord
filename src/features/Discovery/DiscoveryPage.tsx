@@ -108,6 +108,7 @@ export const DiscoveryPage = ({
   const router = useRouteProgressRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const urlQuery = searchParams.toString();
   const t = useTranslations('Discovery');
   const viewerHasAvailability = Boolean(viewerAvailability);
   const viewerContext = useMemo(
@@ -158,13 +159,13 @@ export const DiscoveryPage = ({
   }, [profiles]);
 
   useEffect(() => {
-    const state = parseDiscoveryState(searchParams);
+    const state = parseDiscoveryState(new URLSearchParams(urlQuery));
     setFilterValues(state.filterValues);
     setSearchQuery(state.searchQuery);
     setSelectedTags(state.selectedTags);
     setSortValue(state.sortValue);
     setPage(state.page);
-  }, [searchParams]);
+  }, [urlQuery]);
 
   useEffect(() => {
     setBumpReadyAt(initialBumpReadyAt);
