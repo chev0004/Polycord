@@ -7,6 +7,7 @@ import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
 import { getCurrentUser } from '@/lib/auth';
 import { locales } from '@/utils/locales';
+import { fontVariables } from '../fonts';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ export default async function RootLayout({
 
   return (
     <html lang={lang} suppressHydrationWarning>
-      <body suppressHydrationWarning>
+      <body className={fontVariables} suppressHydrationWarning>
         <NextIntlClientProvider locale={lang} messages={messages}>
           <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
             <RouteProgressProvider>{children}</RouteProgressProvider>

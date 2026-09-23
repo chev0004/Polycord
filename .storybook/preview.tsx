@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react';
 import { NextIntlClientProvider } from 'next-intl';
+import { fontVariables } from '../src/app/fonts';
 import '@/app/globals.css';
 
 const preview: Preview = {
@@ -34,7 +35,9 @@ const preview: Preview = {
 
       return (
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Story />
+          <div className={fontVariables}>
+            <Story />
+          </div>
         </NextIntlClientProvider>
       );
     },
