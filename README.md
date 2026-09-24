@@ -95,8 +95,18 @@ the subject is `https://polycord.chev.dev`. Rebuild after changing the public ke
 Product analytics is disabled with `POLYCORD_ANALYTICS_DISABLED=true`, and Stripe
 variables are left unset. `netlify.toml` pins the build runtimes and adds a
 `noindex, nofollow` response header for static files. `next.config.ts` adds the
-same header to server-rendered responses on `polycord.chev.dev`. Remove staging
-indexing rules when configuring a public production site.
+same header to server-rendered responses on `polycord.chev.dev`. Leave
+`POLYCORD_PUBLIC_URL` unset on staging so `robots.txt` disallows all crawling and
+the sitemap stays empty.
+
+## Operations
+
+`GET /api/health` returns `200` when the app can reach the database and `503`
+when it cannot. Backup, restore, migration and rollback procedures, and the
+status of each operational control, are in
+[docs/operations/readiness.md](docs/operations/readiness.md). Changes needed for a
+public production site are in
+[docs/operations/release-checklist.md](docs/operations/release-checklist.md).
 
 ## Database
 
