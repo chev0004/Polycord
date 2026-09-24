@@ -214,7 +214,7 @@ export const OnboardingPage = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="min-h-screen bg-background-main text-white"
+      className="min-h-screen bg-background-main text-foreground"
     >
       <Navbar
         iconUrl={userAvatarUrl}
@@ -234,9 +234,9 @@ export const OnboardingPage = ({
       <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <fieldset
           disabled={!draft.ready}
-          className="min-w-0 rounded-lg border border-white/5 bg-background-dark shadow-xl"
+          className="min-w-0 rounded-lg border border-line bg-background-dark shadow-xl"
         >
-          <header className="border-white/10 border-b px-4 py-5 sm:px-6">
+          <header className="border-line border-b px-4 py-5 sm:px-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <Avatar avatarUrl={userAvatarUrl} size="lg" />
@@ -244,14 +244,14 @@ export const OnboardingPage = ({
                   <p className="font-semibold text-primary text-xs uppercase tracking-wide">
                     {t('firstRunSetup')}
                   </p>
-                  <h1 className="font-bold font-figtree text-2xl text-white sm:text-3xl">
+                  <h1 className="font-bold font-figtree text-2xl text-foreground sm:text-3xl">
                     {t('createTitle')}
                   </h1>
                 </div>
               </div>
               <div className="min-w-[160px]">
                 <div className="mb-2 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-400">
+                  <span className="font-semibold text-muted">
                     {t('completeness')}
                   </span>
                   <span className="text-primary-light">{completion}%</span>
@@ -270,7 +270,7 @@ export const OnboardingPage = ({
             <DraftNotice {...draft} sessionExpired={sessionExpired} />
             {submitError ? (
               <div
-                className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 text-red-100 text-sm"
+                className="rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 text-danger text-sm"
                 role="alert"
               >
                 {submitError}
@@ -279,10 +279,10 @@ export const OnboardingPage = ({
 
             <section className="grid gap-4">
               <div>
-                <h2 className="font-figtree font-semibold text-white text-xl">
+                <h2 className="font-figtree font-semibold text-foreground text-xl">
                   {t('languagesSection')}
                 </h2>
-                <p className="mt-1 text-gray-500 text-sm">
+                <p className="mt-1 text-sm text-subtle">
                   {t('languagesSectionDescription')}
                 </p>
               </div>
@@ -377,12 +377,12 @@ export const OnboardingPage = ({
               </div>
             </section>
 
-            <section className="grid gap-4 border-white/10 border-t pt-6">
+            <section className="grid gap-4 border-line border-t pt-6">
               <div>
-                <h2 className="font-figtree font-semibold text-white text-xl">
+                <h2 className="font-figtree font-semibold text-foreground text-xl">
                   {t('bioSection')}
                 </h2>
-                <p className="mt-1 text-gray-500 text-sm">
+                <p className="mt-1 text-sm text-subtle">
                   {t('bioSectionDescription')}
                 </p>
               </div>
@@ -418,7 +418,7 @@ export const OnboardingPage = ({
                             className={`h-11 rounded-lg border px-3 text-sm transition-colors ${
                               field.value === value
                                 ? 'border-primary bg-primary-darker text-primary-light'
-                                : 'border-white/10 bg-background-darker text-gray-300 hover:border-primary-dark'
+                                : 'border-line bg-background-darker text-soft hover:border-primary-dark'
                             }`}
                           >
                             {t(availabilityLabelKeys[value])}
@@ -450,12 +450,12 @@ export const OnboardingPage = ({
               </FormGroup>
             </section>
 
-            <section className="grid gap-4 border-white/10 border-t pt-6">
+            <section className="grid gap-4 border-line border-t pt-6">
               <div>
-                <h2 className="font-figtree font-semibold text-white text-xl">
+                <h2 className="font-figtree font-semibold text-foreground text-xl">
                   {t('topicsSection')}
                 </h2>
-                <p className="mt-1 text-gray-500 text-sm">
+                <p className="mt-1 text-sm text-subtle">
                   {t('topicsSectionDescription')}
                 </p>
               </div>
@@ -463,7 +463,7 @@ export const OnboardingPage = ({
               <FormGroup>
                 <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
                 {tags.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/5 bg-background-darker p-2">
+                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-background-darker p-2">
                     {tags.map((tag, index) => (
                       <span
                         key={tag}
@@ -475,7 +475,7 @@ export const OnboardingPage = ({
                         <button
                           type="button"
                           onClick={() => removeTag(index)}
-                          className="text-primary-light transition-colors hover:text-white focus:outline-none"
+                          className="text-primary-light transition-colors hover:text-foreground focus:outline-none"
                           aria-label={t('removeTag', { tag })}
                         >
                           x
@@ -500,7 +500,7 @@ export const OnboardingPage = ({
                   <button
                     type="button"
                     onClick={addTag}
-                    className="h-11 w-24 shrink-0 rounded-lg border border-white/10 bg-background-darker px-3 font-medium text-gray-300 text-sm transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
+                    className="h-11 w-24 shrink-0 rounded-lg border border-line bg-background-darker px-3 font-medium text-sm text-soft transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
                   >
                     {t('addTag')}
                   </button>
@@ -517,7 +517,7 @@ export const OnboardingPage = ({
             </section>
           </div>
 
-          <div className="sticky bottom-0 border-white/10 border-t bg-background-dark px-4 py-4 sm:px-6">
+          <div className="sticky bottom-0 border-line border-t bg-background-dark px-4 py-4 sm:px-6">
             <div className="flex justify-end gap-3">
               <Button
                 variant="outline"
@@ -537,8 +537,8 @@ export const OnboardingPage = ({
         </fieldset>
 
         <aside className="lg:pt-0">
-          <div className="sticky top-6 rounded-lg border border-white/5 bg-background-dark p-4 shadow-xl">
-            <p className="mb-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
+          <div className="sticky top-6 rounded-lg border border-line bg-background-dark p-4 shadow-xl">
+            <p className="mb-3 font-semibold text-subtle text-xs uppercase tracking-wide">
               {t('previewTitle')}
             </p>
             <ProfileCard

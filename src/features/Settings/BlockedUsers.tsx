@@ -69,15 +69,17 @@ export const BlockedUsers = ({
 
   return (
     <section
-      className="flex flex-col gap-3 border-white/10 border-t pt-5"
+      className="flex flex-col gap-3 border-line border-t pt-5"
       aria-label={t('blockedUsersTitle')}
     >
-      <h3 className="font-semibold text-white">{t('blockedUsersTitle')}</h3>
-      <p className="text-gray-400 text-sm">{t('blockedUsersDescription')}</p>
+      <h3 className="font-semibold text-foreground">
+        {t('blockedUsersTitle')}
+      </h3>
+      <p className="text-muted text-sm">{t('blockedUsersDescription')}</p>
       {loadFailed ? (
         <div
           role="alert"
-          className="flex flex-wrap items-center gap-3 text-red-300 text-sm"
+          className="flex flex-wrap items-center gap-3 text-danger text-sm"
         >
           {t('blockedUsersLoadError')}
           <Button type="button" variant="outline" onClick={reload}>
@@ -85,13 +87,11 @@ export const BlockedUsers = ({
           </Button>
         </div>
       ) : users === null ? (
-        <output className="text-gray-400 text-sm">
+        <output className="text-muted text-sm">
           {t('blockedUsersLoading')}
         </output>
       ) : users.length === 0 ? (
-        <output className="text-gray-400 text-sm">
-          {t('blockedUsersEmpty')}
-        </output>
+        <output className="text-muted text-sm">{t('blockedUsersEmpty')}</output>
       ) : (
         <ul className="flex flex-col gap-2">
           {users.map((user) => (
@@ -99,7 +99,7 @@ export const BlockedUsers = ({
               key={user.id}
               className="flex items-center justify-between gap-3 rounded-xl bg-background-darker p-3"
             >
-              <span className="min-w-0 break-words text-sm text-white">
+              <span className="min-w-0 break-words text-foreground text-sm">
                 {user.displayName}
               </span>
               <Button
@@ -116,7 +116,7 @@ export const BlockedUsers = ({
         </ul>
       )}
       {unblockFailed && (
-        <p role="alert" className="text-red-300 text-sm">
+        <p role="alert" className="text-danger text-sm">
           {t('blockedUsersUnblockError')}
         </p>
       )}

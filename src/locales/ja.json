@@ -113,7 +113,8 @@
     "logout": "ログアウト"
   },
   "LanguageSwitcher": {
-    "changeLanguage": "言語を変更"
+    "changeLanguage": "言語を変更",
+    "saveError": "言語を保存できませんでした。もう一度お試しください。"
   },
   "Profile": {
     "editProfile": "プロフィールを編集",
@@ -330,11 +331,9 @@
     "compareViewSub": "誰かがあなたの完全なプロフィールを開いたとき。",
     "compareViewPremium": "閲覧した相手を表示",
     "emailLabel": "メールアドレス",
-    "emailPlaceholder": "アカウント復旧用のメールアドレスを入力",
+    "emailPlaceholder": "メールアドレスを入力",
     "emailRequired": "メールアドレスを入力してください。",
     "emailInvalid": "有効なメールアドレスを入力してください。",
-    "activityStatusLabel": "アクティビティステータス",
-    "activityStatusDescription": "自分が現在オンラインかどうかを他のユーザーに表示する。",
     "applicationLanguageLabel": "アプリの言語",
     "applicationLanguageDescription": "Polycordのインターフェースで使用する言語を設定する。",
     "themeLabel": "テーマ",
@@ -363,8 +362,6 @@
     "pushPermissionDenied": "ブラウザで通知がブロックされています。ブラウザの設定で許可すると有効にできます。",
     "pushUnsupported": "このブラウザではプッシュ通知を利用できません。",
     "pushError": "プッシュ通知を有効にできませんでした。もう一度お試しください。",
-    "matchAlertLabel": "新しいマッチの通知",
-    "matchAlertDescription": "新しい言語パートナーが見つかったときに通知する。",
     "profileInteractionAlertLabel": "プロフィール操作の通知",
     "profileInteractionAlertDescription": "他のユーザーが自分のDiscordユーザー名をコピーしたときに通知する。",
     "profileInteractionAlertDescriptionPremium": "誰かが自分のDiscordユーザー名をコピーしたときに通知する。相手がサインインしている場合は名前を表示します。",
@@ -401,7 +398,8 @@
     "deleteAccountConfirmationPlaceholder": "DELETE",
     "deleteAccountRetentionNote": "アカウント、プロフィール、設定、音声、保存済みリンク、ブロック、通報、受信トレイ、ローカルの請求情報、ブースト、プッシュ登録を削除します。分析、モデレーション、不正対策のログはアカウントへの参照を解除して残り、メタデータ、メモ、IPアドレスが残る場合があります。この操作ではレート制限、Discord IDに紐づく制限、他の受信トレイに記録済みの送信者情報、決済事業者の記録、バックアップは消去しません。",
     "deleteAccountBillingError": "サブスクリプションの解約に失敗したため、アカウントは削除されていません。削除を再試行してください。失敗が続く場合は、サブスクリプション管理で請求状況を確認し、サポートにお問い合わせください。",
-    "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。"
+    "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。",
+    "emailDescription": "アカウントに保存され、新しくPremiumの購入を開始する際に使用されます。既存の請求用メールアドレスは変更されません。ログインにはDiscordを使用します。このメールアドレスの確認やアカウント復旧は行っていません。"
   },
   "Analytics": {
     "title": "プロダクト分析",
@@ -454,7 +452,7 @@
     "availabilityTimeSeparator": "〜",
     "availabilityViewerSuffix": "あなたの時間",
     "feedLoadingLabel": "プロフィールを読み込み中",
-    "emptyStateBadge": "マッチング中",
+    "emptyStateBadge": "ディスカバリー",
     "emptyStateTitle": "一致するプロフィールが見つかりません",
     "emptyStateDescription": "フィルターを調整するか、後でもう一度お試しください。",
     "emptyFeedDescription": "公開プロフィールはまだありません。プロフィールを作成して公開すると、最初のメンバーとしてここに表示されます。",

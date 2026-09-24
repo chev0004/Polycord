@@ -61,37 +61,37 @@ export const CompareTable = () => {
   const t = useTranslations('Settings');
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10">
+    <div className="overflow-hidden rounded-2xl border border-line">
       <div className={`grid items-center ${COLUMNS}`}>
-        <div className="px-4 py-3 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+        <div className="px-4 py-3 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
           {t('compareFeatureHeader')}
         </div>
-        <div className="px-4 py-3 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+        <div className="px-4 py-3 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
           {t('compareFreeHeader')}
         </div>
-        <div className="flex h-full items-center bg-background-darker px-4 py-3 font-semibold text-[11px] text-white uppercase tracking-[0.06em]">
+        <div className="flex h-full items-center bg-background-darker px-4 py-3 font-semibold text-[11px] text-foreground uppercase tracking-[0.06em]">
           {t('comparePremiumHeader')}
         </div>
       </div>
       {CMP_ROWS.map((row) => (
         <div
           key={row.feature}
-          className={`grid items-center border-white/10 border-t ${COLUMNS}`}
+          className={`grid items-center border-line border-t ${COLUMNS}`}
         >
           <div className="px-4 py-3.5">
-            <p className="font-medium text-[14px] text-white">
+            <p className="font-medium text-[14px] text-foreground">
               {t(row.feature)}
             </p>
-            <p className="mt-0.5 text-[12px] text-gray-500">{t(row.sub)}</p>
+            <p className="mt-0.5 text-[12px] text-subtle">{t(row.sub)}</p>
           </div>
-          <div className="px-4 py-3.5 font-light text-[13.5px] text-gray-400">
+          <div className="px-4 py-3.5 font-light text-[13.5px] text-muted">
             {row.free ? (
               t(row.free)
             ) : (
-              <span className="text-gray-500">{t('compareNoValue')}</span>
+              <span className="text-subtle">{t('compareNoValue')}</span>
             )}
           </div>
-          <div className="flex h-full items-center gap-[7px] bg-background-darker px-4 py-3.5 font-medium text-[13.5px] text-white">
+          <div className="flex h-full items-center gap-[7px] bg-background-darker px-4 py-3.5 font-medium text-[13.5px] text-foreground">
             <span aria-hidden="true" className="font-bold text-primary-light">
               ✓
             </span>

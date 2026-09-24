@@ -204,11 +204,11 @@ export const Inbox = ({
   const triggerContent = (
     <>
       <MdOutlineInbox
-        className="cursor-pointer select-none text-white text-xl transition-all duration-200 hover:text-gray-300"
+        className="cursor-pointer select-none text-foreground text-xl transition-all duration-200 hover:text-soft"
         size={24}
       />
       {unreadCount > 0 && (
-        <span className="-top-[5px] -right-1.5 absolute flex h-4 min-w-4 items-center justify-center rounded-full bg-discord-blue px-1 font-bold text-[11px] text-white">
+        <span className="-top-[5px] -right-1.5 absolute flex h-4 min-w-4 items-center justify-center rounded-full bg-discord-blue px-1 font-bold text-[11px] text-foreground">
           {unreadCount}
         </span>
       )}
@@ -249,7 +249,7 @@ export const Inbox = ({
           collisionPadding={10}
         >
           <div className="flex flex-wrap items-center justify-between gap-2 border-gray-500/50 border-b p-3">
-            <h3 className="font-bold text-base text-white">
+            <h3 className="font-bold text-base text-foreground">
               {t('notifications')}
             </h3>
             {notifications.length > 0 && (
@@ -277,7 +277,7 @@ export const Inbox = ({
             {error && (
               <div
                 role="alert"
-                className="flex flex-col gap-2 p-3 text-red-200 text-sm"
+                className="flex flex-col gap-2 p-3 text-danger text-sm"
               >
                 <p>{t(error)}</p>
                 <Button
@@ -291,9 +291,7 @@ export const Inbox = ({
               </div>
             )}
             {loading && (
-              <output className="p-3 text-gray-400 text-sm">
-                {t('loading')}
-              </output>
+              <output className="p-3 text-muted text-sm">{t('loading')}</output>
             )}
             <div className="flex flex-col gap-1 overflow-hidden p-2">
               {currentNotifications.length > 0 ? (
@@ -318,8 +316,8 @@ export const Inbox = ({
                 ))
               ) : !loading && !error ? (
                 <div className="flex h-[290px] flex-col items-center justify-center gap-4">
-                  <MdOutlineInbox size={48} className="text-gray-500" />
-                  <p className="text-center text-gray-400 text-sm">
+                  <MdOutlineInbox size={48} className="text-subtle" />
+                  <p className="text-center text-muted text-sm">
                     {t('noNotifications')}
                     <br />
                     <span className="text-xs">
@@ -348,11 +346,11 @@ export const Inbox = ({
                   onClick={handlePrevPage}
                   disabled={page === 1}
                   aria-label={t('previousPage')}
-                  className="text-white transition-colors duration-200 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="text-foreground transition-colors duration-200 hover:text-soft disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <MdOutlineKeyboardArrowLeft size={20} />
                 </button>
-                <span className="text-gray-400 text-xs">
+                <span className="text-muted text-xs">
                   {t('page', { current: page, total: totalPages })}
                 </span>
                 <button
@@ -360,7 +358,7 @@ export const Inbox = ({
                   onClick={handleNextPage}
                   disabled={page === totalPages}
                   aria-label={t('nextPage')}
-                  className="text-white transition-colors duration-200 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="text-foreground transition-colors duration-200 hover:text-soft disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <MdOutlineKeyboardArrowRight size={20} />
                 </button>

@@ -482,27 +482,20 @@ export type TimeFormat = '12hr' | '24hr';
 export const formatCurrentTime = (
   timezone: IANATimezone | string,
   format: TimeFormat = '24hr',
+  locale = 'en',
 ): string => {
   if (!timezone || typeof timezone !== 'string') return '';
 
   try {
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en', {
+    const formatter = new Intl.DateTimeFormat(locale, {
       timeZone: timezone,
       hour: '2-digit',
       minute: '2-digit',
-      hour12: format === '12hr',
+      hourCycle: format === '12hr' ? 'h12' : 'h23',
     });
 
-    const parts = formatter.formatToParts(now);
-    const hour = parts.find((p) => p.type === 'hour')?.value || '00';
-    const minute = parts.find((p) => p.type === 'minute')?.value || '00';
-    const dayPeriod = parts.find((p) => p.type === 'dayPeriod')?.value;
-
-    if (format === '12hr' && dayPeriod) {
-      return `${hour}:${minute} ${dayPeriod}`;
-    }
-    return `${hour}:${minute}`;
+    return formatter.format(now);
   } catch {
     return '';
   }

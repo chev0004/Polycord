@@ -49,9 +49,6 @@ export default async function SettingsRoute({
         initialSettings={
           settings
             ? {
-                activityStatus: settings.activityStatus,
-                applicationLanguage: settings.applicationLanguage,
-                matchAlert: settings.matchAlert,
                 profileInteractionAlert: settings.profileInteractionAlert,
                 profileViewAlert: settings.profileViewAlert,
                 hideProfileVisits: settings.hideProfileVisits,

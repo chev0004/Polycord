@@ -13,7 +13,7 @@ export const Label: React.FC<LabelProps> = ({
 }) => (
   <label
     htmlFor={htmlFor}
-    className={`block font-medium text-[13px] text-gray-400 ${className ?? ''}`}
+    className={`block font-medium text-[13px] text-muted ${className ?? ''}`}
     {...props}
   >
     {children}

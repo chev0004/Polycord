@@ -17,7 +17,7 @@ export const DraftNotice = ({
   const locale = useLocale();
   if (!restored && !stored && !unavailable && !sessionExpired) return null;
   return (
-    <output className="mb-5 block rounded-xl bg-background-dark px-4 py-3 text-gray-300 text-sm">
+    <output className="mb-5 block rounded-xl bg-background-dark px-4 py-3 text-sm text-soft">
       {t(unavailable ? 'unavailable' : restored ? 'restored' : 'savedLocally')}
       {sessionExpired ? (
         <a

@@ -56,7 +56,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
     <div
       {...props}
       style={style}
-      className={`relative flex items-center gap-3 rounded-md bg-background-main p-3 text-white transition-opacity ${notification.read ? 'opacity-60' : 'opacity-100'} ${className}`}
+      className={`relative flex items-center gap-3 rounded-md bg-background-main p-3 text-foreground transition-opacity ${notification.read ? 'opacity-60' : 'opacity-100'} ${className}`}
     >
       <span
         className={`-left-1 absolute h-2 w-2 flex-shrink-0 rounded-full bg-primary transition-opacity duration-300 ${
@@ -83,13 +83,13 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
             {t('viewProfile')}
           </Link>
         ) : premium ? (
-          <p className="text-gray-400 text-xs">
+          <p className="text-muted text-xs">
             {t(
               notification.isGuest ? 'anonymousProfile' : 'profileUnavailable',
             )}
           </p>
         ) : null}
-        <span className="block text-gray-400 text-xs">
+        <span className="block text-muted text-xs">
           {notification.timestamp}
         </span>
       </div>
@@ -99,7 +99,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
           type="button"
           onClick={onMarkAsRead}
           disabled={disabled}
-          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white focus-visible:bg-background-darker focus-visible:text-white disabled:opacity-40"
+          className="rounded-full p-1.5 text-muted transition-colors hover:bg-background-darker hover:text-foreground focus-visible:bg-background-darker focus-visible:text-foreground disabled:opacity-40"
           title={notification.read ? t('markAsUnread') : t('markAsRead')}
         >
           {notification.read ? (
@@ -112,7 +112,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
           type="button"
           onClick={onDelete}
           disabled={disabled}
-          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white focus-visible:bg-background-darker focus-visible:text-white disabled:opacity-40"
+          className="rounded-full p-1.5 text-muted transition-colors hover:bg-background-darker hover:text-foreground focus-visible:bg-background-darker focus-visible:text-foreground disabled:opacity-40"
           title={t('delete')}
         >
           <MdClose size={18} />

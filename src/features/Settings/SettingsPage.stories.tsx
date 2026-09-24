@@ -6,9 +6,7 @@ const defaultSettings: SettingsFormValues = {
   isPublic: true,
   allowAnonymousCopy: true,
   displayTimezone: true,
-  activityStatus: true,
   pushNotifications: true,
-  matchAlert: true,
   profileInteractionAlert: true,
   profileViewAlert: true,
   hideProfileVisits: false,
@@ -57,6 +55,50 @@ type Story = StoryObj<typeof SettingsPage>;
 
 export const Default: Story = {
   args: {},
+};
+
+export const LightAppearance: Story = {
+  parameters: { theme: 'light' },
+  args: { defaultValues: { ...defaultSettings, theme: 'light' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: 'Appearance' }));
+    await waitFor(() =>
+      expect(canvas.getByRole('combobox', { name: 'Theme' })).toHaveTextContent(
+        'Light Mode',
+      ),
+    );
+    expect(
+      canvas.getByRole('button', { name: 'Save Settings' }),
+    ).toBeDisabled();
+  },
+};
+
+export const LightSaveError: Story = {
+  parameters: { theme: 'light' },
+  args: {
+    onSubmit: fn(async () => {
+      throw new Error('save failed');
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    setFieldValue(
+      canvas.getByLabelText('Email Address') as HTMLInputElement,
+      'changed@example.com',
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Save Settings' }),
+      ).not.toBeDisabled(),
+    );
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Settings' }));
+    await waitFor(() =>
+      expect(
+        canvas.getByText('Could not save your settings. Please try again.'),
+      ).toBeInTheDocument(),
+    );
+  },
 };
 
 export const RestoredDraft: Story = {
@@ -114,7 +156,7 @@ export const SwitchTabs: Story = {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.getByPlaceholderText('Enter your email for recovery'),
+      canvas.getByPlaceholderText('Enter your email address'),
     ).toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
@@ -123,13 +165,13 @@ export const SwitchTabs: Story = {
       expect(canvas.getByText('Make Profile Public')).toBeInTheDocument(),
     );
     expect(
-      canvas.queryByPlaceholderText('Enter your email for recovery'),
+      canvas.queryByPlaceholderText('Enter your email address'),
     ).not.toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Notifications' }));
 
     await waitFor(() =>
-      expect(canvas.getByText('New Match Alert')).toBeInTheDocument(),
+      expect(canvas.getByText('Push Notifications')).toBeInTheDocument(),
     );
     expect(canvas.queryByText('Make Profile Public')).not.toBeInTheDocument();
   },
@@ -157,7 +199,7 @@ export const EmailValidation: Story = {
     const canvas = within(canvasElement);
 
     const email = canvas.getByPlaceholderText(
-      'Enter your email for recovery',
+      'Enter your email address',
     ) as HTMLInputElement;
     setFieldValue(email, 'not-an-email');
     await waitFor(() => expect(email).toHaveValue('not-an-email'));
@@ -177,7 +219,7 @@ export const EmailValidation: Story = {
       { timeout: 5000 },
     );
     await expect(
-      canvas.getByPlaceholderText('Enter your email for recovery'),
+      canvas.getByPlaceholderText('Enter your email address'),
     ).toBeInTheDocument();
   },
 };
@@ -191,7 +233,7 @@ export const SaveFlow: Story = {
     await expect(saveButton).toBeDisabled();
 
     const email = canvas.getByPlaceholderText(
-      'Enter your email for recovery',
+      'Enter your email address',
     ) as HTMLInputElement;
     setFieldValue(email, 'kenji.ito@polycord.app');
 
@@ -226,7 +268,7 @@ export const SaveError: Story = {
     const canvas = within(canvasElement);
 
     const email = canvas.getByPlaceholderText(
-      'Enter your email for recovery',
+      'Enter your email address',
     ) as HTMLInputElement;
     setFieldValue(email, 'error.path@polycord.app');
 

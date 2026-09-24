@@ -203,12 +203,12 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Anchor asChild>
           <div
-            className={`flex h-12 w-full items-center justify-between rounded-xl border bg-background-darker px-4 text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`flex h-12 w-full items-center justify-between rounded-xl border bg-background-darker px-4 text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               error
                 ? 'border-red-500'
                 : readOnly || disabled
-                  ? 'border-white/[0.07]'
-                  : 'border-white/[0.07] focus-within:border-white/[0.14] hover:border-white/[0.14]'
+                  ? 'border-line'
+                  : 'border-line focus-within:border-line-strong hover:border-line-strong'
             } ${disabled ? 'opacity-50' : ''} ${className ?? ''}`}
           >
             <input
@@ -235,7 +235,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
               placeholder={placeholder}
-              className="w-full bg-transparent text-[15px] text-white placeholder-gray-500 outline-none focus:outline-none disabled:cursor-not-allowed disabled:text-gray-400"
+              className="w-full bg-transparent text-[15px] text-foreground placeholder-subtle outline-none focus:outline-none disabled:cursor-not-allowed disabled:text-muted"
               autoComplete="off"
             />
           </div>
@@ -257,7 +257,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
               className="max-h-60 overflow-y-auto p-1.5"
             >
               {loading ? (
-                <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
+                <div className="flex h-12 items-center justify-center text-sm text-subtle">
                   {t('loading')}
                 </div>
               ) : filteredOptions.length > 0 ? (
@@ -298,7 +298,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                         onMouseEnter={() =>
                           setHighlightedIndex(virtualItem.index)
                         }
-                        className="flex h-10 items-center justify-between gap-2 rounded-full px-3 text-left text-sm text-white transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-main hover:text-primary-light focus:outline-none data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
+                        className="flex h-10 items-center justify-between gap-2 rounded-full px-3 text-left text-foreground text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-main hover:text-primary-light focus:outline-none data-[highlighted]:bg-background-main data-[highlighted]:text-primary-light"
                       >
                         <span className="min-w-0 flex-1 truncate">
                           {option.label}
@@ -313,7 +313,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                   })}
                 </div>
               ) : (
-                <div className="flex h-12 items-center justify-center text-gray-500 text-sm">
+                <div className="flex h-12 items-center justify-center text-sm text-subtle">
                   {t('noResults')}
                 </div>
               )}

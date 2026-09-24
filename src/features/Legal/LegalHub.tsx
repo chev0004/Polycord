@@ -30,10 +30,10 @@ export const LegalHub = ({
         <p className="font-semibold text-primary text-sm uppercase tracking-wide">
           {t('eyebrow')}
         </p>
-        <h1 className="mt-2 font-black text-3xl text-white tracking-[-0.01em] sm:text-4xl">
+        <h1 className="mt-2 font-black text-3xl text-foreground tracking-[-0.01em] sm:text-4xl">
           {t('hubTitle')}
         </h1>
-        <p className="mt-3 max-w-xl text-[15px] text-gray-400 leading-relaxed">
+        <p className="mt-3 max-w-xl text-[15px] text-muted leading-relaxed">
           {t('hubDescription')}
         </p>
 
@@ -46,15 +46,15 @@ export const LegalHub = ({
               className="group flex items-center justify-between gap-4 rounded-lg border border-primary-darker bg-background-darker px-5 py-4 text-left transition-colors hover:border-primary-dark focus-visible:border-primary focus-visible:bg-background-dark"
             >
               <span>
-                <span className="block font-bold text-lg text-white">
+                <span className="block font-bold text-foreground text-lg">
                   {t(`${id}Title`)}
                 </span>
-                <span className="mt-1 block text-gray-400 text-sm leading-relaxed">
+                <span className="mt-1 block text-muted text-sm leading-relaxed">
                   {t(`${id}Summary`)}
                 </span>
               </span>
               <MdArrowForward
-                className="shrink-0 text-gray-500 transition-colors group-hover:text-primary"
+                className="shrink-0 text-subtle transition-colors group-hover:text-primary"
                 size={22}
               />
             </button>

@@ -19,6 +19,8 @@ type Story = StoryObj<typeof ReportDialog>;
 
 export const Default: Story = {};
 
+export const Light: Story = { parameters: { theme: 'light' } };
+
 export const ReasonSelected: Story = {
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body);

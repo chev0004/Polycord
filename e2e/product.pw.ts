@@ -71,7 +71,7 @@ test('profile and settings persist through discovery and locale navigation', asy
       profile.bio,
     );
     await expect(
-      page.getByRole('button', { name: 'Account menu' }),
+      page.getByRole('button', { name: 'Change language' }),
     ).toBeVisible();
     const bio =
       'Updated through the real profile editor and saved to PostgreSQL.';

@@ -275,7 +275,7 @@ const LiveUpdateStory = () => {
     <>
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-4">
-          <p className="text-white">
+          <p className="text-foreground">
             {t('simulateTitle')} {t('simulateInfo')}
           </p>
           <div className="flex gap-4">

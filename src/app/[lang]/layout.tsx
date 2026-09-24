@@ -5,6 +5,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { getUserSettingsByDiscordUserId } from '@/db';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
+import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
 import { getCurrentUser } from '@/lib/auth';
 import { locales } from '@/utils/locales';
 import '../globals.css';
@@ -38,11 +39,20 @@ export default async function RootLayout({
   const settings = user ? await getUserSettingsByDiscordUserId(user.id) : null;
 
   return (
-    <html lang={lang} suppressHydrationWarning>
-      <body suppressHydrationWarning>
+    <html
+      lang={lang}
+      data-theme={settings?.theme ?? 'dark'}
+      suppressHydrationWarning
+    >
+      <body
+        className="bg-background-main text-foreground"
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider locale={lang} messages={messages}>
           <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
-            <RouteProgressProvider>{children}</RouteProgressProvider>
+            <TimeFormatProvider value={settings?.timeFormat ?? '24hr'}>
+              <RouteProgressProvider>{children}</RouteProgressProvider>
+            </TimeFormatProvider>
           </LanguageDisplayProvider>
         </NextIntlClientProvider>
       </body>

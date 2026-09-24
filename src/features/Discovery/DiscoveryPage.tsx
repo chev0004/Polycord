@@ -239,7 +239,7 @@ export const DiscoveryPage = ({
     window.history.replaceState(
       null,
       '',
-      query ? `${pathname}?${query}` : pathname,
+      `${query ? `${pathname}?${query}` : pathname}${window.location.hash}`,
     );
   }, [filterValues, searchQuery, selectedTags, sortValue, safePage, pathname]);
 
@@ -549,7 +549,7 @@ export const DiscoveryPage = ({
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-white">
+    <div className="min-h-screen bg-background-main text-foreground">
       <Navbar
         iconUrl={userAvatarUrl}
         isLoggedIn={isLoggedIn}
@@ -571,11 +571,11 @@ export const DiscoveryPage = ({
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
         {authError ? (
           <div
-            className="mb-6 rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
+            className="mb-6 rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
             role="alert"
           >
             <p className="font-semibold">{t('authErrorTitle')}</p>
-            <p className="mt-1 text-red-100/80">{t('authErrorDescription')}</p>
+            <p className="mt-1 text-danger">{t('authErrorDescription')}</p>
           </div>
         ) : null}
 
@@ -606,11 +606,11 @@ export const DiscoveryPage = ({
 
         {feedError ? (
           <div
-            className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
+            className="rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
             role="alert"
           >
             <p className="font-semibold">{t('feedErrorTitle')}</p>
-            <p className="mt-1 text-red-100/80">{t('feedErrorDescription')}</p>
+            <p className="mt-1 text-danger">{t('feedErrorDescription')}</p>
           </div>
         ) : (
           <>
@@ -685,12 +685,12 @@ export const DiscoveryPage = ({
             <button
               type="button"
               onClick={() => router.push(`/${locale}/onboarding`)}
-              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
+              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
             >
-              <p className="font-figtree font-semibold text-white">
+              <p className="font-figtree font-semibold text-foreground">
                 {t('onboardingPromptTitle')}
               </p>
-              <p className="mt-1 text-gray-400 text-sm">
+              <p className="mt-1 text-muted text-sm">
                 {t('onboardingPromptProgress', { completion })}
                 {missingRequiredFields.length > 0
                   ? ` ${t('onboardingPromptStillNeeded', {
@@ -710,7 +710,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               onClick={() => setIsPromptDismissed(true)}
-              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
+              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
               aria-label={t('onboardingPromptDismiss')}
             >
               <MdClose size={16} />

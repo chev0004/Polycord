@@ -3,7 +3,7 @@ const sectionRowKeys = (section: string, rows: number) =>
 
 const SectionSkeleton = ({ rowKeys }: { rowKeys: string[] }) => (
   <div className="flex flex-col gap-5 rounded-3xl bg-background-dark p-6 shadow-xl">
-    <div className="flex flex-col gap-2 border-white/10 border-b pb-3.5">
+    <div className="flex flex-col gap-2 border-line border-b pb-3.5">
       <div className="skeleton-shimmer h-5 w-40 rounded" />
       <div className="skeleton-shimmer h-3 w-64 rounded" />
     </div>

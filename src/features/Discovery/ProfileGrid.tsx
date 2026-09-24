@@ -222,14 +222,14 @@ export const ProfileGrid = ({
             {renderProfileColumns(3, 'hidden lg:grid lg:grid-cols-3')}
           </>
         ) : (
-          <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary/30 border-dashed bg-background-darker/60 px-6 py-12 text-center">
-            <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary text-xs uppercase tracking-wide">
+          <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">
+            <span className="rounded-full bg-primary-darker px-3 py-1 font-semibold text-primary text-xs uppercase tracking-wide">
               {t('emptyStateBadge')}
             </span>
-            <h3 className="font-figtree font-semibold text-2xl text-white">
+            <h3 className="font-figtree font-semibold text-2xl text-foreground">
               {t('emptyStateTitle')}
             </h3>
-            <p className="max-w-[440px] text-gray-400 text-sm">
+            <p className="max-w-[440px] text-muted text-sm">
               {emptyState ?? t('emptyStateDescription')}
             </p>
           </div>

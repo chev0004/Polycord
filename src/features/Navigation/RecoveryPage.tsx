@@ -23,19 +23,19 @@ export function RecoveryPage({
   }, [locale]);
   const copy = language === 'ja' ? ja.Recovery : en.Recovery;
   const actionClass =
-    'rounded-lg border border-white/20 px-5 py-3 font-semibold hover:bg-white/10 focus-visible:bg-white/20';
+    'rounded-lg border border-line-strong px-5 py-3 font-semibold hover:bg-overlay focus-visible:bg-overlay';
 
   return (
     <main
       lang={language}
-      className="flex min-h-screen items-center justify-center bg-background-main px-4 py-12 text-white"
+      className="flex min-h-screen items-center justify-center bg-background-main px-4 py-12 text-foreground"
     >
-      <section className="w-full max-w-lg space-y-6 rounded-xl border border-white/10 bg-background-dark p-6 sm:p-10">
+      <section className="w-full max-w-lg space-y-6 rounded-xl border border-line bg-background-dark p-6 sm:p-10">
         <p className="font-semibold text-primary">{copy.brand}</p>
         <h1 className="font-bold text-3xl">
           {kind === 'missing' ? copy.missingTitle : copy.errorTitle}
         </h1>
-        <p className="text-gray-300">
+        <p className="text-soft">
           {kind === 'missing' ? copy.missingDescription : copy.errorDescription}
         </p>
         <div className="flex flex-wrap gap-3">

@@ -27,10 +27,10 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       <SelectPrimitive.Root {...props}>
         <SelectPrimitive.Trigger
           ref={forwardedRef}
-          className={`group flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-left text-[15px] text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-gray-500 ${
+          className={`group flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-left text-[15px] text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-subtle ${
             error
               ? 'border-red-500'
-              : 'border-white/[0.07] hover:border-white/[0.14] data-[state=open]:border-white/[0.14]'
+              : 'border-line hover:border-line-strong data-[state=open]:border-line-strong'
           } ${className ?? ''}`}
           aria-label={ariaLabel}
           onBlur={onBlur}
@@ -39,7 +39,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             placeholder={placeholder}
             className="min-w-0 flex-1 truncate"
           />
-          <SelectPrimitive.Icon className="flex-shrink-0 text-gray-500 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[state=open]:rotate-180">
+          <SelectPrimitive.Icon className="flex-shrink-0 text-subtle transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[state=open]:rotate-180">
             <MdOutlineKeyboardArrowDown size={20} />
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
@@ -51,7 +51,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             sideOffset={6}
             style={{ width: 'var(--radix-select-trigger-width)' }}
           >
-            <SelectPrimitive.ScrollUpButton className="flex items-center justify-center bg-background-dark text-white">
+            <SelectPrimitive.ScrollUpButton className="flex items-center justify-center bg-background-dark text-foreground">
               <MdOutlineKeyboardArrowUp size={20} />
             </SelectPrimitive.ScrollUpButton>
 
@@ -63,7 +63,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               ))}
             </SelectPrimitive.Viewport>
 
-            <SelectPrimitive.ScrollDownButton className="flex items-center justify-center bg-background-dark text-white">
+            <SelectPrimitive.ScrollDownButton className="flex items-center justify-center bg-background-dark text-foreground">
               <MdOutlineKeyboardArrowDown size={20} />
             </SelectPrimitive.ScrollDownButton>
           </SelectPrimitive.Content>

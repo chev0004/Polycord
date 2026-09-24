@@ -79,17 +79,17 @@ export const ReportDialog = ({
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
-              <Dialog.Title className="font-figtree font-semibold text-lg text-white">
+              <Dialog.Title className="font-figtree font-semibold text-foreground text-lg">
                 {t('reportDialogTitle')}
               </Dialog.Title>
-              <Dialog.Description className="text-gray-400 text-sm">
+              <Dialog.Description className="text-muted text-sm">
                 {profileName
                   ? t('reportDialogDescriptionNamed', { name: profileName })
                   : t('reportDialogDescription')}
               </Dialog.Description>
             </div>
             <Dialog.Close
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-white"
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground"
               aria-label={t('reportCancel')}
             >
               <MdClose size={18} />
@@ -97,7 +97,7 @@ export const ReportDialog = ({
           </div>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
+            <legend className="mb-2 font-semibold text-[11px] text-subtle uppercase tracking-wide">
               {t('reportReasonLegend')}
             </legend>
             {REPORT_REASONS.map((value) => {
@@ -108,8 +108,8 @@ export const ReportDialog = ({
                   key={value}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
                     isSelected
-                      ? 'border-primary bg-primary/10 text-white'
-                      : 'border-gray-500/30 text-gray-300 hover:border-gray-500/60 hover:bg-background-darker'
+                      ? 'border-primary bg-primary-darker text-foreground'
+                      : 'border-gray-500/30 text-soft hover:border-gray-500/60 hover:bg-background-darker'
                   }`}
                 >
                   <input
@@ -127,7 +127,7 @@ export const ReportDialog = ({
           </fieldset>
 
           <label className="flex flex-col gap-2">
-            <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
+            <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
               {t('reportDetailsLabel')}
             </span>
             <textarea
@@ -136,7 +136,7 @@ export const ReportDialog = ({
               maxLength={MAX_DETAILS_LENGTH}
               rows={3}
               placeholder={t('reportDetailsPlaceholder')}
-              className="resize-none rounded-lg border border-gray-500/30 bg-background-darker px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-primary focus:outline-none"
+              className="resize-none rounded-lg border border-gray-500/30 bg-background-darker px-3 py-2 text-foreground text-sm placeholder:text-subtle focus:border-primary focus:outline-none"
             />
           </label>
 

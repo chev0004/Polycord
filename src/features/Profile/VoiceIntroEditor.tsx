@@ -215,7 +215,7 @@ export const VoiceIntroEditor = ({
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.96] disabled:opacity-60 ${
                 recording
                   ? 'bg-[#f87171] text-white'
-                  : 'bg-primary text-black hover:bg-primary-light'
+                  : 'bg-primary text-on-primary hover:bg-primary-light'
               }`}
             >
               {recording ? <MdStop size={22} /> : <MdMic size={22} />}
@@ -224,17 +224,17 @@ export const VoiceIntroEditor = ({
           <div className="min-w-0 flex-1">
             <div
               className={`flex items-center gap-2 font-medium text-[15px] ${
-                premium ? 'text-white' : 'text-gray-300'
+                premium ? 'text-foreground' : 'text-soft'
               }`}
             >
               {t('voiceIntroTitle')}
               {premium ? null : (
-                <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                <span className="inline-flex items-center rounded-full bg-overlay px-[9px] py-0.5 font-bold text-[10.5px] text-soft uppercase tracking-[0.05em]">
                   {t('voiceIntroPremiumTag')}
                 </span>
               )}
             </div>
-            <p className="mt-0.5 text-[12px] text-gray-500">{description}</p>
+            <p className="mt-0.5 text-[12px] text-subtle">{description}</p>
           </div>
           {premium && voiceSeconds && !recording && !pending ? (
             <button
@@ -242,7 +242,7 @@ export const VoiceIntroEditor = ({
               onClick={deleteClip}
               disabled={busy}
               aria-label={t('voiceIntroDeleteLabel')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-red-300 focus:outline-none disabled:opacity-60"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-danger focus:outline-none disabled:opacity-60"
             >
               <MdDeleteOutline size={20} />
             </button>
@@ -274,17 +274,17 @@ export const VoiceIntroEditor = ({
         ) : null}
 
         {error ? (
-          <p className="text-[12px] text-red-400">
+          <p className="text-[12px] text-danger">
             {error === 'mic' ? t('voiceIntroMicError') : t('voiceIntroError')}
           </p>
         ) : null}
       </div>
       {premium ? (
-        <p className="text-[13px] text-gray-400 leading-relaxed">
+        <p className="text-[13px] text-muted leading-relaxed">
           {t('voiceIntroImmediate')}
         </p>
       ) : (
-        <p className="text-[13px] text-gray-400 leading-relaxed">
+        <p className="text-[13px] text-muted leading-relaxed">
           {t.rich('voiceIntroUpsell', {
             premiumLink: (chunks) => (
               <Link

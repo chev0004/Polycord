@@ -1,5 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { getUserByDiscordId, upsertDiscordUser } from '@/db';
+import {
+  getUserByDiscordId,
+  getUserSettingsByUserId,
+  upsertDiscordUser,
+  upsertUserSettings,
+} from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromPath } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -11,6 +16,7 @@ import {
   setSessionCookie,
 } from '@/lib/auth';
 import { enforceRateLimit, isRateLimited, requestIp } from '@/lib/rateLimit';
+import { isLocale, localizePath } from '@/utils/localePaths';
 
 type DiscordTokenResponse = {
   access_token?: string;
@@ -130,21 +136,37 @@ export const GET = async (request: NextRequest) => {
     const currentUser = normalizeDiscordUser(discordUser);
     const existingUser = await getUserByDiscordId(currentUser.id);
     const user = await upsertDiscordUser(currentUser);
+    const settings = await getUserSettingsByUserId(user.id);
+    const requestedLocale = localeFromPath(redirectTo) ?? 'en';
+    const locale =
+      settings && isLocale(settings.applicationLanguage)
+        ? settings.applicationLanguage
+        : isLocale(requestedLocale)
+          ? requestedLocale
+          : 'en';
+    if (!settings) {
+      await upsertUserSettings(user.id, { applicationLanguage: locale });
+    }
 
     await trackEvent({
       name: existingUser
         ? ANALYTICS_EVENTS.authLogin
         : ANALYTICS_EVENTS.authSignup,
       userId: user.id,
-      locale: localeFromPath(redirectTo),
+      locale,
       metadata: { isNewUser: !existingUser },
     });
 
     const response = NextResponse.redirect(
-      new URL(redirectTo, getRedirectUri(request)),
+      new URL(localizePath(redirectTo, locale), getRedirectUri(request)),
       303,
     );
     await setSessionCookie(response, currentUser, user.id);
+    response.cookies.set('NEXT_LOCALE', locale, {
+      path: '/',
+      sameSite: 'lax',
+      maxAge: 31536000,
+    });
     clearOAuthStateCookie(response);
 
     return response;

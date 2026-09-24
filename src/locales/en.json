@@ -113,7 +113,8 @@
     "logout": "Logout"
   },
   "LanguageSwitcher": {
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "saveError": "Could not save language. Try again."
   },
   "Profile": {
     "editProfile": "Edit Profile",
@@ -330,11 +331,9 @@
     "compareViewSub": "When someone opens your full profile.",
     "compareViewPremium": "See who viewed you",
     "emailLabel": "Email Address",
-    "emailPlaceholder": "Enter your email for recovery",
+    "emailPlaceholder": "Enter your email address",
     "emailRequired": "Email is required.",
     "emailInvalid": "Please enter a valid email address.",
-    "activityStatusLabel": "Activity Status",
-    "activityStatusDescription": "Allow users to see if you are currently active.",
     "applicationLanguageLabel": "Application Language",
     "applicationLanguageDescription": "The language used for the Polycord interface.",
     "themeLabel": "Theme",
@@ -363,8 +362,6 @@
     "pushPermissionDenied": "Notifications are blocked in your browser. Allow them in your browser settings to turn this on.",
     "pushUnsupported": "Push notifications are not available in this browser.",
     "pushError": "Push notifications could not be enabled. Please try again.",
-    "matchAlertLabel": "New Match Alert",
-    "matchAlertDescription": "Alert me when a new language partner match is found.",
     "profileInteractionAlertLabel": "Profile Interaction Alert",
     "profileInteractionAlertDescription": "Alert me when another user copies my Discord username.",
     "profileInteractionAlertDescriptionPremium": "Alert me when someone copies my Discord username. Shows their name when they're signed in.",
@@ -401,7 +398,8 @@
     "deleteAccountConfirmationPlaceholder": "DELETE",
     "deleteAccountRetentionNote": "Account, profile, settings, voice, saved links, blocks, reports, inbox, local billing, boosts, and push registrations are deleted. Analytics, moderation and abuse logs remain with account links cleared; metadata, notes and IP addresses may remain. Rate limits, Discord moderation restrictions, actor details in other inboxes, payment-provider records and backups are not purged by this action.",
     "deleteAccountBillingError": "Your account has not been deleted because subscription cancellation failed. Retry deletion. If it keeps failing, use Manage Subscription to check billing and contact support.",
-    "deleteAccountError": "Account could not be deleted. Please try again."
+    "deleteAccountError": "Account could not be deleted. Please try again.",
+    "emailDescription": "Stored in your account and used when starting a new Premium checkout. Updating it does not change an existing billing email. Sign-in uses Discord; this address is not verified or used for account recovery."
   },
   "Analytics": {
     "title": "Product analytics",
@@ -454,7 +452,7 @@
     "availabilityTimeSeparator": "to",
     "availabilityViewerSuffix": "your time",
     "feedLoadingLabel": "Loading profiles",
-    "emptyStateBadge": "Matchmaking",
+    "emptyStateBadge": "Discovery",
     "emptyStateTitle": "We couldn't find any matches yet",
     "emptyStateDescription": "Try adjusting your filters or check back soon to discover new language partners.",
     "emptyFeedDescription": "There are no public profiles yet. Create your profile and set it to public to be the first one here.",
