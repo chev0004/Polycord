@@ -227,6 +227,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                   : undefined
               }
               aria-invalid={error || undefined}
+              aria-describedby={error && id ? `${id}-error` : undefined}
               value={inputValue}
               disabled={disabled}
               readOnly={readOnly}

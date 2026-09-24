@@ -515,7 +515,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 )}
               />
               {errors.primaryLanguage && (
-                <FieldError>
+                <FieldError id="primaryLanguage-error">
                   {t(errors.primaryLanguage.message as string)}
                 </FieldError>
               )}
@@ -541,7 +541,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 )}
               />
               {errors.country && (
-                <FieldError>{errors.country.message}</FieldError>
+                <FieldError id="country-error">
+                  {errors.country.message}
+                </FieldError>
               )}
             </FormGroup>
 
@@ -554,7 +556,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 error={!!errors.timezone}
               />
               {errors.timezone && (
-                <FieldError>{errors.timezone.message}</FieldError>
+                <FieldError id={`${timezoneId}-error`}>
+                  {errors.timezone.message}
+                </FieldError>
               )}
             </FormGroup>
           </SectionCard>
@@ -584,7 +588,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 error={!!errors.bio}
               />
               {errors.bio && (
-                <FieldError>{t(errors.bio.message as string)}</FieldError>
+                <FieldError id={`${bioId}-error`}>
+                  {t(errors.bio.message as string)}
+                </FieldError>
               )}
             </FormGroup>
 

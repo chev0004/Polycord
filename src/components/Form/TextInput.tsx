@@ -21,6 +21,8 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
       ref={ref}
       type={type}
       readOnly={readOnly}
+      aria-invalid={error || undefined}
+      aria-describedby={error && props.id ? `${props.id}-error` : undefined}
       className={`h-12 px-4 text-[15px] ${textFieldClasses(error, readOnly)} ${className ?? ''}`}
       {...props}
     />
