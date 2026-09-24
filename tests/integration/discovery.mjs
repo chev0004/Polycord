@@ -83,6 +83,27 @@ try {
   assert.equal((await load('avail=overlaps')).total, 30);
   assert.equal((await load('sort=overlap-desc')).profiles.length, 9);
   assert.equal((await load('avail=available-now')).total >= 0, true);
+  await db
+    .update(profiles)
+    .set({ timezone: 'Mars/Olympus' })
+    .where(eq(profiles.id, items[1].id));
+  assert.equal((await load('avail=overlaps')).total, 29);
+  await db
+    .update(profiles)
+    .set({ timezone: 'America/Chicago' })
+    .where(eq(profiles.id, items[1].id));
+  const username = `q=${encodeURIComponent(owners[17].discordUsername)}`;
+  assert.equal((await load(username)).total, 1);
+  await db
+    .update(profiles)
+    .set({ allowAnonymousCopy: false })
+    .where(eq(profiles.id, items[17].id));
+  assert.equal((await load(username)).total, 0);
+  assert.equal((await load(username, owners[0].id)).total, 1);
+  await db
+    .update(profiles)
+    .set({ allowAnonymousCopy: true })
+    .where(eq(profiles.id, items[17].id));
   await db.insert(profileTargetLanguages).values({
     profileId: items[0].id,
     language: 'de',
