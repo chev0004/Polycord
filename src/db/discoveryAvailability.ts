@@ -8,7 +8,10 @@ const minute = (
 ) =>
   sql`(coalesce(split_part(${column}, ':', 1)::int, 0) * 60 + coalesce(split_part(${column}, ':', 2)::int, 0))`;
 
-export const discoveryAvailability = (viewer: ViewerAvailabilityContext) => {
+export const discoveryAvailability = (
+  viewer: ViewerAvailabilityContext,
+  timezones: string[],
+) => {
   const intervals = toUtcWeekIntervals(viewer);
   const viewerRanges = `{${intervals.map(({ start, end }) => `[${start},${end})`).join(',')}}`;
   const ranges = sql`(select coalesce(range_agg(segment), '{}'::int4multirange) from (
@@ -26,7 +29,7 @@ export const discoveryAvailability = (viewer: ViewerAvailabilityContext) => {
         case when ${profiles.availabilityAnyTime} then 1440 else (${minute(profiles.availabilityTo)} - ${minute(profiles.availabilityFrom)} + 1440) % 1440 end
         else case ${profiles.availability} when 'weeknights' then 240 when 'weekends' then 480 else 180 end end as duration,
       extract(epoch from (now() at time zone ${profiles.timezone} - now() at time zone 'UTC'))::int / 60 as offset_minute
-    where ${profiles.displayAvailability} and ${profiles.displayTimezone} and ${profiles.timezone} is not null
+    where ${profiles.displayAvailability} and ${profiles.displayTimezone} and ${profiles.timezone} = any(string_to_array(${timezones.join(',')}, ','))
       and (${profiles.availabilityDays} is not null or ${profiles.availability} <> 'flexible')
   ), windows as (
     select ((day * 1440 + from_minute - offset_minute) % 10080 + 10080) % 10080 as start_minute, duration

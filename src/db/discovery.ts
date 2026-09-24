@@ -15,6 +15,15 @@ import { profiles, savedProfiles, subscriptions, users } from './schema';
 
 export const DISCOVERY_PAGE_SIZE = 9;
 
+let postgresTimezones: Promise<string[]> | undefined;
+
+const loadPostgresTimezones = () => {
+  postgresTimezones ??= db
+    .execute<{ name: string }>(sql`select name from pg_timezone_names`)
+    .then((rows) => [...rows].map(({ name }) => name));
+  return postgresTimezones;
+};
+
 export const listDiscoveryPage = async (
   state: DiscoveryUrlState,
   locale: string,
@@ -78,7 +87,10 @@ export const listDiscoveryPage = async (
   const query = state.searchQuery.trim().toLowerCase();
   if (query)
     conditions.push(discoverySearch(query, locale, Boolean(viewerUserId)));
-  const availability = discoveryAvailability(viewer);
+  const availability = discoveryAvailability(
+    viewer,
+    await loadPostgresTimezones(),
+  );
   if (selection('availability')[0] === 'available-now')
     conditions.push(availability.availableNow);
   if (selection('availability')[0] === 'overlaps')
