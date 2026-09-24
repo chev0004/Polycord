@@ -25,7 +25,7 @@ Status values:
 | Application deploy rollback | Chev | Netlify deploys list | Unverified | Merges to `develop` deploy automatically. Netlify can republish an earlier deploy, but this has not been exercised for Polycord. |
 | Secrets | Chev | Netlify environment variables | Unverified | README requires runtime secrets in Netlify, never Git, with separate staging `AUTH_SECRET` and VAPID keys. The values themselves have not been audited. |
 | Incident ownership | Chev | [Incidents](#incidents) | Verified | Single maintainer. No rotation or backup responder exists. |
-| Support, privacy and safety mailboxes | Chev | `src/features/Legal/legalContent.ts` | Blocking | `support@`, `privacy@` and `safety@polycord.app` are published. Delivery and staffing are verified under LEGAL-002, not here. |
+| Support, privacy and safety mailboxes | Chev | `src/features/Legal/legalContent.ts` | Blocking | `support@`, `privacy@` and `safety@polycord.app` are published. Only MX records exist. Delivery, ownership and staffing remain open in the [policy claims review](../legal/claims.md). |
 
 ## Backup
 
