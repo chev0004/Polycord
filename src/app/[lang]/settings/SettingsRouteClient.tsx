@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { BlockedUsers } from '@/features/Settings/BlockedUsers';
 import {
   type SettingsFormValues,
   SettingsPage,
@@ -92,6 +93,7 @@ export const SettingsRouteClient = ({
 
   return (
     <SettingsPage
+      blockedUsers={<BlockedUsers onChange={() => router.refresh()} />}
       defaultValues={defaultSettings}
       userAvatarUrl={userAvatarUrl}
       userDisplayName={userDisplayName}
@@ -101,6 +103,8 @@ export const SettingsRouteClient = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ confirmation: 'DELETE' }),
         });
+
+        if (response.status === 502) return 'billing-error';
 
         if (!response.ok) {
           throw new Error('Account delete failed');

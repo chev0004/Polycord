@@ -161,7 +161,7 @@ export const GET = async (request: NextRequest) => {
       new URL(localizePath(redirectTo, locale), getRedirectUri(request)),
       303,
     );
-    await setSessionCookie(response, currentUser);
+    await setSessionCookie(response, currentUser, user.id);
     response.cookies.set('NEXT_LOCALE', locale, {
       path: '/',
       sameSite: 'lax',

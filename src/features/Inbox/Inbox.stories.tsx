@@ -97,6 +97,7 @@ const PremiumNotificationsStory = () => {
           actorName: 'Mina Park',
           actorAvatarUrl: MOCK_USER_AVATAR_URL,
           timestamp: t('minutesAgo', { count: 3 }),
+          actorProfileId: '11111111-1111-4111-8111-111111111111',
         },
         {
           id: '2',
@@ -177,6 +178,58 @@ export const Empty: Story = {
         "You'll see new notifications here when something happens!",
       ),
     ).toBeInTheDocument();
+  },
+};
+
+export const FreeModerationWarning: Story = {
+  args: {
+    notifications: [{ id: 'warning', kind: 'warning' }],
+    persist: false,
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      await within(canvasElement).findByRole('button', {
+        name: 'Notifications',
+      }),
+    );
+    const portal = within(document.body);
+    await expect(
+      portal.getByText(
+        'You received a warning from the moderation team. Please review our community guidelines.',
+      ),
+    ).toBeInTheDocument();
+    await expect(
+      portal.getByRole('link', { name: 'Review community guidelines' }),
+    ).toHaveAttribute('href', '/en/legal/guidelines');
+    await expect(
+      portal.queryByText('See who it was with Premium'),
+    ).not.toBeInTheDocument();
+    await userEvent.click(portal.getByRole('button', { name: 'Mark as read' }));
+    await expect(
+      portal.getByRole('button', { name: 'Mark as unread' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const UnavailableActor: Story = {
+  args: {
+    notifications: [{ id: 'unavailable', kind: 'copy' }],
+    premium: true,
+    persist: false,
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      await within(canvasElement).findByRole('button', {
+        name: 'Notifications',
+      }),
+    );
+    const portal = within(document.body);
+    await expect(
+      portal.getByText('This profile is no longer available to you.'),
+    ).toBeInTheDocument();
+    await expect(
+      portal.queryByRole('link', { name: 'View profile' }),
+    ).not.toBeInTheDocument();
   },
 };
 

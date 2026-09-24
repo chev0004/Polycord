@@ -67,6 +67,7 @@ export const OnboardingPage = ({
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const {
     control,
@@ -194,21 +195,26 @@ export const OnboardingPage = ({
 
   const onSubmit = async (data: OnboardingFormValues) => {
     setSubmitError(null);
-
-    const response = await fetch('/api/onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
+    setSessionExpired(false);
+    try {
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        setSessionExpired(response.status === 401);
+        setSubmitError(
+          t(response.status === 401 ? 'sessionExpired' : 'submitError'),
+        );
+        return;
+      }
+      localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
+      router.push(`/${locale}`);
+      router.refresh();
+    } catch {
       setSubmitError(t('submitError'));
-      return;
     }
-
-    localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
-    router.push(`/${locale}`);
-    router.refresh();
   };
 
   return (
@@ -270,6 +276,14 @@ export const OnboardingPage = ({
                 role="alert"
               >
                 {submitError}
+                {sessionExpired && (
+                  <a
+                    className="mt-2 block underline"
+                    href={`/api/auth/discord?locale=${locale}`}
+                  >
+                    {t('signInAgain')}
+                  </a>
+                )}
               </div>
             ) : null}
 

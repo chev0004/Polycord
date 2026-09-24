@@ -12,6 +12,16 @@
     "noOptions": "No options"
   },
   "Inbox": {
+    "loading": "Loading notifications…",
+    "loadError": "Notifications could not be refreshed. Please try again.",
+    "writeError": "Your change could not be confirmed. Refresh the inbox to check, then try the action again.",
+    "retry": "Retry",
+    "viewProfile": "View profile",
+    "profileUnavailable": "This profile is no longer available to you.",
+    "anonymousProfile": "This interaction is anonymous.",
+    "reviewGuidelines": "Review community guidelines",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
     "notifications": "Notifications",
     "noNotifications": "No notifications yet",
     "noNotificationsDescription": "You'll see new notifications here when something happens!",
@@ -26,6 +36,7 @@
     "userCopied": "{user} copied your username",
     "userViewed": "{user} viewed your profile",
     "guestViewed": "A guest viewed your profile",
+    "anonymousUserViewed": "A user viewed your profile",
     "moderationWarning": "You received a warning from the moderation team. Please review our community guidelines.",
     "seeWhoWithPremium": "See who it was with Premium",
     "justNow": "Just now",
@@ -245,6 +256,16 @@
     "cardColorBlue": "Blue"
   },
   "Settings": {
+    "blockedUsersTitle": "Blocked accounts",
+    "blockedUsersDescription": "While signed in, neither account can see or interact with the other's profile. Public profiles remain visible when signed out. Unblocking takes effect immediately and does not need Save changes.",
+    "blockedUsersLoading": "Loading blocked accounts…",
+    "blockedUsersEmpty": "You have no blocked accounts.",
+    "blockedUsersLoadError": "Couldn't load blocked accounts.",
+    "blockedUsersRetry": "Try again",
+    "blockedUsersUnblockError": "Couldn't unblock this account. Try again.",
+    "unblockUser": "Unblock",
+    "unblockUserLabel": "Unblock {name}",
+    "unblockingUser": "Unblocking…",
     "settingsTitle": "Settings",
     "settingsSubtitle": "Manage your account, appearance, and notifications.",
     "accountTitle": "Account",
@@ -355,19 +376,20 @@
     "productAnalyticsDescription": "Help improve Polycord by sharing usage events linked to your account. Turning this off stops future product analytics while signed in.",
     "appLanguagePlaceholder": "Select app language",
     "exportDataLabel": "Export account data",
-    "exportDataDescription": "Download your account, profile, and saved privacy settings as JSON.",
+    "exportDataDescription": "Download your account, complete profile, settings, voice introduction, saved links, blocks, submitted reports, inbox state, billing state, boosts, push registrations, and account-linked activity as JSON. Other people's private data and delivery credentials are excluded.",
     "exportDataButton": "Download data",
     "exportingData": "Preparing export...",
     "exportDataSuccess": "Account export downloaded.",
     "exportDataError": "Account export failed. Please try again.",
     "deleteAccountLabel": "Delete account",
-    "deleteAccountDescription": "Remove your account and profile from Polycord. Deleted profiles are removed from discovery.",
+    "deleteAccountDescription": "Delete your Polycord account and sign out all its sessions. A deliberate Discord sign-in can create a new account; it does not restore deleted data or remove moderation restrictions. To revoke Discord authorization, remove Polycord in Discord User Settings > Authorized Apps.",
     "deleteAccountButton": "Delete account",
     "deletingAccount": "Deleting account...",
     "cancelDeleteAccount": "Cancel",
     "deleteAccountConfirmationLabel": "Type DELETE to confirm",
     "deleteAccountConfirmationPlaceholder": "DELETE",
-    "deleteAccountRetentionNote": "Profile and account rows are deleted. Safety, report, moderation, billing, and legal records may be retained when those systems exist.",
+    "deleteAccountRetentionNote": "Account, profile, settings, voice, saved links, blocks, reports, inbox, local billing, boosts, and push registrations are deleted. Analytics, moderation and abuse logs remain with account links cleared; metadata, notes and IP addresses may remain. Rate limits, Discord moderation restrictions, actor details in other inboxes, payment-provider records and backups are not purged by this action.",
+    "deleteAccountBillingError": "Your account has not been deleted because subscription cancellation failed. Retry deletion. If it keeps failing, use Manage Subscription to check billing and contact support.",
     "deleteAccountError": "Account could not be deleted. Please try again.",
     "emailDescription": "Stored in your account and used when starting a new Premium checkout. Updating it does not change an existing billing email. Sign-in uses Discord; this address is not verified or used for account recovery."
   },
@@ -542,7 +564,8 @@
     "bumpNeedsProfileTitle": "Create a public profile first",
     "bumpNeedsProfileDescription": "Finish your profile and make it public before bumping.",
     "bumpErrorTitle": "Couldn't bump profile",
-    "bumpErrorDescription": "Something went wrong. Please try again."
+    "bumpErrorDescription": "Something went wrong. Please try again.",
+    "copyFailed": "Copy failed. Try again or copy this username manually: {username}"
   },
   "Saved": {
     "eyebrow": "Saved",
@@ -599,7 +622,9 @@
     "previewTitle": "Public card preview",
     "previewBioFallback": "Your bio will appear here.",
     "previewPrimaryFallback": "Primary",
-    "previewNoTags": "No tags yet"
+    "previewNoTags": "No tags yet",
+    "sessionExpired": "Your session expired. Sign in again to continue with your draft.",
+    "signInAgain": "Sign in again"
   },
   "DiscoveryStories": {
     "gridTitle": "Find your next language partner",
@@ -634,5 +659,17 @@
     "guidelinesSummary": "How to treat others and stay safe while you connect.",
     "hubTitle": "Policies and guidelines",
     "hubDescription": "The plain-language policies that cover your data, your profile, and how we keep Polycord safe."
+  },
+  "Recovery": {
+    "brand": "Polycord",
+    "missingTitle": "Page not found",
+    "missingDescription": "This page is unavailable or the address is incorrect. Return to discovery to find people.",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "We could not load this page. Try again, or return to discovery.",
+    "retry": "Try again",
+    "home": "Return to discovery"
+  },
+  "Metadata": {
+    "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
   }
 }

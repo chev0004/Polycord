@@ -50,7 +50,7 @@ export type DiscoveryTargetLanguage = {
 export type DiscoveryProfile = {
   id: string;
   displayName: string;
-  discordUsername: string;
+  discordUsername?: string;
   avatarUrl?: string;
   primaryLanguage: LanguageCode | string;
   primaryLanguageLevel?: Proficiency | string;
@@ -153,6 +153,7 @@ export const ProfileCard = ({
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   const canCopyUsername =
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
@@ -171,9 +172,10 @@ export const ProfileCard = ({
     (bumpAge ? t(bumpAge.key, { count: bumpAge.count ?? 0 }) : undefined);
 
   const handleCopyUsername = async () => {
-    if (!canCopyUsername || isCopying) return;
+    if (!canCopyUsername || isCopying || !profile.discordUsername) return;
 
     setIsCopying(true);
+    setCopyFailed(false);
     try {
       await navigator.clipboard.writeText(profile.discordUsername);
       setCopied(true);
@@ -187,8 +189,8 @@ export const ProfileCard = ({
         setCopied(false);
         setIsCopying(false);
       }, 2000);
-    } catch (err) {
-      console.error('Failed to copy username:', err);
+    } catch {
+      setCopyFailed(true);
       setIsCopying(false);
     }
   };
@@ -529,6 +531,11 @@ export const ProfileCard = ({
         )}
       </div>
 
+      {copyFailed && profile.discordUsername ? (
+        <p role="alert" className="text-danger text-sm">
+          {t('copyFailed', { username: profile.discordUsername })}
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2">
         {renderLanguagePill(
           profile.primaryLanguage,

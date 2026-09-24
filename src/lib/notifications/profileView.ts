@@ -5,6 +5,7 @@ import { createNotification, hasRecentViewNotification } from '@/db';
 const VIEW_DEDUPE_WINDOW_MS = 60 * 60 * 1000;
 
 type ProfileViewActor = {
+  id: string;
   name: string;
   avatarUrl: string | null;
 };
@@ -20,7 +21,7 @@ export const notifyProfileView = async ({
     const windowStart = new Date(Date.now() - VIEW_DEDUPE_WINDOW_MS);
     const duplicate = await hasRecentViewNotification(
       ownerUserId,
-      actor?.name ?? null,
+      actor?.id ?? null,
       windowStart,
     );
 
@@ -31,6 +32,7 @@ export const notifyProfileView = async ({
     await createNotification({
       userId: ownerUserId,
       kind: 'view',
+      actorUserId: actor?.id ?? null,
       actorName: actor?.name ?? null,
       actorAvatarUrl: actor?.avatarUrl ?? null,
       isGuest: actor === null,

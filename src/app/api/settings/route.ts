@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import {
   updateProfilePrivacyForUser,
   updateUserEmail,
-  upsertDiscordUser,
   upsertUserSettings,
 } from '@/db';
 import { settingsSchema } from '@/features/Settings/schema';
@@ -28,8 +27,7 @@ export const PATCH = async (request: Request) => {
   }
   const currentUser = await getActiveUser();
   if (currentUser) {
-    const user = await upsertDiscordUser(currentUser);
-    await upsertUserSettings(user.id, payload.data);
+    await upsertUserSettings(currentUser.accountId, payload.data);
   }
   return savedResponse(payload.data.applicationLanguage);
 };
@@ -59,15 +57,14 @@ export const POST = async (request: Request) => {
   }
 
   const values = payload.data;
-  const user = await upsertDiscordUser(currentUser);
 
-  await updateUserEmail(user.id, values.email);
-  await updateProfilePrivacyForUser(user.id, {
+  await updateUserEmail(currentUser.accountId, values.email);
+  await updateProfilePrivacyForUser(currentUser.accountId, {
     isPublic: values.isPublic,
     allowAnonymousCopy: values.allowAnonymousCopy,
     displayTimezone: values.displayTimezone,
   });
-  await upsertUserSettings(user.id, {
+  await upsertUserSettings(currentUser.accountId, {
     theme: values.theme,
     applicationLanguage: values.applicationLanguage,
     timeFormat: values.timeFormat,
