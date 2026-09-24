@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import {
   deleteProfileForUser,
   deleteVoiceIntroForUser,
-  getUserByDiscordId,
   type ProfileTargetLanguageValue,
   upsertProfileForUser,
 } from '@/db';
@@ -138,12 +137,6 @@ export const DELETE = async () => {
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (!user) {
-    return NextResponse.json({ deleted: false });
   }
 
   const deleted = await deleteProfileForUser(currentUser.accountId);

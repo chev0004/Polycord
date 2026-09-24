@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  blockUser,
-  getProfileById,
-  getUserByDiscordId,
-  unblockUser,
-} from '@/db';
+import { blockUser, getProfileById, unblockUser } from '@/db';
 import { getActiveUser } from '@/lib/auth';
 
 const readProfileId = async (request: Request): Promise<string | null> => {
@@ -74,9 +69,8 @@ export const DELETE = async (request: Request) => {
   }
 
   const target = await getProfileById(profileId);
-  const blocker = await getUserByDiscordId(currentUser.id);
 
-  if (target && blocker) {
+  if (target) {
     await unblockUser(currentUser.accountId, target.profile.userId);
   }
 
