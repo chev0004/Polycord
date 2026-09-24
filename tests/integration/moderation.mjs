@@ -25,7 +25,7 @@ const {
   isUserRestricted,
   listReportsWithContext,
 } = await import('../../src/db/moderation');
-const { deleteAccountByDiscordId } = await import('../../src/db/account');
+const { deleteAccountByUserId } = await import('../../src/db/account');
 const { eq } = await import('drizzle-orm');
 const identity = { id: randomUUID().slice(0, 32), name: 'Moderation test' };
 const reporter = await upsertDiscordUser({
@@ -35,12 +35,12 @@ const reporter = await upsertDiscordUser({
 let user = await upsertDiscordUser(identity);
 try {
   await setUserBanned(user.id, true);
-  await deleteAccountByDiscordId(identity.id);
+  await deleteAccountByUserId(user.id);
   user = await upsertDiscordUser(identity);
   assert.equal(isUserRestricted(user), true);
   await setUserBanned(user.id, false);
   await setUserSuspendedUntil(user.id, new Date(Date.now() + 86400000));
-  await deleteAccountByDiscordId(identity.id);
+  await deleteAccountByUserId(user.id);
   user = await upsertDiscordUser(identity);
   assert.equal(isUserRestricted(user), true);
   await setUserSuspendedUntil(user.id, null);

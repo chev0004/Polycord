@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from 'bun:test';
+import { createHmac } from 'node:crypto';
 import {
   createOAuthStateCookieValue,
   createSessionCookieValue,
@@ -19,17 +20,17 @@ beforeAll(() => {
 
 describe('session cookies', () => {
   it('round-trips a signed session', async () => {
-    const value = await createSessionCookieValue(user);
+    const value = await createSessionCookieValue(user, 'account-1');
 
     expect(value).not.toBeNull();
 
     const restored = await readSessionFromCookieValue(value as string);
 
-    expect(restored).toEqual(user);
+    expect(restored).toEqual({ ...user, accountId: 'account-1' });
   });
 
   it('rejects a tampered payload', async () => {
-    const value = (await createSessionCookieValue(user)) as string;
+    const value = (await createSessionCookieValue(user, 'account-1')) as string;
     const [payload, signature] = value.split('.');
     const forged = btoa(
       JSON.stringify({
@@ -51,10 +52,26 @@ describe('session cookies', () => {
   it('rejects an expired session', async () => {
     const originalNow = Date.now;
     Date.now = () => originalNow() - 40 * 24 * 60 * 60 * 1000;
-    const value = (await createSessionCookieValue(user)) as string;
+    const value = (await createSessionCookieValue(user, 'account-1')) as string;
     Date.now = originalNow;
 
     expect(await readSessionFromCookieValue(value)).toBe(null);
+  });
+
+  it('rejects legacy sessions without an account id', async () => {
+    const payload = Buffer.from(
+      JSON.stringify({
+        user,
+        expiresAt: Date.now() + 60_000,
+      }),
+    ).toString('base64url');
+    const signature = createHmac('sha256', 'test-secret')
+      .update(payload)
+      .digest('base64url');
+
+    expect(await readSessionFromCookieValue(`${payload}.${signature}`)).toBe(
+      null,
+    );
   });
 
   it('returns null without an auth secret', async () => {
@@ -62,7 +79,7 @@ describe('session cookies', () => {
     delete process.env.AUTH_SECRET;
     delete process.env.DISCORD_CLIENT_SECRET;
 
-    expect(await createSessionCookieValue(user)).toBe(null);
+    expect(await createSessionCookieValue(user, 'account-1')).toBe(null);
 
     process.env.AUTH_SECRET = secret;
   });

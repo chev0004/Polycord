@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getProfileByUserId, listSavedProfiles, upsertDiscordUser } from '@/db';
+import { getProfileByUserId, listSavedProfiles } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import { SavedRouteClient } from './SavedRouteClient';
 
@@ -15,13 +15,12 @@ export default async function SavedRoute({
     redirect(`/${lang}`);
   }
 
-  const persistedUser = await upsertDiscordUser(user);
-  const profile = await getProfileByUserId(persistedUser.id);
+  const profile = await getProfileByUserId(user.accountId);
   let savedProfiles: Awaited<ReturnType<typeof listSavedProfiles>> = [];
   let loadError = false;
 
   try {
-    savedProfiles = await listSavedProfiles(persistedUser.id);
+    savedProfiles = await listSavedProfiles(user.accountId);
   } catch (error) {
     console.error('Failed to load saved profiles:', error);
     loadError = true;

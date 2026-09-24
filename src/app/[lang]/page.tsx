@@ -4,7 +4,6 @@ import {
   getProfileByUserId,
   listSavedProfileIds,
   toViewerAvailabilityContext,
-  upsertDiscordUser,
 } from '@/db';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
@@ -33,12 +32,11 @@ export default async function Home({
   let viewerUserId: string | undefined;
 
   if (user) {
-    const persistedUser = await upsertDiscordUser(user);
-    viewerUserId = persistedUser.id;
-    const profile = await getProfileByUserId(persistedUser.id);
+    viewerUserId = user.accountId;
+    const profile = await getProfileByUserId(user.accountId);
     needsOnboarding = !profile;
     currentProfileId = profile?.profile.id;
-    savedProfileIds = await listSavedProfileIds(persistedUser.id);
+    savedProfileIds = await listSavedProfileIds(user.accountId);
 
     if (profile) {
       const viewer = toViewerAvailabilityContext(profile.profile);

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { deleteAccountByDiscordId, getSubscriptionByDiscordUserId } from '@/db';
+import { deleteAccountByUserId, getSubscriptionByUserId } from '@/db';
 import { clearSessionCookie, getCurrentUser } from '@/lib/auth';
 import { cancelStripeSubscription } from '@/lib/stripe';
 
@@ -30,7 +30,7 @@ export const DELETE = async (request: Request) => {
     );
   }
 
-  const subscription = await getSubscriptionByDiscordUserId(currentUser.id);
+  const subscription = await getSubscriptionByUserId(currentUser.accountId);
   if (
     subscription?.stripeSubscriptionId &&
     !['canceled', 'incomplete_expired'].includes(subscription.status)
@@ -47,7 +47,7 @@ export const DELETE = async (request: Request) => {
     }
   }
 
-  const deleted = await deleteAccountByDiscordId(currentUser.id);
+  const deleted = await deleteAccountByUserId(currentUser.accountId);
   const response = NextResponse.json({ deleted });
   clearSessionCookie(response);
 

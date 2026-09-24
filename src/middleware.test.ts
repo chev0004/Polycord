@@ -40,10 +40,13 @@ describe('route guards', () => {
   });
 
   it('lets a valid session through to protected routes', async () => {
-    const cookie = (await createSessionCookieValue({
-      id: '123',
-      name: 'Test User',
-    })) as string;
+    const cookie = (await createSessionCookieValue(
+      {
+        id: '123',
+        name: 'Test User',
+      },
+      'account-1',
+    )) as string;
     const response = await middleware(requestFor('/en/settings', cookie));
 
     expect(response.headers.get('location')).toBe(null);

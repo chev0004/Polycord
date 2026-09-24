@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  getPublicProfileById,
-  getUserByDiscordId,
-  saveProfile,
-  unsaveProfile,
-  upsertDiscordUser,
-} from '@/db';
+import { getPublicProfileById, saveProfile, unsaveProfile } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -47,25 +41,24 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const user = await upsertDiscordUser(currentUser);
-  const target = await getPublicProfileById(profileId, user.id);
+  const target = await getPublicProfileById(profileId, currentUser.accountId);
 
   if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  if (target.profile.userId === user.id) {
+  if (target.profile.userId === currentUser.accountId) {
     return NextResponse.json(
       { error: 'Cannot save your own profile' },
       { status: 400 },
     );
   }
 
-  await saveProfile(user.id, profileId);
+  await saveProfile(currentUser.accountId, profileId);
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileSaveFavorite,
-    userId: user.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
   });
 
@@ -85,11 +78,7 @@ export const DELETE = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (user) {
-    await unsaveProfile(user.id, profileId);
-  }
+  await unsaveProfile(currentUser.accountId, profileId);
 
   return NextResponse.json({ saved: false });
 };
