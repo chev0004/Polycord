@@ -677,6 +677,9 @@
     "hubTitle": "Policies and guidelines",
     "hubDescription": "The plain-language policies that cover your data, your profile, and how we keep Polycord safe."
   },
+  "Navigation": {
+    "backToDiscovery": "Back to discovery"
+  },
   "Recovery": {
     "brand": "Polycord",
     "missingTitle": "Page not found",

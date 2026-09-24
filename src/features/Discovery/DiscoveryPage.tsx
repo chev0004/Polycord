@@ -9,6 +9,7 @@ import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { useNavbarBump } from '@/features/Navigation/AppShell';
+import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
   getMissingRequiredFields,
@@ -316,7 +317,7 @@ export const DiscoveryPage = ({
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem('polycord:discovery-return');
+      const stored = sessionStorage.getItem(DISCOVERY_RETURN_KEY);
       if (!stored) return;
       const position = JSON.parse(stored);
       if (
@@ -324,9 +325,25 @@ export const DiscoveryPage = ({
         `${window.location.pathname}${window.location.search}${window.location.hash}`
       ) {
         window.scrollTo(0, position.scrollY);
-        sessionStorage.removeItem('polycord:discovery-return');
+        sessionStorage.removeItem(DISCOVERY_RETURN_KEY);
       }
     } catch {}
+  }, []);
+
+  useEffect(() => {
+    const remember = () => {
+      try {
+        sessionStorage.setItem(
+          DISCOVERY_RETURN_KEY,
+          JSON.stringify({
+            href: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            scrollY: window.scrollY,
+          }),
+        );
+      } catch {}
+    };
+    window.addEventListener('polycord:navigate', remember);
+    return () => window.removeEventListener('polycord:navigate', remember);
   }, []);
 
   useEffect(() => {
@@ -409,12 +426,6 @@ export const DiscoveryPage = ({
 
   const handleViewProfile = (profileId: string) => {
     const href = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    try {
-      sessionStorage.setItem(
-        'polycord:discovery-return',
-        JSON.stringify({ href, scrollY: window.scrollY }),
-      );
-    } catch {}
     router.push(`/${locale}/u/${profileId}?from=${encodeURIComponent(href)}`);
   };
 
