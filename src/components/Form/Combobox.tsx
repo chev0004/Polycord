@@ -15,6 +15,7 @@ export type ComboboxProps = {
   value: string;
   name?: string;
   error?: boolean;
+  errorId?: string;
   disabled?: boolean;
   readOnly?: boolean;
 };
@@ -32,6 +33,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       value,
       name,
       error,
+      errorId,
       disabled = false,
       readOnly = false,
     },
@@ -227,7 +229,9 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                   : undefined
               }
               aria-invalid={error || undefined}
-              aria-describedby={error && id ? `${id}-error` : undefined}
+              aria-describedby={
+                error && id ? (errorId ?? `${id}-error`) : undefined
+              }
               value={inputValue}
               disabled={disabled}
               readOnly={readOnly}

@@ -123,6 +123,7 @@ export const TargetLanguagesEditor = ({
                     options={options}
                     placeholder={t('languageSelectPlaceholder')}
                     error={Boolean(errorMessage) && !currentLanguage}
+                    errorId="target-languages-error"
                   />
                 )}
               />
@@ -168,7 +169,9 @@ export const TargetLanguagesEditor = ({
         {t('languageCounterHint', { count: fields.length, cap })}
       </p>
 
-      {errorMessage ? <FieldError>{t(errorMessage)}</FieldError> : null}
+      {errorMessage ? (
+        <FieldError id="target-languages-error">{t(errorMessage)}</FieldError>
+      ) : null}
 
       {!premium && fields.length >= FREE_LANGUAGE_CAP ? (
         <p className="text-[13px] text-muted leading-relaxed">
