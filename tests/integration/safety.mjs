@@ -47,6 +47,8 @@ const identities = ['Viewer', 'Target'].map((name) => ({
   username: `private-${randomUUID()}`,
 }));
 const [viewer, target] = await Promise.all(identities.map(upsertDiscordUser));
+Object.assign(identities[0], { accountId: viewer.id });
+Object.assign(identities[1], { accountId: target.id });
 const values = {
   isPublic: true,
   allowAnonymousCopy: false,

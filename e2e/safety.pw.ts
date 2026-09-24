@@ -5,9 +5,13 @@ import postgres from 'postgres';
 const signIn = async (
   context: BrowserContext,
   user: { id: string; name: string; username: string },
+  accountId: string,
 ) => {
   const payload = Buffer.from(
-    JSON.stringify({ user, expiresAt: Date.now() + 3600000 }),
+    JSON.stringify({
+      user: { ...user, accountId },
+      expiresAt: Date.now() + 3600000,
+    }),
   ).toString('base64url');
   const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
     .update(payload)
@@ -53,7 +57,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
       expect(rsc.headers()['content-type']).toContain('text/x-component');
       expect(await rsc.text()).not.toContain(identities[1].username);
     }
-    await signIn(context, identities[0]);
+    await signIn(context, identities[0], accounts[0].id);
     expect(
       await (await context.request.get(`/en/u/${target.profileId}`)).text(),
     ).toContain(identities[1].username);
@@ -99,7 +103,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
         ).status(),
       ).toBe(404);
     }
-    await signIn(context, identities[1]);
+    await signIn(context, identities[1], accounts[1].id);
     expect(
       (await context.request.get(`/en/u/${viewer.profileId}`)).status(),
     ).toBe(404);
@@ -110,7 +114,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     expect(
       (await (await context.request.get('/api/block')).json()).users,
     ).toEqual([]);
-    await signIn(context, identities[0]);
+    await signIn(context, identities[0], accounts[0].id);
     await page.goto('/en/settings');
     await page.getByRole('button', { name: 'Privacy', exact: true }).click();
     await page
@@ -148,7 +152,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     }
     await sql`update users set banned_at = null where id = ${target.id}`;
     await sql`update profiles set is_public = false where id = ${target.profileId}`;
-    await signIn(context, identities[1]);
+    await signIn(context, identities[1], accounts[1].id);
     expect(
       (await context.request.get(`/api/voice/${target.profileId}`)).status(),
     ).toBe(200);

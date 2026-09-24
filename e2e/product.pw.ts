@@ -24,7 +24,7 @@ test('profile and settings persist through discovery and locale navigation', asy
   const accountId = randomUUID();
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const name = `Test ${id.slice(0, 8)}`;
-  await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, ${id}, ${name})`;
+  await sql`insert into users (id, discord_user_id, discord_username, display_name, email) values (${accountId}, ${id}, ${id}, ${name}, 'original@example.com')`;
   const payload = Buffer.from(
     JSON.stringify({
       user: {
