@@ -47,16 +47,18 @@ export const useFormDraft = <T extends FieldValues>(
 
   useEffect(() => {
     if (!key || !ready) return;
-    const draft = schema.parse(
+    const draft = schema.safeParse(
       Object.fromEntries(
         Object.entries(dirtyFields)
           .filter(([, dirty]) => dirty)
           .map(([field]) => [field, values[field]]),
       ),
-    ) as Partial<T>;
+    );
+    if (!draft.success) return;
+    const hasDraft = Object.keys(draft.data as object).length > 0;
     try {
-      if (Object.keys(draft).length) {
-        sessionStorage.setItem(key, JSON.stringify(draft));
+      if (hasDraft) {
+        sessionStorage.setItem(key, JSON.stringify(draft.data));
       } else {
         sessionStorage.removeItem(key);
       }
