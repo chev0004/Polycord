@@ -563,6 +563,8 @@
     "backToEditor": "プロフィール編集に戻る",
     "languages": "言語",
     "availability": "都合のよい時間帯",
+    "metaTitle": "{name}さんのPolycordプロフィール",
+    "metaDescription": "{name}さんは{primary}を話し、{targets}を学習中です。Polycordで言語パートナーを見つけよう。",
     "copyErrorTitle": "ユーザー名をコピーできませんでした",
     "copyErrorDescription": "クリップボードへのアクセスを確認して、もう一度お試しください。"
   },

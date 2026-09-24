@@ -563,6 +563,8 @@
     "backToEditor": "Back to profile editor",
     "languages": "Languages",
     "availability": "Availability",
+    "metaTitle": "{name} on Polycord",
+    "metaDescription": "{name} speaks {primary} and is learning {targets}. Find language partners on Polycord.",
     "copyErrorTitle": "Couldn't copy the username",
     "copyErrorDescription": "Check clipboard access and try again."
   },

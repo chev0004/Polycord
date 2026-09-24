@@ -1,4 +1,8 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { cache } from 'react';
+import { getLanguageName } from '@/constants/languages';
 import {
   getProfileByUserId,
   getPublicProfileById,
@@ -16,13 +20,43 @@ import { isPremiumUser } from '@/lib/entitlements.server';
 import { notifyProfileView } from '@/lib/notifications/profileView';
 import { PublicProfileClient } from './PublicProfileClient';
 
+const loadPublicProfile = cache(getPublicProfileById);
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string; id: string }>;
+}): Promise<Metadata> {
+  const { lang, id } = await params;
+  const row = await loadPublicProfile(id);
+
+  if (!row) {
+    return {};
+  }
+
+  const t = await getTranslations({ locale: lang, namespace: 'PublicProfile' });
+  const profile = mapProfileToDiscoveryProfile(row);
+  const title = t('metaTitle', { name: profile.displayName });
+  const description = t('metaDescription', {
+    name: profile.displayName,
+    primary: getLanguageName(profile.primaryLanguage, lang),
+    targets: new Intl.ListFormat(lang).format(
+      profile.targetLanguages.map(({ language }) =>
+        getLanguageName(language, lang),
+      ),
+    ),
+  });
+
+  return { title, description, openGraph: { title, description } };
+}
+
 export default async function PublicProfileRoute({
   params,
 }: {
   params: Promise<{ lang: string; id: string }>;
 }) {
   const { lang, id } = await params;
-  const row = await getPublicProfileById(id);
+  const row = await loadPublicProfile(id);
 
   if (!row) {
     notFound();
