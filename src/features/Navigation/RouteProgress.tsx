@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
   useCallback,
@@ -9,10 +9,12 @@ import {
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from 'react';
 
 type RouteProgressContextValue = {
-  start: () => void;
+  start: (href?: string) => void;
+  navigate: (action: () => void) => void;
 };
 
 const RouteProgressContext = createContext<RouteProgressContextValue | null>(
@@ -20,7 +22,6 @@ const RouteProgressContext = createContext<RouteProgressContextValue | null>(
 );
 
 const COMPLETE_DELAY_MS = 260;
-const FALLBACK_DELAY_MS = 8000;
 const TRICKLE_DELAY_MS = 450;
 
 const shouldStartProgress = (href: string) => {
@@ -50,20 +51,17 @@ export const RouteProgressProvider = ({
   children: React.ReactNode;
 }) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const location = `${pathname}?${searchParams.toString()}`;
+  const [isPending, startTransition] = useTransition();
   const [isVisible, setIsVisible] = useState(false);
   const [progress, setProgress] = useState(0);
   const pendingRef = useRef(false);
-  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trickleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const previousPathnameRef = useRef(pathname);
+  const previousLocationRef = useRef(location);
 
   const clearTimers = useCallback(() => {
-    if (fallbackTimerRef.current) {
-      clearTimeout(fallbackTimerRef.current);
-      fallbackTimerRef.current = null;
-    }
-
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
       hideTimerRef.current = null;
@@ -90,31 +88,45 @@ export const RouteProgressProvider = ({
     }, COMPLETE_DELAY_MS);
   }, [clearTimers]);
 
-  const start = useCallback(() => {
-    clearTimers();
-    pendingRef.current = true;
-    setIsVisible(true);
-    setProgress((current) => (current > 0 ? Math.min(current, 72) : 14));
+  const start = useCallback(
+    (href?: string) => {
+      if (href && !shouldStartProgress(href)) return;
+      clearTimers();
+      pendingRef.current = true;
+      setIsVisible(true);
+      setProgress((current) => (current > 0 ? Math.min(current, 72) : 14));
 
-    trickleTimerRef.current = setInterval(() => {
-      setProgress((current) => Math.min(current + (88 - current) * 0.18, 88));
-    }, TRICKLE_DELAY_MS);
+      trickleTimerRef.current = setInterval(() => {
+        setProgress((current) => Math.min(current + (88 - current) * 0.18, 88));
+      }, TRICKLE_DELAY_MS);
+    },
+    [clearTimers],
+  );
 
-    fallbackTimerRef.current = setTimeout(complete, FALLBACK_DELAY_MS);
-  }, [clearTimers, complete]);
+  const navigate = useCallback(
+    (action: () => void) => {
+      start();
+      startTransition(action);
+    },
+    [start],
+  );
 
   useEffect(() => {
-    if (previousPathnameRef.current === pathname) {
+    if (previousLocationRef.current === location || isPending) {
       return;
     }
 
-    previousPathnameRef.current = pathname;
+    previousLocationRef.current = location;
     complete();
-  }, [pathname, complete]);
+  }, [location, isPending, complete]);
+
+  useEffect(() => {
+    if (!isPending) complete();
+  }, [isPending, complete]);
 
   useEffect(() => clearTimers, [clearTimers]);
 
-  const value = useMemo(() => ({ start }), [start]);
+  const value = useMemo(() => ({ start, navigate }), [start, navigate]);
 
   return (
     <RouteProgressContext.Provider value={value}>
@@ -144,7 +156,7 @@ export const useRouteProgress = () => {
 
 export const useRouteProgressRouter = () => {
   const router = useRouter();
-  const { start } = useRouteProgress();
+  const { navigate } = useRouteProgress();
 
   const push = useCallback(
     (href: string) => {
@@ -155,12 +167,13 @@ export const useRouteProgressRouter = () => {
       )
         return;
       if (shouldStartProgress(href)) {
-        start();
+        navigate(() => router.push(href));
+        return;
       }
 
       router.push(href);
     },
-    [router, start],
+    [router, navigate],
   );
 
   const replace = useCallback(
@@ -172,12 +185,13 @@ export const useRouteProgressRouter = () => {
       )
         return;
       if (shouldStartProgress(href)) {
-        start();
+        navigate(() => router.replace(href));
+        return;
       }
 
       router.replace(href);
     },
-    [router, start],
+    [router, navigate],
   );
 
   return useMemo(

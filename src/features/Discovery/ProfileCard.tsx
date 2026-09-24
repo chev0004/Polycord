@@ -394,7 +394,7 @@ export const ProfileCard = ({
         >
           <div className="flex items-center gap-1.5">
             {lastBumpRelative && (
-              <span className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-white uppercase tracking-wide backdrop-blur-sm">
+              <span className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide backdrop-blur-sm">
                 {lastBumpRelative}
               </span>
             )}
@@ -404,7 +404,7 @@ export const ProfileCard = ({
                   <button
                     type="button"
                     suppressHydrationWarning
-                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-white"
+                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground"
                     aria-label={t('cardMenu')}
                   >
                     <MdMoreVert size={17} />

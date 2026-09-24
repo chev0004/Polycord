@@ -1,7 +1,9 @@
+import { after } from 'next/server';
 import type { AvailabilityPattern } from '@/constants/availability';
-import { listPublicProfiles } from '@/db';
+import { listDiscoveryPage } from '@/db/discovery';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
-import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
+import type { DiscoveryData } from '@/features/Discovery/discoveryData';
+import type { DiscoveryUrlState } from '@/features/Discovery/discoveryUrlState';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 
@@ -11,8 +13,8 @@ type DiscoveryFeedProps = {
   isLoggedIn: boolean;
   locale: string;
   needsOnboarding: boolean;
-  savedProfileIds: string[];
   viewerUserId?: string;
+  state: DiscoveryUrlState;
   currentProfileId?: string;
   bumpReadyAt?: string;
   viewerTimezone?: string;
@@ -26,32 +28,47 @@ export const DiscoveryFeed = async ({
   isLoggedIn,
   locale,
   needsOnboarding,
-  savedProfileIds,
   viewerUserId,
+  state,
   currentProfileId,
   bumpReadyAt,
   viewerTimezone,
   viewerAvailability,
   userAvatarUrl,
 }: DiscoveryFeedProps) => {
-  let profiles: DiscoveryProfile[] = [];
+  let data: DiscoveryData = {
+    profiles: [],
+    total: 0,
+    page: 1,
+    tags: [],
+    savedProfileIds: [],
+  };
   let feedError = false;
 
   try {
-    profiles = await listPublicProfiles({ viewerUserId });
+    data = await listDiscoveryPage(
+      state,
+      locale,
+      { timezone: viewerTimezone, availability: viewerAvailability },
+      viewerUserId,
+    );
   } catch (error) {
     console.error('Failed to load public profiles:', error);
     feedError = true;
   }
 
-  const boostedCount = profiles.filter((profile) => profile.boosted).length;
+  const boostedCount = data.profiles.filter(
+    (profile) => profile.boosted,
+  ).length;
 
   if (boostedCount > 0) {
-    await trackEvent({
-      name: ANALYTICS_EVENTS.discoveryBoostImpressions,
-      locale,
-      metadata: { count: boostedCount },
-    });
+    after(() =>
+      trackEvent({
+        name: ANALYTICS_EVENTS.discoveryBoostImpressions,
+        locale,
+        metadata: { count: boostedCount },
+      }),
+    );
   }
 
   return (
@@ -62,8 +79,8 @@ export const DiscoveryFeed = async ({
       isLoggedIn={isLoggedIn}
       locale={locale}
       needsOnboarding={needsOnboarding}
-      profiles={profiles}
-      savedProfileIds={savedProfileIds}
+      profiles={data.profiles}
+      discoveryData={data}
       currentProfileId={currentProfileId}
       bumpReadyAt={bumpReadyAt}
       viewerTimezone={viewerTimezone}

@@ -1,17 +1,6 @@
 import 'server-only';
 
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  inArray,
-  isNull,
-  lt,
-  notInArray,
-  or,
-  sql,
-} from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, lt, or } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   type AvailabilityPattern,
@@ -32,7 +21,7 @@ import { isPremiumDiscordId } from '@/lib/entitlements';
 import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
-import { isBlockedEitherWay, listBlockedUserIds } from './safety';
+import { isBlockedEitherWay } from './safety';
 import {
   moderationRestrictions,
   type NewProfile,
@@ -394,32 +383,10 @@ export const getPublicProfileById = async (
   return row;
 };
 
-export const listPublicProfiles = async (
-  options: { viewerUserId?: string } = {},
+export const mapDiscoveryProfiles = async (
+  rows: Omit<ProfileWithUser, 'targetLanguages'>[],
+  isLoggedIn: boolean,
 ) => {
-  const { viewerUserId } = options;
-  const blockedUserIds = viewerUserId
-    ? await listBlockedUserIds(viewerUserId)
-    : [];
-  const visibility = blockedUserIds.length
-    ? and(publiclyVisible(), notInArray(profiles.userId, blockedUserIds))
-    : publiclyVisible();
-
-  const rows = await db
-    .select({
-      profile: profiles,
-      user: users,
-      subscription: subscriptions,
-    })
-    .from(profiles)
-    .innerJoin(users, eq(profiles.userId, users.id))
-    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
-    .where(visibility)
-    .orderBy(
-      sql`${profiles.lastBumpedAt} desc nulls last`,
-      desc(profiles.updatedAt),
-    );
-
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
     rows.map((row) => row.profile.id),
   );
@@ -433,7 +400,7 @@ export const listPublicProfiles = async (
           targetLanguagesByProfile.get(row.profile.id),
         ),
       },
-      Boolean(viewerUserId),
+      isLoggedIn,
     ),
   );
 };
@@ -456,25 +423,8 @@ export const listPublicProfilesByIds = async (
     .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(and(inArray(profiles.id, profileIds), publiclyVisible()));
 
-  const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
-    rows.map((row) => row.profile.id),
-  );
-
-  const byId = new Map(
-    rows.map((row) => [
-      row.profile.id,
-      toDiscoveryProfile(
-        {
-          ...row,
-          targetLanguages: targetLanguagesForProfile(
-            row.profile,
-            targetLanguagesByProfile.get(row.profile.id),
-          ),
-        },
-        true,
-      ),
-    ]),
-  );
+  const items = await mapDiscoveryProfiles(rows, true);
+  const byId = new Map(items.map((profile) => [profile.id, profile]));
 
   return profileIds
     .map((id) => byId.get(id))

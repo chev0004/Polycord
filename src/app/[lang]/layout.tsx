@@ -8,6 +8,7 @@ import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
 import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
 import { getCurrentUser } from '@/lib/auth';
 import { locales } from '@/utils/locales';
+import { fontVariables } from '../fonts';
 import '../globals.css';
 
 export async function generateMetadata({
@@ -45,7 +46,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className="bg-background-main text-foreground"
+        className={`${fontVariables} bg-background-main text-foreground`}
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={lang} messages={messages}>

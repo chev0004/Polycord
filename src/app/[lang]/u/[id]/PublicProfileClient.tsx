@@ -1,7 +1,8 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
 import { ToastStack } from '@/components/Toast';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
@@ -38,6 +39,14 @@ type PublicProfileClientProps = {
 
 const TOAST_DURATION = 4000;
 
+let historyHref: string | null = null;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    historyHref = window.location.href;
+  });
+}
+
 export const PublicProfileClient = ({
   locale,
   profile,
@@ -48,6 +57,14 @@ export const PublicProfileClient = ({
   userAvatarUrl,
 }: PublicProfileClientProps) => {
   const router = useRouteProgressRouter();
+  const from = useSearchParams().get('from');
+  const returnHref =
+    from &&
+    (from === `/${locale}` ||
+      from.startsWith(`/${locale}?`) ||
+      from.startsWith(`/${locale}#`))
+      ? from
+      : `/${locale}`;
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
   const { toasts, addToast, dismissToast } = useToastStack();
@@ -56,6 +73,24 @@ export const PublicProfileClient = ({
 
   const isOwnProfile = profile.id === currentProfileId;
   const canSave = isLoggedIn && !isOwnProfile;
+  const { refresh } = router;
+
+  useEffect(() => setIsSaved(initialSaved), [initialSaved]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (historyHref === window.location.href) refresh();
+      historyHref = null;
+    });
+    const refreshRestored = (event: PageTransitionEvent) => {
+      if (event.persisted) refresh();
+    };
+    window.addEventListener('pageshow', refreshRestored);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pageshow', refreshRestored);
+    };
+  }, [refresh]);
 
   const handleToggleSave = async () => {
     if (!isLoggedIn) {
@@ -129,7 +164,7 @@ export const PublicProfileClient = ({
 
     try {
       await blockProfileRequest(profile.id, true);
-      router.push(`/${locale}`);
+      router.push(returnHref);
       router.refresh();
     } catch {
       addToast({
@@ -181,7 +216,7 @@ export const PublicProfileClient = ({
       <main className="mx-auto w-full max-w-lg px-4 py-8 sm:px-8">
         <button
           type="button"
-          onClick={() => router.push(`/${locale}`)}
+          onClick={() => router.push(returnHref)}
           className="mb-5 inline-flex items-center gap-1.5 text-muted text-sm transition-colors hover:text-foreground"
         >
           <MdArrowBack size={18} />

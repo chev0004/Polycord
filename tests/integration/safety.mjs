@@ -26,7 +26,6 @@ const {
 const {
   upsertDiscordUser,
   upsertProfileForUser,
-  listPublicProfiles,
   getPublicProfileById,
   mapProfileToDiscoveryProfile,
 } = await import('../../src/db/profiles');
@@ -41,6 +40,20 @@ const save = await import('../../src/app/api/saved/route');
 const report = await import('../../src/app/api/report/route');
 const block = await import('../../src/app/api/block/route');
 const { eq, inArray } = await import('drizzle-orm');
+const { listDiscoveryPage } = await import('../../src/db/discovery');
+const { parseDiscoveryState } = await import(
+  '../../src/features/Discovery/discoveryUrlState'
+);
+const tag = randomUUID().slice(0, 8);
+const discover = async (viewerUserId) =>
+  (
+    await listDiscoveryPage(
+      parseDiscoveryState(new URLSearchParams({ tag })),
+      'en',
+      {},
+      viewerUserId,
+    )
+  ).profiles;
 const identities = ['Viewer', 'Target'].map((name) => ({
   id: randomUUID().replaceAll('-', ''),
   name,
@@ -57,7 +70,7 @@ const values = {
   primaryLanguage: 'en',
   targetLanguages: [{ language: 'ja', level: 'beginner' }],
   bio: 'Isolated privacy and safety test.',
-  tags: [],
+  tags: [tag],
 };
 const [viewerProfile, targetProfile] = await Promise.all(
   [viewer, target].map((user) => upsertProfileForUser(user.id, values)),
@@ -70,9 +83,7 @@ const request = (profileId) =>
 const absent = async (viewerId, profileId) => {
   assert.equal(await getPublicProfileById(profileId, viewerId), null);
   assert.equal(
-    (await listPublicProfiles({ viewerUserId: viewerId })).some(
-      (row) => row.id === profileId,
-    ),
+    (await discover(viewerId)).some((row) => row.id === profileId),
     false,
   );
   assert.equal(
@@ -90,9 +101,7 @@ try {
   identity = identities[0];
   await saveProfile(viewer.id, targetProfile.id);
   await saveProfile(target.id, viewerProfile.id);
-  const guest = (await listPublicProfiles()).find(
-    (row) => row.id === targetProfile.id,
-  );
+  const guest = (await discover()).find((row) => row.id === targetProfile.id);
   assert.equal(guest.discordUsername, undefined);
   assert.equal(JSON.stringify(guest).includes(identities[1].username), false);
   assert.equal(
@@ -101,9 +110,8 @@ try {
     undefined,
   );
   assert.equal(
-    (await listPublicProfiles({ viewerUserId: viewer.id })).find(
-      (row) => row.id === targetProfile.id,
-    ).discordUsername,
+    (await discover(viewer.id)).find((row) => row.id === targetProfile.id)
+      .discordUsername,
     identities[1].username,
   );
   assert.equal(
@@ -115,7 +123,7 @@ try {
     .set({ allowAnonymousCopy: true })
     .where(eq(profiles.id, targetProfile.id));
   assert.equal(
-    (await listPublicProfiles()).find((row) => row.id === targetProfile.id)
+    (await discover()).find((row) => row.id === targetProfile.id)
       .discordUsername,
     identities[1].username,
   );
