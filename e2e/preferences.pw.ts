@@ -21,9 +21,19 @@ const settings = {
 const signIn = async (context: BrowserContext) => {
   const id = randomUUID().replaceAll('-', '');
   const name = `Preferences ${id.slice(0, 8)}`;
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const [account] =
+    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, ${name}, ${name}, ${settings.email}) returning id`;
+  await sql.end();
   const payload = Buffer.from(
     JSON.stringify({
-      user: { id, name, username: name, email: settings.email },
+      user: {
+        id,
+        accountId: account.id,
+        name,
+        username: name,
+        email: settings.email,
+      },
       expiresAt: Date.now() + 3600000,
     }),
   ).toString('base64url');

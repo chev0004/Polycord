@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { IconType } from 'react-icons';
 import {
@@ -27,6 +27,7 @@ import {
   TextInput,
   Toggle,
 } from '@/components/Form';
+import { DraftNotice } from '@/components/Form/DraftNotice';
 import { countryOptions, languageOptions } from '@/constants';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
@@ -38,10 +39,16 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { entitlementLimit } from '@/lib/entitlements';
+import { SessionExpiredError } from '@/lib/formErrors';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
-import { type ProfileFormValues, profileSchema } from './schema';
+import {
+  type ProfileFormValues,
+  profileDraftSchema,
+  profileSchema,
+} from './schema';
 import {
   createEmptyLanguageRow,
   TargetLanguagesEditor,
@@ -49,6 +56,7 @@ import {
 import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
+  userId?: string;
   boostedUntil?: string;
   boostsRemaining?: number;
   initialValues?: ProfileFormValues;
@@ -164,6 +172,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   stats,
   userAvatarUrl,
   userDisplayName,
+  userId,
 }) => {
   const timezoneId = useId();
   const bioId = useId();
@@ -173,6 +182,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
@@ -199,19 +209,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   };
 
   const tagCap = premium ? PREMIUM_TAG_CAP : FREE_TAG_CAP;
+  const previousInitialValues = useRef(initialValues);
 
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: initialValues ?? defaultValues,
+  });
   const {
     register,
     handleSubmit,
     control,
     reset,
+    resetField,
     setValue,
     watch,
     formState: { errors, isDirty, isSubmitting },
-  } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: initialValues ?? defaultValues,
-  });
+  } = form;
 
   const displayTimezone = watch('displayTimezone');
   const displayAvailability = watch('displayAvailability');
@@ -241,24 +254,27 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const previewIsPremiumLook = premium || Boolean(tease);
 
   useEffect(() => {
-    if (initialValues) {
-      reset(initialValues);
+    if (initialValues && initialValues !== previousInitialValues.current) {
+      previousInitialValues.current = initialValues;
+      reset(initialValues, { keepDirtyValues: true });
     }
   }, [initialValues, reset]);
 
-  useEffect(() => {
-    if (!displayTimezone) {
-      setValue('timezone', '', { shouldValidate: true });
-      return;
-    }
+  const draft = useFormDraft(
+    userId ? `polycord:profile:${userId}` : undefined,
+    form,
+    profileDraftSchema,
+  );
 
-    if (!timezone) {
+  useEffect(() => {
+    if (!initialValues?.timezone && !timezone && displayTimezone) {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setValue('timezone', userTimezone, { shouldValidate: true });
     }
-  }, [setValue, displayTimezone, timezone]);
+  }, [setValue, displayTimezone, timezone, initialValues?.timezone]);
 
   const onSubmit = async (data: ProfileFormValues) => {
+    setSessionExpired(false);
     setTagError(null);
     setSaveFailed(false);
     setDeleteFailed(false);
@@ -267,16 +283,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       try {
         await onSubmitProp(data);
         reset(data);
-      } catch {
+        draft.clear();
+      } catch (error) {
+        setSessionExpired(error instanceof SessionExpiredError);
         setSaveFailed(true);
       }
     } else {
       reset(data);
+      draft.clear();
     }
   };
 
   const handleDiscard = () => {
     reset();
+    draft.clear();
     setTagInput('');
     setTagError(null);
     setSaveFailed(false);
@@ -302,6 +322,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
     try {
       await onDeleteProfile();
+      reset();
+      draft.clear();
     } catch {
       setDeleteFailed(true);
     } finally {
@@ -379,7 +401,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     (boostFailed ? t('boostError') : null);
 
   return (
-    <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
+    >
       <div className="mb-6 flex items-end justify-between gap-5">
         <div className="min-w-0">
           <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
@@ -448,9 +473,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </Popover.Root>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
+      {userId ? (
+        <DraftNotice {...draft} sessionExpired={sessionExpired} />
+      ) : null}
+      <fieldset
+        disabled={!draft.ready}
+        className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
       >
         <div className="flex min-w-0 flex-col gap-5">
           {bannerError ? (
@@ -672,7 +700,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <VoiceIntroEditor
                   premium={premium}
                   voiceSeconds={field.value ?? 0}
-                  onChange={field.onChange}
+                  onChange={(seconds) =>
+                    resetField('voiceIntroSeconds', { defaultValue: seconds })
+                  }
                 />
               )}
             />
@@ -876,7 +906,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             ) : null}
           </div>
         </aside>
-      </form>
-    </div>
+      </fieldset>
+    </form>
   );
 };

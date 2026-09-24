@@ -21,3 +21,8 @@ export const settingsSchema = z.object({
 });
 
 export type SettingsFormValues = z.infer<typeof settingsSchema>;
+
+export const settingsDraftSchema = settingsSchema
+  .omit({ pushNotifications: true })
+  .extend({ email: z.string(), applicationLanguage: z.string() })
+  .partial();

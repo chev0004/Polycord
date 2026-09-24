@@ -65,6 +65,7 @@ export default async function Home({
     <Suspense
       fallback={
         <DiscoveryPage
+          userId={user?.id}
           authError={authError}
           isLoading
           isLoggedIn={isLoggedIn}
@@ -79,6 +80,7 @@ export default async function Home({
       }
     >
       <DiscoveryFeed
+        userId={user?.id}
         authError={authError}
         isLoggedIn={isLoggedIn}
         locale={lang}

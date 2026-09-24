@@ -36,7 +36,12 @@ export const GET = async (request: NextRequest) => {
     return redirectToDiscovery(request, locale, 'oauth_not_configured');
   }
 
-  const state = createOAuthState(`/${locale}`);
+  const editor = request.nextUrl.searchParams.get('editor');
+  const state = createOAuthState(
+    editor && ['profile', 'settings', 'onboarding'].includes(editor)
+      ? `/${locale}/${editor}`
+      : `/${locale}`,
+  );
   const authorizeUrl = new URL(DISCORD_AUTHORIZE_URL);
   authorizeUrl.searchParams.set('client_id', clientId);
   authorizeUrl.searchParams.set('redirect_uri', getRedirectUri(request));

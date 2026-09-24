@@ -67,9 +67,10 @@ test('malformed mutation identifiers are rejected before database queries', asyn
         ).status(),
       ).toBe(400);
     }
-    await page.addInitScript(() =>
-      localStorage.setItem(
-        'polycord_onboarding_draft',
+    await page.addInitScript(
+      ([key, draft]) => sessionStorage.setItem(key, draft),
+      [
+        `polycord:onboarding:${id}`,
         JSON.stringify({
           primaryLanguage: 'ja',
           targetLanguage: 'en',
@@ -79,7 +80,7 @@ test('malformed mutation identifiers are rejected before database queries', asyn
           bio: 'A recoverable onboarding draft.',
           tags: [],
         }),
-      ),
+      ],
     );
     await page.goto('/en/onboarding');
     await page
