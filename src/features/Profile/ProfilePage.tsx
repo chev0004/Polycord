@@ -483,6 +483,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         <div className="flex min-w-0 flex-col gap-5">
           {bannerError ? (
             <div
+              id={`${tagsInputId}-error`}
               role="alert"
               className="flex items-center gap-2 rounded-md border border-red-800 bg-danger-surface px-3.5 py-3 text-[14px] text-danger"
             >
