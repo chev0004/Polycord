@@ -70,13 +70,11 @@ export const PublicProfileClient = ({
   useEffect(() => setIsSaved(initialSaved), [initialSaved]);
 
   useEffect(() => {
-    refresh();
-    window.addEventListener('focus', refresh);
-    window.addEventListener('pageshow', refresh);
-    return () => {
-      window.removeEventListener('focus', refresh);
-      window.removeEventListener('pageshow', refresh);
+    const refreshRestored = (event: PageTransitionEvent) => {
+      if (event.persisted) refresh();
     };
+    window.addEventListener('pageshow', refreshRestored);
+    return () => window.removeEventListener('pageshow', refreshRestored);
   }, [refresh]);
 
   const handleToggleSave = async () => {
