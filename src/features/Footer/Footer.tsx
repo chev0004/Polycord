@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { LocaleLink } from '@/features/Navbar/LocaleLink';
 import { useRouteProgress } from '@/features/Navigation/RouteProgress';
@@ -23,16 +22,12 @@ type FooterLinkProps = {
 
 const FooterLink = ({ href, children }: FooterLinkProps) => {
   const { start } = useRouteProgress();
-  const pathname = usePathname();
 
   return (
     <Link
       href={href}
-      onClick={() => {
-        if (pathname !== href) {
-          start();
-        }
-      }}
+      prefetch={href.includes('/legal')}
+      onNavigate={() => start(href)}
       className="w-fit text-muted text-sm no-underline transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:underline"
     >
       {children}

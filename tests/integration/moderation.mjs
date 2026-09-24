@@ -15,9 +15,12 @@ const {
   upsertProfileForUser,
   deleteProfileForUser,
   getPublicProfileById,
-  listPublicProfiles,
   listPublicProfilesByIds,
 } = await import('../../src/db/profiles');
+const { listDiscoveryPage } = await import('../../src/db/discovery');
+const { parseDiscoveryState } = await import(
+  '../../src/features/Discovery/discoveryUrlState'
+);
 const {
   setUserBanned,
   setUserSuspendedUntil,
@@ -27,7 +30,13 @@ const {
 } = await import('../../src/db/moderation');
 const { deleteAccountByUserId } = await import('../../src/db/account');
 const { eq } = await import('drizzle-orm');
-const identity = { id: randomUUID().slice(0, 32), name: 'Moderation test' };
+const identity = {
+  id: randomUUID().slice(0, 32),
+  name: `Moderation ${randomUUID()}`,
+};
+const discoveryState = parseDiscoveryState(
+  new URLSearchParams({ q: identity.name }),
+);
 const reporter = await upsertDiscordUser({
   id: randomUUID().slice(0, 32),
   name: 'Report test',
@@ -61,16 +70,14 @@ try {
   const profile = await upsertProfileForUser(user.id, values);
   assert.equal(profile.hiddenByModeration, true);
   assert.equal(await getPublicProfileById(profile.id), null);
-  assert.equal(
-    (await listPublicProfiles()).some((row) => row.id === profile.id),
-    false,
-  );
-  assert.equal(
-    (await listPublicProfilesByIds([profile.id], reporter.id)).length,
-    0,
-  );
+  assert.equal((await listDiscoveryPage(discoveryState, 'en', {})).total, 0);
+  assert.equal((await listPublicProfilesByIds([profile.id])).length, 0);
   await setProfileHiddenByModeration(user.id, false);
   assert.ok(await getPublicProfileById(profile.id));
+  assert.equal(
+    (await listDiscoveryPage(discoveryState, 'en', {})).profiles[0].id,
+    profile.id,
+  );
   const created = await db
     .insert(reports)
     .values(

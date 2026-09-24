@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { after } from 'next/server';
 import { getTranslations } from 'next-intl/server';
 import { cache } from 'react';
 import { getLanguageName } from '@/constants/languages';
@@ -84,20 +85,21 @@ export default async function PublicProfileRoute({
       name: user.name,
       avatarUrl: user.avatarUrl ?? null,
     };
-    const viewerProfile = await getProfileByUserId(user.accountId);
+    const [viewerProfile, savedIds, viewerSettings, viewerPremium] =
+      await Promise.all([
+        getProfileByUserId(user.accountId),
+        listSavedProfileIds(user.accountId),
+        getUserSettingsByUserId(user.accountId),
+        isPremiumUser(user),
+      ]);
     currentProfileId = viewerProfile?.profile.id;
-    savedProfileIds = await listSavedProfileIds(user.accountId);
+    savedProfileIds = savedIds;
 
     if (viewerProfile) {
       viewerTimezone = toViewerAvailabilityContext(
         viewerProfile.profile,
       ).timezone;
     }
-
-    const [viewerSettings, viewerPremium] = await Promise.all([
-      getUserSettingsByUserId(user.accountId),
-      isPremiumUser(user),
-    ]);
 
     if (
       hasEntitlement('privacy.hiddenVisits', viewerPremium) &&
@@ -107,19 +109,21 @@ export default async function PublicProfileRoute({
     }
   }
 
-  await trackEvent({
-    name: ANALYTICS_EVENTS.profileView,
-    userId: viewerUserId ?? null,
-    locale: lang,
-    metadata: { ownerUserId: row.profile.userId },
-  });
-
-  if (viewerUserId !== row.profile.userId) {
-    await notifyProfileView({
-      ownerUserId: row.profile.userId,
-      actor: viewerActor,
+  after(async () => {
+    await trackEvent({
+      name: ANALYTICS_EVENTS.profileView,
+      userId: viewerUserId ?? null,
+      locale: lang,
+      metadata: { ownerUserId: row.profile.userId },
     });
-  }
+
+    if (viewerUserId !== row.profile.userId) {
+      await notifyProfileView({
+        ownerUserId: row.profile.userId,
+        actor: viewerActor,
+      });
+    }
+  });
 
   return (
     <PublicProfileClient

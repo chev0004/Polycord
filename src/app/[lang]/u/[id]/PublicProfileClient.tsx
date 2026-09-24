@@ -10,6 +10,7 @@ import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
 import { Footer } from '@/features/Footer';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
 import { ProfileDetail } from '@/features/Profile/ProfileDetail';
 import { profileReturn } from '@/features/Profile/profileReturn';
 import { useProfileActions } from '@/features/Profile/useProfileActions';
@@ -38,16 +39,20 @@ export const PublicProfileClient = ({
   const tPublic = useTranslations('PublicProfile');
   const searchParams = useSearchParams();
   const back = profileReturn(locale, searchParams.get('from'));
-  const actions = useProfileActions(locale, isLoggedIn, () =>
-    router.push(back.href),
-  );
+  const actions = useProfileActions(locale, isLoggedIn, () => {
+    router.push(back.href);
+    router.refresh();
+  });
   const [isSaved, setIsSaved] = useState(initialSaved);
   const [isSaving, setIsSaving] = useState(false);
   const isOwnProfile = profile.id === currentProfileId;
+  const { refresh } = router;
   const signIn = () =>
     window.location.assign(`/api/auth/discord?locale=${locale}`);
 
   useEffect(() => setIsSaved(initialSaved), [initialSaved]);
+
+  useHistoryRefresh(refresh);
 
   const toggleSave = async () => {
     if (!isLoggedIn) {
