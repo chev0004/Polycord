@@ -70,6 +70,37 @@ test('guarded routes keep the destination through sign-in', async ({
   );
 });
 
+test('a failed sign-in shows the error and keeps the destination', async ({
+  page,
+}) => {
+  await page.route('https://discord.com/**', (route) =>
+    route.fulfill({ status: 200, body: 'discord' }),
+  );
+  await page.goto('/api/auth/discord?locale=en&next=%2Fen%2Fsettings');
+  await page.goto('/api/auth/discord/callback?error=access_denied');
+  await expect(page).toHaveURL(
+    '/en?authError=oauth_cancelled&next=%2Fen%2Fsettings',
+  );
+  await expect(page.getByText('Discord login did not finish')).toBeVisible();
+  await page.route('**/api/auth/discord?*', (route) =>
+    route.fulfill({ status: 200, body: 'signing in' }),
+  );
+  await page
+    .getByRole('button', { name: 'Login with Discord', exact: true })
+    .click();
+  await expect(page).toHaveURL(
+    '/api/auth/discord?locale=en&next=%2Fen%2Fsettings',
+  );
+
+  await page.goto('/en?q=travel&authError=oauth_cancelled');
+  await page
+    .getByRole('button', { name: 'Login with Discord', exact: true })
+    .click();
+  await expect(page).toHaveURL(
+    '/api/auth/discord?locale=en&next=%2Fen%3Fq%3Dtravel',
+  );
+});
+
 test('every product route shares navigation and returns to discovery', async ({
   page,
   context,
