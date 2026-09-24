@@ -1,3 +1,6 @@
+// biome-ignore-all lint/a11y/noRedundantRoles: Safari drops table semantics once display is overridden
+// biome-ignore-all lint/a11y/useSemanticElements: Safari drops table semantics once display is overridden
+
 'use client';
 
 import { useTranslations } from 'next-intl';
@@ -61,29 +64,43 @@ export const CompareTable = () => {
   const t = useTranslations('Settings');
 
   return (
-    <table className="block overflow-hidden rounded-2xl border border-line text-left">
+    <table
+      role="table"
+      className="block overflow-hidden rounded-2xl border border-line text-left"
+    >
       <caption className="sr-only">{t('compareTableLabel')}</caption>
-      <thead className="block">
-        <tr className={`grid items-center ${COLUMNS}`}>
-          <th className="sr-only px-4 py-3 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em] sm:not-sr-only sm:px-4 sm:py-3">
+      <thead role="rowgroup" className="block">
+        <tr role="row" className={`grid items-center ${COLUMNS}`}>
+          <th
+            role="columnheader"
+            className="sr-only px-4 py-3 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em] sm:not-sr-only sm:px-4 sm:py-3"
+          >
             {t('compareFeatureHeader')}
           </th>
-          <th className="px-4 py-3 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
+          <th
+            role="columnheader"
+            className="px-4 py-3 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]"
+          >
             {t('compareFreeHeader')}
           </th>
-          <th className="flex h-full items-center bg-background-darker px-4 py-3 font-semibold text-[11px] text-foreground uppercase tracking-[0.06em]">
+          <th
+            role="columnheader"
+            className="flex h-full items-center bg-background-darker px-4 py-3 font-semibold text-[11px] text-foreground uppercase tracking-[0.06em]"
+          >
             {t('comparePremiumHeader')}
           </th>
         </tr>
       </thead>
-      <tbody className="block">
+      <tbody role="rowgroup" className="block">
         {CMP_ROWS.map((row) => (
           <tr
+            role="row"
             key={row.feature}
             className={`grid items-center border-line border-t ${COLUMNS}`}
           >
             <th
               scope="row"
+              role="rowheader"
               className="col-span-2 px-4 pt-3.5 font-normal sm:col-span-1 sm:pb-3.5"
             >
               <p className="font-medium text-[14px] text-foreground">
@@ -91,14 +108,20 @@ export const CompareTable = () => {
               </p>
               <p className="mt-0.5 text-[12px] text-subtle">{t(row.sub)}</p>
             </th>
-            <td className="px-4 py-3.5 font-light text-[13.5px] text-muted">
+            <td
+              role="cell"
+              className="px-4 py-3.5 font-light text-[13.5px] text-muted"
+            >
               {row.free ? (
                 t(row.free)
               ) : (
                 <span className="text-subtle">{t('compareNoValue')}</span>
               )}
             </td>
-            <td className="flex h-full items-center gap-[7px] bg-background-darker px-4 py-3.5 font-medium text-[13.5px] text-foreground">
+            <td
+              role="cell"
+              className="flex h-full items-center gap-[7px] bg-background-darker px-4 py-3.5 font-medium text-[13.5px] text-foreground"
+            >
               <span aria-hidden="true" className="font-bold text-primary-light">
                 ✓
               </span>
