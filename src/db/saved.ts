@@ -1,9 +1,10 @@
 import 'server-only';
 
-import { and, desc, eq, ne } from 'drizzle-orm';
+import { and, desc, eq, ne, notInArray } from 'drizzle-orm';
 import { db } from './client';
-import { listPublicProfilesByIds } from './profiles';
-import { profiles, savedProfiles } from './schema';
+import { listPublicProfilesByIds, publiclyVisible } from './profiles';
+import { listBlockedUserIds } from './safety';
+import { profiles, savedProfiles, users } from './schema';
 
 const missingSavedProfilesStorageCodes = new Set(['42P01', '42703']);
 
@@ -32,12 +33,23 @@ const isMissingSavedProfilesStorageError = (error: unknown): boolean => {
 };
 
 export const listSavedProfileIds = async (userId: string) => {
+  const blockedUserIds = await listBlockedUserIds(userId);
   try {
     const rows = await db
       .select({ profileId: savedProfiles.profileId })
       .from(savedProfiles)
       .innerJoin(profiles, eq(savedProfiles.profileId, profiles.id))
-      .where(and(eq(savedProfiles.userId, userId), ne(profiles.userId, userId)))
+      .innerJoin(users, eq(profiles.userId, users.id))
+      .where(
+        and(
+          eq(savedProfiles.userId, userId),
+          ne(profiles.userId, userId),
+          publiclyVisible(),
+          blockedUserIds.length
+            ? notInArray(profiles.userId, blockedUserIds)
+            : undefined,
+        ),
+      )
       .orderBy(desc(savedProfiles.createdAt));
 
     return rows.map((row) => row.profileId);

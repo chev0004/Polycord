@@ -255,6 +255,16 @@
     "cardColorBlue": "Blue"
   },
   "Settings": {
+    "blockedUsersTitle": "Blocked accounts",
+    "blockedUsersDescription": "While signed in, neither account can see or interact with the other's profile. Public profiles remain visible when signed out. Unblocking takes effect immediately and does not need Save changes.",
+    "blockedUsersLoading": "Loading blocked accounts…",
+    "blockedUsersEmpty": "You have no blocked accounts.",
+    "blockedUsersLoadError": "Couldn't load blocked accounts.",
+    "blockedUsersRetry": "Try again",
+    "blockedUsersUnblockError": "Couldn't unblock this account. Try again.",
+    "unblockUser": "Unblock",
+    "unblockUserLabel": "Unblock {name}",
+    "unblockingUser": "Unblocking…",
     "settingsTitle": "Settings",
     "settingsSubtitle": "Manage your account, appearance, and notifications.",
     "accountTitle": "Account",

@@ -28,6 +28,7 @@ import { type SettingsFormValues, settingsSchema } from './schema';
 export type { SettingsFormValues };
 
 export type SettingsPageProps = {
+  blockedUsers?: React.ReactNode;
   defaultValues: SettingsFormValues;
   onDeleteAccount: () => Promise<'billing-error' | undefined> | undefined;
   onExportData: () => Promise<void> | void;
@@ -103,6 +104,7 @@ const SettingRow = ({
 );
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({
+  blockedUsers,
   defaultValues,
   onDeleteAccount,
   onExportData,
@@ -811,6 +813,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   />
                 </SettingRow>
               </div>
+              {blockedUsers}
             </SectionCard>
           )}
 

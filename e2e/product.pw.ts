@@ -24,7 +24,7 @@ test('profile and settings persist through discovery and locale navigation', asy
   const accountId = randomUUID();
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const name = `Test ${id.slice(0, 8)}`;
-  await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, ${id}, ${name})`;
+  await sql`insert into users (id, discord_user_id, discord_username, display_name, email) values (${accountId}, ${id}, ${id}, ${name}, 'original@example.com')`;
   const payload = Buffer.from(
     JSON.stringify({
       user: {
@@ -67,6 +67,9 @@ test('profile and settings persist through discovery and locale navigation', asy
     expect(created.status()).toBe(200);
     const { profileId } = await created.json();
     await page.goto('/en/profile');
+    await expect(page.getByLabel('Bio', { exact: true })).toHaveValue(
+      profile.bio,
+    );
     await expect(
       page.getByRole('button', { name: 'Account menu' }),
     ).toBeVisible();
@@ -89,6 +92,9 @@ test('profile and settings persist through discovery and locale navigation', asy
     expect(rows[0].bio).toBe(bio);
 
     await page.goto('/en/settings');
+    await expect(page.getByLabel('Email Address')).toHaveValue(
+      'original@example.com',
+    );
     await page.getByRole('button', { name: 'Appearance', exact: true }).click();
     await expect(
       page.getByRole('heading', { name: 'Appearance', exact: true }),

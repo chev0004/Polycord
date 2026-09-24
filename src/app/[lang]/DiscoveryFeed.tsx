@@ -11,7 +11,7 @@ type DiscoveryFeedProps = {
   locale: string;
   needsOnboarding: boolean;
   savedProfileIds: string[];
-  blockedUserIds: string[];
+  viewerUserId?: string;
   currentProfileId?: string;
   bumpReadyAt?: string;
   viewerTimezone?: string;
@@ -25,7 +25,7 @@ export const DiscoveryFeed = async ({
   locale,
   needsOnboarding,
   savedProfileIds,
-  blockedUserIds,
+  viewerUserId,
   currentProfileId,
   bumpReadyAt,
   viewerTimezone,
@@ -36,7 +36,7 @@ export const DiscoveryFeed = async ({
   let feedError = false;
 
   try {
-    profiles = await listPublicProfiles({ blockedUserIds });
+    profiles = await listPublicProfiles({ viewerUserId });
   } catch (error) {
     console.error('Failed to load public profiles:', error);
     feedError = true;

@@ -255,6 +255,16 @@
     "cardColorBlue": "ブルー"
   },
   "Settings": {
+    "blockedUsersTitle": "ブロックしたアカウント",
+    "blockedUsersDescription": "ログイン中は、お互いのプロフィールの閲覧や操作ができません。ログアウト中は公開プロフィールを閲覧できます。ブロック解除はすぐに反映され、変更の保存は不要です。",
+    "blockedUsersLoading": "ブロックしたアカウントを読み込み中…",
+    "blockedUsersEmpty": "ブロックしたアカウントはありません。",
+    "blockedUsersLoadError": "ブロックしたアカウントを読み込めませんでした。",
+    "blockedUsersRetry": "再試行",
+    "blockedUsersUnblockError": "ブロックを解除できませんでした。もう一度お試しください。",
+    "unblockUser": "ブロック解除",
+    "unblockUserLabel": "{name}さんのブロックを解除",
+    "unblockingUser": "解除中…",
     "settingsTitle": "設定",
     "settingsSubtitle": "アカウント、表示設定、通知を管理します。",
     "accountTitle": "アカウント",

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getProfileById, saveProfile, unsaveProfile } from '@/db';
+import { getPublicProfileById, saveProfile, unsaveProfile } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -41,9 +41,9 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const target = await getProfileById(profileId);
+  const target = await getPublicProfileById(profileId, currentUser.accountId);
 
-  if (!target?.profile.isPublic) {
+  if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 

@@ -12,6 +12,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
+import { z } from 'zod';
 import {
   type AvailabilityPattern,
   availabilityPatternToPreset,
@@ -31,6 +32,7 @@ import { isPremiumDiscordId } from '@/lib/entitlements';
 import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
+import { isBlockedEitherWay, listBlockedUserIds } from './safety';
 import {
   moderationRestrictions,
   type NewProfile,
@@ -166,12 +168,10 @@ const toAvailabilityColumns = (pattern: AvailabilityPattern | null) => {
   };
 };
 
-const toDiscoveryProfile = ({
-  profile,
-  targetLanguages,
-  user,
-  subscription,
-}: ProfileWithUser): DiscoveryProfile => ({
+const toDiscoveryProfile = (
+  { profile, targetLanguages, user, subscription }: ProfileWithUser,
+  isLoggedIn = false,
+): DiscoveryProfile => ({
   premium: isPremiumOwner(user, subscription),
   cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
   boosted:
@@ -184,7 +184,8 @@ const toDiscoveryProfile = ({
       : undefined,
   id: profile.id,
   displayName: user.displayName,
-  discordUsername: user.discordUsername,
+  discordUsername:
+    isLoggedIn || profile.allowAnonymousCopy ? user.discordUsername : undefined,
   avatarUrl: user.avatarUrl ?? undefined,
   primaryLanguage: profile.primaryLanguage,
   targetLanguages,
@@ -312,6 +313,7 @@ export const getUserByDiscordId = async (discordUserId: string) => {
 };
 
 export const getProfileById = async (profileId: string) => {
+  if (!z.uuid().safeParse(profileId).success) return null;
   const [row] = await db
     .select({
       profile: profiles,
@@ -359,7 +361,7 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
   return row ? attachTargetLanguages(row) : null;
 };
 
-const publiclyVisible = () =>
+export const publiclyVisible = () =>
   and(
     eq(profiles.isPublic, true),
     eq(profiles.hiddenByModeration, false),
@@ -374,20 +376,31 @@ const isVisibleProfile = (row: { profile: Profile; user: User }) =>
   (row.user.suspendedUntil === null ||
     row.user.suspendedUntil.getTime() < Date.now());
 
-export const getPublicProfileById = async (profileId: string) => {
+export const getPublicProfileById = async (
+  profileId: string,
+  viewerUserId?: string,
+) => {
   const row = await getProfileById(profileId);
 
   if (!row || !isVisibleProfile(row)) {
     return null;
   }
+  if (
+    viewerUserId &&
+    (await isBlockedEitherWay(viewerUserId, row.profile.userId))
+  )
+    return null;
 
   return row;
 };
 
 export const listPublicProfiles = async (
-  options: { blockedUserIds?: string[] } = {},
+  options: { viewerUserId?: string } = {},
 ) => {
-  const { blockedUserIds = [] } = options;
+  const { viewerUserId } = options;
+  const blockedUserIds = viewerUserId
+    ? await listBlockedUserIds(viewerUserId)
+    : [];
   const visibility = blockedUserIds.length
     ? and(publiclyVisible(), notInArray(profiles.userId, blockedUserIds))
     : publiclyVisible();
@@ -412,13 +425,16 @@ export const listPublicProfiles = async (
   );
 
   return rows.map((row) =>
-    toDiscoveryProfile({
-      ...row,
-      targetLanguages: targetLanguagesForProfile(
-        row.profile,
-        targetLanguagesByProfile.get(row.profile.id),
-      ),
-    }),
+    toDiscoveryProfile(
+      {
+        ...row,
+        targetLanguages: targetLanguagesForProfile(
+          row.profile,
+          targetLanguagesByProfile.get(row.profile.id),
+        ),
+      },
+      Boolean(viewerUserId),
+    ),
   );
 };
 
@@ -447,13 +463,16 @@ export const listPublicProfilesByIds = async (
   const byId = new Map(
     rows.map((row) => [
       row.profile.id,
-      toDiscoveryProfile({
-        ...row,
-        targetLanguages: targetLanguagesForProfile(
-          row.profile,
-          targetLanguagesByProfile.get(row.profile.id),
-        ),
-      }),
+      toDiscoveryProfile(
+        {
+          ...row,
+          targetLanguages: targetLanguagesForProfile(
+            row.profile,
+            targetLanguagesByProfile.get(row.profile.id),
+          ),
+        },
+        true,
+      ),
     ]),
   );
 
