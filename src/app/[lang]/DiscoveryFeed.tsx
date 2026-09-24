@@ -6,12 +6,13 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 
 type DiscoveryFeedProps = {
+  userId?: string;
   authError?: string;
   isLoggedIn: boolean;
   locale: string;
   needsOnboarding: boolean;
   savedProfileIds: string[];
-  blockedUserIds: string[];
+  viewerUserId?: string;
   currentProfileId?: string;
   bumpReadyAt?: string;
   viewerTimezone?: string;
@@ -20,12 +21,13 @@ type DiscoveryFeedProps = {
 };
 
 export const DiscoveryFeed = async ({
+  userId,
   authError,
   isLoggedIn,
   locale,
   needsOnboarding,
   savedProfileIds,
-  blockedUserIds,
+  viewerUserId,
   currentProfileId,
   bumpReadyAt,
   viewerTimezone,
@@ -36,7 +38,7 @@ export const DiscoveryFeed = async ({
   let feedError = false;
 
   try {
-    profiles = await listPublicProfiles({ blockedUserIds });
+    profiles = await listPublicProfiles({ viewerUserId });
   } catch (error) {
     console.error('Failed to load public profiles:', error);
     feedError = true;
@@ -54,6 +56,7 @@ export const DiscoveryFeed = async ({
 
   return (
     <DiscoveryPage
+      userId={userId}
       authError={authError}
       feedError={feedError}
       isLoggedIn={isLoggedIn}

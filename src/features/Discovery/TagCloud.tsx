@@ -22,14 +22,14 @@ export const TagCloud = ({
   return (
     <div className="mt-1 flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+        <span className="font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
           {t('tagCloudLabel')}
         </span>
         {selected.length > 0 ? (
           <button
             type="button"
             onClick={onClear}
-            className="font-medium text-[13px] text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-white"
+            className="font-medium text-[13px] text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground"
           >
             {t('tagCloudClear', { count: selected.length })}
           </button>
@@ -48,18 +48,18 @@ export const TagCloud = ({
               className={`inline-flex items-center gap-1.5 rounded-full border px-[13px] py-1.5 transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 active
                   ? 'border-primary-dark bg-primary-dark'
-                  : 'border-transparent bg-primary-darker hover:bg-[#2e3742]'
+                  : 'border-transparent bg-primary-darker hover:bg-primary-dark'
               }`}
             >
               <span
                 className={`whitespace-nowrap text-[13px] ${
-                  active ? 'text-white' : 'text-primary-light'
+                  active ? 'text-foreground' : 'text-primary-light'
                 }`}
               >
                 {tag}{' '}
                 <span
                   className={`text-[12px] ${
-                    active ? 'text-primary-lighter' : 'text-gray-500'
+                    active ? 'text-primary-lighter' : 'text-subtle'
                   }`}
                 >
                   ({count})

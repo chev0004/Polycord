@@ -74,7 +74,7 @@ export const profileSchema = z.object({
 
   tags: z
     .array(tagItemField({ tooShort: 'tagTooShort', tooLong: 'tagTooLong' }))
-    .max(8, { message: 'maxTags' })
+    .max(entitlementLimit('profile.tags', true), { message: 'maxTags' })
     .refine(hasUniqueTags, { message: 'duplicateTag' })
     .optional(),
 
@@ -103,3 +103,17 @@ export const profileSchema = z.object({
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
+
+export const profileDraftSchema = profileSchema
+  .omit({ voiceIntroSeconds: true })
+  .extend({
+    primaryLanguage: z.string(),
+    targetLanguages: z.array(
+      z.object({ language: z.string(), level: z.string() }),
+    ),
+    bio: z.string(),
+    tags: z.array(z.string()),
+    country: z.string(),
+    timezone: z.string(),
+  })
+  .partial();

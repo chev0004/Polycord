@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import {
-  getProfileById,
-  getUserByDiscordId,
-  saveProfile,
-  unsaveProfile,
-  upsertDiscordUser,
-} from '@/db';
+import { z } from 'zod';
+import { getPublicProfileById, saveProfile, unsaveProfile } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -25,7 +20,7 @@ const readProfileId = async (request: Request): Promise<string | null> => {
     typeof body !== 'object' ||
     !('profileId' in body) ||
     typeof body.profileId !== 'string' ||
-    body.profileId.length === 0
+    !z.uuid().safeParse(body.profileId).success
   ) {
     return null;
   }
@@ -46,26 +41,24 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const target = await getProfileById(profileId);
+  const target = await getPublicProfileById(profileId, currentUser.accountId);
 
-  if (!target?.profile.isPublic) {
+  if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  const user = await upsertDiscordUser(currentUser);
-
-  if (target.profile.userId === user.id) {
+  if (target.profile.userId === currentUser.accountId) {
     return NextResponse.json(
       { error: 'Cannot save your own profile' },
       { status: 400 },
     );
   }
 
-  await saveProfile(user.id, profileId);
+  await saveProfile(currentUser.accountId, profileId);
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileSaveFavorite,
-    userId: user.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
   });
 
@@ -85,11 +78,7 @@ export const DELETE = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (user) {
-    await unsaveProfile(user.id, profileId);
-  }
+  await unsaveProfile(currentUser.accountId, profileId);
 
   return NextResponse.json({ saved: false });
 };

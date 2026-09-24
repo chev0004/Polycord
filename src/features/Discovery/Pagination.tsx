@@ -10,7 +10,7 @@ type PaginationProps = {
 };
 
 const arrowClassName =
-  'flex p-1 text-white transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] enabled:hover:text-gray-400 disabled:cursor-not-allowed disabled:text-gray-600';
+  'flex p-1 text-foreground transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] enabled:hover:text-muted disabled:cursor-not-allowed disabled:text-subtle';
 
 export const Pagination = ({
   page,
@@ -34,7 +34,7 @@ export const Pagination = ({
       >
         <MdChevronLeft size={22} />
       </button>
-      <span className="text-[13px] text-gray-400">
+      <span className="text-[13px] text-muted">
         {t('paginationLabel', { page, total: totalPages })}
       </span>
       <button

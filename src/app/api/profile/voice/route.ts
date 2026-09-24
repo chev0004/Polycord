@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  deleteVoiceIntroForUser,
-  upsertDiscordUser,
-  upsertVoiceIntroForUser,
-} from '@/db';
+import { deleteVoiceIntroForUser, upsertVoiceIntroForUser } from '@/db';
 import { getActiveUser } from '@/lib/auth';
 import { hasEntitlement } from '@/lib/entitlements';
 import { isPremiumUser } from '@/lib/entitlements.server';
@@ -70,7 +66,6 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Audio too large' }, { status: 413 });
   }
 
-  const user = await upsertDiscordUser(currentUser);
   let media: Awaited<ReturnType<typeof inspectVoiceMedia>>;
   try {
     media = await inspectVoiceMedia(Buffer.from(base64, 'base64'));
@@ -81,7 +76,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const saved = await upsertVoiceIntroForUser(user.id, {
+  const saved = await upsertVoiceIntroForUser(currentUser.accountId, {
     ...media,
     sizeBytes,
     data: base64,
@@ -103,8 +98,7 @@ export const DELETE = async () => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await upsertDiscordUser(currentUser);
-  await deleteVoiceIntroForUser(user.id);
+  await deleteVoiceIntroForUser(currentUser.accountId);
 
   return NextResponse.json({ deleted: true });
 };

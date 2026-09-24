@@ -35,6 +35,7 @@ export default async function SettingsRoute({
   return (
     <main className="min-h-screen bg-background-main">
       <SettingsRouteClient
+        userId={user.id}
         defaultEmail={account?.email ?? user.email ?? ''}
         initialPrivacySettings={
           profile
@@ -48,9 +49,6 @@ export default async function SettingsRoute({
         initialSettings={
           settings
             ? {
-                activityStatus: settings.activityStatus,
-                applicationLanguage: settings.applicationLanguage,
-                matchAlert: settings.matchAlert,
                 profileInteractionAlert: settings.profileInteractionAlert,
                 profileViewAlert: settings.profileViewAlert,
                 hideProfileVisits: settings.hideProfileVisits,

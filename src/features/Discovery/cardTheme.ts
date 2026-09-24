@@ -120,13 +120,10 @@ export const deriveCardAccent = (hex: string): CSSProperties => {
   const rgb = hexToRgb(hex);
   if (!rgb) return {};
   const { r, g, b } = rgb;
-  const tR = Math.round(r + (255 - r) * 0.28);
-  const tG = Math.round(g + (255 - g) * 0.28);
-  const tB = Math.round(b + (255 - b) * 0.28);
   return {
     '--ct-accent': `rgb(${r},${g},${b})`,
     '--ct-chip-bg': `rgba(${r},${g},${b},0.15)`,
-    '--ct-chip-text': `rgb(${tR},${tG},${tB})`,
+    '--ct-chip-text': `color-mix(in srgb, ${hex} 45%, var(--color-foreground))`,
     '--ct-chip-dot': `rgb(${r},${g},${b})`,
   } as CSSProperties;
 };

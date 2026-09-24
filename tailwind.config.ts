@@ -10,6 +10,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        foreground: 'var(--color-foreground)',
+        soft: 'var(--color-soft)',
+        muted: 'var(--color-muted)',
+        subtle: 'var(--color-subtle)',
+        'on-primary': 'var(--color-on-primary)',
+        line: 'var(--color-line)',
+        'line-strong': 'var(--color-line-strong)',
+        overlay: 'var(--color-overlay)',
+        danger: 'var(--color-danger)',
+        'danger-surface': 'var(--color-danger-surface)',
+        success: 'var(--color-success)',
         gray: { 500: '#929aa7' },
         primary: {
           DEFAULT: 'var(--color-primary)',

@@ -8,9 +8,17 @@ test('core pages expose named controls and support keyboard navigation', async (
   context,
 }) => {
   const id = randomUUID().replaceAll('-', '');
+  const accountId = randomUUID();
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, ${id}, 'Keyboard test')`;
   const payload = Buffer.from(
     JSON.stringify({
-      user: { id, name: 'Keyboard test', avatarUrl: '/polycord-logo.svg' },
+      user: {
+        id,
+        accountId,
+        name: 'Keyboard test',
+        avatarUrl: '/polycord-logo.svg',
+      },
       expiresAt: Date.now() + 3600000,
     }),
   ).toString('base64url');
@@ -25,7 +33,6 @@ test('core pages expose named controls and support keyboard navigation', async (
       path: '/',
     },
   ]);
-  const sql = postgres(process.env.TEST_DATABASE_URL as string);
   try {
     await page.goto('/en/onboarding');
     const onboarding = await new AxeBuilder({ page })
@@ -81,10 +88,18 @@ test('core pages expose named controls and support keyboard navigation', async (
       ).toEqual([]);
     }
     await page.goto('/en');
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Tab');
-    await expect(
-      page.getByRole('button', { name: 'Account menu' }),
-    ).toBeFocused();
+    const languageMenu = page.getByRole('button', { name: 'Change language' });
+    await languageMenu.click();
+    await expect(languageMenu).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(languageMenu).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('button', { name: 'Polycord', exact: true }).focus();
+    for (const name of ['Change language', 'Notifications', 'Account menu']) {
+      await page.keyboard.press('Tab');
+      await expect(
+        page.getByRole('button', { name, exact: true }),
+      ).toBeFocused();
+    }
     for (const name of [
       'Account menu',
       'Change language',

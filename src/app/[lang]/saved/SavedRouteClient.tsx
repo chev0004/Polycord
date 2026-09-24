@@ -63,7 +63,7 @@ export const SavedRouteClient = ({
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-white">
+    <div className="min-h-screen bg-background-main text-foreground">
       <Navbar
         iconUrl={userAvatarUrl}
         isLoggedIn
@@ -85,24 +85,24 @@ export const SavedRouteClient = ({
           <span className="font-semibold text-primary text-xs uppercase tracking-wide">
             {t('eyebrow')}
           </span>
-          <h1 className="font-figtree font-semibold text-2xl text-white">
+          <h1 className="font-figtree font-semibold text-2xl text-foreground">
             {t('title')}
           </h1>
-          <p className="text-gray-400 text-sm">{t('subtitle')}</p>
+          <p className="text-muted text-sm">{t('subtitle')}</p>
         </header>
 
         {loadError ? (
           <div
             role="alert"
-            className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-red-800 bg-red-950/40 px-6 py-12 text-center"
+            className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-red-800 bg-danger-surface px-6 py-12 text-center"
           >
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-300">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-danger">
               <MdErrorOutline size={24} />
             </span>
-            <h2 className="font-figtree font-semibold text-2xl text-white">
+            <h2 className="font-figtree font-semibold text-2xl text-foreground">
               {t('errorTitle')}
             </h2>
-            <p className="max-w-[440px] text-gray-400 text-sm">
+            <p className="max-w-[440px] text-muted text-sm">
               {t('errorDescription')}
             </p>
             <Button variant="primary" onClick={() => router.refresh()}>
@@ -150,14 +150,14 @@ export const SavedRouteClient = ({
             addToast={actions.addToast}
           />
         ) : (
-          <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary/30 border-dashed bg-background-darker/60 px-6 py-12 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-darker text-primary">
               <MdBookmarkBorder size={24} />
             </span>
-            <h2 className="font-figtree font-semibold text-2xl text-white">
+            <h2 className="font-figtree font-semibold text-2xl text-foreground">
               {t('emptyTitle')}
             </h2>
-            <p className="max-w-[440px] text-gray-400 text-sm">
+            <p className="max-w-[440px] text-muted text-sm">
               {t('emptyDescription')}
             </p>
             <Button variant="primary" onClick={() => router.push(`/${locale}`)}>

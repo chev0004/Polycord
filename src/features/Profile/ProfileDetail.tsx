@@ -85,7 +85,7 @@ export const ProfileDetail = ({
           <div className="rounded-full bg-background-dark p-2">
             <Avatar avatarUrl={profile.avatarUrl} size="lg" />
           </div>
-          <h1 className="max-w-full break-words font-figtree font-semibold text-3xl text-white sm:text-4xl">
+          <h1 className="max-w-full break-words font-figtree font-semibold text-3xl text-foreground sm:text-4xl">
             {profile.displayName}
           </h1>
           <div className="flex flex-wrap gap-3">
@@ -123,7 +123,7 @@ export const ProfileDetail = ({
           <section className="min-w-0" aria-labelledby="profile-languages">
             <h2
               id="profile-languages"
-              className="mb-4 font-semibold text-lg text-white"
+              className="mb-4 font-semibold text-foreground text-lg"
             >
               {t('languages')}
             </h2>
@@ -135,16 +135,16 @@ export const ProfileDetail = ({
                     onClick={() => onLanguageClick(language, isPrimary)}
                     className="w-full rounded-xl bg-background-darker p-4 text-left hover:bg-background-main focus-visible:bg-background-main"
                   >
-                    <span className="block text-gray-400 text-xs">
+                    <span className="block text-muted text-xs">
                       {isPrimary
                         ? tProfile('primaryLanguageLabel')
                         : tProfile('targetLanguageLabel')}
                     </span>
-                    <span className="mt-1 block break-words font-medium text-white">
+                    <span className="mt-1 block break-words font-medium text-foreground">
                       {getLanguageName(language, locale)}
                     </span>
                     {level ? (
-                      <span className="mt-1 block text-gray-300 text-sm">
+                      <span className="mt-1 block text-sm text-soft">
                         {tProfile(getProficiencyTranslationKey(level))}
                       </span>
                     ) : null}
@@ -157,11 +157,11 @@ export const ProfileDetail = ({
             <section aria-labelledby="profile-about">
               <h2
                 id="profile-about"
-                className="mb-3 font-semibold text-lg text-white"
+                className="mb-3 font-semibold text-foreground text-lg"
               >
                 {tProfile('aboutMe')}
               </h2>
-              <p className="whitespace-pre-wrap break-words text-gray-300 leading-relaxed">
+              <p className="whitespace-pre-wrap break-words text-soft leading-relaxed">
                 {profile.about}
               </p>
             </section>
@@ -169,7 +169,7 @@ export const ProfileDetail = ({
               <section aria-labelledby="profile-interests">
                 <h2
                   id="profile-interests"
-                  className="mb-3 font-semibold text-lg text-white"
+                  className="mb-3 font-semibold text-foreground text-lg"
                 >
                   {tProfile('tagsLabel')}
                 </h2>
@@ -189,7 +189,7 @@ export const ProfileDetail = ({
               <section aria-labelledby="profile-availability">
                 <h2
                   id="profile-availability"
-                  className="mb-3 font-semibold text-lg text-white"
+                  className="mb-3 font-semibold text-foreground text-lg"
                 >
                   {t('availability')}
                 </h2>
@@ -205,14 +205,14 @@ export const ProfileDetail = ({
               <section aria-labelledby="profile-country">
                 <h2
                   id="profile-country"
-                  className="mb-2 font-semibold text-lg text-white"
+                  className="mb-2 font-semibold text-foreground text-lg"
                 >
                   {tProfile('countryLabel')}
                 </h2>
                 <button
                   type="button"
                   onClick={() => onCountryClick(profile.country as string)}
-                  className="max-w-full break-words py-2 text-gray-300 underline-offset-4 hover:underline focus-visible:underline"
+                  className="max-w-full break-words py-2 text-soft underline-offset-4 hover:underline focus-visible:underline"
                 >
                   {countryName}
                 </button>
@@ -222,7 +222,7 @@ export const ProfileDetail = ({
               <section aria-labelledby="profile-voice">
                 <h2
                   id="profile-voice"
-                  className="mb-3 font-semibold text-lg text-white"
+                  className="mb-3 font-semibold text-foreground text-lg"
                 >
                   {tProfile('voiceIntroTitle')}
                 </h2>
@@ -235,12 +235,12 @@ export const ProfileDetail = ({
           </div>
         </div>
         {onReport || onBlock ? (
-          <div className="mt-8 flex flex-wrap gap-5 border-white/10 border-t pt-5 text-gray-400 text-sm">
+          <div className="mt-8 flex flex-wrap gap-5 border-line border-t pt-5 text-muted text-sm">
             {onReport ? (
               <button
                 type="button"
                 onClick={onReport}
-                className="py-2 hover:text-white focus-visible:text-white"
+                className="py-2 hover:text-foreground focus-visible:text-foreground"
               >
                 {tDiscovery('reportProfile')}
               </button>
@@ -249,7 +249,7 @@ export const ProfileDetail = ({
               <button
                 type="button"
                 onClick={onBlock}
-                className="py-2 hover:text-white focus-visible:text-white"
+                className="py-2 hover:text-foreground focus-visible:text-foreground"
               >
                 {tDiscovery('blockProfile')}
               </button>

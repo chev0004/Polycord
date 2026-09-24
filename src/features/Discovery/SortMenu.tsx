@@ -35,7 +35,7 @@ export const SortMenu = ({
           type="button"
           aria-label={t('sortLabel')}
           title={t('sortLabel')}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-white data-[state=open]:bg-background-dark data-[state=open]:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground data-[state=open]:bg-background-dark data-[state=open]:text-foreground"
         >
           <MdSwapVert size={20} />
         </button>
@@ -47,7 +47,7 @@ export const SortMenu = ({
           align="end"
           sideOffset={8}
         >
-          <div className="px-2.5 pt-1.5 pb-1 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+          <div className="px-2.5 pt-1.5 pb-1 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
             {t('sortByLabel')}
           </div>
           {options.map((option) => {
@@ -65,7 +65,7 @@ export const SortMenu = ({
                 className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   active
                     ? 'bg-background-main text-primary-light'
-                    : 'text-white hover:bg-background-main'
+                    : 'text-foreground hover:bg-background-main'
                 }`}
               >
                 <span className="flex-1">{t(sortOptionLabelKeys[option])}</span>

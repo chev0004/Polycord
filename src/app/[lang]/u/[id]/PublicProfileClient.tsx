@@ -75,7 +75,7 @@ export const PublicProfileClient = ({
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-white">
+    <div className="min-h-screen bg-background-main text-foreground">
       <Navbar
         iconUrl={userAvatarUrl}
         isLoggedIn={isLoggedIn}
@@ -93,7 +93,7 @@ export const PublicProfileClient = ({
         <button
           type="button"
           onClick={() => router.push(back.href)}
-          className="mb-5 inline-flex items-center gap-1.5 py-2 text-gray-400 text-sm hover:text-white focus-visible:text-white"
+          className="mb-5 inline-flex items-center gap-1.5 py-2 text-muted text-sm hover:text-foreground focus-visible:text-foreground"
         >
           <MdArrowBack size={18} />
           {tPublic(back.label)}

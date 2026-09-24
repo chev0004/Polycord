@@ -1,4 +1,11 @@
 {
+  "Draft": {
+    "signInAgain": "セッションが期限切れです。再度ログインして、この編集画面に戻ってください。",
+    "savedLocally": "未保存の編集内容は、このアカウント用にこのブラウザタブに保持されます。適用するには保存し、削除するには破棄してください。",
+    "restored": "未保存の下書きを復元しました。内容を確認し、保存または破棄してください。",
+    "unavailable": "このブラウザでは下書きを保持できません。ページを離れる前に編集内容を保存するかコピーしてください。",
+    "leaveWarning": "このブラウザでは下書きを保持できません。未保存の編集内容を失ってもページを離れますか？"
+  },
   "disspeak": "Polycord",
   "loginWithDiscord": "Discordでログイン",
   "button": "ボタン",
@@ -12,6 +19,16 @@
     "noOptions": "選択肢がありません"
   },
   "Inbox": {
+    "loading": "通知を読み込み中…",
+    "loadError": "通知を更新できませんでした。もう一度お試しください。",
+    "writeError": "変更を確認できませんでした。受信トレイを更新して確認してから、もう一度操作してください。",
+    "retry": "再試行",
+    "viewProfile": "プロフィールを見る",
+    "profileUnavailable": "このプロフィールは現在表示できません。",
+    "anonymousProfile": "この操作は匿名です。",
+    "reviewGuidelines": "コミュニティガイドラインを確認",
+    "previousPage": "前のページ",
+    "nextPage": "次のページ",
     "notifications": "受信ボックス",
     "noNotifications": "通知はまだありません",
     "noNotificationsDescription": "新しい通知が届くと、ここに表示されます。",
@@ -26,6 +43,7 @@
     "userCopied": "{user} さんがあなたのユーザー名をコピーしました",
     "userViewed": "{user} さんがあなたのプロフィールを表示しました",
     "guestViewed": "ゲストがあなたのプロフィールを表示しました",
+    "anonymousUserViewed": "ユーザーがあなたのプロフィールを表示しました",
     "moderationWarning": "モデレーションチームから警告が届きました。コミュニティガイドラインをご確認ください。",
     "seeWhoWithPremium": "Premiumで誰だったか見る",
     "justNow": "たった今",
@@ -95,7 +113,8 @@
     "logout": "ログアウト"
   },
   "LanguageSwitcher": {
-    "changeLanguage": "言語を変更"
+    "changeLanguage": "言語を変更",
+    "saveError": "言語を保存できませんでした。もう一度お試しください。"
   },
   "Profile": {
     "editProfile": "プロフィールを編集",
@@ -177,6 +196,7 @@
     "voiceIntroDeleteLabel": "ボイスイントロを削除",
     "voiceIntroMicError": "マイクへのアクセスが拒否されたか、利用できません。",
     "voiceIntroError": "ボイスイントロを保存できませんでした。もう一度お試しください。",
+    "voiceIntroImmediate": "イントロの保存と削除はすぐに反映されます。プロフィールの変更を破棄しても、音声の変更は元に戻りません。未公開の録音はこのページを離れると失われます。",
     "privacySettings": "プライバシー設定",
     "privacySettingsDescription": "公開プロフィールでの表示や動作を設定します。",
     "allowAnonymousCopyingLabel": "匿名コピーを許可",
@@ -244,6 +264,16 @@
     "cardColorBlue": "ブルー"
   },
   "Settings": {
+    "blockedUsersTitle": "ブロックしたアカウント",
+    "blockedUsersDescription": "ログイン中は、お互いのプロフィールの閲覧や操作ができません。ログアウト中は公開プロフィールを閲覧できます。ブロック解除はすぐに反映され、変更の保存は不要です。",
+    "blockedUsersLoading": "ブロックしたアカウントを読み込み中…",
+    "blockedUsersEmpty": "ブロックしたアカウントはありません。",
+    "blockedUsersLoadError": "ブロックしたアカウントを読み込めませんでした。",
+    "blockedUsersRetry": "再試行",
+    "blockedUsersUnblockError": "ブロックを解除できませんでした。もう一度お試しください。",
+    "unblockUser": "ブロック解除",
+    "unblockUserLabel": "{name}さんのブロックを解除",
+    "unblockingUser": "解除中…",
     "settingsTitle": "設定",
     "settingsSubtitle": "アカウント、表示設定、通知を管理します。",
     "accountTitle": "アカウント",
@@ -301,11 +331,9 @@
     "compareViewSub": "誰かがあなたの完全なプロフィールを開いたとき。",
     "compareViewPremium": "閲覧した相手を表示",
     "emailLabel": "メールアドレス",
-    "emailPlaceholder": "アカウント復旧用のメールアドレスを入力",
+    "emailPlaceholder": "メールアドレスを入力",
     "emailRequired": "メールアドレスを入力してください。",
     "emailInvalid": "有効なメールアドレスを入力してください。",
-    "activityStatusLabel": "アクティビティステータス",
-    "activityStatusDescription": "自分が現在オンラインかどうかを他のユーザーに表示する。",
     "applicationLanguageLabel": "アプリの言語",
     "applicationLanguageDescription": "Polycordのインターフェースで使用する言語を設定する。",
     "themeLabel": "テーマ",
@@ -334,8 +362,6 @@
     "pushPermissionDenied": "ブラウザで通知がブロックされています。ブラウザの設定で許可すると有効にできます。",
     "pushUnsupported": "このブラウザではプッシュ通知を利用できません。",
     "pushError": "プッシュ通知を有効にできませんでした。もう一度お試しください。",
-    "matchAlertLabel": "新しいマッチの通知",
-    "matchAlertDescription": "新しい言語パートナーが見つかったときに通知する。",
     "profileInteractionAlertLabel": "プロフィール操作の通知",
     "profileInteractionAlertDescription": "他のユーザーが自分のDiscordユーザー名をコピーしたときに通知する。",
     "profileInteractionAlertDescriptionPremium": "誰かが自分のDiscordユーザー名をコピーしたときに通知する。相手がサインインしている場合は名前を表示します。",
@@ -358,20 +384,22 @@
     "productAnalyticsDescription": "アカウントに紐づく利用イベントを共有して、Polycordの改善に協力します。オフにすると、ログイン中の今後のプロダクト分析が停止します。",
     "appLanguagePlaceholder": "アプリの言語を選択",
     "exportDataLabel": "アカウントデータをエクスポート",
-    "exportDataDescription": "アカウント、プロフィール、保存済みのプライバシー設定をJSONとしてダウンロードします。",
+    "exportDataDescription": "アカウント、プロフィール全項目、設定、音声紹介、保存済みリンク、ブロック、送信した通報、受信トレイの状態、請求状態、ブースト、プッシュ登録、アカウントに紐づく利用履歴をJSONでダウンロードします。他の利用者の非公開データと配信認証情報は含まれません。",
     "exportDataButton": "データをダウンロード",
     "exportingData": "エクスポートを準備中...",
     "exportDataSuccess": "アカウントデータをダウンロードしました。",
     "exportDataError": "アカウントデータのエクスポートに失敗しました。もう一度お試しください。",
     "deleteAccountLabel": "アカウントを削除",
-    "deleteAccountDescription": "Polycordからアカウントとプロフィールを削除します。削除されたプロフィールはディスカバリーに表示されません。",
+    "deleteAccountDescription": "Polycordアカウントを削除し、すべてのセッションを無効にします。Discordで再度ログインすると新しいアカウントを作成できますが、削除したデータは復元されず、モデレーションの制限も解除されません。Discordの認可を取り消すには、Discordのユーザー設定の「連携アプリ」からPolycordを削除してください。",
     "deleteAccountButton": "アカウントを削除",
     "deletingAccount": "アカウントを削除中...",
     "cancelDeleteAccount": "キャンセル",
     "deleteAccountConfirmationLabel": "確認のため DELETE と入力してください",
     "deleteAccountConfirmationPlaceholder": "DELETE",
-    "deleteAccountRetentionNote": "プロフィールとアカウントの行は削除されます。安全対策、通報、モデレーション、請求、法的記録は、該当する仕組みが存在する場合に保持されることがあります。",
-    "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。"
+    "deleteAccountRetentionNote": "アカウント、プロフィール、設定、音声、保存済みリンク、ブロック、通報、受信トレイ、ローカルの請求情報、ブースト、プッシュ登録を削除します。分析、モデレーション、不正対策のログはアカウントへの参照を解除して残り、メタデータ、メモ、IPアドレスが残る場合があります。この操作ではレート制限、Discord IDに紐づく制限、他の受信トレイに記録済みの送信者情報、決済事業者の記録、バックアップは消去しません。",
+    "deleteAccountBillingError": "サブスクリプションの解約に失敗したため、アカウントは削除されていません。削除を再試行してください。失敗が続く場合は、サブスクリプション管理で請求状況を確認し、サポートにお問い合わせください。",
+    "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。",
+    "emailDescription": "アカウントに保存され、新しくPremiumの購入を開始する際に使用されます。既存の請求用メールアドレスは変更されません。ログインにはDiscordを使用します。このメールアドレスの確認やアカウント復旧は行っていません。"
   },
   "Analytics": {
     "title": "プロダクト分析",
@@ -424,7 +452,7 @@
     "availabilityTimeSeparator": "〜",
     "availabilityViewerSuffix": "あなたの時間",
     "feedLoadingLabel": "プロフィールを読み込み中",
-    "emptyStateBadge": "マッチング中",
+    "emptyStateBadge": "ディスカバリー",
     "emptyStateTitle": "一致するプロフィールが見つかりません",
     "emptyStateDescription": "フィルターを調整するか、後でもう一度お試しください。",
     "emptyFeedDescription": "公開プロフィールはまだありません。プロフィールを作成して公開すると、最初のメンバーとしてここに表示されます。",
@@ -544,7 +572,8 @@
     "bumpNeedsProfileTitle": "先に公開プロフィールを作成してください",
     "bumpNeedsProfileDescription": "バンプする前にプロフィールを完成させ、公開してください。",
     "bumpErrorTitle": "プロフィールをバンプできませんでした",
-    "bumpErrorDescription": "問題が発生しました。もう一度お試しください。"
+    "bumpErrorDescription": "問題が発生しました。もう一度お試しください。",
+    "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}"
   },
   "Saved": {
     "eyebrow": "保存済み",
@@ -602,14 +631,16 @@
     "removeTag": "{tag} を削除",
     "tagTooShort": "タグは2文字以上で入力してください。",
     "tagTooLong": "タグは20文字以内で入力してください。",
-    "tagLimitReached": "タグは最大6個まで追加できます。",
+    "tagLimitReached": "タグは最大{cap}個まで追加できます。",
+    "discardDraft": "下書きを破棄",
     "tagDuplicate": "そのタグは既に追加されています。",
     "publishButton": "プロフィールを公開",
     "publishing": "公開中...",
     "previewTitle": "公開カードプレビュー",
     "previewBioFallback": "自己紹介がここに表示されます。",
     "previewPrimaryFallback": "主要言語",
-    "previewNoTags": "タグはまだありません"
+    "previewNoTags": "タグはまだありません",
+    "sessionExpired": "セッションの有効期限が切れました。再度ログインして下書きから続けてください。"
   },
   "DiscoveryStories": {
     "gridTitle": "次の言語パートナーを見つけよう",
@@ -644,5 +675,17 @@
     "guidelinesSummary": "安心してつながるためのマナーと安全の心得。",
     "hubTitle": "ポリシーとガイドライン",
     "hubDescription": "データ、プロフィール、Polycordの安全性に関するわかりやすいポリシーをまとめています。"
+  },
+  "Recovery": {
+    "brand": "Polycord",
+    "missingTitle": "ページが見つかりません",
+    "missingDescription": "このページは利用できないか、アドレスが正しくありません。ユーザー検索に戻ってください。",
+    "errorTitle": "問題が発生しました",
+    "errorDescription": "ページを読み込めませんでした。再試行するか、ユーザー検索に戻ってください。",
+    "retry": "再試行",
+    "home": "ユーザー検索に戻る"
+  },
+  "Metadata": {
+    "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
   }
 }

@@ -4,8 +4,10 @@ import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
+import { SessionExpiredError } from '@/lib/formErrors';
 
 type ProfileRouteClientProps = {
+  userId: string;
   boostedUntil?: string;
   boostsRemaining?: number;
   initialValues?: ProfileFormValues;
@@ -18,6 +20,7 @@ type ProfileRouteClientProps = {
 };
 
 export const ProfileRouteClient = ({
+  userId,
   boostedUntil,
   boostsRemaining,
   initialValues,
@@ -48,6 +51,8 @@ export const ProfileRouteClient = ({
         }
       />
       <ProfilePage
+        key={userId}
+        userId={userId}
         boostedUntil={boostedUntil}
         boostsRemaining={boostsRemaining}
         initialValues={initialValues}
@@ -87,6 +92,7 @@ export const ProfileRouteClient = ({
           });
 
           if (!response.ok) {
+            if (response.status === 401) throw new SessionExpiredError();
             throw new Error('Profile save failed');
           }
 

@@ -1,19 +1,25 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { getUserSettingsByDiscordUserId } from '@/db';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
+import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
 import { getCurrentUser } from '@/lib/auth';
 import { locales } from '@/utils/locales';
 import '../globals.css';
 
-export const metadata: Metadata = {
-  title: 'Polycord',
-  description:
-    'Polycord is a Discord-based social platform that helps language learners connect through user profiles instead of servers. Traditional discovery platforms focus on finding large communities, but Polycord is all about individuals, helping users find friends, or study buddies who share their target languages and interests.',
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const t = await getTranslations({ locale: lang, namespace: 'Metadata' });
+
+  return { title: 'Polycord', description: t('description') };
+}
 
 export default async function RootLayout({
   children,
@@ -33,11 +39,20 @@ export default async function RootLayout({
   const settings = user ? await getUserSettingsByDiscordUserId(user.id) : null;
 
   return (
-    <html lang={lang} suppressHydrationWarning>
-      <body suppressHydrationWarning>
+    <html
+      lang={lang}
+      data-theme={settings?.theme ?? 'dark'}
+      suppressHydrationWarning
+    >
+      <body
+        className="bg-background-main text-foreground"
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider locale={lang} messages={messages}>
           <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
-            <RouteProgressProvider>{children}</RouteProgressProvider>
+            <TimeFormatProvider value={settings?.timeFormat ?? '24hr'}>
+              <RouteProgressProvider>{children}</RouteProgressProvider>
+            </TimeFormatProvider>
           </LanguageDisplayProvider>
         </NextIntlClientProvider>
       </body>

@@ -111,15 +111,16 @@ export const useProfileActions = (
       });
   };
 
-  const copyUsername = async (profile: DiscoveryProfile) => {
+  const copyUsername = async ({ id, discordUsername }: DiscoveryProfile) => {
+    if (!discordUsername) return;
     try {
-      await navigator.clipboard.writeText(profile.discordUsername);
+      await navigator.clipboard.writeText(discordUsername);
       trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
-      if (isLoggedIn) void notifyUsernameCopied(profile.id).catch(() => {});
+      if (isLoggedIn) void notifyUsernameCopied(id).catch(() => {});
       addToast({
         title: t('copied'),
         description: t('copiedToClipboard', {
-          username: profile.discordUsername,
+          username: discordUsername,
         }),
         duration: 4000,
       });

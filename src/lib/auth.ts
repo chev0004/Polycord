@@ -1,5 +1,11 @@
 import { cookies } from 'next/headers';
 import type { NextResponse } from 'next/server';
+import { cache } from 'react';
+import {
+  getModerationRestrictionByDiscordId,
+  getUserByDiscordId,
+  isUserRestricted,
+} from '@/db';
 import {
   AUTH_ERROR_PARAM,
   AUTH_SESSION_COOKIE,
@@ -74,8 +80,9 @@ export const clearOAuthStateCookie = (response: NextResponse) => {
 export const setSessionCookie = async (
   response: NextResponse,
   user: CurrentUser,
+  accountId: string,
 ) => {
-  const value = await createSessionCookieValue(user);
+  const value = await createSessionCookieValue(user, accountId);
 
   if (!value) {
     return;
@@ -106,7 +113,7 @@ export const normalizeDiscordUser = (discordUser: DiscordUser): CurrentUser => {
   };
 };
 
-export const getCurrentUser = async (): Promise<CurrentUser | null> => {
+const getSessionAccount = cache(async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
 
@@ -114,30 +121,35 @@ export const getCurrentUser = async (): Promise<CurrentUser | null> => {
     return null;
   }
 
-  return readSessionFromCookieValue(sessionCookie);
-};
+  const session = await readSessionFromCookieValue(sessionCookie);
+  if (!session) return null;
 
-export const getActiveUser = async (): Promise<CurrentUser | null> => {
-  const currentUser = await getCurrentUser();
+  const user = await getUserByDiscordId(session.id);
+  return user?.id === session.accountId
+    ? { user, currentUser: { ...session, email: user.email ?? undefined } }
+    : null;
+});
 
-  if (!currentUser) {
+export const getCurrentUser = async () =>
+  (await getSessionAccount())?.currentUser ?? null;
+
+export const getActiveUser = async () => {
+  const account = await getSessionAccount();
+
+  if (!account) {
     return null;
   }
 
-  const {
-    getUserByDiscordId,
-    getModerationRestrictionByDiscordId,
-    isUserRestricted,
-  } = await import('@/db');
-  const user = await getUserByDiscordId(currentUser.id);
-  const restriction = await getModerationRestrictionByDiscordId(currentUser.id);
+  const restriction = await getModerationRestrictionByDiscordId(
+    account.currentUser.id,
+  );
 
   if (
-    (user && isUserRestricted(user)) ||
+    isUserRestricted(account.user) ||
     (restriction && isUserRestricted(restriction))
   ) {
     return null;
   }
 
-  return currentUser;
+  return account.currentUser;
 };

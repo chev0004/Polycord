@@ -4,6 +4,14 @@ import '@/app/globals.css';
 
 const preview: Preview = {
   globalTypes: {
+    theme: {
+      name: 'Theme',
+      toolbar: {
+        icon: 'circlehollow',
+        items: ['dark', 'light'],
+        showName: true,
+      },
+    },
     locale: {
       name: 'Locale',
       description: 'Internationalization locale',
@@ -21,6 +29,8 @@ const preview: Preview = {
   loaders: [
     async (context) => {
       const locale = context.globals.locale || 'en';
+      document.documentElement.dataset.theme =
+        context.parameters.theme ?? context.globals.theme ?? 'dark';
       return {
         messages: (await import(`../src/locales/${locale}.json`)).default,
       };

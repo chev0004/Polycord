@@ -25,7 +25,7 @@ export const Default: Story = {
   render: () => (
     <FormGroup>
       <Label htmlFor="email">Email Address</Label>
-      <TextInput id="email" placeholder="Enter your email for recovery" />
+      <TextInput id="email" placeholder="Enter your email address" />
     </FormGroup>
   ),
 };

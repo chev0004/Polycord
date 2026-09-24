@@ -220,9 +220,6 @@ export const languageOptions = (locale: string): LanguageOption[] => {
     .sort((a, b) => a.label.localeCompare(b.label));
 };
 
-// Resolve a language code to its localized full name (e.g. 'en' -> 'English').
-// Strings that are not known codes are returned unchanged, so values that are
-// already full names pass through.
 export const getLanguageName = (code: string, locale: string): string => {
   const lang = languages.find((l) => l.code === code);
   return lang ? getLocalizedName(lang, locale) : code;
@@ -323,14 +320,7 @@ export const isValidIANATimezone = (
 ): timezone is IANATimezone => {
   if (!timezone || typeof timezone !== 'string') return false;
 
-  const ianaPattern = /^[A-Za-z_]+\/[A-Za-z_]+(\/[A-Za-z_]+)*$/;
-  if (!ianaPattern.test(timezone)) return false;
-
   try {
-    if (typeof Intl !== 'undefined' && 'supportedValuesOf' in Intl) {
-      const supportedTimezones = Intl.supportedValuesOf('timeZone');
-      return supportedTimezones.includes(timezone);
-    }
     Intl.DateTimeFormat(undefined, { timeZone: timezone });
     return true;
   } catch {
@@ -492,27 +482,20 @@ export type TimeFormat = '12hr' | '24hr';
 export const formatCurrentTime = (
   timezone: IANATimezone | string,
   format: TimeFormat = '24hr',
+  locale = 'en',
 ): string => {
   if (!timezone || typeof timezone !== 'string') return '';
 
   try {
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en', {
+    const formatter = new Intl.DateTimeFormat(locale, {
       timeZone: timezone,
       hour: '2-digit',
       minute: '2-digit',
-      hour12: format === '12hr',
+      hourCycle: format === '12hr' ? 'h12' : 'h23',
     });
 
-    const parts = formatter.formatToParts(now);
-    const hour = parts.find((p) => p.type === 'hour')?.value || '00';
-    const minute = parts.find((p) => p.type === 'minute')?.value || '00';
-    const dayPeriod = parts.find((p) => p.type === 'dayPeriod')?.value;
-
-    if (format === '12hr' && dayPeriod) {
-      return `${hour}:${minute} ${dayPeriod}`;
-    }
-    return `${hour}:${minute}`;
+    return formatter.format(now);
   } catch {
     return '';
   }

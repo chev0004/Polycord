@@ -181,7 +181,7 @@ export const WithSortSlot: Story = {
         <button
           type="button"
           aria-label="Sort"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground"
         >
           <MdSwapVert size={20} />
         </button>

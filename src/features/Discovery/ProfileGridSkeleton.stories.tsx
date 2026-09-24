@@ -11,3 +11,5 @@ export default meta;
 type Story = StoryObj<typeof ProfileGridSkeleton>;
 
 export const Default: Story = {};
+
+export const Light: Story = { parameters: { theme: 'light' } };
