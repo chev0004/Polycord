@@ -73,7 +73,7 @@ export const CompareTable = () => {
         <tr role="row" className={`grid items-center ${COLUMNS}`}>
           <th
             role="columnheader"
-            className="sr-only px-4 py-3 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em] sm:not-sr-only sm:px-4 sm:py-3"
+            className="sr-only font-semibold text-[11px] text-subtle uppercase tracking-[0.06em] sm:not-sr-only sm:px-4 sm:py-3"
           >
             {t('compareFeatureHeader')}
           </th>
