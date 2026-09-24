@@ -6,8 +6,10 @@ import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
 import { countryOptions } from '@/constants/countries';
 import {
+  capitalizeLanguageCode,
   getLanguageName,
   getProficiencyTranslationKey,
+  isValidLanguageCode,
 } from '@/constants/languages';
 import { AvailabilityRow } from '@/features/Discovery/AvailabilityRow';
 import {
@@ -17,6 +19,7 @@ import {
 } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { VoiceChip } from '@/features/Discovery/VoiceChip';
+import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 
 type ProfileDetailProps = {
   profile: DiscoveryProfile;
@@ -57,6 +60,7 @@ export const ProfileDetail = ({
   const tDiscovery = useTranslations('Discovery');
   const tProfile = useTranslations('Profile');
   const locale = useLocale();
+  const languageDisplay = useLanguageDisplay();
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
   const canCopy = isLoggedIn || profile.allowAnonymousCopy !== false;
   const countryName =
@@ -141,7 +145,10 @@ export const ProfileDetail = ({
                         : tProfile('targetLanguageLabel')}
                     </span>
                     <span className="mt-1 block break-words font-medium text-foreground">
-                      {getLanguageName(language, locale)}
+                      {languageDisplay === 'short' &&
+                      isValidLanguageCode(language)
+                        ? capitalizeLanguageCode(language)
+                        : getLanguageName(language, locale)}
                     </span>
                     {level ? (
                       <span className="mt-1 block text-sm text-soft">
