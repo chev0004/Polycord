@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import {
   updateProfilePrivacyForUser,
   updateUserEmail,
-  upsertDiscordUser,
   upsertUserSettings,
 } from '@/db';
 import { settingsSchema } from '@/features/Settings/schema';
@@ -33,15 +32,14 @@ export const POST = async (request: Request) => {
   }
 
   const values = payload.data;
-  const user = await upsertDiscordUser(currentUser);
 
-  await updateUserEmail(user.id, values.email);
-  await updateProfilePrivacyForUser(user.id, {
+  await updateUserEmail(currentUser.accountId, values.email);
+  await updateProfilePrivacyForUser(currentUser.accountId, {
     isPublic: values.isPublic,
     allowAnonymousCopy: values.allowAnonymousCopy,
     displayTimezone: values.displayTimezone,
   });
-  await upsertUserSettings(user.id, {
+  await upsertUserSettings(currentUser.accountId, {
     theme: values.theme,
     applicationLanguage: values.applicationLanguage,
     timeFormat: values.timeFormat,

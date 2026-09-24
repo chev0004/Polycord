@@ -7,7 +7,7 @@ export type CurrentUser = {
 };
 
 export type SessionPayload = {
-  user: CurrentUser;
+  user: CurrentUser & { accountId: string };
   expiresAt: number;
 };
 
@@ -165,7 +165,10 @@ export const readOAuthStateFromCookieValue = async (value: string) => {
   return verifyPayload<OAuthStatePayload>(value, secret);
 };
 
-export const createSessionCookieValue = async (user: CurrentUser) => {
+export const createSessionCookieValue = async (
+  user: CurrentUser,
+  accountId: string,
+) => {
   const secret = getAuthSecret();
 
   if (!secret) {
@@ -173,7 +176,7 @@ export const createSessionCookieValue = async (user: CurrentUser) => {
   }
 
   const session: SessionPayload = {
-    user,
+    user: { ...user, accountId },
     expiresAt: Date.now() + SESSION_DURATION_SECONDS * 1000,
   };
 
@@ -189,7 +192,11 @@ export const readSessionFromCookieValue = async (value: string) => {
 
   const session = await verifyPayload<SessionPayload>(value, secret);
 
-  if (!session || session.expiresAt < Date.now()) {
+  if (
+    !session?.user?.accountId ||
+    !Number.isFinite(session.expiresAt) ||
+    session.expiresAt <= Date.now()
+  ) {
     return null;
   }
 

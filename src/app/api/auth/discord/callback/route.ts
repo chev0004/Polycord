@@ -144,7 +144,7 @@ export const GET = async (request: NextRequest) => {
       new URL(redirectTo, getRedirectUri(request)),
       303,
     );
-    await setSessionCookie(response, currentUser);
+    await setSessionCookie(response, currentUser, user.id);
     clearOAuthStateCookie(response);
 
     return response;

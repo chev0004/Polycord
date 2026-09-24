@@ -8,9 +8,17 @@ test('core pages expose named controls and support keyboard navigation', async (
   context,
 }) => {
   const id = randomUUID().replaceAll('-', '');
+  const accountId = randomUUID();
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, ${id}, 'Keyboard test')`;
   const payload = Buffer.from(
     JSON.stringify({
-      user: { id, name: 'Keyboard test', avatarUrl: '/polycord-logo.svg' },
+      user: {
+        id,
+        accountId,
+        name: 'Keyboard test',
+        avatarUrl: '/polycord-logo.svg',
+      },
       expiresAt: Date.now() + 3600000,
     }),
   ).toString('base64url');
@@ -25,7 +33,6 @@ test('core pages expose named controls and support keyboard navigation', async (
       path: '/',
     },
   ]);
-  const sql = postgres(process.env.TEST_DATABASE_URL as string);
   try {
     await page.goto('/en/onboarding');
     const onboarding = await new AxeBuilder({ page })

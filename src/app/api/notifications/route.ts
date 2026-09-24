@@ -9,7 +9,6 @@ import {
   listNotificationsForUser,
   markAllNotificationsRead,
   setNotificationRead,
-  upsertDiscordUser,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
@@ -82,14 +81,12 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  const actor = await upsertDiscordUser(currentUser);
-
-  if (target.profile.userId === actor.id) {
+  if (target.profile.userId === currentUser.accountId) {
     return NextResponse.json({ created: false });
   }
 
   const limit = await enforceRateLimit('copy', {
-    userId: actor.id,
+    userId: currentUser.accountId,
     ip: requestIp(request),
   });
 
@@ -99,7 +96,7 @@ export const POST = async (request: Request) => {
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileCopyReceived,
-    userId: actor.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
     metadata: { ownerUserId: target.profile.userId },
   });
@@ -107,8 +104,8 @@ export const POST = async (request: Request) => {
   await createNotification({
     userId: target.profile.userId,
     kind: 'copy',
-    actorName: actor.displayName,
-    actorAvatarUrl: actor.avatarUrl,
+    actorName: currentUser.name,
+    actorAvatarUrl: currentUser.avatarUrl ?? null,
     isGuest: false,
   });
 
