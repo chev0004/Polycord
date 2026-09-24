@@ -319,7 +319,9 @@ export const DiscoveryPage = ({
   };
 
   const handleViewProfile = (profileId: string) => {
-    router.push(`/${locale}/u/${profileId}`);
+    const from =
+      window.location.pathname + window.location.search + window.location.hash;
+    router.push(`/${locale}/u/${profileId}?from=${encodeURIComponent(from)}`);
   };
 
   const handleShareProfile = async (profileId: string) => {
