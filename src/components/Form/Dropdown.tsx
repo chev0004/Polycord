@@ -401,7 +401,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             {canScrollUp && (
               <button
                 type="button"
-                className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark/80 to-transparent pt-2 pb-2 text-foreground"
+                className="pointer-events-auto absolute right-0 left-0 z-10 flex items-center justify-center bg-gradient-to-b from-background-dark via-background-dark to-transparent pt-2 pb-2 text-foreground"
                 style={{ top: `${searchBoxHeight - 8}px` }}
                 onClick={(e) => {
                   e.preventDefault();
@@ -467,7 +467,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
             {canScrollDown && (
               <button
                 type="button"
-                className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent py-2 text-foreground"
+                className="pointer-events-auto absolute right-0 bottom-0 left-0 z-10 flex items-center justify-center bg-gradient-to-t from-background-dark via-background-dark to-transparent py-2 text-foreground"
                 onClick={(e) => {
                   e.preventDefault();
                   viewportRef.current?.scrollBy({

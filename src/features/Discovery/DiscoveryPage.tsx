@@ -707,7 +707,7 @@ export const DiscoveryPage = ({
             <p className="mt-1 text-danger">{t('feedErrorDescription')}</p>
             <button
               type="button"
-              className="mt-2 underline"
+              className="mt-2 underline hover:text-foreground focus-visible:text-foreground"
               onClick={refreshDiscovery}
             >
               {t('retryFeed')}

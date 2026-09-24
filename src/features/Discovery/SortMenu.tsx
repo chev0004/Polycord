@@ -35,7 +35,7 @@ export const SortMenu = ({
           type="button"
           aria-label={t('sortLabel')}
           title={t('sortLabel')}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground data-[state=open]:bg-background-dark data-[state=open]:text-foreground"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground focus-visible:bg-background-dark focus-visible:text-foreground data-[state=open]:bg-background-dark data-[state=open]:text-foreground"
         >
           <MdSwapVert size={20} />
         </button>

@@ -300,6 +300,7 @@
     "premiumUpgradeNote": "$2.99 / month · cancel anytime",
     "premiumUpgradeButton": "Upgrade",
     "premiumTag": "Premium",
+    "compareTableLabel": "Free and Premium plan comparison",
     "compareFeatureHeader": "Feature",
     "compareFreeHeader": "Free",
     "comparePremiumHeader": "Premium",

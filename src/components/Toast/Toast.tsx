@@ -82,7 +82,7 @@ export const Toast = ({
         </div>
         <button
           type="button"
-          className="flex text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground"
+          className="flex text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground focus-visible:text-foreground"
           onClick={() => onOpenChange?.(false)}
         >
           <MdClose />

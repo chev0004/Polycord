@@ -288,7 +288,9 @@ export const OnboardingPage = ({
                     )}
                   />
                   {errors.primaryLanguage ? (
-                    <FieldError>{errors.primaryLanguage.message}</FieldError>
+                    <FieldError id="primaryLanguage-error">
+                      {errors.primaryLanguage.message}
+                    </FieldError>
                   ) : null}
                 </FormGroup>
 
@@ -312,7 +314,9 @@ export const OnboardingPage = ({
                     )}
                   />
                   {errors.targetLanguage ? (
-                    <FieldError>{errors.targetLanguage.message}</FieldError>
+                    <FieldError id="targetLanguage-error">
+                      {errors.targetLanguage.message}
+                    </FieldError>
                   ) : null}
                 </FormGroup>
 
@@ -380,7 +384,9 @@ export const OnboardingPage = ({
                     error={!!errors.timezone}
                   />
                   {errors.timezone ? (
-                    <FieldError>{errors.timezone.message}</FieldError>
+                    <FieldError id={`${timezoneId}-error`}>
+                      {errors.timezone.message}
+                    </FieldError>
                   ) : null}
                 </FormGroup>
 
@@ -426,7 +432,9 @@ export const OnboardingPage = ({
                   error={!!errors.bio}
                 />
                 {errors.bio ? (
-                  <FieldError>{errors.bio.message}</FieldError>
+                  <FieldError id={`${bioId}-error`}>
+                    {errors.bio.message}
+                  </FieldError>
                 ) : null}
               </FormGroup>
             </section>

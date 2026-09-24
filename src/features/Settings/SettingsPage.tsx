@@ -311,6 +311,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   return (
     <form
+      noValidate
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
     >
@@ -386,7 +387,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   {t('emailDescription')}
                 </p>
                 {errors.email && (
-                  <FieldError>{t(errors.email.message as string)}</FieldError>
+                  <FieldError id="email-error">
+                    {t(errors.email.message as string)}
+                  </FieldError>
                 )}
               </FormGroup>
 
