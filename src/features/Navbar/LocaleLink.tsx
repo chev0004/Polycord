@@ -46,7 +46,6 @@ export const LocaleLink = ({
             });
             if (!response.ok) throw new Error('Locale save failed');
             router.push(`${href}${window.location.hash}`);
-            router.refresh();
             setStatus('idle');
           } catch {
             setStatus('error');
