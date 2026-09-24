@@ -75,18 +75,31 @@ export const convertTime = (
   };
 };
 
+const hourFormatters = new Map<string, Intl.DateTimeFormat>();
+
+const hourFormatter = (timeFormat: TimeFormat, locale: string) => {
+  const key = `${locale}:${timeFormat}`;
+  const cached = hourFormatters.get(key);
+  if (cached) return cached;
+  const formatter = new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hourCycle: timeFormat === '12hr' ? 'h12' : 'h23',
+    timeZone: 'UTC',
+  });
+  hourFormatters.set(key, formatter);
+  return formatter;
+};
+
 export const fmtHour = (
   h: number,
   m: number,
   timeFormat: TimeFormat,
   locale: string,
 ): string =>
-  new Intl.DateTimeFormat(locale, {
-    hour: 'numeric',
-    minute: '2-digit',
-    hourCycle: timeFormat === '12hr' ? 'h12' : 'h23',
-    timeZone: 'UTC',
-  }).format(new Date(Date.UTC(2000, 0, 1, h, m)));
+  hourFormatter(timeFormat, locale).format(
+    new Date(Date.UTC(2000, 0, 1, h, m)),
+  );
 
 export const tzAbbr = (tz: string | undefined): string => {
   if (!tz) return '';
