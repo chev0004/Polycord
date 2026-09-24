@@ -21,6 +21,7 @@ export const useFormDraft = <T extends FieldValues>(
   const values = useWatch({ control });
   const [ready, setReady] = useState(false);
   const [restored, setRestored] = useState(false);
+  const [stored, setStored] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export const useFormDraft = <T extends FieldValues>(
       } else {
         sessionStorage.removeItem(key);
       }
+      setStored(hasDraft);
       setUnavailable(false);
     } catch {
       setUnavailable(true);
@@ -103,6 +105,7 @@ export const useFormDraft = <T extends FieldValues>(
 
   const clear = useCallback(() => {
     setRestored(false);
+    setStored(false);
     if (!key) return;
     try {
       sessionStorage.removeItem(key);
@@ -111,5 +114,5 @@ export const useFormDraft = <T extends FieldValues>(
     }
   }, [key]);
 
-  return { restored, unavailable, clear, ready: !key || ready };
+  return { restored, stored, unavailable, clear, ready: !key || ready };
 };

@@ -4,15 +4,18 @@ import { useLocale, useTranslations } from 'next-intl';
 
 export const DraftNotice = ({
   restored,
+  stored,
   unavailable,
   sessionExpired = false,
 }: {
   restored: boolean;
+  stored: boolean;
   unavailable: boolean;
   sessionExpired?: boolean;
 }) => {
   const t = useTranslations('Draft');
   const locale = useLocale();
+  if (!restored && !stored && !unavailable && !sessionExpired) return null;
   return (
     <output className="mb-5 block rounded-xl bg-background-dark px-4 py-3 text-gray-300 text-sm">
       {t(unavailable ? 'unavailable' : restored ? 'restored' : 'savedLocally')}
