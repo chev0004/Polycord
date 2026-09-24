@@ -681,7 +681,6 @@
     "backToDiscovery": "Back to discovery"
   },
   "Recovery": {
-    "brand": "Polycord",
     "missingTitle": "Page not found",
     "missingDescription": "This page is unavailable or the address is incorrect. Return to discovery to find people.",
     "errorTitle": "Something went wrong",
