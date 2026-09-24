@@ -67,6 +67,9 @@ test('profile and settings persist through discovery and locale navigation', asy
     expect(created.status()).toBe(200);
     const { profileId } = await created.json();
     await page.goto('/en/profile');
+    await expect(
+      page.getByRole('button', { name: 'Account menu' }),
+    ).toBeVisible();
     const bio =
       'Updated through the real profile editor and saved to PostgreSQL.';
     await page.getByLabel('Bio', { exact: true }).fill(bio);
@@ -86,6 +89,11 @@ test('profile and settings persist through discovery and locale navigation', asy
     expect(rows[0].bio).toBe(bio);
 
     await page.goto('/en/settings');
+    await page.getByRole('button', { name: 'Appearance', exact: true }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Appearance', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Account', exact: true }).click();
     await page.getByLabel('Email Address').fill('saved@example.com');
     const settingsSaved = page.waitForResponse(
       (r) =>

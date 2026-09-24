@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getProfileById, saveProfile, unsaveProfile } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
@@ -19,7 +20,7 @@ const readProfileId = async (request: Request): Promise<string | null> => {
     typeof body !== 'object' ||
     !('profileId' in body) ||
     typeof body.profileId !== 'string' ||
-    body.profileId.length === 0
+    !z.uuid().safeParse(body.profileId).success
   ) {
     return null;
   }

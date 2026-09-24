@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   clearNotifications,
   createNotification,
@@ -70,7 +71,7 @@ export const POST = async (request: Request) => {
   const body = await parseBody(request);
   const profileId = body.profileId;
 
-  if (typeof profileId !== 'string' || profileId.length === 0) {
+  if (typeof profileId !== 'string' || !z.uuid().safeParse(profileId).success) {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
@@ -131,7 +132,11 @@ export const PATCH = async (request: Request) => {
     return NextResponse.json({ ok: true });
   }
 
-  if (typeof body.id !== 'string' || typeof body.read !== 'boolean') {
+  if (
+    typeof body.id !== 'string' ||
+    !z.uuid().safeParse(body.id).success ||
+    typeof body.read !== 'boolean'
+  ) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
@@ -160,7 +165,7 @@ export const DELETE = async (request: Request) => {
     return NextResponse.json({ ok: true });
   }
 
-  if (typeof body.id !== 'string' || body.id.length === 0) {
+  if (typeof body.id !== 'string' || !z.uuid().safeParse(body.id).success) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
