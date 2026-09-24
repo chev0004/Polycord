@@ -558,7 +558,13 @@
     "errorRetry": "Try again"
   },
   "PublicProfile": {
-    "backToDiscovery": "Back to discovery"
+    "backToDiscovery": "Back to discovery",
+    "backToSaved": "Back to saved profiles",
+    "backToEditor": "Back to profile editor",
+    "languages": "Languages",
+    "availability": "Availability",
+    "copyErrorTitle": "Couldn't copy the username",
+    "copyErrorDescription": "Check clipboard access and try again."
   },
   "Onboarding": {
     "firstRunSetup": "First-run setup",

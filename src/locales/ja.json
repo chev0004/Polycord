@@ -558,7 +558,13 @@
     "errorRetry": "もう一度試す"
   },
   "PublicProfile": {
-    "backToDiscovery": "ディスカバリーに戻る"
+    "backToDiscovery": "ディスカバリーに戻る",
+    "backToSaved": "保存済みプロフィールに戻る",
+    "backToEditor": "プロフィール編集に戻る",
+    "languages": "言語",
+    "availability": "都合のよい時間帯",
+    "copyErrorTitle": "ユーザー名をコピーできませんでした",
+    "copyErrorDescription": "クリップボードへのアクセスを確認して、もう一度お試しください。"
   },
   "Onboarding": {
     "firstRunSetup": "初回セットアップ",

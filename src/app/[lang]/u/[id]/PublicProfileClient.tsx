@@ -1,30 +1,18 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
-import { ToastStack } from '@/components/Toast';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
-import {
-  type DiscoveryProfile,
-  ProfileCard,
-} from '@/features/Discovery/ProfileCard';
-import { ReportDialog } from '@/features/Discovery/ReportDialog';
-import {
-  blockProfileRequest,
-  ReportProfileError,
-  type ReportReason,
-  reportProfileRequest,
-} from '@/features/Discovery/safetyRequests';
+import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
-import {
-  buildPublicProfileUrl,
-  shareProfileUrl,
-} from '@/features/Discovery/shareProfile';
-import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
+import { Footer } from '@/features/Footer';
 import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
-import { useToastStack } from '@/hooks/useToast';
+import { ProfileDetail } from '@/features/Profile/ProfileDetail';
+import { profileReturn } from '@/features/Profile/profileReturn';
+import { useProfileActions } from '@/features/Profile/useProfileActions';
 
 type PublicProfileClientProps = {
   locale: string;
@@ -35,8 +23,6 @@ type PublicProfileClientProps = {
   viewerTimezone?: string;
   userAvatarUrl?: string;
 };
-
-const TOAST_DURATION = 4000;
 
 export const PublicProfileClient = ({
   locale,
@@ -50,112 +36,41 @@ export const PublicProfileClient = ({
   const router = useRouteProgressRouter();
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
-  const { toasts, addToast, dismissToast } = useToastStack();
+  const searchParams = useSearchParams();
+  const back = profileReturn(locale, searchParams.get('from'));
+  const actions = useProfileActions(locale, isLoggedIn, () =>
+    router.push(back.href),
+  );
   const [isSaved, setIsSaved] = useState(initialSaved);
-  const [isReportOpen, setIsReportOpen] = useState(false);
-
+  const [isSaving, setIsSaving] = useState(false);
   const isOwnProfile = profile.id === currentProfileId;
-  const canSave = isLoggedIn && !isOwnProfile;
+  const signIn = () =>
+    window.location.assign(`/api/auth/discord?locale=${locale}`);
 
-  const handleToggleSave = async () => {
+  useEffect(() => setIsSaved(initialSaved), [initialSaved]);
+
+  const toggleSave = async () => {
     if (!isLoggedIn) {
-      addToast({
+      actions.addToast({
         title: t('saveLoginTitle'),
         description: t('saveLoginDescription'),
-        duration: TOAST_DURATION,
+        duration: 4000,
       });
       return;
     }
 
-    const nextSaved = !isSaved;
-    setIsSaved(nextSaved);
-
+    setIsSaving(true);
     try {
-      await saveProfileRequest(profile.id, nextSaved);
+      await saveProfileRequest(profile.id, !isSaved);
+      setIsSaved(!isSaved);
     } catch {
-      setIsSaved(!nextSaved);
-      addToast({
+      actions.addToast({
         title: t('saveError'),
         description: t('saveErrorDescription'),
-        duration: TOAST_DURATION,
+        duration: 4000,
       });
-    }
-  };
-
-  const handleReport = () => {
-    if (!isLoggedIn) {
-      addToast({
-        title: t('reportLoginTitle'),
-        description: t('reportLoginDescription'),
-        duration: TOAST_DURATION,
-      });
-      return;
-    }
-
-    setIsReportOpen(true);
-  };
-
-  const handleSubmitReport = async (reason: ReportReason, details: string) => {
-    try {
-      await reportProfileRequest(profile.id, reason, details || undefined);
-      addToast({
-        title: t('reportSuccessTitle'),
-        description: t('reportSuccessDescription'),
-        duration: TOAST_DURATION,
-      });
-    } catch (error) {
-      const limited =
-        error instanceof ReportProfileError && error.status === 429;
-      addToast({
-        title: limited ? t('reportCooldownTitle') : t('reportErrorTitle'),
-        description: limited
-          ? t('reportCooldownDescription')
-          : t('reportErrorDescription'),
-        duration: TOAST_DURATION,
-      });
-      throw error;
-    }
-  };
-
-  const handleBlock = async () => {
-    if (!isLoggedIn) {
-      addToast({
-        title: t('blockLoginTitle'),
-        description: t('blockLoginDescription'),
-        duration: TOAST_DURATION,
-      });
-      return;
-    }
-
-    try {
-      await blockProfileRequest(profile.id, true);
-      router.push(`/${locale}`);
-    } catch {
-      addToast({
-        title: t('blockErrorTitle'),
-        description: t('blockErrorDescription'),
-        duration: TOAST_DURATION,
-      });
-    }
-  };
-
-  const handleShare = async () => {
-    const result = await shareProfileUrl(
-      buildPublicProfileUrl(locale, profile.id),
-    );
-
-    if (result === 'copied') {
-      addToast({
-        title: t('shareCopiedTitle'),
-        description: t('shareCopiedDescription'),
-        duration: TOAST_DURATION,
-      });
-    } else if (result === 'error') {
-      addToast({
-        title: t('shareErrorTitle'),
-        description: t('shareErrorDescription'),
-        duration: TOAST_DURATION,
-      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -166,9 +81,7 @@ export const PublicProfileClient = ({
         isLoggedIn={isLoggedIn}
         notifications={[]}
         onHomeClick={() => router.push(`/${locale}`)}
-        onLoginClick={() =>
-          window.location.assign(`/api/auth/discord?locale=${locale}`)
-        }
+        onLoginClick={signIn}
         onProfileClick={() => router.push(`/${locale}/profile`)}
         onSavedClick={() => router.push(`/${locale}/saved`)}
         onSettingsClick={() => router.push(`/${locale}/settings`)}
@@ -176,37 +89,34 @@ export const PublicProfileClient = ({
           window.location.assign(`/api/auth/logout?locale=${locale}`)
         }
       />
-
-      <main className="mx-auto w-full max-w-lg px-4 py-8 sm:px-8">
+      <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
         <button
           type="button"
-          onClick={() => router.push(`/${locale}`)}
-          className="mb-5 inline-flex items-center gap-1.5 text-gray-400 text-sm transition-colors hover:text-white"
+          onClick={() => router.push(back.href)}
+          className="mb-5 inline-flex items-center gap-1.5 py-2 text-gray-400 text-sm hover:text-white focus-visible:text-white"
         >
           <MdArrowBack size={18} />
-          {tPublic('backToDiscovery')}
+          {tPublic(back.label)}
         </button>
-
-        <ProfileCard
+        <ProfileDetail
           profile={profile}
           isLoggedIn={isLoggedIn}
           isSaved={isSaved}
+          isSaving={isSaving}
           viewerTimezone={viewerTimezone}
-          onToggleSave={canSave ? handleToggleSave : undefined}
-          onCopyUsername={
-            isLoggedIn
-              ? (_username, profileId) => {
-                  notifyUsernameCopied(profileId).catch(() => {});
-                }
-              : undefined
+          onToggleSave={isOwnProfile ? undefined : toggleSave}
+          onCopyUsername={() => actions.copyUsername(profile)}
+          onShare={() => actions.share(profile.id)}
+          onReport={isOwnProfile ? undefined : () => actions.report(profile)}
+          onBlock={isOwnProfile ? undefined : () => actions.block(profile.id)}
+          onEdit={
+            isOwnProfile ? () => router.push(`/${locale}/profile`) : undefined
           }
-          onShare={handleShare}
-          onReport={isOwnProfile ? undefined : handleReport}
-          onBlock={isOwnProfile ? undefined : handleBlock}
+          onSignIn={signIn}
           onTagClick={(tag) =>
             router.push(buildDiscoveryFilterHref(locale, 'tag', tag))
           }
-          onLanguageClick={(language, _level, isPrimary) =>
+          onLanguageClick={(language, isPrimary) =>
             router.push(
               buildDiscoveryFilterHref(
                 locale,
@@ -220,15 +130,8 @@ export const PublicProfileClient = ({
           }
         />
       </main>
-
-      <ReportDialog
-        open={isReportOpen}
-        onOpenChange={setIsReportOpen}
-        profileName={profile.displayName}
-        onSubmit={handleSubmitReport}
-      />
-
-      <ToastStack toasts={toasts} onDismiss={dismissToast} />
+      <Footer locale={locale} />
+      {actions.feedback}
     </div>
   );
 };
