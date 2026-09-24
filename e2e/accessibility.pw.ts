@@ -1,7 +1,21 @@
 import { createHmac, randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import postgres from 'postgres';
+
+const settle = (page: Page) =>
+  page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter(
+          (animation) =>
+            animation.effect?.getTiming().iterations !==
+            Number.POSITIVE_INFINITY,
+        )
+        .map((animation) => animation.finished.catch(() => {})),
+    ),
+  );
 
 test('core pages expose named controls and support keyboard navigation', async ({
   page,
@@ -35,6 +49,7 @@ test('core pages expose named controls and support keyboard navigation', async (
   ]);
   try {
     await page.goto('/en/onboarding');
+    await settle(page);
     const onboarding = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze();
@@ -57,6 +72,7 @@ test('core pages expose named controls and support keyboard navigation', async (
     const violations = [];
     for (const route of ['/en', '/en/profile', '/en/settings']) {
       await page.goto(route);
+      await settle(page);
       const scan = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
         .analyze();
@@ -74,6 +90,7 @@ test('core pages expose named controls and support keyboard navigation', async (
     expect(violations).toEqual([]);
     for (const name of ['Appearance', 'Privacy', 'Notifications', 'Premium']) {
       await page.getByRole('button', { name, exact: true }).click();
+      await settle(page);
       const scan = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
         .analyze();
@@ -110,6 +127,7 @@ test('core pages expose named controls and support keyboard navigation', async (
       await trigger.focus();
       await page.keyboard.press('Enter');
       await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      await settle(page);
       const scan = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
         .analyze();
