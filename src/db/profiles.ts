@@ -32,7 +32,7 @@ import { isPremiumDiscordId } from '@/lib/entitlements';
 import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
-import { listBlockedUserIds } from './safety';
+import { isBlockedEitherWay, listBlockedUserIds } from './safety';
 import {
   moderationRestrictions,
   type NewProfile,
@@ -387,7 +387,7 @@ export const getPublicProfileById = async (
   }
   if (
     viewerUserId &&
-    (await listBlockedUserIds(viewerUserId)).includes(row.profile.userId)
+    (await isBlockedEitherWay(viewerUserId, row.profile.userId))
   )
     return null;
 

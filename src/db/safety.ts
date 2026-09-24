@@ -58,9 +58,36 @@ export const unblockUser = async (
     );
 };
 
+export const isBlockedEitherWay = async (
+  userId: string,
+  otherUserId: string,
+) => {
+  const [row] = await db
+    .select({ id: userBlocks.id })
+    .from(userBlocks)
+    .where(
+      or(
+        and(
+          eq(userBlocks.blockerUserId, userId),
+          eq(userBlocks.blockedUserId, otherUserId),
+        ),
+        and(
+          eq(userBlocks.blockerUserId, otherUserId),
+          eq(userBlocks.blockedUserId, userId),
+        ),
+      ),
+    )
+    .limit(1);
+
+  return Boolean(row);
+};
+
 export const listBlockedUserIds = async (userId: string): Promise<string[]> => {
   const rows = await db
-    .select()
+    .select({
+      blockerUserId: userBlocks.blockerUserId,
+      blockedUserId: userBlocks.blockedUserId,
+    })
     .from(userBlocks)
     .where(
       or(
