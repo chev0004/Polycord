@@ -21,7 +21,7 @@ export function RecoveryPage({
       );
     }
   }, [locale]);
-  const copy = (language === 'ja' ? ja : en).Recovery;
+  const copy = language === 'ja' ? ja.Recovery : en.Recovery;
   const actionClass =
     'rounded-lg border border-white/20 px-5 py-3 font-semibold hover:bg-white/10 focus-visible:bg-white/20';
 
