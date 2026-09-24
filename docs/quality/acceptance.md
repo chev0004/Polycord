@@ -21,8 +21,8 @@ Evidence-based acceptance pass for the readiness backlog, recorded 2026-09-24 fo
 | 10-12 | Editor drafts, onboarding draft scope and tag caps, timezone and voice save contract | PROFILE-012 (#108) | `e2e/drafts.pw.ts` | Resolved |
 | 13-20 | Discovery loading, prefetch, server paging, grid duplication, fonts | DISC-009 (#110) | `e2e/discovery.pw.ts`, `docs/performance/discovery.md` | Resolved |
 | 21-23, 28 | Premium comparison at 320 px, hover-only actions, dialog height, focus, errors, motion | MOBILE-002 (#115) | `e2e/layouts.pw.ts`, `e2e/mobile.pw.ts` | Resolved in open PR #115, except device validation |
-| 24-27 | Branded 404 and error recovery, identifier validation, failure states | QA-002 (#107) | `e2e/recovery.pw.ts` | Resolved |
-| 27, 29-33 | Inbox entitlements, errors, reload and actor destinations | NOTIF-004 (#105) | `e2e/notifications.pw.ts`, `tests/integration/notifications.mjs` | Resolved |
+| 24-26, 27 (split) | Branded 404 and error recovery, identifier validation, failure states outside the inbox | QA-002 (#107) | `e2e/recovery.pw.ts` | Resolved |
+| 27 (split), 29-33 | Inbox entitlements, inbox failure rollback, reload and actor destinations | NOTIF-004 (#105) | `e2e/notifications.pw.ts`, `tests/integration/notifications.mjs` | Resolved |
 | 34-36 | Username privacy, block enforcement, unblock UI, copy ordering | SAFETY-002 (#106) | `e2e/safety.pw.ts`, `tests/integration/safety.mjs` | Resolved |
 | 37 | Session revocation and export completeness | ACCOUNT-002 (#104) | `e2e/account.pw.ts`, `tests/integration/account.mjs` | Resolved |
 | Billing | Deployed Stripe lifecycle and truthful Premium states | BILLING-002 | None | Blocked: not started |
