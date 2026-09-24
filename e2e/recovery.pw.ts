@@ -31,10 +31,11 @@ test('malformed mutation identifiers are rejected before database queries', asyn
   page,
 }) => {
   const id = randomUUID().replaceAll('-', '');
+  const accountId = randomUUID();
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const payload = Buffer.from(
     JSON.stringify({
-      user: { id, name: 'Recovery fixture' },
+      user: { id, accountId, name: 'Recovery fixture' },
       expiresAt: Date.now() + 3600000,
     }),
   ).toString('base64url');
@@ -50,7 +51,7 @@ test('malformed mutation identifiers are rejected before database queries', asyn
     },
   ]);
   try {
-    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, 'recovery', 'Recovery fixture')`;
+    await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, 'recovery', 'Recovery fixture')`;
     for (const route of ['saved', 'block', 'report', 'notifications']) {
       const response = await context.request.post(`/api/${route}`, {
         data: { profileId: 'not-a-uuid', reason: 'spam' },
@@ -114,10 +115,11 @@ test('layout database failures expose recovery without internal details', async 
   context,
 }) => {
   const id = randomUUID().replaceAll('-', '');
+  const accountId = randomUUID();
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const payload = Buffer.from(
     JSON.stringify({
-      user: { id, name: 'Failure fixture' },
+      user: { id, accountId, name: 'Failure fixture' },
       expiresAt: Date.now() + 3600000,
     }),
   ).toString('base64url');
@@ -133,7 +135,7 @@ test('layout database failures expose recovery without internal details', async 
     },
   ]);
   try {
-    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, 'failure', 'Failure fixture')`;
+    await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, 'failure', 'Failure fixture')`;
     await sql`alter table user_settings rename to user_settings_recovery_test`;
     try {
       await page.goto('/ja/legal');
