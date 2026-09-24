@@ -8,9 +8,7 @@ import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { ProfileGrid } from '@/features/Discovery/ProfileGrid';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
-import { Footer } from '@/features/Footer';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
-import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { useProfileActions } from '@/features/Profile/useProfileActions';
 
@@ -19,7 +17,6 @@ type SavedRouteClientProps = {
   profiles: DiscoveryProfile[];
   currentProfileId?: string;
   loadError?: boolean;
-  userAvatarUrl?: string;
   viewerTimezone?: string;
 };
 
@@ -28,7 +25,6 @@ export const SavedRouteClient = ({
   profiles: initialProfiles,
   currentProfileId,
   loadError = false,
-  userAvatarUrl,
   viewerTimezone,
 }: SavedRouteClientProps) => {
   const router = useRouteProgressRouter();
@@ -63,23 +59,7 @@ export const SavedRouteClient = ({
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-foreground">
-      <Navbar
-        iconUrl={userAvatarUrl}
-        isLoggedIn
-        notifications={[]}
-        onHomeClick={() => router.push(`/${locale}`)}
-        onLoginClick={() =>
-          window.location.assign(`/api/auth/discord?locale=${locale}`)
-        }
-        onProfileClick={() => router.push(`/${locale}/profile`)}
-        onSavedClick={() => router.push(`/${locale}/saved`)}
-        onSettingsClick={() => router.push(`/${locale}/settings`)}
-        onLogoutClick={() =>
-          window.location.assign(`/api/auth/logout?locale=${locale}`)
-        }
-      />
-
+    <>
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
         <header className="mb-[26px] flex flex-col gap-1.5">
           <span className="font-semibold text-primary text-xs uppercase tracking-wide">
@@ -166,8 +146,7 @@ export const SavedRouteClient = ({
           </div>
         )}
       </main>
-      <Footer locale={locale} />
       {actions.feedback}
-    </div>
+    </>
   );
 };

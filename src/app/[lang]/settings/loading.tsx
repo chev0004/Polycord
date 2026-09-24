@@ -10,7 +10,7 @@ const rowKeys = Array.from(
 
 export default function SettingsLoading() {
   return (
-    <main className="min-h-screen bg-background-main">
+    <main>
       <div
         className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
         aria-hidden

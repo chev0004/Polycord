@@ -49,7 +49,7 @@ export default async function ProfileRoute({
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect(`/${lang}`);
+    redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/profile`)}`);
   }
 
   const profile = await getProfileByUserId(user.accountId);
@@ -63,7 +63,7 @@ export default async function ProfileRoute({
       : undefined;
 
   return (
-    <main className="min-h-screen bg-background-main">
+    <main>
       <ProfileRouteClient
         userId={user.id}
         locale={lang}

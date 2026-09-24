@@ -1,5 +1,4 @@
 import { getLegalDocument, LegalDocument } from '@/features/Legal';
-import { getCurrentUser } from '@/lib/auth';
 
 export default async function PrivacyRoute({
   params,
@@ -7,7 +6,6 @@ export default async function PrivacyRoute({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
-  const user = await getCurrentUser();
   const { content, isFallback } = getLegalDocument(lang, 'privacy');
 
   return (
@@ -16,8 +14,6 @@ export default async function PrivacyRoute({
       documentId="privacy"
       content={content}
       isFallback={isFallback}
-      isLoggedIn={Boolean(user)}
-      userAvatarUrl={user?.avatarUrl}
     />
   );
 }

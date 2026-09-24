@@ -47,7 +47,10 @@ export default async function middleware(request: NextRequest) {
 
     if (!user) {
       const response = NextResponse.redirect(
-        new URL(`/${protectedRouteLocale}`, request.url),
+        new URL(
+          `/${protectedRouteLocale}?next=${encodeURIComponent(request.nextUrl.pathname)}`,
+          request.url,
+        ),
       );
 
       if (sessionCookie) {

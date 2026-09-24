@@ -243,6 +243,7 @@ test('light appearance reaches core pages and exposes only supported settings', 
       page.getByRole('switch', { name: 'Activity Status' }),
     ).toHaveCount(0);
     await page
+      .getByRole('main')
       .getByRole('button', { name: 'Notifications', exact: true })
       .click();
     await expect(

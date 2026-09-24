@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { MdArrowBack, MdInfoOutline } from 'react-icons/md';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
-import { LegalShell } from './LegalShell';
 import type { LegalDocumentContent, LegalDocumentId } from './legalContent';
 
 type LegalDocumentProps = {
@@ -11,8 +10,6 @@ type LegalDocumentProps = {
   documentId: LegalDocumentId;
   content: LegalDocumentContent;
   isFallback: boolean;
-  isLoggedIn: boolean;
-  userAvatarUrl?: string;
 };
 
 export const LegalDocument = ({
@@ -20,8 +17,6 @@ export const LegalDocument = ({
   documentId,
   content,
   isFallback,
-  isLoggedIn,
-  userAvatarUrl,
 }: LegalDocumentProps) => {
   const t = useTranslations('Legal');
   const router = useRouteProgressRouter();
@@ -31,11 +26,7 @@ export const LegalDocument = ({
   }).format(new Date(content.lastUpdated));
 
   return (
-    <LegalShell
-      locale={locale}
-      isLoggedIn={isLoggedIn}
-      userAvatarUrl={userAvatarUrl}
-    >
+    <main className="flex-1">
       <article className="mx-auto w-full max-w-3xl px-4 py-10 font-figtree sm:px-8">
         <button
           type="button"
@@ -101,6 +92,6 @@ export const LegalDocument = ({
           ))}
         </div>
       </article>
-    </LegalShell>
+    </main>
   );
 };

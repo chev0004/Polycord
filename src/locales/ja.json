@@ -677,8 +677,10 @@
     "hubTitle": "ポリシーとガイドライン",
     "hubDescription": "データ、プロフィール、Polycordの安全性に関するわかりやすいポリシーをまとめています。"
   },
+  "Navigation": {
+    "backToDiscovery": "ディスカバリーに戻る"
+  },
   "Recovery": {
-    "brand": "Polycord",
     "missingTitle": "ページが見つかりません",
     "missingDescription": "このページは利用できないか、アドレスが正しくありません。ユーザー検索に戻ってください。",
     "errorTitle": "問題が発生しました",

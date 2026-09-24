@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { getUserSettingsByDiscordUserId } from '@/db';
+import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
 import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
@@ -52,7 +53,15 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={lang} messages={messages}>
           <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
             <TimeFormatProvider value={settings?.timeFormat ?? '24hr'}>
-              <RouteProgressProvider>{children}</RouteProgressProvider>
+              <RouteProgressProvider>
+                <AppShell
+                  locale={lang}
+                  isLoggedIn={Boolean(user)}
+                  userAvatarUrl={user?.avatarUrl}
+                >
+                  {children}
+                </AppShell>
+              </RouteProgressProvider>
             </TimeFormatProvider>
           </LanguageDisplayProvider>
         </NextIntlClientProvider>
