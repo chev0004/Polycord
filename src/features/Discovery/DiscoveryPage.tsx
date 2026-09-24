@@ -14,9 +14,9 @@ import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
   getMissingRequiredFields,
   getOnboardingCompletion,
-  ONBOARDING_DRAFT_STORAGE_KEY,
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
+import { onboardingDraftSchema } from '@/features/Onboarding/schema';
 import { useToastStack } from '@/hooks/useToast';
 import {
   BumpProfileError,
@@ -58,6 +58,7 @@ const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
 
 type DiscoveryPageProps = {
+  userId?: string;
   authError?: string;
   feedError?: boolean;
   isLoading?: boolean;
@@ -88,6 +89,7 @@ const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
 };
 
 export const DiscoveryPage = ({
+  userId,
   authError,
   feedError = false,
   isLoading = false,
@@ -157,24 +159,20 @@ export const DiscoveryPage = ({
   }, [initialBumpReadyAt]);
 
   useEffect(() => {
-    if (!needsOnboarding) {
-      return;
-    }
-
-    const rawDraft = localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY);
-
-    if (!rawDraft) {
+    if (!needsOnboarding || !userId) {
       setDraft({});
       return;
     }
-
     try {
-      setDraft(JSON.parse(rawDraft) as OnboardingDraft);
+      const rawDraft = sessionStorage.getItem(`polycord:onboarding:${userId}`);
+      const parsed = onboardingDraftSchema.safeParse(
+        rawDraft ? JSON.parse(rawDraft) : {},
+      );
+      setDraft(parsed.success ? parsed.data : {});
     } catch {
-      localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
       setDraft({});
     }
-  }, [needsOnboarding]);
+  }, [needsOnboarding, userId]);
 
   const missingRequiredFields = useMemo(
     () => getMissingRequiredFields(draft),

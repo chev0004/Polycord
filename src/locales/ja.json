@@ -1,4 +1,11 @@
 {
+  "Draft": {
+    "signInAgain": "セッションが期限切れです。再度ログインして、この編集画面に戻ってください。",
+    "savedLocally": "未保存の編集内容は、このアカウント用にこのブラウザタブに保持されます。適用するには保存し、削除するには破棄してください。",
+    "restored": "未保存の下書きを復元しました。内容を確認し、保存または破棄してください。",
+    "unavailable": "このブラウザでは下書きを保持できません。ページを離れる前に編集内容を保存するかコピーしてください。",
+    "leaveWarning": "このブラウザでは下書きを保持できません。未保存の編集内容を失ってもページを離れますか？"
+  },
   "disspeak": "Polycord",
   "loginWithDiscord": "Discordでログイン",
   "button": "ボタン",
@@ -188,6 +195,7 @@
     "voiceIntroDeleteLabel": "ボイスイントロを削除",
     "voiceIntroMicError": "マイクへのアクセスが拒否されたか、利用できません。",
     "voiceIntroError": "ボイスイントロを保存できませんでした。もう一度お試しください。",
+    "voiceIntroImmediate": "イントロの保存と削除はすぐに反映されます。プロフィールの変更を破棄しても、音声の変更は元に戻りません。未公開の録音はこのページを離れると失われます。",
     "privacySettings": "プライバシー設定",
     "privacySettingsDescription": "公開プロフィールでの表示や動作を設定します。",
     "allowAnonymousCopyingLabel": "匿名コピーを許可",
@@ -617,7 +625,8 @@
     "removeTag": "{tag} を削除",
     "tagTooShort": "タグは2文字以上で入力してください。",
     "tagTooLong": "タグは20文字以内で入力してください。",
-    "tagLimitReached": "タグは最大6個まで追加できます。",
+    "tagLimitReached": "タグは最大{cap}個まで追加できます。",
+    "discardDraft": "下書きを破棄",
     "tagDuplicate": "そのタグは既に追加されています。",
     "publishButton": "プロフィールを公開",
     "publishing": "公開中...",
@@ -625,8 +634,7 @@
     "previewBioFallback": "自己紹介がここに表示されます。",
     "previewPrimaryFallback": "主要言語",
     "previewNoTags": "タグはまだありません",
-    "sessionExpired": "セッションの有効期限が切れました。再度ログインして下書きから続けてください。",
-    "signInAgain": "再度ログイン"
+    "sessionExpired": "セッションの有効期限が切れました。再度ログインして下書きから続けてください。"
   },
   "DiscoveryStories": {
     "gridTitle": "次の言語パートナーを見つけよう",

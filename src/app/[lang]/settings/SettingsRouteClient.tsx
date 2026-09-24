@@ -6,8 +6,10 @@ import {
   type SettingsFormValues,
   SettingsPage,
 } from '@/features/Settings/SettingsPage';
+import { SessionExpiredError } from '@/lib/formErrors';
 
 type SettingsRouteClientProps = {
+  userId: string;
   defaultEmail: string;
   initialPrivacySettings?: Pick<
     SettingsFormValues,
@@ -43,6 +45,7 @@ const saveSettings = async (data: SettingsFormValues) => {
   });
 
   if (!response.ok) {
+    if (response.status === 401) throw new SessionExpiredError();
     throw new Error('Settings save failed');
   }
 };
@@ -66,6 +69,7 @@ const downloadAccountData = async () => {
 };
 
 export const SettingsRouteClient = ({
+  userId,
   defaultEmail,
   initialPrivacySettings,
   initialSettings,
@@ -97,6 +101,8 @@ export const SettingsRouteClient = ({
 
   return (
     <SettingsPage
+      key={userId}
+      userId={userId}
       blockedUsers={<BlockedUsers onChange={() => router.refresh()} />}
       defaultValues={defaultSettings}
       userAvatarUrl={userAvatarUrl}

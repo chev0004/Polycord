@@ -148,6 +148,12 @@ export const useRouteProgressRouter = () => {
 
   const push = useCallback(
     (href: string) => {
+      if (
+        !window.dispatchEvent(
+          new Event('polycord:navigate', { cancelable: true }),
+        )
+      )
+        return;
       if (shouldStartProgress(href)) {
         start();
       }
@@ -159,6 +165,12 @@ export const useRouteProgressRouter = () => {
 
   const replace = useCallback(
     (href: string) => {
+      if (
+        !window.dispatchEvent(
+          new Event('polycord:navigate', { cancelable: true }),
+        )
+      )
+        return;
       if (shouldStartProgress(href)) {
         start();
       }

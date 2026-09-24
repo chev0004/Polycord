@@ -3,6 +3,7 @@ import {
   parseHhMm,
   tzOffsetMinutes,
 } from '@/constants/availability';
+import { isValidIANATimezone } from '@/constants/languages';
 
 const MINUTES_PER_DAY = 1440;
 const MINUTES_PER_WEEK = 10080;
@@ -63,12 +64,12 @@ const mergeIntervals = (intervals: Interval[]): Interval[] => {
 
 const toUtcWeekIntervals = (context: AvailabilityContext): Interval[] => {
   const { availability, timezone } = context;
-  if (!availability) return [];
+  if (!availability || !timezone || !isValidIANATimezone(timezone)) return [];
 
   const length = windowLength(availability);
   if (length <= 0) return [];
 
-  const offset = timezone ? tzOffsetMinutes(timezone) : 0;
+  const offset = tzOffsetMinutes(timezone);
   const fromMinute = availability.anyTime ? 0 : parseHhMm(availability.from);
   const intervals: Interval[] = [];
 

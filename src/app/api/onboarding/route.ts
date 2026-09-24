@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { type ProfileTargetLanguageValue, upsertProfileForUser } from '@/db';
-import { onboardingSchema } from '@/features/Onboarding/schema';
+import { createOnboardingSchema } from '@/features/Onboarding/schema';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser } from '@/lib/auth';
+import { isPremiumUser } from '@/lib/entitlements.server';
 
 export const POST = async (request: Request) => {
   const currentUser = await getActiveUser();
@@ -22,7 +23,9 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const payload = onboardingSchema.safeParse(body);
+  const payload = createOnboardingSchema(
+    await isPremiumUser(currentUser),
+  ).safeParse(body);
 
   if (!payload.success) {
     return NextResponse.json(
