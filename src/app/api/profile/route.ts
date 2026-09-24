@@ -56,12 +56,21 @@ export const POST = async (request: Request) => {
   const existing = await getProfileByDiscordUserId(currentUser.id);
   const languageCap = entitlementLimit('profile.targetLanguages', premium);
   const tagCap = entitlementLimit('profile.tags', premium);
+  const existingLanguages = existing?.targetLanguages ?? [];
+  const existingTags = existing?.profile.tags ?? [];
+  const unchangedLanguages =
+    values.targetLanguages.length === existingLanguages.length &&
+    values.targetLanguages.every(
+      ({ language, level }, index) =>
+        language === existingLanguages[index].language &&
+        level === existingLanguages[index].level,
+    );
+  const tags = values.tags ?? [];
+  const unchangedTags =
+    tags.length === existingTags.length &&
+    tags.every((tag, index) => tag === existingTags[index]);
 
-  if (
-    values.targetLanguages.length > languageCap &&
-    JSON.stringify(values.targetLanguages) !==
-      JSON.stringify(existing?.targetLanguages)
-  ) {
+  if (values.targetLanguages.length > languageCap && !unchangedLanguages) {
     return NextResponse.json(
       {
         error: 'Invalid profile',
@@ -78,10 +87,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  if (
-    (values.tags ?? []).length > tagCap &&
-    JSON.stringify(values.tags) !== JSON.stringify(existing?.profile.tags)
-  ) {
+  if (tags.length > tagCap && !unchangedTags) {
     return NextResponse.json(
       {
         error: 'Invalid profile',
