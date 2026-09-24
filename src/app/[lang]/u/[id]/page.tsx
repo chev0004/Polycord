@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import {
   getProfileByUserId,
   getPublicProfileById,
-  getUserByDiscordId,
   getUserSettingsByUserId,
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
@@ -23,8 +22,7 @@ export default async function PublicProfileRoute({
 }) {
   const { lang, id } = await params;
   const user = await getCurrentUser();
-  const viewer = user ? await getUserByDiscordId(user.id) : null;
-  const row = await getPublicProfileById(id, viewer?.id);
+  const row = await getPublicProfileById(id, user?.accountId);
 
   if (!row) {
     notFound();

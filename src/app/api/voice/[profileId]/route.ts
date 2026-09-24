@@ -1,7 +1,6 @@
 import {
   getProfileById,
   getPublicProfileById,
-  getUserByDiscordId,
   getVoiceIntroByUserId,
 } from '@/db';
 import { getActiveUser, getCurrentUser } from '@/lib/auth';
@@ -13,16 +12,13 @@ export const GET = async (
 ) => {
   const { profileId } = await params;
   const currentUser = await getCurrentUser();
-  const viewer = currentUser ? await getUserByDiscordId(currentUser.id) : null;
-  let row = await getPublicProfileById(profileId, viewer?.id);
+  let row = await getPublicProfileById(profileId, currentUser?.accountId);
 
-  if (!row) {
-    const candidate = viewer ? await getProfileById(profileId) : null;
+  if (!row && currentUser) {
+    const candidate = await getProfileById(profileId);
 
     if (
-      candidate &&
-      viewer &&
-      candidate.profile.userId === viewer.id &&
+      candidate?.profile.userId === currentUser.accountId &&
       (await getActiveUser())
     ) {
       row = candidate;
