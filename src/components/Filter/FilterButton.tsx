@@ -105,24 +105,24 @@ export const FilterButton = React.forwardRef<
             className={`group inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full px-3.5 font-medium text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] data-[state=open]:bg-background-dark ${
               active
                 ? 'bg-primary-darker text-primary-light'
-                : 'bg-transparent text-white hover:bg-background-dark'
+                : 'bg-transparent text-foreground hover:bg-background-dark'
             } ${className ?? ''}`}
             {...props}
           >
             <Icon
               size={18}
-              className={`flex-shrink-0 ${active ? 'text-primary' : 'text-gray-400'}`}
+              className={`flex-shrink-0 ${active ? 'text-primary' : 'text-muted'}`}
             />
             <span>{getDisplayText()}</span>
             {active && (
-              <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-[5px] font-bold text-[11px] text-black">
+              <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-[5px] font-bold text-[11px] text-on-primary">
                 {applied.length}
               </span>
             )}
             <MdOutlineKeyboardArrowDown
               size={16}
               className={`flex-shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[state=open]:rotate-180 ${
-                active ? 'text-primary' : 'text-gray-400'
+                active ? 'text-primary' : 'text-muted'
               }`}
             />
           </button>
@@ -138,15 +138,13 @@ export const FilterButton = React.forwardRef<
               searchInputRef.current?.focus();
             }}
           >
-            <div className="mb-3 font-medium text-gray-400 text-sm">
-              {label}
-            </div>
+            <div className="mb-3 font-medium text-muted text-sm">{label}</div>
 
             {searchable && (
               <div className="relative mb-2.5">
                 <MdSearch
                   size={18}
-                  className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 text-gray-500"
+                  className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 text-subtle"
                 />
                 <input
                   ref={searchInputRef}
@@ -158,7 +156,7 @@ export const FilterButton = React.forwardRef<
                       ? t(placeholderKey)
                       : t('filterSearchPlaceholder')
                   }
-                  className="h-[38px] w-full rounded-full border border-white/[0.07] bg-background-darker pr-3.5 pl-[34px] text-sm text-white outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] placeholder:text-gray-500 hover:border-white/[0.14] focus:border-white/[0.14]"
+                  className="h-[38px] w-full rounded-full border border-line bg-background-darker pr-3.5 pl-[34px] text-foreground text-sm outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] placeholder:text-subtle hover:border-line-strong focus:border-line-strong"
                 />
               </div>
             )}
@@ -176,14 +174,14 @@ export const FilterButton = React.forwardRef<
                       className={`flex min-h-[38px] w-full flex-shrink-0 items-center gap-2.5 rounded-full px-3 text-left text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                         on
                           ? 'bg-background-main text-primary-light'
-                          : 'text-white hover:bg-primary-darker'
+                          : 'text-foreground hover:bg-primary-darker'
                       }`}
                     >
                       <span
-                        className={`flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-[5px] border text-black transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                        className={`flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-[5px] border text-on-primary transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                           on
                             ? 'border-primary bg-primary'
-                            : 'border-white/[0.18]'
+                            : 'border-line-strong'
                         }`}
                       >
                         {on && <MdCheck size={14} />}
@@ -193,7 +191,7 @@ export const FilterButton = React.forwardRef<
                   );
                 })
               ) : (
-                <div className="p-4 text-center text-gray-500 text-sm">
+                <div className="p-4 text-center text-sm text-subtle">
                   {t('filterNoResults')}
                 </div>
               )}

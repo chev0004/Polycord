@@ -39,6 +39,14 @@ type PublicProfileClientProps = {
 
 const TOAST_DURATION = 4000;
 
+let historyHref: string | null = null;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    historyHref = window.location.href;
+  });
+}
+
 export const PublicProfileClient = ({
   locale,
   profile,
@@ -70,11 +78,18 @@ export const PublicProfileClient = ({
   useEffect(() => setIsSaved(initialSaved), [initialSaved]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      if (historyHref === window.location.href) refresh();
+      historyHref = null;
+    });
     const refreshRestored = (event: PageTransitionEvent) => {
       if (event.persisted) refresh();
     };
     window.addEventListener('pageshow', refreshRestored);
-    return () => window.removeEventListener('pageshow', refreshRestored);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pageshow', refreshRestored);
+    };
   }, [refresh]);
 
   const handleToggleSave = async () => {
@@ -150,6 +165,7 @@ export const PublicProfileClient = ({
     try {
       await blockProfileRequest(profile.id, true);
       router.push(returnHref);
+      router.refresh();
     } catch {
       addToast({
         title: t('blockErrorTitle'),
@@ -180,7 +196,7 @@ export const PublicProfileClient = ({
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-white">
+    <div className="min-h-screen bg-background-main text-foreground">
       <Navbar
         iconUrl={userAvatarUrl}
         isLoggedIn={isLoggedIn}
@@ -201,7 +217,7 @@ export const PublicProfileClient = ({
         <button
           type="button"
           onClick={() => router.push(returnHref)}
-          className="mb-5 inline-flex items-center gap-1.5 text-gray-400 text-sm transition-colors hover:text-white"
+          className="mb-5 inline-flex items-center gap-1.5 text-muted text-sm transition-colors hover:text-foreground"
         >
           <MdArrowBack size={18} />
           {tPublic('backToDiscovery')}

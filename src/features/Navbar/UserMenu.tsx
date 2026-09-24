@@ -36,11 +36,11 @@ const MenuItem = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm text-white no-underline transition-colors focus-visible:bg-background-main ${
+      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-foreground text-sm no-underline transition-colors focus-visible:bg-background-main ${
         disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-background-main'
       }`}
     >
-      <Icon size={20} className="text-gray-400" />
+      <Icon size={20} className="text-muted" />
       {children}
     </button>
   );

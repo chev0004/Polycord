@@ -24,7 +24,7 @@ export const Button = ({
 
   const variants = {
     primary:
-      'bg-primary text-black hover:bg-primary-light focus-visible:bg-primary-light',
+      'bg-primary text-on-primary hover:bg-primary-light focus-visible:bg-primary-light',
     outline:
       'border border-primary-dark bg-transparent text-primary-light hover:bg-primary-darker focus-visible:bg-primary-darker',
     discord:

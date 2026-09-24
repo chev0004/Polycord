@@ -14,9 +14,9 @@ import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
   getMissingRequiredFields,
   getOnboardingCompletion,
-  ONBOARDING_DRAFT_STORAGE_KEY,
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
+import { onboardingDraftSchema } from '@/features/Onboarding/schema';
 import { useToastStack } from '@/hooks/useToast';
 import {
   BumpProfileError,
@@ -58,6 +58,7 @@ const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
 
 type DiscoveryPageProps = {
+  userId?: string;
   authError?: string;
   feedError?: boolean;
   isLoading?: boolean;
@@ -89,6 +90,7 @@ const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
 };
 
 export const DiscoveryPage = ({
+  userId,
   authError,
   feedError = false,
   isLoading = false,
@@ -172,24 +174,20 @@ export const DiscoveryPage = ({
   }, [initialBumpReadyAt]);
 
   useEffect(() => {
-    if (!needsOnboarding) {
-      return;
-    }
-
-    const rawDraft = localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY);
-
-    if (!rawDraft) {
+    if (!needsOnboarding || !userId) {
       setDraft({});
       return;
     }
-
     try {
-      setDraft(JSON.parse(rawDraft) as OnboardingDraft);
+      const rawDraft = sessionStorage.getItem(`polycord:onboarding:${userId}`);
+      const parsed = onboardingDraftSchema.safeParse(
+        rawDraft ? JSON.parse(rawDraft) : {},
+      );
+      setDraft(parsed.success ? parsed.data : {});
     } catch {
-      localStorage.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
       setDraft({});
     }
-  }, [needsOnboarding]);
+  }, [needsOnboarding, userId]);
 
   const missingRequiredFields = useMemo(
     () => getMissingRequiredFields(draft),
@@ -651,7 +649,7 @@ export const DiscoveryPage = ({
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-white">
+    <div className="min-h-screen bg-background-main text-foreground">
       <Navbar
         iconUrl={userAvatarUrl}
         isLoggedIn={isLoggedIn}
@@ -673,11 +671,11 @@ export const DiscoveryPage = ({
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
         {authError ? (
           <div
-            className="mb-6 rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
+            className="mb-6 rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
             role="alert"
           >
             <p className="font-semibold">{t('authErrorTitle')}</p>
-            <p className="mt-1 text-red-100/80">{t('authErrorDescription')}</p>
+            <p className="mt-1 text-danger">{t('authErrorDescription')}</p>
           </div>
         ) : null}
 
@@ -708,11 +706,11 @@ export const DiscoveryPage = ({
 
         {refreshFailed ? (
           <div
-            className="rounded-md border border-red-400/40 bg-red-950/30 px-4 py-3 font-figtree text-red-100 text-sm"
+            className="rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
             role="alert"
           >
             <p className="font-semibold">{t('feedErrorTitle')}</p>
-            <p className="mt-1 text-red-100/80">{t('feedErrorDescription')}</p>
+            <p className="mt-1 text-danger">{t('feedErrorDescription')}</p>
             <button
               type="button"
               className="mt-2 underline"
@@ -795,12 +793,12 @@ export const DiscoveryPage = ({
             <button
               type="button"
               onClick={() => router.push(`/${locale}/onboarding`)}
-              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
+              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
             >
-              <p className="font-figtree font-semibold text-white">
+              <p className="font-figtree font-semibold text-foreground">
                 {t('onboardingPromptTitle')}
               </p>
-              <p className="mt-1 text-gray-400 text-sm">
+              <p className="mt-1 text-muted text-sm">
                 {t('onboardingPromptProgress', { completion })}
                 {missingRequiredFields.length > 0
                   ? ` ${t('onboardingPromptStillNeeded', {
@@ -820,7 +818,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               onClick={() => setIsPromptDismissed(true)}
-              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-background-main hover:text-white focus:outline-none focus-visible:bg-background-main focus-visible:text-white"
+              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
               aria-label={t('onboardingPromptDismiss')}
             >
               <MdClose size={16} />

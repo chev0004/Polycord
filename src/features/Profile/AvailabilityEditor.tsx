@@ -61,7 +61,7 @@ export const AvailabilityEditor = ({
                   className={`flex-1 whitespace-nowrap rounded-lg border px-1 py-[9px] font-medium text-[13px] transition-colors focus:outline-none ${
                     active
                       ? 'border-primary-dark bg-primary-darker text-primary-light'
-                      : 'border-white/10 bg-background-darker text-gray-300 hover:bg-background-main hover:text-white'
+                      : 'border-line bg-background-darker text-soft hover:bg-background-main hover:text-foreground'
                   }`}
                 >
                   {t(day.labelKey)}
@@ -74,7 +74,7 @@ export const AvailabilityEditor = ({
             <div className="flex flex-1 flex-col gap-1">
               <label
                 htmlFor={fromId}
-                className="font-semibold text-[11px] text-gray-500 uppercase tracking-[0.05em]"
+                className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
               >
                 {t('availabilityFromLabel')}
               </label>
@@ -86,16 +86,16 @@ export const AvailabilityEditor = ({
                 onChange={(event) =>
                   patch({ from: event.target.value, anyTime: false })
                 }
-                className="w-full rounded-lg border border-white/10 bg-background-darker px-3 py-[9px] text-sm text-white transition-colors [color-scheme:dark] focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
+                className="w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
               />
             </div>
-            <span className="pb-[10px] text-[13px] text-gray-500">
+            <span className="pb-[10px] text-[13px] text-subtle">
               {t('availabilityTimeSeparator')}
             </span>
             <div className="flex flex-1 flex-col gap-1">
               <label
                 htmlFor={toId}
-                className="font-semibold text-[11px] text-gray-500 uppercase tracking-[0.05em]"
+                className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
               >
                 {t('availabilityToLabel')}
               </label>
@@ -107,7 +107,7 @@ export const AvailabilityEditor = ({
                 onChange={(event) =>
                   patch({ to: event.target.value, anyTime: false })
                 }
-                className="w-full rounded-lg border border-white/10 bg-background-darker px-3 py-[9px] text-sm text-white transition-colors [color-scheme:dark] focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
+                className="w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
               />
             </div>
           </div>
@@ -116,10 +116,10 @@ export const AvailabilityEditor = ({
             type="button"
             onClick={() => patch({ anyTime: !pattern.anyTime })}
             aria-pressed={Boolean(pattern.anyTime)}
-            className={`inline-flex w-fit items-center gap-[5px] text-[12px] transition-colors focus:outline-none focus-visible:text-gray-300 ${
+            className={`inline-flex w-fit items-center gap-[5px] text-[12px] transition-colors focus:outline-none focus-visible:text-soft ${
               pattern.anyTime
                 ? 'text-primary-light'
-                : 'text-gray-500 hover:text-gray-300'
+                : 'text-subtle hover:text-soft'
             }`}
           >
             {pattern.anyTime ? (
@@ -130,7 +130,7 @@ export const AvailabilityEditor = ({
             {t('availabilityAnyTime')}
           </button>
 
-          <p className="text-[12px] text-gray-500">{t('availabilityHint')}</p>
+          <p className="text-[12px] text-subtle">{t('availabilityHint')}</p>
         </div>
       )}
     </FormGroup>

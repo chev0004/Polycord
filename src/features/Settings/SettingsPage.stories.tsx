@@ -6,9 +6,7 @@ const defaultSettings: SettingsFormValues = {
   isPublic: true,
   allowAnonymousCopy: true,
   displayTimezone: true,
-  activityStatus: true,
   pushNotifications: true,
-  matchAlert: true,
   profileInteractionAlert: true,
   profileViewAlert: true,
   hideProfileVisits: false,
@@ -59,12 +57,106 @@ export const Default: Story = {
   args: {},
 };
 
+export const LightAppearance: Story = {
+  parameters: { theme: 'light' },
+  args: { defaultValues: { ...defaultSettings, theme: 'light' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: 'Appearance' }));
+    await waitFor(() =>
+      expect(canvas.getByRole('combobox', { name: 'Theme' })).toHaveTextContent(
+        'Light Mode',
+      ),
+    );
+    expect(
+      canvas.getByRole('button', { name: 'Save Settings' }),
+    ).toBeDisabled();
+  },
+};
+
+export const LightSaveError: Story = {
+  parameters: { theme: 'light' },
+  args: {
+    onSubmit: fn(async () => {
+      throw new Error('save failed');
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    setFieldValue(
+      canvas.getByLabelText('Email Address') as HTMLInputElement,
+      'changed@example.com',
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Save Settings' }),
+      ).not.toBeDisabled(),
+    );
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Settings' }));
+    await waitFor(() =>
+      expect(
+        canvas.getByText('Could not save your settings. Please try again.'),
+      ).toBeInTheDocument(),
+    );
+  },
+};
+
+export const RestoredDraft: Story = {
+  args: { userId: 'settings-draft-story' },
+  loaders: [
+    async () => {
+      sessionStorage.setItem(
+        'polycord:settings:settings-draft-story',
+        JSON.stringify({ email: 'unfinished-email' }),
+      );
+      return {};
+    },
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() =>
+      expect(canvas.getByLabelText('Email Address')).toHaveValue(
+        'unfinished-email',
+      ),
+    );
+    await expect(
+      canvas.getByText(
+        'Your unsaved draft has been restored. Review it, then Save or Discard.',
+      ),
+    ).toBeInTheDocument();
+  },
+};
+
+export const AccountBillingError: Story = {
+  args: { onDeleteAccount: async () => 'billing-error' as const },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Delete account' }),
+    );
+    setFieldValue(
+      canvas.getByPlaceholderText('DELETE') as HTMLInputElement,
+      'DELETE',
+    );
+    const confirm = canvas.getByRole('button', {
+      name: 'Delete account',
+    });
+    await waitFor(() => expect(confirm).toBeEnabled());
+    await fireEvent.click(confirm);
+    await waitFor(() =>
+      expect(canvas.getByRole('alert')).toHaveTextContent(
+        'subscription cancellation failed',
+      ),
+    );
+  },
+};
+
 export const SwitchTabs: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.getByPlaceholderText('Enter your email for recovery'),
+      canvas.getByPlaceholderText('Enter your email address'),
     ).toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
@@ -73,13 +165,13 @@ export const SwitchTabs: Story = {
       expect(canvas.getByText('Make Profile Public')).toBeInTheDocument(),
     );
     expect(
-      canvas.queryByPlaceholderText('Enter your email for recovery'),
+      canvas.queryByPlaceholderText('Enter your email address'),
     ).not.toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Notifications' }));
 
     await waitFor(() =>
-      expect(canvas.getByText('New Match Alert')).toBeInTheDocument(),
+      expect(canvas.getByText('Push Notifications')).toBeInTheDocument(),
     );
     expect(canvas.queryByText('Make Profile Public')).not.toBeInTheDocument();
   },
@@ -107,7 +199,7 @@ export const EmailValidation: Story = {
     const canvas = within(canvasElement);
 
     const email = canvas.getByPlaceholderText(
-      'Enter your email for recovery',
+      'Enter your email address',
     ) as HTMLInputElement;
     setFieldValue(email, 'not-an-email');
     await waitFor(() => expect(email).toHaveValue('not-an-email'));
@@ -127,7 +219,7 @@ export const EmailValidation: Story = {
       { timeout: 5000 },
     );
     await expect(
-      canvas.getByPlaceholderText('Enter your email for recovery'),
+      canvas.getByPlaceholderText('Enter your email address'),
     ).toBeInTheDocument();
   },
 };
@@ -141,7 +233,7 @@ export const SaveFlow: Story = {
     await expect(saveButton).toBeDisabled();
 
     const email = canvas.getByPlaceholderText(
-      'Enter your email for recovery',
+      'Enter your email address',
     ) as HTMLInputElement;
     setFieldValue(email, 'kenji.ito@polycord.app');
 
@@ -176,7 +268,7 @@ export const SaveError: Story = {
     const canvas = within(canvasElement);
 
     const email = canvas.getByPlaceholderText(
-      'Enter your email for recovery',
+      'Enter your email address',
     ) as HTMLInputElement;
     setFieldValue(email, 'error.path@polycord.app');
 

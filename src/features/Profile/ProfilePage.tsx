@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { IconType } from 'react-icons';
 import {
@@ -27,6 +27,7 @@ import {
   TextInput,
   Toggle,
 } from '@/components/Form';
+import { DraftNotice } from '@/components/Form/DraftNotice';
 import { countryOptions, languageOptions } from '@/constants';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
@@ -38,10 +39,16 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { entitlementLimit } from '@/lib/entitlements';
+import { SessionExpiredError } from '@/lib/formErrors';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
-import { type ProfileFormValues, profileSchema } from './schema';
+import {
+  type ProfileFormValues,
+  profileDraftSchema,
+  profileSchema,
+} from './schema';
 import {
   createEmptyLanguageRow,
   TargetLanguagesEditor,
@@ -49,6 +56,7 @@ import {
 import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
+  userId?: string;
   boostedUntil?: string;
   boostsRemaining?: number;
   initialValues?: ProfileFormValues;
@@ -96,13 +104,11 @@ const SectionCard = ({
   children: React.ReactNode;
 }) => (
   <section className="flex flex-col gap-5 rounded-3xl bg-background-dark p-6 shadow-xl">
-    <div className="flex flex-col gap-[3px] border-white/10 border-b pb-3.5">
+    <div className="flex flex-col gap-[3px] border-line border-b pb-3.5">
       <h2 className="font-figtree font-semibold text-[19px] text-primary leading-[1.2]">
         {title}
       </h2>
-      {description && (
-        <p className="text-[13px] text-gray-500">{description}</p>
-      )}
+      {description && <p className="text-[13px] text-subtle">{description}</p>}
     </div>
     <div className="flex flex-col gap-[18px]">{children}</div>
   </section>
@@ -117,10 +123,10 @@ const SettingsRow = ({
   description: string;
   children: React.ReactNode;
 }) => (
-  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-[#161617]">
+  <div className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 transition-colors hover:bg-background-main">
     <div className="min-w-0">
-      <p className="font-medium text-[15px] text-white">{label}</p>
-      <p className="mt-0.5 text-[12px] text-gray-500">{description}</p>
+      <p className="font-medium text-[15px] text-foreground">{label}</p>
+      <p className="mt-0.5 text-[12px] text-subtle">{description}</p>
     </div>
     <div className="shrink-0">{children}</div>
   </div>
@@ -143,8 +149,8 @@ const MenuItem = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main/50 focus:outline-none focus-visible:bg-background-main disabled:cursor-not-allowed disabled:opacity-60 ${
-      danger ? 'hover:!text-red-300 text-red-400' : 'text-white'
+    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main disabled:cursor-not-allowed disabled:opacity-60 ${
+      danger ? 'hover:!text-danger text-danger' : 'text-foreground'
     }`}
   >
     <Icon size={20} />
@@ -166,6 +172,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   stats,
   userAvatarUrl,
   userDisplayName,
+  userId,
 }) => {
   const timezoneId = useId();
   const bioId = useId();
@@ -175,6 +182,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
@@ -201,19 +209,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   };
 
   const tagCap = premium ? PREMIUM_TAG_CAP : FREE_TAG_CAP;
+  const previousInitialValues = useRef(initialValues);
 
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: initialValues ?? defaultValues,
+  });
   const {
     register,
     handleSubmit,
     control,
     reset,
+    resetField,
     setValue,
     watch,
     formState: { errors, isDirty, isSubmitting },
-  } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: initialValues ?? defaultValues,
-  });
+  } = form;
 
   const displayTimezone = watch('displayTimezone');
   const displayAvailability = watch('displayAvailability');
@@ -243,24 +254,27 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const previewIsPremiumLook = premium || Boolean(tease);
 
   useEffect(() => {
-    if (initialValues) {
-      reset(initialValues);
+    if (initialValues && initialValues !== previousInitialValues.current) {
+      previousInitialValues.current = initialValues;
+      reset(initialValues, { keepDirtyValues: true });
     }
   }, [initialValues, reset]);
 
-  useEffect(() => {
-    if (!displayTimezone) {
-      setValue('timezone', '', { shouldValidate: true });
-      return;
-    }
+  const draft = useFormDraft(
+    userId ? `polycord:profile:${userId}` : undefined,
+    form,
+    profileDraftSchema,
+  );
 
-    if (!timezone) {
+  useEffect(() => {
+    if (!initialValues?.timezone && !timezone && displayTimezone) {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setValue('timezone', userTimezone, { shouldValidate: true });
     }
-  }, [setValue, displayTimezone, timezone]);
+  }, [setValue, displayTimezone, timezone, initialValues?.timezone]);
 
   const onSubmit = async (data: ProfileFormValues) => {
+    setSessionExpired(false);
     setTagError(null);
     setSaveFailed(false);
     setDeleteFailed(false);
@@ -269,16 +283,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       try {
         await onSubmitProp(data);
         reset(data);
-      } catch {
+        draft.clear();
+      } catch (error) {
+        setSessionExpired(error instanceof SessionExpiredError);
         setSaveFailed(true);
       }
     } else {
       reset(data);
+      draft.clear();
     }
   };
 
   const handleDiscard = () => {
     reset();
+    draft.clear();
     setTagInput('');
     setTagError(null);
     setSaveFailed(false);
@@ -304,6 +322,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
     try {
       await onDeleteProfile();
+      reset();
+      draft.clear();
     } catch {
       setDeleteFailed(true);
     } finally {
@@ -381,13 +401,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     (boostFailed ? t('boostError') : null);
 
   return (
-    <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
+    >
       <div className="mb-6 flex items-end justify-between gap-5">
         <div className="min-w-0">
-          <h1 className="font-bold font-figtree text-[30px] text-white leading-[1.1]">
+          <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
             {t('editProfile')}
           </h1>
-          <p className="mt-1.5 font-light text-[15px] text-gray-400">
+          <p className="mt-1.5 font-light text-[15px] text-muted">
             {t('editProfileSubtitle')}
           </p>
         </div>
@@ -396,7 +419,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <Popover.Trigger asChild>
             <button
               type="button"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-gray-300 transition-colors hover:bg-background-darker hover:text-white focus:outline-none focus-visible:bg-background-darker focus-visible:text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-soft transition-colors hover:bg-background-darker hover:text-foreground focus:outline-none focus-visible:bg-background-darker focus-visible:text-foreground"
               aria-label={t('profileOptions')}
             >
               <MdMoreVert size={20} />
@@ -433,7 +456,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 ) : null}
                 {onDeleteProfile ? (
                   <>
-                    <div className="my-1 h-px bg-white/10" />
+                    <div className="my-1 h-px bg-overlay" />
                     <MenuItem
                       icon={MdDeleteOutline}
                       danger
@@ -450,15 +473,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </Popover.Root>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
+      {userId ? (
+        <DraftNotice {...draft} sessionExpired={sessionExpired} />
+      ) : null}
+      <fieldset
+        disabled={!draft.ready}
+        className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
       >
         <div className="flex min-w-0 flex-col gap-5">
           {bannerError ? (
             <div
               role="alert"
-              className="flex items-center gap-2 rounded-md border border-red-800 bg-red-950/50 px-3.5 py-3 text-[14px] text-red-400"
+              className="flex items-center gap-2 rounded-md border border-red-800 bg-danger-surface px-3.5 py-3 text-[14px] text-danger"
             >
               <MdErrorOutline size={18} className="shrink-0" />
               {bannerError}
@@ -608,7 +634,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <FormGroup>
                     <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
                     {currentTags.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/5 bg-background-darker p-2.5">
+                      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-background-darker p-2.5">
                         {currentTags.map((tag, index) => (
                           <Chip
                             key={tag}
@@ -638,24 +664,24 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         type="button"
                         onClick={handleAddTag}
                         aria-label={t('addTag')}
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-black transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none active:scale-[0.98]"
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none active:scale-[0.98]"
                       >
                         <MdAdd size={20} />
                       </button>
                     </div>
-                    <p className="text-[12px] text-gray-500">
+                    <p className="text-[12px] text-subtle">
                       {t('tagCounterHint', {
                         count: currentTags.length,
                         cap: tagCap,
                       })}
                     </p>
                     {!premium && currentTags.length >= FREE_TAG_CAP && (
-                      <p className="text-[13px] text-gray-400 leading-relaxed">
+                      <p className="text-[13px] text-muted leading-relaxed">
                         {t.rich('tagCapUpsell', {
                           freeCap: FREE_TAG_CAP,
                           premiumCap: PREMIUM_TAG_CAP,
                           strong: (chunks) => (
-                            <strong className="font-semibold text-white">
+                            <strong className="font-semibold text-foreground">
                               {chunks}
                             </strong>
                           ),
@@ -674,7 +700,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <VoiceIntroEditor
                   premium={premium}
                   voiceSeconds={field.value ?? 0}
-                  onChange={field.onChange}
+                  onChange={(seconds) =>
+                    resetField('voiceIntroSeconds', { defaultValue: seconds })
+                  }
                 />
               )}
             />
@@ -789,9 +817,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </SectionCard>
 
-          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-white/10 bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <span
-              className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-gray-400'}`}
+              className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-muted'}`}
             >
               {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
             </span>
@@ -817,7 +845,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
         <aside className="lg:sticky lg:top-6">
           <div className="flex flex-col gap-2.5">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
               <MdVisibility size={15} className="text-primary" />
               {t('livePreview')}
             </span>
@@ -830,36 +858,36 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             {premium && stats ? (
               <div className="mt-2 flex flex-col gap-3 rounded-3xl bg-background-dark p-5 shadow-xl">
-                <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+                <span className="font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
                   {t('insightsTitle')}
                 </span>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="rounded-xl bg-background-darker px-2 py-3">
-                    <p className="font-bold text-[20px] text-white">
+                    <p className="font-bold text-[20px] text-foreground">
                       {stats.views30d}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-gray-500">
+                    <p className="mt-0.5 text-[11px] text-subtle">
                       {t('insightsViews')}
                     </p>
                   </div>
                   <div className="rounded-xl bg-background-darker px-2 py-3">
-                    <p className="font-bold text-[20px] text-white">
+                    <p className="font-bold text-[20px] text-foreground">
                       {stats.copies30d}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-gray-500">
+                    <p className="mt-0.5 text-[11px] text-subtle">
                       {t('insightsCopies')}
                     </p>
                   </div>
                   <div className="rounded-xl bg-background-darker px-2 py-3">
-                    <p className="font-bold text-[20px] text-white">
+                    <p className="font-bold text-[20px] text-foreground">
                       {stats.saves}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-gray-500">
+                    <p className="mt-0.5 text-[11px] text-subtle">
                       {t('insightsSaves')}
                     </p>
                   </div>
                 </div>
-                <p className="text-[11px] text-gray-500">
+                <p className="text-[11px] text-subtle">
                   {t('insightsWindowNote')}
                 </p>
               </div>
@@ -867,20 +895,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             {!premium && initialValues ? (
               <div className="mt-2 flex flex-col gap-2 rounded-3xl bg-background-dark p-5 shadow-xl">
-                <span className="flex items-center gap-2 font-semibold text-[11px] text-gray-500 uppercase tracking-[0.06em]">
+                <span className="flex items-center gap-2 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
                   {t('insightsTitle')}
-                  <span className="inline-flex items-center rounded-full bg-white/10 px-[9px] py-0.5 font-bold text-[10.5px] text-gray-300 uppercase tracking-[0.05em]">
+                  <span className="inline-flex items-center rounded-full bg-overlay px-[9px] py-0.5 font-bold text-[10.5px] text-soft uppercase tracking-[0.05em]">
                     {t('voiceIntroPremiumTag')}
                   </span>
                 </span>
-                <p className="text-[13px] text-gray-400">
-                  {t('insightsUpsell')}
-                </p>
+                <p className="text-[13px] text-muted">{t('insightsUpsell')}</p>
               </div>
             ) : null}
           </div>
         </aside>
-      </form>
-    </div>
+      </fieldset>
+    </form>
   );
 };

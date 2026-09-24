@@ -2,7 +2,6 @@ import { after } from 'next/server';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
   getProfileByUserId,
-  getUserByDiscordId,
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
 } from '@/db';
@@ -37,10 +36,9 @@ export default async function Home({
   let viewerAvailability: AvailabilityPattern | undefined;
   let viewerUserId: string | undefined;
 
-  const persistedUser = user ? await getUserByDiscordId(user.id) : null;
-  if (persistedUser) {
-    viewerUserId = persistedUser.id;
-    const profile = await getProfileByUserId(persistedUser.id);
+  if (user) {
+    viewerUserId = user.accountId;
+    const profile = await getProfileByUserId(user.accountId);
     needsOnboarding = !profile;
     currentProfileId = profile?.profile.id;
 
@@ -71,6 +69,7 @@ export default async function Home({
 
   return (
     <DiscoveryFeed
+      userId={user?.id}
       authError={authError}
       isLoggedIn={isLoggedIn}
       locale={lang}

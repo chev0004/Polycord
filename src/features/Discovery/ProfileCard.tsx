@@ -28,9 +28,9 @@ import {
   isValidLanguageCode,
   type LanguageCode,
   type Proficiency,
-  type TimeFormat,
 } from '@/constants/languages';
 import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
+import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
@@ -50,7 +50,7 @@ export type DiscoveryTargetLanguage = {
 export type DiscoveryProfile = {
   id: string;
   displayName: string;
-  discordUsername: string;
+  discordUsername?: string;
   avatarUrl?: string;
   primaryLanguage: LanguageCode | string;
   primaryLanguageLevel?: Proficiency | string;
@@ -101,12 +101,10 @@ type ProfileCardProps = {
 
 const baseLanguagePillClasses =
   'rounded-md px-2.5 py-[5px] text-xs font-medium whitespace-nowrap flex-shrink-0';
-const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-gray-200`;
-const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip-bg,var(--color-primary-darker))] text-[var(--ct-chip-text,#fff)]`;
+const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-soft`;
+const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip-bg,var(--color-primary-darker))] text-[var(--ct-chip-text,var(--color-foreground))]`;
 const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
-
-const TIME_FORMAT_STORAGE_KEY = 'polycord_timeFormat';
 
 const getBumpAge = (value?: string) => {
   if (!value) return null;
@@ -123,12 +121,6 @@ const getBumpAge = (value?: string) => {
   if (hours < 24) return { key: 'bumpedHoursAgo' as const, count: hours };
 
   return { key: 'bumpedDaysAgo' as const, count: Math.floor(hours / 24) };
-};
-
-const getTimeFormat = (): TimeFormat => {
-  if (typeof window === 'undefined') return '24hr';
-  const stored = localStorage.getItem(TIME_FORMAT_STORAGE_KEY);
-  return stored === '12hr' || stored === '24hr' ? stored : '24hr';
 };
 
 export const ProfileCard = ({
@@ -156,13 +148,12 @@ export const ProfileCard = ({
   const isPreview = variant === 'preview';
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [timeFormat, setTimeFormat] = useState<TimeFormat>(() =>
-    getTimeFormat(),
-  );
+  const timeFormat = useTimeFormat();
   const languageDisplay = useLanguageDisplay();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   const canCopyUsername =
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
@@ -181,9 +172,10 @@ export const ProfileCard = ({
     (bumpAge ? t(bumpAge.key, { count: bumpAge.count ?? 0 }) : undefined);
 
   const handleCopyUsername = async () => {
-    if (!canCopyUsername || isCopying) return;
+    if (!canCopyUsername || isCopying || !profile.discordUsername) return;
 
     setIsCopying(true);
+    setCopyFailed(false);
     try {
       await navigator.clipboard.writeText(profile.discordUsername);
       setCopied(true);
@@ -197,28 +189,20 @@ export const ProfileCard = ({
         setCopied(false);
         setIsCopying(false);
       }, 2000);
-    } catch (err) {
-      console.error('Failed to copy username:', err);
+    } catch {
+      setCopyFailed(true);
       setIsCopying(false);
     }
   };
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setTimeFormat(getTimeFormat());
-    };
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('timeFormatChanged', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('timeFormatChanged', handleStorageChange);
-    };
-  }, []);
-
-  useEffect(() => {
     const updateTime = () => {
       if (profile.timezone) {
-        const formatted = formatCurrentTime(profile.timezone, timeFormat);
+        const formatted = formatCurrentTime(
+          profile.timezone,
+          timeFormat,
+          locale,
+        );
         setCurrentTime(formatted);
       } else {
         setCurrentTime('');
@@ -228,7 +212,7 @@ export const ProfileCard = ({
     updateTime();
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
-  }, [profile.timezone, timeFormat]);
+  }, [profile.timezone, timeFormat, locale]);
 
   const visibleTargetLanguageCount = isPreview ? 2 : 1;
   const displayedTargetLanguages = profile.targetLanguages.slice(
@@ -360,9 +344,9 @@ export const ProfileCard = ({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main/50 focus:outline-none focus-visible:bg-background-main ${className || 'text-white'}`}
+      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main ${className || 'text-foreground'}`}
     >
-      <Icon size={20} className={iconClassName || 'text-gray-400'} />
+      <Icon size={20} className={iconClassName || 'text-muted'} />
       {children}
     </button>
   );
@@ -390,7 +374,7 @@ export const ProfileCard = ({
   const cardClassName = [
     'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-transform duration-200',
     isPreview
-      ? 'mb-0 border border-white/10 shadow-none'
+      ? 'mb-0 border border-line shadow-none'
       : `mb-6 shadow-lg ${
           isPopoverOpen || isMenuOpen
             ? '-translate-y-1 shadow-xl'
@@ -410,7 +394,7 @@ export const ProfileCard = ({
         >
           <div className="flex items-center gap-1.5">
             {lastBumpRelative && (
-              <span className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-white/90 uppercase tracking-wide backdrop-blur-sm">
+              <span className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide backdrop-blur-sm">
                 {lastBumpRelative}
               </span>
             )}
@@ -420,7 +404,7 @@ export const ProfileCard = ({
                   <button
                     type="button"
                     suppressHydrationWarning
-                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-white"
+                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground"
                     aria-label={t('cardMenu')}
                   >
                     <MdMoreVert size={17} />
@@ -468,8 +452,8 @@ export const ProfileCard = ({
                         <MenuItem
                           icon={MdFlag}
                           onClick={handleReport}
-                          className="hover:!text-red-300 text-red-400"
-                          iconClassName="text-red-400"
+                          className="hover:!text-danger text-danger"
+                          iconClassName="text-danger"
                         >
                           {t('reportProfile')}
                         </MenuItem>
@@ -478,8 +462,8 @@ export const ProfileCard = ({
                         <MenuItem
                           icon={MdBlock}
                           onClick={handleBlock}
-                          className="hover:!text-red-300 text-red-400"
-                          iconClassName="text-red-400"
+                          className="hover:!text-danger text-danger"
+                          iconClassName="text-danger"
                         >
                           {t('blockProfile')}
                         </MenuItem>
@@ -506,11 +490,11 @@ export const ProfileCard = ({
       </div>
 
       <div className="flex min-w-0 flex-col gap-[3px]">
-        <h3 className="truncate font-figtree font-semibold text-lg text-white">
+        <h3 className="truncate font-figtree font-semibold text-foreground text-lg">
           {profile.displayName}
         </h3>
         {isPreview ? (
-          <span className="flex items-center gap-1.5 self-start text-gray-400 text-xs">
+          <span className="flex items-center gap-1.5 self-start text-muted text-xs">
             <MdContentCopy size={14} />
             <span>{t('copyUsername')}</span>
           </span>
@@ -525,7 +509,7 @@ export const ProfileCard = ({
               className={`flex items-center justify-center transition-all duration-200 ${
                 copied
                   ? 'scale-110 text-discord-blue-light'
-                  : 'text-gray-400 group-hover:text-white'
+                  : 'text-muted group-hover:text-foreground'
               }`}
             >
               {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
@@ -534,19 +518,24 @@ export const ProfileCard = ({
               className={`truncate text-xs transition-colors duration-200 ${
                 copied
                   ? 'font-medium text-discord-blue-light'
-                  : 'text-gray-400 group-hover:text-white'
+                  : 'text-muted group-hover:text-foreground'
               }`}
             >
               {copied ? t('copied') : t('copyUsername')}
             </span>
           </button>
         ) : (
-          <span className="truncate text-gray-500 text-xs">
+          <span className="truncate text-subtle text-xs">
             {t('signInToViewUsername')}
           </span>
         )}
       </div>
 
+      {copyFailed && profile.discordUsername ? (
+        <p role="alert" className="text-danger text-sm">
+          {t('copyFailed', { username: profile.discordUsername })}
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2">
         {renderLanguagePill(
           profile.primaryLanguage,
@@ -568,7 +557,7 @@ export const ProfileCard = ({
               <button
                 type="button"
                 suppressHydrationWarning
-                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-gray-300 transition-colors hover:bg-background-main/50 hover:text-white focus-visible:text-white"
+                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main hover:text-foreground focus-visible:text-foreground"
                 aria-label={t('showMoreLanguages', {
                   count: remainingLanguagesCount,
                 })}
@@ -623,7 +612,7 @@ export const ProfileCard = ({
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
         {(profile.interests.length > 0 || isPreview) && (
           <section className="flex flex-col gap-2">
-            <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
+            <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
               {t('tagsLabel')}
             </span>
             <div className="flex flex-wrap items-center gap-2">
@@ -632,7 +621,7 @@ export const ProfileCard = ({
                     renderTag(interest, `${profile.id}-tag-${interest}`),
                   )
                 : emptyTagsLabel && (
-                    <span className="text-gray-500 text-xs">
+                    <span className="text-subtle text-xs">
                       {emptyTagsLabel}
                     </span>
                   )}
@@ -642,16 +631,16 @@ export const ProfileCard = ({
 
         {(profile.about || (isPreview && bioFallback)) && (
           <section className="flex flex-col gap-2">
-            <span className="font-semibold text-[11px] text-gray-500 uppercase tracking-wide">
+            <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
               {t('descriptionLabel')}
             </span>
-            <p className="whitespace-pre-wrap break-words font-light text-gray-300 text-sm leading-normal">
+            <p className="whitespace-pre-wrap break-words font-light text-sm text-soft leading-normal">
               {profile.about || bioFallback}
             </p>
           </section>
         )}
 
-        <div className="mt-auto flex flex-wrap items-start justify-between gap-3 text-gray-400 text-xs">
+        <div className="mt-auto flex flex-wrap items-start justify-between gap-3 text-muted text-xs">
           <div className="flex flex-col gap-1">
             {profile.country && isPreview ? (
               <span className="flex items-center gap-1.5">

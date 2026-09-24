@@ -5,6 +5,7 @@ export type Notification = {
   kind: NotificationKind;
   actorName?: string;
   actorAvatarUrl?: string;
+  actorProfileId?: string;
   isGuest?: boolean;
   timestamp?: string;
   createdAt?: string;

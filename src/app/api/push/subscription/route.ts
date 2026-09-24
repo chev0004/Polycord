@@ -5,7 +5,6 @@ import {
   getUserSettingsByUserId,
   listPushSubscriptionsForUser,
   savePushSubscription,
-  upsertDiscordUser,
 } from '@/db';
 import { getActiveUser } from '@/lib/auth';
 import { isPushConfigured, isPushEndpoint } from '@/lib/push/server';
@@ -49,10 +48,9 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const user = await upsertDiscordUser(currentUser);
   const { subscription } = payload.data;
 
-  await savePushSubscription(user.id, {
+  await savePushSubscription(currentUser.accountId, {
     endpoint: subscription.endpoint,
     p256dh: subscription.keys.p256dh,
     auth: subscription.keys.auth,
@@ -68,8 +66,7 @@ export const DELETE = async () => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await upsertDiscordUser(currentUser);
-  await deletePushSubscriptionsForUser(user.id);
+  await deletePushSubscriptionsForUser(currentUser.accountId);
 
   return NextResponse.json({ deleted: true });
 };
@@ -78,10 +75,9 @@ export const GET = async () => {
   const currentUser = await getActiveUser();
   if (!currentUser)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const user = await upsertDiscordUser(currentUser);
   const [settings, subscriptions] = await Promise.all([
-    getUserSettingsByUserId(user.id),
-    listPushSubscriptionsForUser(user.id),
+    getUserSettingsByUserId(currentUser.accountId),
+    listPushSubscriptionsForUser(currentUser.accountId),
   ]);
   return NextResponse.json({
     enabled: settings?.pushNotifications ?? false,

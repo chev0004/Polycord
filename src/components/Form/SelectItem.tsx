@@ -47,7 +47,7 @@ export const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         delayDuration={300}
       >
         <SelectPrimitive.Item
-          className={`flex min-h-10 w-full cursor-pointer select-none items-center justify-between gap-2 rounded-full px-3 text-sm text-white transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-main hover:text-primary-light data-[disabled]:pointer-events-none data-[highlighted]:bg-background-main data-[disabled]:text-gray-500 data-[highlighted]:text-primary-light ${tabSelected ? 'bg-background-main text-primary-light' : ''} ${className ?? ''}`}
+          className={`flex min-h-10 w-full cursor-pointer select-none items-center justify-between gap-2 rounded-full px-3 text-foreground text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-main hover:text-primary-light data-[disabled]:pointer-events-none data-[highlighted]:bg-background-main data-[disabled]:text-subtle data-[highlighted]:text-primary-light ${tabSelected ? 'bg-background-main text-primary-light' : ''} ${className ?? ''}`}
           data-tab-selected={tabSelected}
           {...props}
           ref={forwardedRef}

@@ -40,7 +40,7 @@ export const LegalDocument = ({
         <button
           type="button"
           onClick={() => router.push(`/${locale}/legal`)}
-          className="mb-6 inline-flex items-center gap-1.5 text-gray-400 text-sm transition-colors hover:text-white focus-visible:text-white focus-visible:underline"
+          className="mb-6 inline-flex items-center gap-1.5 text-muted text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:underline"
         >
           <MdArrowBack size={18} />
           {t('backToLegal')}
@@ -49,34 +49,34 @@ export const LegalDocument = ({
         <p className="font-semibold text-primary text-sm uppercase tracking-wide">
           {t('eyebrow')}
         </p>
-        <h1 className="mt-2 font-black text-3xl text-white tracking-[-0.01em] sm:text-4xl">
+        <h1 className="mt-2 font-black text-3xl text-foreground tracking-[-0.01em] sm:text-4xl">
           {t(`${documentId}Title`)}
         </h1>
-        <p className="mt-3 text-gray-400 text-sm">
+        <p className="mt-3 text-muted text-sm">
           {t('lastUpdated', { date: formattedDate })}
         </p>
 
         {isFallback ? (
-          <div className="mt-6 flex items-start gap-2.5 rounded-md border border-primary-dark bg-background-darker px-4 py-3 text-gray-300 text-sm">
+          <div className="mt-6 flex items-start gap-2.5 rounded-md border border-primary-dark bg-background-darker px-4 py-3 text-sm text-soft">
             <MdInfoOutline className="mt-0.5 shrink-0 text-primary" size={18} />
             <p>{t('fallbackNotice')}</p>
           </div>
         ) : null}
 
-        <p className="mt-8 text-[15px] text-gray-300 leading-relaxed">
+        <p className="mt-8 text-[15px] text-soft leading-relaxed">
           {content.intro}
         </p>
 
         <div className="mt-10 flex flex-col gap-10">
           {content.sections.map((section) => (
             <section key={section.heading}>
-              <h2 className="font-bold text-white text-xl tracking-[-0.01em]">
+              <h2 className="font-bold text-foreground text-xl tracking-[-0.01em]">
                 {section.heading}
               </h2>
               {section.paragraphs?.map((paragraph) => (
                 <p
                   key={paragraph}
-                  className="mt-3 text-[15px] text-gray-300 leading-relaxed"
+                  className="mt-3 text-[15px] text-soft leading-relaxed"
                 >
                   {paragraph}
                 </p>
@@ -86,7 +86,7 @@ export const LegalDocument = ({
                   {section.list.map((item) => (
                     <li
                       key={item}
-                      className="flex gap-2.5 text-[15px] text-gray-300 leading-relaxed"
+                      className="flex gap-2.5 text-[15px] text-soft leading-relaxed"
                     >
                       <span
                         aria-hidden="true"

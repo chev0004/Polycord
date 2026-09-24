@@ -8,6 +8,7 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 
 type DiscoveryFeedProps = {
+  userId?: string;
   authError?: string;
   isLoggedIn: boolean;
   locale: string;
@@ -22,6 +23,7 @@ type DiscoveryFeedProps = {
 };
 
 export const DiscoveryFeed = async ({
+  userId,
   authError,
   isLoggedIn,
   locale,
@@ -71,6 +73,7 @@ export const DiscoveryFeed = async ({
 
   return (
     <DiscoveryPage
+      userId={userId}
       authError={authError}
       feedError={feedError}
       isLoggedIn={isLoggedIn}

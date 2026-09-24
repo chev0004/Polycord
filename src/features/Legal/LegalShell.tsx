@@ -20,7 +20,7 @@ export const LegalShell = ({
   const router = useRouteProgressRouter();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background-main text-white">
+    <div className="flex min-h-screen flex-col bg-background-main text-foreground">
       <Navbar
         iconUrl={userAvatarUrl}
         isLoggedIn={isLoggedIn}

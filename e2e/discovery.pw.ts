@@ -103,7 +103,9 @@ test('discovery keeps results through refresh, failure and return navigation', a
     await expect(page.getByText('0 partners', { exact: true })).toBeVisible();
     await expect(page.locator('article')).toHaveCount(0);
     await page.goForward();
-    await expect(page.getByText('This page could not be found.')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Page not found' }),
+    ).toBeVisible();
   } finally {
     await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
     await sql.end();
@@ -118,10 +120,15 @@ test('discovery responses stay private and slow delivery does not hold a profile
   const owners =
     await sql`insert into users (discord_user_id, discord_username, display_name)
     select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Viewer ' || n from generate_series(1,3) n returning id, discord_user_id`;
-  const cookie = (id: string) => {
+  const cookie = (id: string, accountId: string) => {
     const payload = Buffer.from(
       JSON.stringify({
-        user: { id, name: 'Viewer', username: 'Viewer' },
+        user: {
+          id,
+          accountId,
+          name: 'Viewer',
+          username: 'Viewer',
+        },
         expiresAt: Date.now() + 3600000,
       }),
     ).toString('base64url');
@@ -135,9 +142,12 @@ test('discovery responses stay private and slow delivery does not hold a profile
       await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags)
       values (${owners[2].id},true,'en','ja','intermediate','An isolated delivery fixture.',array[${prefix}]) returning id`;
     await sql`insert into saved_profiles (user_id,profile_id) values (${owners[0].id},${profile.id})`;
+    await sql`insert into user_settings (user_id,profile_view_alert) values (${owners[2].id},true)`;
     const load = (index: number) =>
       request.get(`/api/discovery?tag=${prefix}`, {
-        headers: { Cookie: cookie(owners[index].discord_user_id) },
+        headers: {
+          Cookie: cookie(owners[index].discord_user_id, owners[index].id),
+        },
       });
     const first = await load(0);
     expect(first.headers()['cache-control']).toBe('private, no-store');

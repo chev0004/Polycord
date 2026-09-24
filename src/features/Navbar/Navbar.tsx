@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           type="button"
           onClick={onHomeClick}
           aria-label={t('disspeak')}
-          className="flex select-none items-center gap-2.5 font-black font-figtree text-2xl text-white tracking-[-0.01em] no-underline focus:outline-none focus-visible:opacity-80 sm:text-[28px]"
+          className="flex select-none items-center gap-2.5 font-black font-figtree text-2xl text-foreground tracking-[-0.01em] no-underline focus:outline-none focus-visible:opacity-80 sm:text-[28px]"
         >
           <Image
             src="/polycord-logo.svg"

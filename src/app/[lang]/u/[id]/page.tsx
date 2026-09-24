@@ -3,7 +3,6 @@ import { after } from 'next/server';
 import {
   getProfileByUserId,
   getPublicProfileById,
-  getUserByDiscordId,
   getUserSettingsByUserId,
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
@@ -23,35 +22,39 @@ export default async function PublicProfileRoute({
   params: Promise<{ lang: string; id: string }>;
 }) {
   const { lang, id } = await params;
-  const row = await getPublicProfileById(id);
+  const user = await getCurrentUser();
+  const row = await getPublicProfileById(id, user?.accountId);
 
   if (!row) {
     notFound();
   }
 
-  const profile = mapProfileToDiscoveryProfile(row);
-  const user = await getCurrentUser();
+  const profile = mapProfileToDiscoveryProfile(row, Boolean(user));
 
   let isLoggedIn = false;
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
   let viewerTimezone: string | undefined;
   let viewerUserId: string | undefined;
-  let viewerActor: { name: string; avatarUrl: string | null } | null = null;
+  let viewerActor: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null = null;
 
-  const persistedUser = user ? await getUserByDiscordId(user.id) : null;
-  if (user && persistedUser) {
+  if (user) {
     isLoggedIn = true;
-    viewerUserId = persistedUser.id;
+    viewerUserId = user.accountId;
     viewerActor = {
-      name: persistedUser.displayName,
-      avatarUrl: persistedUser.avatarUrl,
+      id: user.accountId,
+      name: user.name,
+      avatarUrl: user.avatarUrl ?? null,
     };
     const [viewerProfile, savedIds, viewerSettings, viewerPremium] =
       await Promise.all([
-        getProfileByUserId(persistedUser.id),
-        listSavedProfileIds(persistedUser.id),
-        getUserSettingsByUserId(persistedUser.id),
+        getProfileByUserId(user.accountId),
+        listSavedProfileIds(user.accountId),
+        getUserSettingsByUserId(user.accountId),
         isPremiumUser(user),
       ]);
     currentProfileId = viewerProfile?.profile.id;

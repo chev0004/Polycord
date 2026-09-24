@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { and, asc, eq, inArray, isNull, lt, or } from 'drizzle-orm';
+import { z } from 'zod';
 import {
   type AvailabilityPattern,
   availabilityPatternToPreset,
@@ -20,6 +21,7 @@ import { isPremiumDiscordId } from '@/lib/entitlements';
 import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
+import { isBlockedEitherWay } from './safety';
 import {
   moderationRestrictions,
   type NewProfile,
@@ -155,12 +157,10 @@ const toAvailabilityColumns = (pattern: AvailabilityPattern | null) => {
   };
 };
 
-const toDiscoveryProfile = ({
-  profile,
-  targetLanguages,
-  user,
-  subscription,
-}: ProfileWithUser): DiscoveryProfile => ({
+const toDiscoveryProfile = (
+  { profile, targetLanguages, user, subscription }: ProfileWithUser,
+  isLoggedIn = false,
+): DiscoveryProfile => ({
   premium: isPremiumOwner(user, subscription),
   cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
   boosted:
@@ -173,7 +173,8 @@ const toDiscoveryProfile = ({
       : undefined,
   id: profile.id,
   displayName: user.displayName,
-  discordUsername: user.discordUsername,
+  discordUsername:
+    isLoggedIn || profile.allowAnonymousCopy ? user.discordUsername : undefined,
   avatarUrl: user.avatarUrl ?? undefined,
   primaryLanguage: profile.primaryLanguage,
   targetLanguages,
@@ -301,6 +302,7 @@ export const getUserByDiscordId = async (discordUserId: string) => {
 };
 
 export const getProfileById = async (profileId: string) => {
+  if (!z.uuid().safeParse(profileId).success) return null;
   const [row] = await db
     .select({
       profile: profiles,
@@ -363,31 +365,43 @@ const isVisibleProfile = (row: { profile: Profile; user: User }) =>
   (row.user.suspendedUntil === null ||
     row.user.suspendedUntil.getTime() < Date.now());
 
-export const getPublicProfileById = async (profileId: string) => {
+export const getPublicProfileById = async (
+  profileId: string,
+  viewerUserId?: string,
+) => {
   const row = await getProfileById(profileId);
 
   if (!row || !isVisibleProfile(row)) {
     return null;
   }
+  if (
+    viewerUserId &&
+    (await isBlockedEitherWay(viewerUserId, row.profile.userId))
+  )
+    return null;
 
   return row;
 };
 
 export const mapDiscoveryProfiles = async (
   rows: Omit<ProfileWithUser, 'targetLanguages'>[],
+  isLoggedIn: boolean,
 ) => {
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
     rows.map((row) => row.profile.id),
   );
 
   return rows.map((row) =>
-    toDiscoveryProfile({
-      ...row,
-      targetLanguages: targetLanguagesForProfile(
-        row.profile,
-        targetLanguagesByProfile.get(row.profile.id),
-      ),
-    }),
+    toDiscoveryProfile(
+      {
+        ...row,
+        targetLanguages: targetLanguagesForProfile(
+          row.profile,
+          targetLanguagesByProfile.get(row.profile.id),
+        ),
+      },
+      isLoggedIn,
+    ),
   );
 };
 
@@ -409,7 +423,7 @@ export const listPublicProfilesByIds = async (
     .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(and(inArray(profiles.id, profileIds), publiclyVisible()));
 
-  const items = await mapDiscoveryProfiles(rows);
+  const items = await mapDiscoveryProfiles(rows, true);
   const byId = new Map(items.map((profile) => [profile.id, profile]));
 
   return profileIds

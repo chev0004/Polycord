@@ -42,10 +42,10 @@ export type AnalyticsDashboardProps = {
 
 const StatCard = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col gap-1 rounded-2xl bg-background-dark p-5 shadow-xl">
-    <span className="text-[12.5px] text-gray-500 uppercase tracking-[0.05em]">
+    <span className="text-[12.5px] text-subtle uppercase tracking-[0.05em]">
       {label}
     </span>
-    <span className="font-bold font-figtree text-[28px] text-white leading-none">
+    <span className="font-bold font-figtree text-[28px] text-foreground leading-none">
       {value}
     </span>
   </div>
@@ -108,10 +108,10 @@ export const AnalyticsDashboard = ({
   return (
     <div className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24">
       <div className="mb-6">
-        <h1 className="font-bold font-figtree text-[30px] text-white leading-[1.1]">
+        <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
           {t('title')}
         </h1>
-        <p className="mt-1.5 font-light text-[15px] text-gray-400">
+        <p className="mt-1.5 font-light text-[15px] text-muted">
           {t('subtitle', { days: rangeDays })}
         </p>
       </div>
@@ -133,10 +133,10 @@ export const AnalyticsDashboard = ({
 
       {totals.totalEvents === 0 ? (
         <div className="rounded-3xl bg-background-dark p-10 text-center shadow-xl">
-          <p className="font-semibold text-[17px] text-white">
+          <p className="font-semibold text-[17px] text-foreground">
             {t('emptyTitle')}
           </p>
-          <p className="mt-1 text-[14px] text-gray-500">
+          <p className="mt-1 text-[14px] text-subtle">
             {t('emptyDescription')}
           </p>
         </div>
@@ -146,7 +146,7 @@ export const AnalyticsDashboard = ({
             <h2 className="mb-1 font-figtree font-semibold text-[19px] text-primary">
               {t('funnelTitle')}
             </h2>
-            <p className="mb-4 text-[13px] text-gray-500">
+            <p className="mb-4 text-[13px] text-subtle">
               {t('funnelDescription')}
             </p>
             <div className="flex flex-col gap-3">
@@ -155,12 +155,10 @@ export const AnalyticsDashboard = ({
                 return (
                   <div key={step.name} className="flex flex-col gap-1">
                     <div className="flex items-center justify-between text-[13px]">
-                      <span className="text-gray-300">
-                        {eventLabel(step.name)}
-                      </span>
-                      <span className="text-gray-400 tabular-nums">
+                      <span className="text-soft">{eventLabel(step.name)}</span>
+                      <span className="text-muted tabular-nums">
                         {formatNumber(step.total)}
-                        <span className="ml-2 text-gray-600">
+                        <span className="ml-2 text-subtle">
                           {`${Math.round(share * 100)}%`}
                         </span>
                       </span>
@@ -204,7 +202,7 @@ export const AnalyticsDashboard = ({
                 {days.map((day) => (
                   <span
                     key={day.date}
-                    className="flex-1 text-center text-[10px] text-gray-600 tabular-nums"
+                    className="flex-1 text-center text-[10px] text-subtle tabular-nums"
                   >
                     {day.date.slice(8)}
                   </span>
@@ -220,7 +218,7 @@ export const AnalyticsDashboard = ({
             <div className="flex flex-col gap-2.5">
               {eventCounts.map((event) => (
                 <div key={event.name} className="flex items-center gap-3">
-                  <span className="w-44 shrink-0 truncate text-[13px] text-gray-300">
+                  <span className="w-44 shrink-0 truncate text-[13px] text-soft">
                     {eventLabel(event.name)}
                   </span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-background-darker">
@@ -231,7 +229,7 @@ export const AnalyticsDashboard = ({
                       }}
                     />
                   </div>
-                  <span className="w-12 shrink-0 text-right text-[13px] text-gray-400 tabular-nums">
+                  <span className="w-12 shrink-0 text-right text-[13px] text-muted tabular-nums">
                     {formatNumber(event.total)}
                   </span>
                 </div>
@@ -243,24 +241,24 @@ export const AnalyticsDashboard = ({
             <h2 className="mb-4 font-figtree font-semibold text-[19px] text-primary">
               {t('recentTitle')}
             </h2>
-            <div className="flex flex-col divide-y divide-white/5">
+            <div className="flex flex-col divide-y divide-line">
               {recent.map((event) => (
                 <div
                   key={event.id}
                   className="flex items-center gap-3 py-2.5 text-[13px]"
                 >
-                  <span className="min-w-0 flex-1 truncate text-gray-200">
+                  <span className="min-w-0 flex-1 truncate text-soft">
                     {eventLabel(event.name)}
                   </span>
-                  <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-[11px] text-gray-400">
+                  <span className="shrink-0 rounded-full bg-overlay px-2 py-0.5 text-[11px] text-muted">
                     {event.userId
                       ? t('audienceAuthenticated')
                       : t('audienceAnonymous')}
                   </span>
-                  <span className="w-10 shrink-0 text-center text-gray-500 uppercase">
+                  <span className="w-10 shrink-0 text-center text-subtle uppercase">
                     {event.locale ?? '—'}
                   </span>
-                  <span className="w-32 shrink-0 text-right text-gray-500 tabular-nums">
+                  <span className="w-32 shrink-0 text-right text-subtle tabular-nums">
                     {formatTime(event.createdAt)}
                   </span>
                 </div>

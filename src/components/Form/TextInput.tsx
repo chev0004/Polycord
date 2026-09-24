@@ -8,11 +8,11 @@ export const textFieldClasses = (error?: boolean, readOnly?: boolean) => {
   const border = error
     ? 'border-red-500 hover:border-red-500 focus:border-red-500'
     : readOnly
-      ? 'border-white/[0.07] hover:border-white/[0.07] focus:border-white/[0.07]'
-      : 'border-white/[0.07] hover:border-white/[0.14] focus:border-white/[0.14]';
-  const text = readOnly ? 'cursor-not-allowed text-gray-400' : 'text-white';
+      ? 'border-line hover:border-line focus:border-line'
+      : 'border-line hover:border-line-strong focus:border-line-strong';
+  const text = readOnly ? 'cursor-not-allowed text-muted' : 'text-foreground';
 
-  return `w-full rounded-xl border bg-background-darker placeholder-gray-500 outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none disabled:cursor-not-allowed disabled:text-gray-400 disabled:opacity-50 ${border} ${text}`;
+  return `w-full rounded-xl border bg-background-darker placeholder-subtle outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 ${border} ${text}`;
 };
 
 export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(

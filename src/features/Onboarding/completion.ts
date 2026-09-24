@@ -9,8 +9,6 @@ export type OnboardingDraft = {
   timezone?: string;
 };
 
-export const ONBOARDING_DRAFT_STORAGE_KEY = 'polycord_onboarding_draft';
-
 export const requiredOnboardingFields: Array<keyof OnboardingDraft> = [
   'primaryLanguage',
   'targetLanguage',

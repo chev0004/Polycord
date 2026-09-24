@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, screen, userEvent, within } from '@storybook/test';
+import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 const meta: Meta<typeof LanguageSwitcher> = {
@@ -15,9 +16,11 @@ const meta: Meta<typeof LanguageSwitcher> = {
   },
   decorators: [
     (Story) => (
-      <div className="flex justify-end bg-background-darker p-10">
-        <Story />
-      </div>
+      <RouteProgressProvider>
+        <div className="flex justify-end bg-background-darker p-10">
+          <Story />
+        </div>
+      </RouteProgressProvider>
     ),
   ],
 };

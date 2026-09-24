@@ -140,7 +140,7 @@ export const listDiscoveryPage = async (
     .offset((page - 1) * DISCOVERY_PAGE_SIZE);
   const profileIds = rows.map((row) => row.profile.id);
   const [items, saved] = await Promise.all([
-    mapDiscoveryProfiles(rows),
+    mapDiscoveryProfiles(rows, Boolean(viewerUserId)),
     viewerUserId && profileIds.length
       ? db
           .select({ id: savedProfiles.profileId })

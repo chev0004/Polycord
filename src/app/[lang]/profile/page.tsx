@@ -4,7 +4,6 @@ import {
   getProfileByUserId,
   getProfileStatsForUser,
   mapProfileAvailability,
-  upsertDiscordUser,
 } from '@/db';
 import {
   DEFAULT_CARD_COLOR,
@@ -53,20 +52,20 @@ export default async function ProfileRoute({
     redirect(`/${lang}`);
   }
 
-  const persistedUser = await upsertDiscordUser(user);
-  const profile = await getProfileByUserId(persistedUser.id);
+  const profile = await getProfileByUserId(user.accountId);
   const premium = await isPremiumUser(user);
   const boostStatus = premium
-    ? await getBoostStatusForUser(persistedUser.id, premium)
+    ? await getBoostStatusForUser(user.accountId, premium)
     : undefined;
   const stats =
     premium && profile
-      ? await getProfileStatsForUser(persistedUser.id, profile.profile.id)
+      ? await getProfileStatsForUser(user.accountId, profile.profile.id)
       : undefined;
 
   return (
     <main className="min-h-screen bg-background-main">
       <ProfileRouteClient
+        userId={user.id}
         locale={lang}
         premium={premium}
         boostedUntil={boostStatus?.boostedUntil?.toISOString()}
