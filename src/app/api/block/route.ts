@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import {
-  blockUser,
-  getProfileById,
-  getUserByDiscordId,
-  unblockUser,
-  upsertDiscordUser,
-} from '@/db';
+import { z } from 'zod';
+import { blockUser, getProfileById, unblockUser } from '@/db';
 import { getActiveUser } from '@/lib/auth';
 
 const readProfileId = async (request: Request): Promise<string | null> => {
@@ -22,7 +17,7 @@ const readProfileId = async (request: Request): Promise<string | null> => {
     typeof body !== 'object' ||
     !('profileId' in body) ||
     typeof body.profileId !== 'string' ||
-    body.profileId.length === 0
+    !z.uuid().safeParse(body.profileId).success
   ) {
     return null;
   }
@@ -49,16 +44,14 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  const blocker = await upsertDiscordUser(currentUser);
-
-  if (target.profile.userId === blocker.id) {
+  if (target.profile.userId === currentUser.accountId) {
     return NextResponse.json(
       { error: 'Cannot block yourself' },
       { status: 400 },
     );
   }
 
-  await blockUser(blocker.id, target.profile.userId);
+  await blockUser(currentUser.accountId, target.profile.userId);
 
   return NextResponse.json({ blocked: true });
 };
@@ -77,10 +70,9 @@ export const DELETE = async (request: Request) => {
   }
 
   const target = await getProfileById(profileId);
-  const blocker = await getUserByDiscordId(currentUser.id);
 
-  if (target && blocker) {
-    await unblockUser(blocker.id, target.profile.userId);
+  if (target) {
+    await unblockUser(currentUser.accountId, target.profile.userId);
   }
 
   return NextResponse.json({ blocked: false });

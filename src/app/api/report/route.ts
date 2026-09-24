@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
-import {
-  createReport,
-  getProfileById,
-  type ReportReason,
-  upsertDiscordUser,
-} from '@/db';
+import { z } from 'zod';
+import { createReport, getProfileById, type ReportReason } from '@/db';
 import { getActiveUser } from '@/lib/auth';
 import {
   enforceRateLimit,
@@ -43,7 +39,7 @@ const readReportBody = async (request: Request): Promise<ReportBody | null> => {
 
   const { profileId, reason, details } = body as Record<string, unknown>;
 
-  if (typeof profileId !== 'string' || profileId.length === 0) {
+  if (typeof profileId !== 'string' || !z.uuid().safeParse(profileId).success) {
     return null;
   }
 
@@ -83,9 +79,7 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  const reporter = await upsertDiscordUser(currentUser);
-
-  if (target.profile.userId === reporter.id) {
+  if (target.profile.userId === currentUser.accountId) {
     return NextResponse.json(
       { error: 'Cannot report your own profile' },
       { status: 400 },
@@ -93,7 +87,7 @@ export const POST = async (request: Request) => {
   }
 
   const limit = await enforceRateLimit('report', {
-    userId: reporter.id,
+    userId: currentUser.accountId,
     ip: requestIp(request),
   });
 
@@ -102,7 +96,7 @@ export const POST = async (request: Request) => {
   }
 
   await createReport({
-    reporterUserId: reporter.id,
+    reporterUserId: currentUser.accountId,
     reportedUserId: target.profile.userId,
     reportedProfileId: target.profile.id,
     reason: body.reason,

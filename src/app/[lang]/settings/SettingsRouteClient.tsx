@@ -106,6 +106,8 @@ export const SettingsRouteClient = ({
           body: JSON.stringify({ confirmation: 'DELETE' }),
         });
 
+        if (response.status === 502) return 'billing-error';
+
         if (!response.ok) {
           throw new Error('Account delete failed');
         }

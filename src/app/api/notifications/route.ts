@@ -5,12 +5,9 @@ import {
   createNotification,
   deleteNotification,
   getPublicProfileById,
-  getUserByDiscordId,
-  listBlockedUserIds,
   listNotificationsForUser,
   markAllNotificationsRead,
   setNotificationRead,
-  upsertDiscordUser,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
@@ -43,17 +40,8 @@ export const GET = async () => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (!user) {
-    return NextResponse.json(
-      { notifications: [], premium: false },
-      { headers: { 'Cache-Control': 'private, no-store' } },
-    );
-  }
-
   const [rows, premium] = await Promise.all([
-    listNotificationsForUser(user.id),
+    listNotificationsForUser(currentUser.accountId),
     isPremiumUser(currentUser),
   ]);
 
@@ -91,37 +79,27 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await parseBody(request);
-  const profileId = body.profileId;
+  const profileId = z.uuid().safeParse((await parseBody(request)).profileId);
 
-  if (!z.uuid().safeParse(profileId).success) {
+  if (!profileId.success) {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const target = await getPublicProfileById(profileId as string);
+  const target = await getPublicProfileById(
+    profileId.data,
+    currentUser.accountId,
+  );
 
-  if (!target?.profile.isPublic) {
+  if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  const actor = await upsertDiscordUser(currentUser);
-  const [actorBlocks, ownerBlocks] = await Promise.all([
-    listBlockedUserIds(actor.id),
-    listBlockedUserIds(target.profile.userId),
-  ]);
-  if (
-    actorBlocks.includes(target.profile.userId) ||
-    ownerBlocks.includes(actor.id)
-  ) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
-  }
-
-  if (target.profile.userId === actor.id) {
+  if (target.profile.userId === currentUser.accountId) {
     return NextResponse.json({ created: false });
   }
 
   const limit = await enforceRateLimit('copy', {
-    userId: actor.id,
+    userId: currentUser.accountId,
     ip: requestIp(request),
   });
 
@@ -131,7 +109,7 @@ export const POST = async (request: Request) => {
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileCopyReceived,
-    userId: actor.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
     metadata: { ownerUserId: target.profile.userId },
   });
@@ -139,9 +117,9 @@ export const POST = async (request: Request) => {
   const notification = await createNotification({
     userId: target.profile.userId,
     kind: 'copy',
-    actorUserId: actor.id,
-    actorName: actor.displayName,
-    actorAvatarUrl: actor.avatarUrl,
+    actorUserId: currentUser.accountId,
+    actorName: currentUser.name,
+    actorAvatarUrl: currentUser.avatarUrl ?? null,
     isGuest: false,
   });
 
@@ -155,24 +133,20 @@ export const PATCH = async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (!user) {
-    return NextResponse.json({ ok: true });
-  }
-
   const body = await parseBody(request);
 
   if (body.all === true) {
-    await markAllNotificationsRead(user.id);
+    await markAllNotificationsRead(currentUser.accountId);
     return NextResponse.json({ ok: true });
   }
 
-  if (!z.uuid().safeParse(body.id).success || typeof body.read !== 'boolean') {
+  const id = z.uuid().safeParse(body.id);
+
+  if (!id.success || typeof body.read !== 'boolean') {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  await setNotificationRead(user.id, body.id as string, body.read);
+  await setNotificationRead(currentUser.accountId, id.data, body.read);
 
   return NextResponse.json({ ok: true });
 };
@@ -184,24 +158,20 @@ export const DELETE = async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (!user) {
-    return NextResponse.json({ ok: true });
-  }
-
   const body = await parseBody(request);
 
   if (body.all === true) {
-    await clearNotifications(user.id);
+    await clearNotifications(currentUser.accountId);
     return NextResponse.json({ ok: true });
   }
 
-  if (!z.uuid().safeParse(body.id).success) {
+  const id = z.uuid().safeParse(body.id);
+
+  if (!id.success) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  await deleteNotification(user.id, body.id as string);
+  await deleteNotification(currentUser.accountId, id.data);
 
   return NextResponse.json({ ok: true });
 };

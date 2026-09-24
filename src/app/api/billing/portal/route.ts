@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSubscriptionByUserId, upsertDiscordUser } from '@/db';
+import { getSubscriptionByUserId } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import {
   createCheckoutSession,
@@ -32,8 +32,7 @@ export const POST = async (request: Request) => {
 
   const origin = new URL(request.url).origin;
   const settingsUrl = `${origin}/${locale}/settings#premium`;
-  const user = await upsertDiscordUser(currentUser);
-  const subscription = await getSubscriptionByUserId(user.id);
+  const subscription = await getSubscriptionByUserId(currentUser.accountId);
 
   try {
     const url = subscription?.stripeCustomerId
@@ -42,9 +41,9 @@ export const POST = async (request: Request) => {
           returnUrl: settingsUrl,
         })
       : await createCheckoutSession({
-          userId: user.id,
+          userId: currentUser.accountId,
           customerId: subscription?.stripeCustomerId,
-          email: user.email ?? undefined,
+          email: currentUser.email,
           successUrl: settingsUrl,
           cancelUrl: settingsUrl,
         });

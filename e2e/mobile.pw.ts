@@ -19,9 +19,12 @@ for (const width of [320, 375, 390]) {
       language?.x ?? 0,
     );
     const id = randomUUID().replaceAll('-', '');
+    const accountId = randomUUID();
+    const sql = postgres(process.env.TEST_DATABASE_URL as string);
+    await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, ${id}, 'Mobile test')`;
     const payload = Buffer.from(
       JSON.stringify({
-        user: { id, name: 'Mobile test' },
+        user: { id, accountId, name: 'Mobile test' },
         expiresAt: Date.now() + 3600000,
       }),
     ).toString('base64url');
@@ -36,8 +39,12 @@ for (const width of [320, 375, 390]) {
         path: '/',
       },
     ]);
-    const sql = postgres(process.env.TEST_DATABASE_URL as string);
     const fits = async () => {
+      if (!new URL(page.url()).pathname.endsWith('/settings')) {
+        await expect(
+          page.getByRole('button', { name: 'Account menu' }),
+        ).toBeVisible();
+      }
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBeLessThanOrEqual(width);

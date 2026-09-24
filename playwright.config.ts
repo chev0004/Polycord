@@ -22,9 +22,9 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'bun run next dev -p 3119',
+    command: 'bun run build && bun run start -p 3119',
     url: 'http://localhost:3119/en',
-    timeout: 120000,
+    timeout: 180000,
     reuseExistingServer: !process.env.CI,
     env: {
       DATABASE_URL: databaseUrl,

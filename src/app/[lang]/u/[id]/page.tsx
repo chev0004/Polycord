@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { z } from 'zod';
 import {
   getProfileByUserId,
   getPublicProfileById,
@@ -6,7 +7,6 @@ import {
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
-  upsertDiscordUser,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -22,6 +22,7 @@ export default async function PublicProfileRoute({
   params: Promise<{ lang: string; id: string }>;
 }) {
   const { lang, id } = await params;
+  if (!z.uuid().safeParse(id).success) notFound();
   const row = await getPublicProfileById(id);
 
   if (!row) {
@@ -44,16 +45,15 @@ export default async function PublicProfileRoute({
 
   if (user) {
     isLoggedIn = true;
-    const persistedUser = await upsertDiscordUser(user);
-    viewerUserId = persistedUser.id;
+    viewerUserId = user.accountId;
     viewerActor = {
-      id: persistedUser.id,
-      name: persistedUser.displayName,
-      avatarUrl: persistedUser.avatarUrl,
+      id: user.accountId,
+      name: user.name,
+      avatarUrl: user.avatarUrl ?? null,
     };
-    const viewerProfile = await getProfileByUserId(persistedUser.id);
+    const viewerProfile = await getProfileByUserId(user.accountId);
     currentProfileId = viewerProfile?.profile.id;
-    savedProfileIds = await listSavedProfileIds(persistedUser.id);
+    savedProfileIds = await listSavedProfileIds(user.accountId);
 
     if (viewerProfile) {
       viewerTimezone = toViewerAvailabilityContext(
@@ -62,7 +62,7 @@ export default async function PublicProfileRoute({
     }
 
     const [viewerSettings, viewerPremium] = await Promise.all([
-      getUserSettingsByUserId(persistedUser.id),
+      getUserSettingsByUserId(user.accountId),
       isPremiumUser(user),
     ]);
 
