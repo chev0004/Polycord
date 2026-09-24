@@ -136,17 +136,19 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             <MenuItem icon={MdBookmarkBorder} onClick={onSavedClick}>
               {t('saved')}
             </MenuItem>
-            <MenuItem
-              icon={MdArrowUpward}
-              onClick={onBumpProfileClick}
-              disabled={isBumpOnCooldown}
-            >
-              {isBumpOnCooldown
-                ? t('bumpProfileCooldown', {
-                    time: formatBumpCooldown(bumpRemainingMs),
-                  })
-                : t('bumpProfile')}
-            </MenuItem>
+            {onBumpProfileClick ? (
+              <MenuItem
+                icon={MdArrowUpward}
+                onClick={onBumpProfileClick}
+                disabled={isBumpOnCooldown}
+              >
+                {isBumpOnCooldown
+                  ? t('bumpProfileCooldown', {
+                      time: formatBumpCooldown(bumpRemainingMs),
+                    })
+                  : t('bumpProfile')}
+              </MenuItem>
+            ) : null}
             <MenuItem icon={MdOutlineSettings} onClick={onSettingsClick}>
               {t('settings')}
             </MenuItem>
