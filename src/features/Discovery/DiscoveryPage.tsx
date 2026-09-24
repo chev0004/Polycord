@@ -259,9 +259,17 @@ export const DiscoveryPage = ({
     [filteredProfiles, safePage, remoteData, profileItems],
   );
 
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const query = buildDiscoveryQuery({
     filterValues,
-    searchQuery,
+    searchQuery: debouncedSearch,
     selectedTags,
     sortValue,
     page,
@@ -296,7 +304,8 @@ export const DiscoveryPage = ({
 
   useEffect(() => {
     const refresh = refreshDiscovery;
-    refresh();
+    if (skipInitialRefresh.current) skipInitialRefresh.current = false;
+    else refresh();
     window.addEventListener('focus', refresh);
     window.addEventListener('pageshow', refresh);
     window.addEventListener('polycord:profiles-changed', refresh);
