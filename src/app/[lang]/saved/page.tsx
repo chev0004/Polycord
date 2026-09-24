@@ -16,7 +16,7 @@ export default async function SavedRoute({
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect(`/${lang}`);
+    redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/saved`)}`);
   }
 
   const profile = await getProfileByUserId(user.accountId);

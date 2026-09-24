@@ -26,7 +26,9 @@ describe('route guards', () => {
       const response = await middleware(requestFor(route));
 
       expect(response.status).toBe(307);
-      expect(response.headers.get('location')).toBe('http://localhost:3000/en');
+      expect(response.headers.get('location')).toBe(
+        `http://localhost:3000/en?next=${encodeURIComponent(route)}`,
+      );
     });
   }
 
@@ -36,7 +38,9 @@ describe('route guards', () => {
     );
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('http://localhost:3000/en');
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/en?next=%2Fen%2Fsettings',
+    );
   });
 
   it('lets a valid session through to protected routes', async () => {

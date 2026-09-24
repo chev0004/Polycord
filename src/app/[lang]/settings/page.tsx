@@ -19,7 +19,7 @@ export default async function SettingsRoute({
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect(`/${lang}`);
+    redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/settings`)}`);
   }
 
   const [account, profile, settings, subscription] = await Promise.all([

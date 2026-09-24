@@ -220,7 +220,10 @@ test('profile drafts recover after navigation and expiry without crossing accoun
     expect((await failed).status()).toBe(401);
     await expect(
       page.getByRole('link', { name: /session has expired/ }),
-    ).toHaveAttribute('href', '/api/auth/discord?locale=en&editor=profile');
+    ).toHaveAttribute(
+      'href',
+      '/api/auth/discord?locale=en&next=%2Fen%2Fprofile',
+    );
     await signIn(context, ids[1]);
     await page.reload();
     await expect(bio).toHaveValue(profile.bio);
