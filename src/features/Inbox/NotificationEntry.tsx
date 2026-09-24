@@ -1,4 +1,5 @@
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import type { HTMLAttributes } from 'react';
 import {
   MdClose,
@@ -9,8 +10,9 @@ import { Avatar } from '@/components/Avatar';
 import type { Notification } from '@/types';
 
 type NotificationEntryProps = {
-  notification: Notification & { read: boolean; isDeleting?: boolean };
+  notification: Notification & { read: boolean };
   premium?: boolean;
+  disabled?: boolean;
   onMarkAsRead: () => void;
   onDelete: () => void;
 } & HTMLAttributes<HTMLDivElement>;
@@ -27,7 +29,7 @@ const getNotificationMessage = (
   if (notification.kind === 'view') {
     return notification.actorName
       ? t('userViewed', { user: notification.actorName })
-      : t('guestViewed');
+      : t(notification.isGuest ? 'guestViewed' : 'anonymousUserViewed');
   }
 
   return notification.actorName
@@ -38,6 +40,7 @@ const getNotificationMessage = (
 export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   notification,
   premium = false,
+  disabled = false,
   onMarkAsRead,
   onDelete,
   className,
@@ -45,6 +48,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   ...props
 }) => {
   const t = useTranslations('Inbox');
+  const locale = useLocale();
   const avatarUrl = premium ? notification.actorAvatarUrl : undefined;
   const message = getNotificationMessage(notification, premium, t);
 
@@ -52,13 +56,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
     <div
       {...props}
       style={style}
-      className={`group/entry relative flex items-center gap-3 rounded-md bg-background-main p-3 text-white transition-all duration-300 ease-in-out ${notification.read ? 'opacity-60' : 'opacity-100'}
-      ${
-        notification.isDeleting
-          ? 'animate-slideOutRight'
-          : 'scale-100 opacity-100'
-      }
-      ${className}`}
+      className={`relative flex items-center gap-3 rounded-md bg-background-main p-3 text-white transition-opacity ${notification.read ? 'opacity-60' : 'opacity-100'} ${className}`}
     >
       <span
         className={`-left-1 absolute h-2 w-2 flex-shrink-0 rounded-full bg-primary transition-opacity duration-300 ${
@@ -69,15 +67,39 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
       <Avatar avatarUrl={avatarUrl} size="sm" />
 
       <div className="flex-grow overflow-hidden">
-        <p className="truncate text-sm">{message}</p>
-        <span className="text-gray-400 text-xs">{notification.timestamp}</span>
+        <p className="break-words text-sm">{message}</p>
+        {notification.kind === 'warning' ? (
+          <Link
+            href={`/${locale}/legal/guidelines`}
+            className="text-primary-light text-xs underline focus-visible:bg-background-darker"
+          >
+            {t('reviewGuidelines')}
+          </Link>
+        ) : premium && notification.actorProfileId ? (
+          <Link
+            href={`/${locale}/u/${notification.actorProfileId}`}
+            className="text-primary-light text-xs underline focus-visible:bg-background-darker"
+          >
+            {t('viewProfile')}
+          </Link>
+        ) : premium ? (
+          <p className="text-gray-400 text-xs">
+            {t(
+              notification.isGuest ? 'anonymousProfile' : 'profileUnavailable',
+            )}
+          </p>
+        ) : null}
+        <span className="block text-gray-400 text-xs">
+          {notification.timestamp}
+        </span>
       </div>
 
-      <div className="flex flex-shrink-0 items-center opacity-0 transition-opacity group-hover/entry:opacity-100">
+      <div className="flex flex-shrink-0 items-center">
         <button
           type="button"
           onClick={onMarkAsRead}
-          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white"
+          disabled={disabled}
+          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white focus-visible:bg-background-darker focus-visible:text-white disabled:opacity-40"
           title={notification.read ? t('markAsUnread') : t('markAsRead')}
         >
           {notification.read ? (
@@ -89,7 +111,8 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
         <button
           type="button"
           onClick={onDelete}
-          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white"
+          disabled={disabled}
+          className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-background-darker hover:text-white focus-visible:bg-background-darker focus-visible:text-white disabled:opacity-40"
           title={t('delete')}
         >
           <MdClose size={18} />

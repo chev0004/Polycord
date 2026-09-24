@@ -141,6 +141,13 @@
       "when": 1789054455348,
       "tag": "0019_watery_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1789507901895,
+      "tag": "0020_brief_manta",
+      "breakpoints": true
     }
   ]
 }
