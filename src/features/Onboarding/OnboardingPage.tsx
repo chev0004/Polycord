@@ -24,7 +24,6 @@ import {
 } from '@/constants';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
-import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { entitlementLimit } from '@/lib/entitlements';
@@ -212,25 +211,7 @@ export const OnboardingPage = ({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="min-h-screen bg-background-main text-foreground"
-    >
-      <Navbar
-        iconUrl={userAvatarUrl}
-        isLoggedIn
-        notifications={[]}
-        onHomeClick={() => router.push(`/${locale}`)}
-        onLoginClick={() =>
-          window.location.assign(`/api/auth/discord?locale=${locale}`)
-        }
-        onProfileClick={() => router.push(`/${locale}/profile`)}
-        onSavedClick={() => router.push(`/${locale}/saved`)}
-        onSettingsClick={() => router.push(`/${locale}/settings`)}
-        onLogoutClick={() =>
-          window.location.assign(`/api/auth/logout?locale=${locale}`)
-        }
-      />
+    <form onSubmit={handleSubmit(onSubmit)}>
       <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <fieldset
           disabled={!draft.ready}

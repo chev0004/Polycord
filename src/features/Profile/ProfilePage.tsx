@@ -39,6 +39,7 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { entitlementLimit } from '@/lib/entitlements';
 import { SessionExpiredError } from '@/lib/formErrors';
@@ -405,6 +406,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       onSubmit={handleSubmit(onSubmit)}
       className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
     >
+      <ReturnLink />
       <div className="mb-6 flex items-end justify-between gap-5">
         <div className="min-w-0">
           <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">

@@ -31,6 +31,9 @@ export default defineConfig({
       AUTH_SECRET: 'polycord-isolated-audit-secret',
       POLYCORD_ANALYTICS_DISABLED: 'true',
       POLYCORD_PREMIUM_USER_IDS: '',
+      DISCORD_CLIENT_ID: 'e2e',
+      DISCORD_CLIENT_SECRET: 'e2e',
+      DISCORD_REDIRECT_URI: 'http://localhost:3119/api/auth/discord/callback',
     },
   },
 });

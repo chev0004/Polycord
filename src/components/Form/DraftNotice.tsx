@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { signInHref } from '@/features/Navigation/signIn';
 
 export const DraftNotice = ({
   restored,
@@ -22,7 +23,7 @@ export const DraftNotice = ({
       {sessionExpired ? (
         <a
           className="mt-2 block font-semibold text-primary-light underline focus-visible:text-primary-lighter"
-          href={`/api/auth/discord?locale=${locale}&editor=${window.location.pathname.split('/').pop()}`}
+          href={signInHref(locale)}
         >
           {t('signInAgain')}
         </a>

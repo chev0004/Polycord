@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fireEvent, fn, waitFor, within } from '@storybook/test';
+import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { type SettingsFormValues, SettingsPage } from './SettingsPage';
 
 const defaultSettings: SettingsFormValues = {
@@ -31,12 +32,15 @@ const meta: Meta<typeof SettingsPage> = {
   component: SettingsPage,
   parameters: {
     layout: 'fullscreen',
+    nextjs: { appDirectory: true },
   },
   decorators: [
     (Story) => (
-      <div className="min-h-screen bg-background-main">
-        <Story />
-      </div>
+      <RouteProgressProvider>
+        <div className="min-h-screen bg-background-main">
+          <Story />
+        </div>
+      </RouteProgressProvider>
     ),
   ],
   args: {

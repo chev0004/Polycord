@@ -3,29 +3,18 @@
 import { useTranslations } from 'next-intl';
 import { MdArrowForward } from 'react-icons/md';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
-import { LegalShell } from './LegalShell';
 import { LEGAL_DOCUMENT_IDS } from './legalContent';
 
 type LegalHubProps = {
   locale: string;
-  isLoggedIn: boolean;
-  userAvatarUrl?: string;
 };
 
-export const LegalHub = ({
-  locale,
-  isLoggedIn,
-  userAvatarUrl,
-}: LegalHubProps) => {
+export const LegalHub = ({ locale }: LegalHubProps) => {
   const t = useTranslations('Legal');
   const router = useRouteProgressRouter();
 
   return (
-    <LegalShell
-      locale={locale}
-      isLoggedIn={isLoggedIn}
-      userAvatarUrl={userAvatarUrl}
-    >
+    <main className="flex-1">
       <div className="mx-auto w-full max-w-3xl px-4 py-12 font-figtree sm:px-8">
         <p className="font-semibold text-primary text-sm uppercase tracking-wide">
           {t('eyebrow')}
@@ -61,6 +50,6 @@ export const LegalHub = ({
           ))}
         </div>
       </div>
-    </LegalShell>
+    </main>
   );
 };

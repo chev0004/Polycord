@@ -28,10 +28,9 @@ export function RecoveryPage({
   return (
     <main
       lang={language}
-      className="flex min-h-screen items-center justify-center bg-background-main px-4 py-12 text-foreground"
+      className="flex flex-1 items-center justify-center bg-background-main px-4 py-12 text-foreground"
     >
       <section className="w-full max-w-lg space-y-6 rounded-xl border border-line bg-background-dark p-6 sm:p-10">
-        <p className="font-semibold text-primary">{copy.brand}</p>
         <h1 className="font-bold text-3xl">
           {kind === 'missing' ? copy.missingTitle : copy.errorTitle}
         </h1>

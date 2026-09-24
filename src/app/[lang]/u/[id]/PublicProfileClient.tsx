@@ -7,9 +7,8 @@ import { MdArrowBack } from 'react-icons/md';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
-import { Footer } from '@/features/Footer';
-import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { signInHref } from '@/features/Navigation/signIn';
 import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
 import { ProfileDetail } from '@/features/Profile/ProfileDetail';
 import { profileReturn } from '@/features/Profile/profileReturn';
@@ -22,7 +21,6 @@ type PublicProfileClientProps = {
   isSaved: boolean;
   currentProfileId?: string;
   viewerTimezone?: string;
-  userAvatarUrl?: string;
 };
 
 export const PublicProfileClient = ({
@@ -32,7 +30,6 @@ export const PublicProfileClient = ({
   isSaved: initialSaved,
   currentProfileId,
   viewerTimezone,
-  userAvatarUrl,
 }: PublicProfileClientProps) => {
   const router = useRouteProgressRouter();
   const t = useTranslations('Discovery');
@@ -47,8 +44,7 @@ export const PublicProfileClient = ({
   const [isSaving, setIsSaving] = useState(false);
   const isOwnProfile = profile.id === currentProfileId;
   const { refresh } = router;
-  const signIn = () =>
-    window.location.assign(`/api/auth/discord?locale=${locale}`);
+  const signIn = () => window.location.assign(signInHref(locale));
 
   useEffect(() => setIsSaved(initialSaved), [initialSaved]);
 
@@ -80,20 +76,7 @@ export const PublicProfileClient = ({
   };
 
   return (
-    <div className="min-h-screen bg-background-main text-foreground">
-      <Navbar
-        iconUrl={userAvatarUrl}
-        isLoggedIn={isLoggedIn}
-        notifications={[]}
-        onHomeClick={() => router.push(`/${locale}`)}
-        onLoginClick={signIn}
-        onProfileClick={() => router.push(`/${locale}/profile`)}
-        onSavedClick={() => router.push(`/${locale}/saved`)}
-        onSettingsClick={() => router.push(`/${locale}/settings`)}
-        onLogoutClick={() =>
-          window.location.assign(`/api/auth/logout?locale=${locale}`)
-        }
-      />
+    <>
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
         <button
           type="button"
@@ -135,8 +118,7 @@ export const PublicProfileClient = ({
           }
         />
       </main>
-      <Footer locale={locale} />
       {actions.feedback}
-    </div>
+    </>
   );
 };

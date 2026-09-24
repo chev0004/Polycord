@@ -15,7 +15,7 @@ export default async function OnboardingRoute({
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    redirect(`/${lang}`);
+    redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/onboarding`)}`);
   }
 
   const existingProfile = await getProfileByUserId(currentUser.accountId);
