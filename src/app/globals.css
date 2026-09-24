@@ -357,8 +357,7 @@
   animation-name: slideRightAndFade;
 }
 
-*:focus,
-*:focus-visible {
+*:focus {
   outline: none;
 }
 
