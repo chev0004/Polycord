@@ -20,7 +20,7 @@ export const LEGAL_DOCUMENT_IDS: LegalDocumentId[] = [
 
 export const LEGAL_CANONICAL_LOCALE = 'en';
 
-const LAST_UPDATED = '2026-09-11';
+const LAST_UPDATED = '2026-09-24';
 
 const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
@@ -40,7 +40,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         heading: 'Your account and Discord sign-in',
         paragraphs: [
           'Polycord uses Discord to sign you in. We never see or store your Discord password. You are responsible for keeping your Discord account secure, and for everything that happens under your Polycord account.',
-          'You can disconnect at any time by deleting your Polycord account from Settings, which removes your profile from discovery.',
+          'You can delete your Polycord account at any time from Settings. This removes your profile from discovery and signs out your sessions. It does not delete your Discord account or revoke Polycord’s Discord authorization; remove Polycord under Discord User Settings > Authorized Apps to do that.',
         ],
       },
       {
@@ -75,13 +75,13 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Reports and enforcement',
         paragraphs: [
-          'Use the report action on a profile to flag violations. We may hide profiles, remove content, suspend or ban accounts, and report unlawful activity to Discord or the appropriate authorities. For suspected child exploitation, report the profile or account without downloading, copying, or forwarding abusive material.',
+          'Use the report action on a profile to flag violations. We may warn members, hide profiles, and suspend or ban accounts, and we may report unlawful activity to Discord or the appropriate authorities. For suspected child exploitation, report the profile or account without downloading, copying, or forwarding abusive material.',
         ],
       },
       {
         heading: 'Premium and payments',
         paragraphs: [
-          'Some features are part of Polycord Premium. Prices, renewal dates, and what each plan includes are shown before you subscribe. Subscriptions renew until you cancel, and you keep paid features until the end of the period you already paid for.',
+          'Some features are part of Polycord Premium. The price and what Premium includes are shown in Settings, and Stripe Checkout shows the amount and billing period before you pay. Subscriptions renew until you cancel, and you keep paid features until the end of the period you already paid for.',
         ],
       },
       {
@@ -137,7 +137,9 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'What is public on your profile',
         paragraphs: [
-          'When your profile is set to public, the details you add to it are visible to other members and to anyone with your public profile link. Your email address is never shown publicly. You control visibility from Settings, including whether logged-out visitors can copy your Discord username and whether your timezone and availability are displayed.',
+          'When your profile is set to public, the details you add to it are visible to other members and to anyone with your public profile link, including people who are not signed in. Your email address is never shown publicly.',
+          'Signed-in members can see and copy your Discord username. Logged-out visitors can see and copy it only if you allow anonymous copying in Settings. You choose whether your timezone is displayed in Settings or the profile editor, and whether your availability is displayed in the profile editor.',
+          'Blocking hides two signed-in accounts from each other. A public profile can still be viewed by anyone who is signed out.',
         ],
       },
       {
@@ -150,7 +152,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Cookies and browser storage',
         paragraphs: [
-          'We use cookies to keep you signed in and support sign-in security and language preferences. Browser storage also remembers preferences and unfinished onboarding details.',
+          'We use cookies to keep you signed in, to secure the Discord sign-in, and to remember your language. Your other preferences are stored with your account. Session storage in your browser keeps unsaved profile, settings, and onboarding drafts and your place in discovery until the tab is closed.',
         ],
       },
       {
@@ -162,13 +164,14 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Data retention',
         paragraphs: [
-          'Deleting your account removes your account, profile, voice introduction, settings, and related saved profiles, blocks, reports, and push subscriptions. Analytics events, moderation logs, abuse-prevention logs, and payment-provider records may remain. Analytics account links are cleared on deletion, but event metadata can retain internal profile-owner identifiers. Discord IDs and moderation restrictions are retained to prevent ban evasion.',
+          'Deleting your account removes your account, profile, settings, voice introduction, saved profiles, blocks, reports involving you, inbox notifications, local billing records, boosts, and push subscriptions, and stops your existing sessions.',
+          'Analytics events, moderation actions, and abuse-prevention logs remain with the link to your account cleared, and their metadata, notes, or IP addresses can remain. Rate-limit counters, your display name and avatar in notifications already delivered to other members, payment-provider records, and backups are not removed by deletion. If your account has a moderation restriction, your Discord ID and that restriction are kept to prevent ban evasion.',
         ],
       },
       {
         heading: 'Export and deletion',
         paragraphs: [
-          'You can download your account, profile, profile-visibility settings, and voice introduction as JSON from Settings. You can also delete your account there. For access, correction, deletion, or restriction requests beyond those controls, contact privacy@polycord.app.',
+          'You can download your account, complete profile, settings, voice introduction, saved profiles, blocks, submitted reports, inbox state, billing state, boosts, push registrations, and account-linked activity as JSON from Settings. The export leaves out other people’s private data and delivery credentials. You can also delete your account there. For access, correction, deletion, or restriction requests beyond those controls, contact privacy@polycord.app.',
         ],
       },
       {
@@ -234,14 +237,14 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Reporting and blocking',
         paragraphs: [
-          'If someone makes you uncomfortable, you can block them so they no longer appear for you, and you can report a profile so our team can review it. Reports are confidential. Blocking is immediate and does not notify the other person.',
+          'If someone makes you uncomfortable, you can block them so that, while you are both signed in, neither of you sees the other’s profile and their activity no longer reaches your inbox. A public profile can still be viewed by anyone who is signed out. You can also report a profile so our team can review it. Reports are confidential. Blocking is immediate and does not notify the other person.',
           'For suspected child exploitation, report the profile or account. Do not download, copy, or forward abusive material.',
         ],
       },
       {
         heading: 'How we enforce the rules',
         paragraphs: [
-          'Depending on what happened, we may hide a profile, remove content, warn a member, or remove an account. Serious safety issues, especially anything involving the safety of minors, are escalated and may be reported to the relevant authorities.',
+          'Depending on what happened, we may warn a member, hide a profile, or suspend or ban an account. Warnings appear in the member’s inbox. Serious safety issues, especially anything involving the safety of minors, may be reported to the relevant authorities.',
         ],
       },
       {
