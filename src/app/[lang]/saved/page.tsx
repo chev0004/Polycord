@@ -1,5 +1,10 @@
 import { redirect } from 'next/navigation';
-import { getProfileByUserId, listSavedProfiles, upsertDiscordUser } from '@/db';
+import {
+  getProfileByUserId,
+  listSavedProfiles,
+  toViewerAvailabilityContext,
+  upsertDiscordUser,
+} from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import { SavedRouteClient } from './SavedRouteClient';
 
@@ -34,6 +39,11 @@ export default async function SavedRoute({
       currentProfileId={profile?.profile.id}
       loadError={loadError}
       userAvatarUrl={user.avatarUrl}
+      viewerTimezone={
+        profile
+          ? toViewerAvailabilityContext(profile.profile).timezone
+          : undefined
+      }
     />
   );
 }

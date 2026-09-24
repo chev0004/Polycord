@@ -1,7 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { ToastStack } from '@/components/Toast';
 import {
   calculateMatchScore,
@@ -82,6 +88,7 @@ export const ProfileGrid = ({
   );
 
   const saveEnabled = Boolean(onSaveProfile);
+  useEffect(() => setSavedIds(new Set(savedProfileIds)), [savedProfileIds]);
 
   const handleToggleSave = useCallback(
     async (profileId: string) => {
