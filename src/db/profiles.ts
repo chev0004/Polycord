@@ -440,12 +440,10 @@ export const listPublicProfiles = async (
 
 export const listPublicProfilesByIds = async (
   profileIds: string[],
-  viewerUserId: string,
 ): Promise<DiscoveryProfile[]> => {
   if (!profileIds.length) {
     return [];
   }
-  const blockedUserIds = await listBlockedUserIds(viewerUserId);
 
   const rows = await db
     .select({
@@ -456,15 +454,7 @@ export const listPublicProfilesByIds = async (
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
     .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
-    .where(
-      and(
-        inArray(profiles.id, profileIds),
-        publiclyVisible(),
-        blockedUserIds.length
-          ? notInArray(profiles.userId, blockedUserIds)
-          : undefined,
-      ),
-    );
+    .where(and(inArray(profiles.id, profileIds), publiclyVisible()));
 
   const targetLanguagesByProfile = await listTargetLanguagesByProfileIds(
     rows.map((row) => row.profile.id),

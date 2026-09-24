@@ -65,7 +65,7 @@ export const listSavedProfileIds = async (userId: string) => {
 export const listSavedProfiles = async (userId: string) => {
   const profileIds = await listSavedProfileIds(userId);
 
-  return listPublicProfilesByIds(profileIds, userId);
+  return listPublicProfilesByIds(profileIds);
 };
 
 export const saveProfile = async (userId: string, profileId: string) => {
