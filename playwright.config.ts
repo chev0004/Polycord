@@ -31,6 +31,7 @@ export default defineConfig({
       AUTH_SECRET: 'polycord-isolated-audit-secret',
       POLYCORD_ANALYTICS_DISABLED: 'true',
       POLYCORD_PREMIUM_USER_IDS: '',
+      POLYCORD_ADMIN_USER_IDS: 'e2e-admin',
     },
   },
 });
