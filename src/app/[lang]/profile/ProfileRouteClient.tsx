@@ -77,7 +77,12 @@ export const ProfileRouteClient = ({
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
         onViewPublicProfile={
-          profileId ? () => router.push(`/${locale}/u/${profileId}`) : undefined
+          profileId
+            ? () =>
+                router.push(
+                  `/${locale}/u/${profileId}?from=${encodeURIComponent(`/${locale}/profile`)}`,
+                )
+            : undefined
         }
         onSubmit={async (data) => {
           const response = await fetch('/api/profile', {

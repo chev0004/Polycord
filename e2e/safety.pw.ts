@@ -72,7 +72,6 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     expect(voice.status()).toBe(200);
     expect(voice.headers()['cache-control']).toContain('no-store');
     await page.goto(`/en/u/${target.profileId}`);
-    await page.getByRole('button', { name: 'Card menu' }).click();
     const blocked = page.waitForResponse(
       (response) =>
         response.url().endsWith('/api/block') &&

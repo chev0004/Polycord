@@ -247,11 +247,7 @@ export const ProfileCard = ({
   };
 
   const handleViewProfile = () => {
-    if (onViewProfile) {
-      onViewProfile(profile.id);
-    } else {
-      console.log('View profile:', profile.id);
-    }
+    onViewProfile?.(profile.id);
     setIsMenuOpen(false);
   };
 
@@ -265,20 +261,8 @@ export const ProfileCard = ({
     setIsMenuOpen(false);
   };
 
-  const handleShare = async () => {
-    if (onShare) {
-      onShare(profile.id);
-    } else if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: profile.displayName,
-          text: `Check out ${profile.displayName}'s profile on Polycord`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Share cancelled or failed:', err);
-      }
-    }
+  const handleShare = () => {
+    onShare?.(profile.id);
     setIsMenuOpen(false);
   };
 
@@ -419,12 +403,14 @@ export const ProfileCard = ({
                     onOpenAutoFocus={(e) => e.preventDefault()}
                   >
                     <div className="flex flex-col gap-1">
-                      <MenuItem
-                        icon={MdPersonOutline}
-                        onClick={handleViewProfile}
-                      >
-                        {t('viewProfile')}
-                      </MenuItem>
+                      {onViewProfile ? (
+                        <MenuItem
+                          icon={MdPersonOutline}
+                          onClick={handleViewProfile}
+                        >
+                          {t('viewProfile')}
+                        </MenuItem>
+                      ) : null}
                       {onToggleSave ? (
                         <MenuItem
                           icon={isSaved ? MdBookmark : MdBookmarkBorder}
@@ -438,9 +424,7 @@ export const ProfileCard = ({
                           {isSaved ? t('unsaveProfile') : t('saveProfile')}
                         </MenuItem>
                       ) : null}
-                      {(typeof navigator !== 'undefined' &&
-                        typeof navigator.share === 'function') ||
-                      !!onShare ? (
+                      {onShare ? (
                         <MenuItem icon={MdShare} onClick={handleShare}>
                           {t('shareProfile')}
                         </MenuItem>

@@ -12,12 +12,14 @@ type AvailabilityRowProps = {
   availability: AvailabilityPattern;
   ownerTimezone?: string;
   viewerTimezone?: string;
+  expanded?: boolean;
 };
 
 export const AvailabilityRow = ({
   availability,
   ownerTimezone,
   viewerTimezone,
+  expanded = false,
 }: AvailabilityRowProps) => {
   const t = useTranslations('Discovery');
   const locale = useLocale();
@@ -47,7 +49,11 @@ export const AvailabilityRow = ({
     <div className="flex items-center gap-1.5 text-[12.5px] text-soft">
       <MdSchedule size={15} className="shrink-0 text-subtle" />
       <div className="flex min-w-0 flex-col gap-px overflow-hidden">
-        <span className="truncate text-soft">{result.ownerStr}</span>
+        <span
+          className={`${expanded ? 'whitespace-normal break-words' : 'truncate'} text-soft`}
+        >
+          {result.ownerStr}
+        </span>
         {result.viewerStr && (
           <span className="text-[12px] text-subtle">{result.viewerStr}</span>
         )}

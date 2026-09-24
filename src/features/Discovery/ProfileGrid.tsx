@@ -80,6 +80,7 @@ export const ProfileGrid = ({
   );
 
   const saveEnabled = Boolean(onSaveProfile);
+  useEffect(() => setSavedIds(new Set(savedProfileIds)), [savedProfileIds]);
 
   useEffect(() => setSavedIds(new Set(savedProfileIds)), [savedProfileIds]);
 
