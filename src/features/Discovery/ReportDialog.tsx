@@ -74,7 +74,7 @@ export const ReportDialog = ({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-[fadeIn_150ms_ease-out]" />
         <Dialog.Content
-          className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex w-[min(440px,calc(100vw-2rem))] flex-col gap-5 rounded-2xl bg-background-dark p-6 shadow-xl"
+          className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(440px,calc(100vw-2rem))] flex-col gap-5 overflow-y-auto rounded-2xl bg-background-dark p-6 shadow-xl"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <div className="flex items-start justify-between gap-4">
