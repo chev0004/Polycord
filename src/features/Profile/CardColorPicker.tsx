@@ -275,7 +275,7 @@ const ColorControls = ({
         {eyeDropperSupported ? (
           <button
             type="button"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-background-main text-muted transition-colors hover:bg-background-dark hover:text-foreground focus:outline-none"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-background-main text-muted transition-colors hover:bg-background-dark hover:text-foreground focus:outline-none focus-visible:bg-background-dark focus-visible:text-foreground"
             aria-label={t('colourEyedropperLabel')}
             title={t('colourEyedropperLabel')}
             onClick={pickFromScreen}
@@ -332,7 +332,7 @@ export const GradientPickerPopover = ({
           type="button"
           aria-label={t('gradientStartStop')}
           aria-pressed={activeStop === 0}
-          className="-translate-y-1/2 absolute top-1/2 left-2 h-5 w-5 rounded-full border-[2.5px] border-white/80 p-0 shadow-[0_1px_5px_rgba(0,0,0,0.5)] transition-[border-color,box-shadow] focus:outline-none aria-pressed:border-white aria-pressed:shadow-[0_0_0_3px_rgba(255,255,255,0.35),0_1px_5px_rgba(0,0,0,0.5)]"
+          className="-translate-y-1/2 absolute top-1/2 left-2 h-5 w-5 rounded-full border-[2.5px] border-white/80 p-0 shadow-[0_1px_5px_rgba(0,0,0,0.5)] transition-[border-color,box-shadow] focus:outline-none focus-visible:border-white aria-pressed:border-white aria-pressed:shadow-[0_0_0_3px_rgba(255,255,255,0.35),0_1px_5px_rgba(0,0,0,0.5)]"
           style={{ background: gradient.from }}
           onClick={() => setActiveStop(0)}
         />
@@ -340,7 +340,7 @@ export const GradientPickerPopover = ({
           type="button"
           aria-label={t('gradientEndStop')}
           aria-pressed={activeStop === 1}
-          className="-translate-y-1/2 absolute top-1/2 right-2 h-5 w-5 rounded-full border-[2.5px] border-white/80 p-0 shadow-[0_1px_5px_rgba(0,0,0,0.5)] transition-[border-color,box-shadow] focus:outline-none aria-pressed:border-white aria-pressed:shadow-[0_0_0_3px_rgba(255,255,255,0.35),0_1px_5px_rgba(0,0,0,0.5)]"
+          className="-translate-y-1/2 absolute top-1/2 right-2 h-5 w-5 rounded-full border-[2.5px] border-white/80 p-0 shadow-[0_1px_5px_rgba(0,0,0,0.5)] transition-[border-color,box-shadow] focus:outline-none focus-visible:border-white aria-pressed:border-white aria-pressed:shadow-[0_0_0_3px_rgba(255,255,255,0.35),0_1px_5px_rgba(0,0,0,0.5)]"
           style={{ background: gradient.to }}
           onClick={() => setActiveStop(1)}
         />
@@ -461,7 +461,7 @@ export const AccentPicker = ({
       {value ? (
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12px] text-subtle transition-colors hover:text-foreground focus:outline-none"
+          className="inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12px] text-subtle transition-colors hover:text-foreground focus:outline-none focus-visible:text-foreground"
           onClick={() => onChange(null)}
         >
           <MdRestartAlt size={15} />
@@ -600,7 +600,7 @@ export const CardColorPicker = ({
               premiumLink: (chunks) => (
                 <Link
                   href={`/${locale}/settings#premium`}
-                  className="font-semibold text-primary-light focus:outline-none"
+                  className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
                 >
                   {chunks}
                 </Link>

@@ -105,7 +105,7 @@ export const FilterButton = React.forwardRef<
             className={`group inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full px-3.5 font-medium text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] data-[state=open]:bg-background-dark ${
               active
                 ? 'bg-primary-darker text-primary-light'
-                : 'bg-transparent text-foreground hover:bg-background-dark'
+                : 'bg-transparent text-foreground hover:bg-background-dark focus-visible:bg-background-dark'
             } ${className ?? ''}`}
             {...props}
           >

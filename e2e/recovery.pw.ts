@@ -15,7 +15,7 @@ test('missing routes and malformed profile identifiers recover in both locales',
           name: locale === 'en' ? 'Page not found' : 'ページが見つかりません',
         }),
       ).toBeVisible();
-      await expect(page.getByRole('link')).toHaveAttribute(
+      await expect(page.getByRole('main').getByRole('link')).toHaveAttribute(
         'href',
         `/${locale}`,
       );

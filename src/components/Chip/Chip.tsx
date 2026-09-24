@@ -41,7 +41,7 @@ export const Chip = ({
           type="button"
           onClick={onRemove}
           aria-label={removeLabel}
-          className="flex text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground"
+          className="flex text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground focus-visible:text-foreground"
         >
           <MdClose size={16} />
         </button>
@@ -54,7 +54,7 @@ export const Chip = ({
       <button
         type="button"
         onClick={onClick}
-        className={`${baseClasses} cursor-pointer transition-opacity hover:opacity-80 active:opacity-60 ${className ?? ''}`}
+        className={`${baseClasses} cursor-pointer transition-opacity hover:opacity-80 focus-visible:opacity-80 active:opacity-60 ${className ?? ''}`}
       >
         {content}
       </button>

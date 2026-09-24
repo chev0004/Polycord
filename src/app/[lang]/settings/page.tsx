@@ -19,7 +19,7 @@ export default async function SettingsRoute({
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect(`/${lang}`);
+    redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/settings`)}`);
   }
 
   const [account, profile, settings, subscription] = await Promise.all([
@@ -33,7 +33,7 @@ export default async function SettingsRoute({
     hasPremiumEntitlement(user) || isSubscriptionActive(subscription);
 
   return (
-    <main className="min-h-screen bg-background-main">
+    <main>
       <SettingsRouteClient
         userId={user.id}
         defaultEmail={account?.email ?? user.email ?? ''}

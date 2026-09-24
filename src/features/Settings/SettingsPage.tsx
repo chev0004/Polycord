@@ -18,6 +18,7 @@ import {
 } from '@/components/Form';
 import { DraftNotice } from '@/components/Form/DraftNotice';
 import { languageOptions } from '@/constants/languages';
+import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { SessionExpiredError } from '@/lib/formErrors';
 import {
@@ -310,9 +311,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   return (
     <form
+      noValidate
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
     >
+      <ReturnLink />
       <div className="mb-6">
         <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
           {t('settingsTitle')}
@@ -384,7 +387,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   {t('emailDescription')}
                 </p>
                 {errors.email && (
-                  <FieldError>{t(errors.email.message as string)}</FieldError>
+                  <FieldError id="email-error">
+                    {t(errors.email.message as string)}
+                  </FieldError>
                 )}
               </FormGroup>
 

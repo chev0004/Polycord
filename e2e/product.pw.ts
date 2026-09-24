@@ -8,7 +8,7 @@ test('logged-out pages and writes require a session', async ({
 }) => {
   for (const route of ['profile', 'settings', 'saved']) {
     await page.goto(`/en/${route}`);
-    await expect(page).toHaveURL(/\/en$/);
+    await expect(page).toHaveURL(`/en?next=%2Fen%2F${route}`);
   }
   for (const route of ['profile', 'settings']) {
     const response = await request.post(`/api/${route}`, { data: {} });

@@ -12,6 +12,8 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       ref={ref}
       rows={rows}
       readOnly={readOnly}
+      aria-invalid={error || undefined}
+      aria-describedby={error && props.id ? `${props.id}-error` : undefined}
       className={`min-h-32 resize-none px-4 py-[13px] font-light text-[14.5px] leading-[1.55] ${textFieldClasses(error, readOnly)} ${className ?? ''}`}
       {...props}
     />

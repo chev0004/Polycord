@@ -35,8 +35,14 @@ const redirectWithError = (
   redirectTo: string,
   error: string,
 ) => {
-  const redirectUrl = new URL(redirectTo, getRedirectUri(request));
+  const redirectUrl = new URL(
+    `/${localeFromPath(redirectTo) ?? 'en'}`,
+    getRedirectUri(request),
+  );
   redirectUrl.searchParams.set(AUTH_ERROR_PARAM, error);
+  if (redirectTo !== redirectUrl.pathname) {
+    redirectUrl.searchParams.set('next', redirectTo);
+  }
   const response = NextResponse.redirect(redirectUrl, 303);
   clearOAuthStateCookie(response);
 
