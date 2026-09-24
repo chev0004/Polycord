@@ -59,6 +59,30 @@ export const Default: Story = {
   args: {},
 };
 
+export const AccountBillingError: Story = {
+  args: { onDeleteAccount: async () => 'billing-error' as const },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Delete account' }),
+    );
+    setFieldValue(
+      canvas.getByPlaceholderText('DELETE') as HTMLInputElement,
+      'DELETE',
+    );
+    const confirm = canvas.getByRole('button', {
+      name: 'Delete account',
+    });
+    await waitFor(() => expect(confirm).toBeEnabled());
+    await fireEvent.click(confirm);
+    await waitFor(() =>
+      expect(canvas.getByRole('alert')).toHaveTextContent(
+        'subscription cancellation failed',
+      ),
+    );
+  },
+};
+
 export const SwitchTabs: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

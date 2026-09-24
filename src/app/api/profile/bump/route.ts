@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  bumpProfileForUser,
-  getProfileByUserId,
-  upsertDiscordUser,
-} from '@/db';
+import { bumpProfileForUser, getProfileByUserId } from '@/db';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
@@ -19,10 +15,8 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await upsertDiscordUser(currentUser);
-
   const limit = await enforceRateLimit('bump', {
-    userId: user.id,
+    userId: currentUser.accountId,
     ip: requestIp(request),
   });
 
@@ -33,7 +27,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const row = await getProfileByUserId(user.id);
+  const row = await getProfileByUserId(currentUser.accountId);
 
   if (!row?.profile.isPublic) {
     return NextResponse.json(
@@ -60,11 +54,11 @@ export const POST = async (request: Request) => {
   }
 
   const bumpedAt = new Date();
-  await bumpProfileForUser(user.id, bumpedAt);
+  await bumpProfileForUser(currentUser.accountId, bumpedAt);
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileBump,
-    userId: user.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
     metadata: { premium },
   });

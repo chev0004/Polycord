@@ -7,20 +7,18 @@ let subscription;
 let deleted;
 mock.module('@/db', () => ({
   getSubscriptionByUserId: async () => subscription,
-  getSubscriptionByDiscordUserId: async () => subscription,
-  upsertDiscordUser: async () => ({ id: 'user-1' }),
   upsertSubscriptionForUser: async (...values) => writes.push(values),
   updateSubscriptionByCustomerId: async (...values) => {
     writes.push(values);
     return true;
   },
-  deleteAccountByDiscordId: async () => {
+  deleteAccountByUserId: async () => {
     deleted = true;
     return true;
   },
 }));
 mock.module('@/lib/auth', () => ({
-  getCurrentUser: async () => ({ id: 'discord-1' }),
+  getCurrentUser: async () => ({ id: 'discord-1', accountId: 'user-1' }),
   clearSessionCookie: () => {},
 }));
 

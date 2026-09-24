@@ -8,7 +8,6 @@ import {
   setReportStatus,
   setUserBanned,
   setUserSuspendedUntil,
-  upsertDiscordUser,
 } from '@/db';
 import { isAdmin } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
@@ -97,10 +96,8 @@ export const POST = async (request: Request) => {
       break;
   }
 
-  const admin = await upsertDiscordUser(currentUser);
-
   await logModerationAction({
-    adminUserId: admin.id,
+    adminUserId: currentUser.accountId,
     targetUserId,
     reportId,
     action,
