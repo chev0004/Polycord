@@ -40,6 +40,7 @@ const [owner, first, second] = people;
 const asUser = (user) => {
   currentUser = {
     id: user.discordUserId,
+    accountId: user.id,
     name: user.displayName,
     username: user.discordUsername,
   };

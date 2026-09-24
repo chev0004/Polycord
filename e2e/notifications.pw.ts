@@ -22,6 +22,7 @@ const fixture = async (context: BrowserContext) => {
     JSON.stringify({
       user: {
         id: owner.discord_user_id,
+        accountId: owner.id,
         name: owner.display_name,
         username: 'inbox-owner',
       },
