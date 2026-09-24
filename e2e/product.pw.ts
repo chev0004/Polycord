@@ -70,6 +70,9 @@ test('profile and settings persist through discovery and locale navigation', asy
     await expect(page.getByLabel('Bio', { exact: true })).toHaveValue(
       profile.bio,
     );
+    await expect(
+      page.getByRole('button', { name: 'Account menu' }),
+    ).toBeVisible();
     const bio =
       'Updated through the real profile editor and saved to PostgreSQL.';
     await page.getByLabel('Bio', { exact: true }).fill(bio);
@@ -92,6 +95,11 @@ test('profile and settings persist through discovery and locale navigation', asy
     await expect(page.getByLabel('Email Address')).toHaveValue(
       'original@example.com',
     );
+    await page.getByRole('button', { name: 'Appearance', exact: true }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Appearance', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Account', exact: true }).click();
     await page.getByLabel('Email Address').fill('saved@example.com');
     const settingsSaved = page.waitForResponse(
       (r) =>

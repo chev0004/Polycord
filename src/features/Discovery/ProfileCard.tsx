@@ -163,6 +163,7 @@ export const ProfileCard = ({
   const [currentTime, setCurrentTime] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   const canCopyUsername =
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
@@ -184,6 +185,7 @@ export const ProfileCard = ({
     if (!canCopyUsername || isCopying || !profile.discordUsername) return;
 
     setIsCopying(true);
+    setCopyFailed(false);
     try {
       await navigator.clipboard.writeText(profile.discordUsername);
       setCopied(true);
@@ -197,8 +199,8 @@ export const ProfileCard = ({
         setCopied(false);
         setIsCopying(false);
       }, 2000);
-    } catch (err) {
-      console.error('Failed to copy username:', err);
+    } catch {
+      setCopyFailed(true);
       setIsCopying(false);
     }
   };
@@ -547,6 +549,11 @@ export const ProfileCard = ({
         )}
       </div>
 
+      {copyFailed && profile.discordUsername ? (
+        <p role="alert" className="text-red-200 text-sm">
+          {t('copyFailed', { username: profile.discordUsername })}
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2">
         {renderLanguagePill(
           profile.primaryLanguage,
