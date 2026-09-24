@@ -667,7 +667,7 @@
     "eyebrow": "Legal",
     "backToLegal": "Back to legal",
     "lastUpdated": "Last updated {date}",
-    "fallbackNotice": "This page is currently available in English only. A translation is on the way.",
+    "fallbackNotice": "This page is available in English only. The English text is the version that applies.",
     "termsTitle": "Terms of Service",
     "termsSummary": "The rules for using Polycord and what you agree to.",
     "privacyTitle": "Privacy Policy",

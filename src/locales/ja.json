@@ -667,7 +667,7 @@
     "eyebrow": "法的情報",
     "backToLegal": "法的情報に戻る",
     "lastUpdated": "最終更新日 {date}",
-    "fallbackNotice": "このページは現在英語のみで提供されています。翻訳は準備中です。",
+    "fallbackNotice": "このページは英語のみで提供されています。適用されるのは英語版の内容です。",
     "termsTitle": "利用規約",
     "termsSummary": "Polycordの利用ルールと同意事項。",
     "privacyTitle": "プライバシーポリシー",
