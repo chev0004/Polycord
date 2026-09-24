@@ -60,7 +60,10 @@ export const getAccountExportByUserId = async (userId: string) => {
   ] = await Promise.all([
     db.select().from(userSettings).where(eq(userSettings.userId, user.id)),
     db.select().from(savedProfiles).where(eq(savedProfiles.userId, user.id)),
-    db.select().from(userBlocks).where(eq(userBlocks.blockerUserId, user.id)),
+    db
+      .select({ createdAt: userBlocks.createdAt })
+      .from(userBlocks)
+      .where(eq(userBlocks.blockerUserId, user.id)),
     db
       .select({
         id: reports.id,

@@ -187,7 +187,7 @@ try {
   );
   assert.equal(exported.voiceIntro.data, 'dGVzdA==');
   assert.equal(exported.savedProfiles[0].profileId, otherProfile.id);
-  assert.equal(exported.blocks[0].blockedUserId, other.id);
+  assert.deepEqual(Object.keys(exported.blocks[0]), ['createdAt']);
   assert.equal(exported.reportsFiled[0].details, 'My submitted report');
   assert.equal(exported.reportsFiled.length, 1);
   assert.equal(exported.notifications[0].kind, 'copy');
