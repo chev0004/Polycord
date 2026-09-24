@@ -33,7 +33,7 @@ export default async function AdminRoute({
   ]);
 
   return (
-    <main className="min-h-screen bg-background-main">
+    <main>
       <nav className="mx-auto flex max-w-[1140px] gap-6 px-6 pt-6 text-primary-light">
         <Link href={`/${lang}/admin`}>{t('pendingQueue')}</Link>
         <Link href={`/${lang}/admin?queue=resolved`}>{t('resolvedQueue')}</Link>

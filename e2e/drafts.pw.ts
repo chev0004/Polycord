@@ -306,6 +306,7 @@ test('settings preserve incomplete drafts and clear discarded changes', async ({
       ),
     ).toBeNull();
     await page
+      .getByRole('main')
       .getByRole('button', { name: 'Notifications', exact: true })
       .click();
     await expect(

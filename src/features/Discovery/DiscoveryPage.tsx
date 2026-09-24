@@ -7,9 +7,8 @@ import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
-import { Footer } from '@/features/Footer';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
-import { Navbar } from '@/features/Navbar';
+import { useNavbarBump } from '@/features/Navigation/AppShell';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import {
   getMissingRequiredFields,
@@ -648,26 +647,10 @@ export const DiscoveryPage = ({
     }
   };
 
-  return (
-    <div className="min-h-screen bg-background-main text-foreground">
-      <Navbar
-        iconUrl={userAvatarUrl}
-        isLoggedIn={isLoggedIn}
-        notifications={[]}
-        onHomeClick={() => router.push(`/${locale}`)}
-        onLoginClick={() =>
-          window.location.assign(`/api/auth/discord?locale=${locale}`)
-        }
-        onProfileClick={() => router.push(`/${locale}/profile`)}
-        onBumpProfileClick={handleBumpProfile}
-        bumpReadyAt={bumpReadyAt}
-        onSavedClick={() => router.push(`/${locale}/saved`)}
-        onSettingsClick={() => router.push(`/${locale}/settings`)}
-        onLogoutClick={() =>
-          window.location.assign(`/api/auth/logout?locale=${locale}`)
-        }
-      />
+  useNavbarBump(handleBumpProfile, bumpReadyAt);
 
+  return (
+    <>
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
         {authError ? (
           <div
@@ -785,8 +768,6 @@ export const DiscoveryPage = ({
         )}
       </main>
 
-      <Footer locale={locale} />
-
       {needsOnboarding && !isPromptDismissed ? (
         <aside className="fixed right-4 bottom-4 z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
           <div className="flex items-start">
@@ -839,6 +820,6 @@ export const DiscoveryPage = ({
       />
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
-    </div>
+    </>
   );
 };

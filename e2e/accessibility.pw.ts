@@ -89,7 +89,10 @@ test('core pages expose named controls and support keyboard navigation', async (
     }
     expect(violations).toEqual([]);
     for (const name of ['Appearance', 'Privacy', 'Notifications', 'Premium']) {
-      await page.getByRole('button', { name, exact: true }).click();
+      await page
+        .getByRole('main')
+        .getByRole('button', { name, exact: true })
+        .click();
       await settle(page);
       const scan = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])

@@ -36,7 +36,6 @@ export default async function SavedRoute({
       profiles={savedProfiles}
       currentProfileId={profile?.profile.id}
       loadError={loadError}
-      userAvatarUrl={user.avatarUrl}
       viewerTimezone={
         profile
           ? toViewerAvailabilityContext(profile.profile).timezone

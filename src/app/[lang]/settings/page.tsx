@@ -33,7 +33,7 @@ export default async function SettingsRoute({
     hasPremiumEntitlement(user) || isSubscriptionActive(subscription);
 
   return (
-    <main className="min-h-screen bg-background-main">
+    <main>
       <SettingsRouteClient
         userId={user.id}
         defaultEmail={account?.email ?? user.email ?? ''}

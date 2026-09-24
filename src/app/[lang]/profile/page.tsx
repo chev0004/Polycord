@@ -63,7 +63,7 @@ export default async function ProfileRoute({
       : undefined;
 
   return (
-    <main className="min-h-screen bg-background-main">
+    <main>
       <ProfileRouteClient
         userId={user.id}
         locale={lang}
