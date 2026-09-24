@@ -35,12 +35,17 @@ export default async function PublicProfileRoute({
   let currentProfileId: string | undefined;
   let viewerTimezone: string | undefined;
   let viewerUserId: string | undefined;
-  let viewerActor: { name: string; avatarUrl: string | null } | null = null;
+  let viewerActor: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null = null;
 
   if (user) {
     isLoggedIn = true;
     viewerUserId = user.accountId;
     viewerActor = {
+      id: user.accountId,
       name: user.name,
       avatarUrl: user.avatarUrl ?? null,
     };

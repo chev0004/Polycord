@@ -5,7 +5,6 @@ import {
   createNotification,
   deleteNotification,
   getPublicProfileById,
-  getUserByDiscordId,
   listNotificationsForUser,
   markAllNotificationsRead,
   setNotificationRead,
@@ -14,6 +13,7 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser } from '@/lib/auth';
+import { isPremiumUser } from '@/lib/entitlements.server';
 import {
   enforceRateLimit,
   rateLimitedResponse,
@@ -40,25 +40,36 @@ export const GET = async () => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
+  const [rows, premium] = await Promise.all([
+    listNotificationsForUser(currentUser.accountId),
+    isPremiumUser(currentUser),
+  ]);
 
-  if (!user) {
-    return NextResponse.json({ notifications: [] });
-  }
-
-  const rows = await listNotificationsForUser(user.id);
-
-  return NextResponse.json({
-    notifications: rows.map((row) => ({
-      id: row.id,
-      kind: row.kind,
-      actorName: row.actorName ?? undefined,
-      actorAvatarUrl: row.actorAvatarUrl ?? undefined,
-      isGuest: row.isGuest,
-      read: row.read,
-      createdAt: row.createdAt.toISOString(),
-    })),
-  });
+  return NextResponse.json(
+    {
+      premium,
+      notifications: rows
+        .filter(({ notification }) => premium || notification.kind !== 'view')
+        .map(({ notification: row, actorProfileId }) => ({
+          id: row.id,
+          kind: row.kind,
+          actorName:
+            premium && !row.isGuest && actorProfileId
+              ? (row.actorName ?? undefined)
+              : undefined,
+          actorAvatarUrl:
+            premium && !row.isGuest && actorProfileId
+              ? (row.actorAvatarUrl ?? undefined)
+              : undefined,
+          actorProfileId:
+            premium && !row.isGuest ? (actorProfileId ?? undefined) : undefined,
+          isGuest: row.isGuest,
+          read: row.read,
+          createdAt: row.createdAt.toISOString(),
+        })),
+    },
+    { headers: { 'Cache-Control': 'private, no-store' } },
+  );
 };
 
 export const POST = async (request: Request) => {
@@ -68,14 +79,16 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await parseBody(request);
-  const profileId = body.profileId;
+  const profileId = z.uuid().safeParse((await parseBody(request)).profileId);
 
-  if (typeof profileId !== 'string' || !z.uuid().safeParse(profileId).success) {
+  if (!profileId.success) {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const target = await getPublicProfileById(profileId, currentUser.accountId);
+  const target = await getPublicProfileById(
+    profileId.data,
+    currentUser.accountId,
+  );
 
   if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
@@ -101,15 +114,16 @@ export const POST = async (request: Request) => {
     metadata: { ownerUserId: target.profile.userId },
   });
 
-  await createNotification({
+  const notification = await createNotification({
     userId: target.profile.userId,
     kind: 'copy',
+    actorUserId: currentUser.accountId,
     actorName: currentUser.name,
     actorAvatarUrl: currentUser.avatarUrl ?? null,
     isGuest: false,
   });
 
-  return NextResponse.json({ created: true });
+  return NextResponse.json({ created: notification !== null });
 };
 
 export const PATCH = async (request: Request) => {
@@ -119,28 +133,20 @@ export const PATCH = async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (!user) {
-    return NextResponse.json({ ok: true });
-  }
-
   const body = await parseBody(request);
 
   if (body.all === true) {
-    await markAllNotificationsRead(user.id);
+    await markAllNotificationsRead(currentUser.accountId);
     return NextResponse.json({ ok: true });
   }
 
-  if (
-    typeof body.id !== 'string' ||
-    !z.uuid().safeParse(body.id).success ||
-    typeof body.read !== 'boolean'
-  ) {
+  const id = z.uuid().safeParse(body.id);
+
+  if (!id.success || typeof body.read !== 'boolean') {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  await setNotificationRead(user.id, body.id, body.read);
+  await setNotificationRead(currentUser.accountId, id.data, body.read);
 
   return NextResponse.json({ ok: true });
 };
@@ -152,24 +158,20 @@ export const DELETE = async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (!user) {
-    return NextResponse.json({ ok: true });
-  }
-
   const body = await parseBody(request);
 
   if (body.all === true) {
-    await clearNotifications(user.id);
+    await clearNotifications(currentUser.accountId);
     return NextResponse.json({ ok: true });
   }
 
-  if (typeof body.id !== 'string' || !z.uuid().safeParse(body.id).success) {
+  const id = z.uuid().safeParse(body.id);
+
+  if (!id.success) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  await deleteNotification(user.id, body.id);
+  await deleteNotification(currentUser.accountId, id.data);
 
   return NextResponse.json({ ok: true });
 };

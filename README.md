@@ -161,6 +161,16 @@ before running them.
 | `drizzle` | Generated database migrations and Drizzle metadata. |
 | `.storybook` | Storybook configuration. |
 
+## Notification inbox behavior
+
+The inbox refreshes on mount, opening, window focus, and returning to a visible tab, plus every 30 seconds while the tab is visible. Only one refresh runs at a time; requests time out after 10 seconds. Read/delete/clear actions wait for server confirmation, preserve their prior state on failure, and offer a refresh before retrying an uncertain result.
+
+`/api/notifications` supplies the current server-verified Premium entitlement on every route. Free users receive anonymous copy alerts and full moderation warnings; view alerts and accessible actor identities require Premium. Warnings always include the community guidelines link and are never disabled by copy/view preferences. Push additionally requires the user's push opt-in and a registered subscription.
+
+Copy/view preferences govern new notifications in both inbox and push. Changing a preference does not delete existing history. Profile views deduplicate by actor account for one hour; guests and hidden visits share an anonymous bucket and store no actor identity. Deleted, private, moderated, or blocked actors have no disclosed identity or destination. Legacy notifications without an actor account remain unattributed because display names cannot safely identify an account.
+
+Apply migration `0020_brief_manta.sql` before deploying this inbox version. Verify with `bun test tests/notifications.test.js` and `bun run test:e2e e2e/notifications.pw.ts` against a disposable local `TEST_DATABASE_URL`.
+
 ## Account sessions and data
 
 Session cookies expire after 30 days and carry the unique Polycord account ID as well as the Discord identity. Server authentication requires that account record to still exist with the same ID. Only the Discord OAuth callback creates accounts; ordinary page reads and API writes cannot recreate one. Cookies issued before account binding was introduced require a new sign-in. No database migration is needed for this change.
