@@ -215,7 +215,7 @@ export const VoiceIntroEditor = ({
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.96] disabled:opacity-60 ${
                 recording
                   ? 'bg-[#f87171] text-white'
-                  : 'bg-primary text-on-primary hover:bg-primary-light'
+                  : 'bg-primary text-on-primary hover:bg-primary-light focus-visible:bg-primary-light'
               }`}
             >
               {recording ? <MdStop size={22} /> : <MdMic size={22} />}
@@ -242,7 +242,7 @@ export const VoiceIntroEditor = ({
               onClick={deleteClip}
               disabled={busy}
               aria-label={t('voiceIntroDeleteLabel')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-danger focus:outline-none disabled:opacity-60"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-danger focus:outline-none focus-visible:bg-background-main focus-visible:text-danger disabled:opacity-60"
             >
               <MdDeleteOutline size={20} />
             </button>
@@ -289,7 +289,7 @@ export const VoiceIntroEditor = ({
             premiumLink: (chunks) => (
               <Link
                 href={`/${locale}/settings#premium`}
-                className="font-semibold text-primary-light focus:outline-none"
+                className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
               >
                 {chunks}
               </Link>

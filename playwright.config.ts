@@ -32,6 +32,9 @@ export default defineConfig({
       POLYCORD_ANALYTICS_DISABLED: 'true',
       POLYCORD_PREMIUM_USER_IDS: '',
       POLYCORD_ADMIN_USER_IDS: 'e2e-admin',
+      DISCORD_CLIENT_ID: 'e2e',
+      DISCORD_CLIENT_SECRET: 'e2e',
+      DISCORD_REDIRECT_URI: 'http://localhost:3119/api/auth/discord/callback',
     },
   },
 });

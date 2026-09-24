@@ -235,7 +235,7 @@ export const Inbox = ({
       }}
     >
       <Popover.Trigger
-        className="-m-2 relative p-2"
+        className="-m-2 relative p-2 focus-visible:opacity-80"
         aria-label={t('notifications')}
       >
         {triggerContent}
@@ -332,7 +332,7 @@ export const Inbox = ({
                 ) && (
                   <Link
                     href={`/${locale}/settings#premium`}
-                    className="rounded-md px-3 py-2.5 font-semibold text-[13px] text-primary-light transition-colors hover:bg-background-main hover:text-primary-lighter"
+                    className="rounded-md px-3 py-2.5 font-semibold text-[13px] text-primary-light transition-colors hover:bg-background-main hover:text-primary-lighter focus-visible:bg-background-main focus-visible:text-primary-lighter"
                   >
                     {t('seeWhoWithPremium')}
                   </Link>
@@ -346,7 +346,7 @@ export const Inbox = ({
                   onClick={handlePrevPage}
                   disabled={page === 1}
                   aria-label={t('previousPage')}
-                  className="text-foreground transition-colors duration-200 hover:text-soft disabled:cursor-not-allowed disabled:opacity-50"
+                  className="text-foreground transition-colors duration-200 hover:text-soft focus-visible:text-soft disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <MdOutlineKeyboardArrowLeft size={20} />
                 </button>
@@ -358,7 +358,7 @@ export const Inbox = ({
                   onClick={handleNextPage}
                   disabled={page === totalPages}
                   aria-label={t('nextPage')}
-                  className="text-foreground transition-colors duration-200 hover:text-soft disabled:cursor-not-allowed disabled:opacity-50"
+                  className="text-foreground transition-colors duration-200 hover:text-soft focus-visible:text-soft disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <MdOutlineKeyboardArrowRight size={20} />
                 </button>

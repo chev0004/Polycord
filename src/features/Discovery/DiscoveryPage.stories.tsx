@@ -9,6 +9,7 @@ import {
 } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { DiscoveryPage } from './DiscoveryPage';
 import { createSampleProfiles } from './profileFixtures';
@@ -18,9 +19,15 @@ const meta: Meta<typeof DiscoveryPage> = {
   title: 'Discovery/DiscoveryPage',
   component: DiscoveryPage,
   decorators: [
-    (Story) => (
+    (Story, { args }) => (
       <RouteProgressProvider>
-        <Story />
+        <AppShell
+          locale="en"
+          isLoggedIn={args.isLoggedIn}
+          userAvatarUrl={MOCK_USER_AVATAR_URL}
+        >
+          <Story />
+        </AppShell>
       </RouteProgressProvider>
     ),
   ],

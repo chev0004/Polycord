@@ -39,6 +39,7 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { entitlementLimit } from '@/lib/entitlements';
 import { SessionExpiredError } from '@/lib/formErrors';
@@ -405,6 +406,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       onSubmit={handleSubmit(onSubmit)}
       className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
     >
+      <ReturnLink />
       <div className="mb-6 flex items-end justify-between gap-5">
         <div className="min-w-0">
           <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
@@ -483,6 +485,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         <div className="flex min-w-0 flex-col gap-5">
           {bannerError ? (
             <div
+              id={`${tagsInputId}-error`}
               role="alert"
               className="flex items-center gap-2 rounded-md border border-red-800 bg-danger-surface px-3.5 py-3 text-[14px] text-danger"
             >
@@ -515,7 +518,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 )}
               />
               {errors.primaryLanguage && (
-                <FieldError>
+                <FieldError id="primaryLanguage-error">
                   {t(errors.primaryLanguage.message as string)}
                 </FieldError>
               )}
@@ -541,7 +544,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 )}
               />
               {errors.country && (
-                <FieldError>{errors.country.message}</FieldError>
+                <FieldError id="country-error">
+                  {errors.country.message}
+                </FieldError>
               )}
             </FormGroup>
 
@@ -554,7 +559,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 error={!!errors.timezone}
               />
               {errors.timezone && (
-                <FieldError>{errors.timezone.message}</FieldError>
+                <FieldError id={`${timezoneId}-error`}>
+                  {errors.timezone.message}
+                </FieldError>
               )}
             </FormGroup>
           </SectionCard>
@@ -584,7 +591,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 error={!!errors.bio}
               />
               {errors.bio && (
-                <FieldError>{t(errors.bio.message as string)}</FieldError>
+                <FieldError id={`${bioId}-error`}>
+                  {t(errors.bio.message as string)}
+                </FieldError>
               )}
             </FormGroup>
 
@@ -664,7 +673,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         type="button"
                         onClick={handleAddTag}
                         aria-label={t('addTag')}
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none active:scale-[0.98]"
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none focus-visible:bg-primary-light active:scale-[0.98]"
                       >
                         <MdAdd size={20} />
                       </button>

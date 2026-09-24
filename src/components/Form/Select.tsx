@@ -27,7 +27,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       <SelectPrimitive.Root {...props}>
         <SelectPrimitive.Trigger
           ref={forwardedRef}
-          className={`group flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-left text-[15px] text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-subtle ${
+          className={`group flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-left text-[15px] text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none focus-visible:border-line-strong data-[placeholder]:text-subtle ${
             error
               ? 'border-red-500'
               : 'border-line hover:border-line-strong data-[state=open]:border-line-strong'

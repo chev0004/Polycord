@@ -54,7 +54,7 @@ export const FilterBar = ({
         <button
           type="button"
           onClick={onClearFilters}
-          className="inline-flex h-10 items-center gap-1 rounded-full px-2.5 text-muted text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground"
+          className="inline-flex h-10 items-center gap-1 rounded-full px-2.5 text-muted text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground focus-visible:bg-background-dark focus-visible:text-foreground"
         >
           <MdClose size={16} className="flex-shrink-0" />
           {t('filterClear')}

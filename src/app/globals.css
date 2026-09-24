@@ -357,11 +357,8 @@
   animation-name: slideRightAndFade;
 }
 
-*:focus,
-*:focus-visible,
-*:focus-within {
+*:focus {
   outline: none;
-  box-shadow: none;
 }
 
 .skeleton-shimmer {
@@ -387,3 +384,16 @@
     transform: translateX(100%);
   }
 }
+
+/* biome-ignore-start lint/complexity/noImportantStyles: reduced motion must override component animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* biome-ignore-end lint/complexity/noImportantStyles: reduced motion must override component animations */

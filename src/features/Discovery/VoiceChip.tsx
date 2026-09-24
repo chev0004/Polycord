@@ -101,7 +101,7 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
       type="button"
       onClick={togglePlayback}
       aria-label={playing ? t('voiceIntroStop') : t('voiceIntroPlay')}
-      className={`inline-flex h-8 shrink-0 items-center gap-[9px] self-start rounded-full bg-background-darker py-0 pr-3 pl-[9px] transition-colors hover:bg-background-main hover:text-foreground ${playing ? 'text-primary-light' : 'text-soft'} ${className ?? ''}`}
+      className={`inline-flex h-8 shrink-0 items-center gap-[9px] self-start rounded-full bg-background-darker py-0 pr-3 pl-[9px] transition-colors hover:bg-background-main hover:text-foreground focus-visible:bg-background-main focus-visible:text-foreground ${playing ? 'text-primary-light' : 'text-soft'} ${className ?? ''}`}
     >
       {playing ? (
         <MdStop

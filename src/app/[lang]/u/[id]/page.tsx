@@ -133,7 +133,6 @@ export default async function PublicProfileRoute({
       isSaved={savedProfileIds.includes(profile.id)}
       currentProfileId={currentProfileId}
       viewerTimezone={viewerTimezone}
-      userAvatarUrl={user?.avatarUrl}
     />
   );
 }

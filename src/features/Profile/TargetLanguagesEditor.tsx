@@ -123,6 +123,7 @@ export const TargetLanguagesEditor = ({
                     options={options}
                     placeholder={t('languageSelectPlaceholder')}
                     error={Boolean(errorMessage) && !currentLanguage}
+                    errorId="target-languages-error"
                   />
                 )}
               />
@@ -158,7 +159,7 @@ export const TargetLanguagesEditor = ({
         type="button"
         onClick={() => append(createEmptyLanguageRow())}
         disabled={fields.length >= cap}
-        className="inline-flex items-center gap-2 self-start rounded-full border border-line-strong border-dashed px-4 py-2.5 text-[14px] text-muted transition-colors hover:border-primary-dark hover:bg-primary-darker hover:text-primary-light focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex items-center gap-2 self-start rounded-full border border-line-strong border-dashed px-4 py-2.5 text-[14px] text-muted transition-colors hover:border-primary-dark hover:bg-primary-darker hover:text-primary-light focus:outline-none focus-visible:border-primary-dark focus-visible:bg-primary-darker focus-visible:text-primary-light disabled:cursor-not-allowed disabled:opacity-40"
       >
         <MdAdd size={18} />
         {t('addLanguage')}
@@ -168,7 +169,9 @@ export const TargetLanguagesEditor = ({
         {t('languageCounterHint', { count: fields.length, cap })}
       </p>
 
-      {errorMessage ? <FieldError>{t(errorMessage)}</FieldError> : null}
+      {errorMessage ? (
+        <FieldError id="target-languages-error">{t(errorMessage)}</FieldError>
+      ) : null}
 
       {!premium && fields.length >= FREE_LANGUAGE_CAP ? (
         <p className="text-[13px] text-muted leading-relaxed">
@@ -178,7 +181,7 @@ export const TargetLanguagesEditor = ({
             premiumLink: (chunks) => (
               <Link
                 href={`/${locale}/settings#premium`}
-                className="font-semibold text-primary-light focus:outline-none"
+                className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
               >
                 {chunks}
               </Link>

@@ -50,7 +50,7 @@ test('deleted sessions cannot read, write, or recreate an account', async ({
       await context.addCookies([cookie(accountId)]);
       const tab = await context.newPage();
       await tab.goto('http://localhost:3119/en/profile');
-      await expect(tab).toHaveURL(/\/en$/);
+      await expect(tab).toHaveURL(/\/en\?next=%2Fen%2Fprofile$/);
       for (const route of ['account/export', 'notifications']) {
         expect(
           (

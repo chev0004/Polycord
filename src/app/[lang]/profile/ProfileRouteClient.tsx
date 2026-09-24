@@ -1,6 +1,5 @@
 'use client';
 
-import { Navbar } from '@/features/Navbar';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
@@ -34,87 +33,70 @@ export const ProfileRouteClient = ({
   const router = useRouteProgressRouter();
 
   return (
-    <>
-      <Navbar
-        iconUrl={userAvatarUrl}
-        isLoggedIn
-        notifications={[]}
-        onHomeClick={() => router.push(`/${locale}`)}
-        onLoginClick={() =>
-          window.location.assign(`/api/auth/discord?locale=${locale}`)
-        }
-        onProfileClick={() => router.push(`/${locale}/profile`)}
-        onSavedClick={() => router.push(`/${locale}/saved`)}
-        onSettingsClick={() => router.push(`/${locale}/settings`)}
-        onLogoutClick={() =>
-          window.location.assign(`/api/auth/logout?locale=${locale}`)
-        }
-      />
-      <ProfilePage
-        key={userId}
-        userId={userId}
-        boostedUntil={boostedUntil}
-        boostsRemaining={boostsRemaining}
-        initialValues={initialValues}
-        onBoostProfile={
-          premium && initialValues
-            ? async () => {
-                const response = await fetch('/api/profile/boost', {
-                  method: 'POST',
-                });
+    <ProfilePage
+      key={userId}
+      userId={userId}
+      boostedUntil={boostedUntil}
+      boostsRemaining={boostsRemaining}
+      initialValues={initialValues}
+      onBoostProfile={
+        premium && initialValues
+          ? async () => {
+              const response = await fetch('/api/profile/boost', {
+                method: 'POST',
+              });
 
-                if (!response.ok) {
-                  throw new Error('Boost failed');
-                }
-
-                router.refresh();
+              if (!response.ok) {
+                throw new Error('Boost failed');
               }
-            : undefined
+
+              router.refresh();
+            }
+          : undefined
+      }
+      premium={premium}
+      profileId={profileId}
+      stats={stats}
+      userAvatarUrl={userAvatarUrl}
+      userDisplayName={userDisplayName}
+      onViewPublicProfile={
+        profileId
+          ? () =>
+              router.push(
+                `/${locale}/u/${profileId}?from=${encodeURIComponent(`/${locale}/profile`)}`,
+              )
+          : undefined
+      }
+      onSubmit={async (data) => {
+        const response = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) throw new SessionExpiredError();
+          throw new Error('Profile save failed');
         }
-        premium={premium}
-        profileId={profileId}
-        stats={stats}
-        userAvatarUrl={userAvatarUrl}
-        userDisplayName={userDisplayName}
-        onViewPublicProfile={
-          profileId
-            ? () =>
-                router.push(
-                  `/${locale}/u/${profileId}?from=${encodeURIComponent(`/${locale}/profile`)}`,
-                )
-            : undefined
-        }
-        onSubmit={async (data) => {
-          const response = await fetch('/api/profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          });
 
-          if (!response.ok) {
-            if (response.status === 401) throw new SessionExpiredError();
-            throw new Error('Profile save failed');
-          }
+        router.refresh();
+      }}
+      onDeleteProfile={
+        initialValues
+          ? async () => {
+              const response = await fetch('/api/profile', {
+                method: 'DELETE',
+              });
 
-          router.refresh();
-        }}
-        onDeleteProfile={
-          initialValues
-            ? async () => {
-                const response = await fetch('/api/profile', {
-                  method: 'DELETE',
-                });
-
-                if (!response.ok) {
-                  throw new Error('Profile delete failed');
-                }
-
-                router.push(`/${locale}/onboarding`);
-                router.refresh();
+              if (!response.ok) {
+                throw new Error('Profile delete failed');
               }
-            : undefined
-        }
-      />
-    </>
+
+              router.push(`/${locale}/onboarding`);
+              router.refresh();
+            }
+          : undefined
+      }
+    />
   );
 };
