@@ -17,10 +17,15 @@ const profile = {
 };
 
 const signIn = async (context: BrowserContext, id: string) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const [account] =
+    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, 'draft-test', 'Draft test', 'draft@example.com') on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
+  await sql.end();
   const payload = Buffer.from(
     JSON.stringify({
       user: {
         id,
+        accountId: account.id,
         name: 'Draft test',
         username: 'draft-test',
         email: 'draft@example.com',
@@ -174,8 +179,15 @@ test('profile drafts recover after navigation and expiry without crossing accoun
     );
     await page.getByRole('button', { name: 'Polycord', exact: true }).click();
     await expect(page).toHaveURL(/\/en$/);
-    await page.getByRole('button', { name: 'Account menu' }).click();
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
+    const profileItem = page.getByRole('button', {
+      name: 'Profile',
+      exact: true,
+    });
+    await expect(async () => {
+      await page.getByRole('button', { name: 'Account menu' }).click();
+      await expect(profileItem).toBeVisible({ timeout: 2000 });
+    }).toPass();
+    await profileItem.click();
     await expect(bio).toHaveValue(
       'My unfinished draft stays private until I save it.',
     );

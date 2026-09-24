@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAccountExportByDiscordId } from '@/db';
+import { getAccountExportByUserId } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 
 export const GET = async () => {
@@ -9,7 +9,7 @@ export const GET = async () => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const accountExport = await getAccountExportByDiscordId(currentUser.id);
+  const accountExport = await getAccountExportByUserId(currentUser.accountId);
 
   if (!accountExport) {
     return NextResponse.json({ error: 'Account not found' }, { status: 404 });
@@ -17,6 +17,7 @@ export const GET = async () => {
 
   return NextResponse.json(accountExport, {
     headers: {
+      'Cache-Control': 'no-store',
       'Content-Disposition':
         'attachment; filename="polycord-account-export.json"',
     },

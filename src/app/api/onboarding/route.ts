@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import { availabilityPresetToPattern } from '@/constants/availability';
-import {
-  type ProfileTargetLanguageValue,
-  upsertDiscordUser,
-  upsertProfileForUser,
-} from '@/db';
+import { type ProfileTargetLanguageValue, upsertProfileForUser } from '@/db';
 import { createOnboardingSchema } from '@/features/Onboarding/schema';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
@@ -38,11 +34,10 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const user = await upsertDiscordUser(currentUser);
   const values = payload.data;
   const bio = values.bio.trim();
 
-  const profile = await upsertProfileForUser(user.id, {
+  const profile = await upsertProfileForUser(currentUser.accountId, {
     allowAnonymousCopy: true,
     availability:
       values.availability === 'flexible'
@@ -66,7 +61,7 @@ export const POST = async (request: Request) => {
 
   await trackEvent({
     name: ANALYTICS_EVENTS.onboardingComplete,
-    userId: user.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
     metadata: {
       primaryLanguage: values.primaryLanguage,

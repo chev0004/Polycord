@@ -3,9 +3,7 @@ import {
   deleteProfileForUser,
   deleteVoiceIntroForUser,
   getProfileByDiscordUserId,
-  getUserByDiscordId,
   type ProfileTargetLanguageValue,
-  upsertDiscordUser,
   upsertProfileForUser,
 } from '@/db';
 import {
@@ -114,8 +112,7 @@ export const POST = async (request: Request) => {
       ? values.customGradient
       : undefined;
 
-  const user = await upsertDiscordUser(currentUser);
-  const profile = await upsertProfileForUser(user.id, {
+  const profile = await upsertProfileForUser(currentUser.accountId, {
     allowAnonymousCopy: values.allowAnonymousCopy,
     availability: values.availability ?? null,
     bio: values.bio.trim(),
@@ -144,7 +141,7 @@ export const POST = async (request: Request) => {
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileSave,
-    userId: user.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
     metadata: {
       isPublic: values.isPublic,
@@ -163,14 +160,8 @@ export const DELETE = async () => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await getUserByDiscordId(currentUser.id);
-
-  if (!user) {
-    return NextResponse.json({ deleted: false });
-  }
-
-  const deleted = await deleteProfileForUser(user.id);
-  await deleteVoiceIntroForUser(user.id);
+  const deleted = await deleteProfileForUser(currentUser.accountId);
+  await deleteVoiceIntroForUser(currentUser.accountId);
 
   return NextResponse.json({ deleted });
 };

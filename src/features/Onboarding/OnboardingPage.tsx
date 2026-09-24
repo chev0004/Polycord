@@ -192,7 +192,6 @@ export const OnboardingPage = ({
   const onSubmit = async (data: OnboardingFormValues) => {
     setSessionExpired(false);
     setSubmitError(null);
-
     try {
       const response = await fetch('/api/onboarding', {
         method: 'POST',
@@ -206,8 +205,9 @@ export const OnboardingPage = ({
       router.push(`/${locale}`);
       router.refresh();
     } catch (error) {
-      setSessionExpired(error instanceof SessionExpiredError);
-      setSubmitError(t('submitError'));
+      const expired = error instanceof SessionExpiredError;
+      setSessionExpired(expired);
+      setSubmitError(t(expired ? 'sessionExpired' : 'submitError'));
     }
   };
 

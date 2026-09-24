@@ -6,7 +6,6 @@ import {
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
-  upsertDiscordUser,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -22,14 +21,14 @@ export default async function PublicProfileRoute({
   params: Promise<{ lang: string; id: string }>;
 }) {
   const { lang, id } = await params;
-  const row = await getPublicProfileById(id);
+  const user = await getCurrentUser();
+  const row = await getPublicProfileById(id, user?.accountId);
 
   if (!row) {
     notFound();
   }
 
-  const profile = mapProfileToDiscoveryProfile(row);
-  const user = await getCurrentUser();
+  const profile = mapProfileToDiscoveryProfile(row, Boolean(user));
 
   let isLoggedIn = false;
   let savedProfileIds: string[] = [];
@@ -40,15 +39,14 @@ export default async function PublicProfileRoute({
 
   if (user) {
     isLoggedIn = true;
-    const persistedUser = await upsertDiscordUser(user);
-    viewerUserId = persistedUser.id;
+    viewerUserId = user.accountId;
     viewerActor = {
-      name: persistedUser.displayName,
-      avatarUrl: persistedUser.avatarUrl,
+      name: user.name,
+      avatarUrl: user.avatarUrl ?? null,
     };
-    const viewerProfile = await getProfileByUserId(persistedUser.id);
+    const viewerProfile = await getProfileByUserId(user.accountId);
     currentProfileId = viewerProfile?.profile.id;
-    savedProfileIds = await listSavedProfileIds(persistedUser.id);
+    savedProfileIds = await listSavedProfileIds(user.accountId);
 
     if (viewerProfile) {
       viewerTimezone = toViewerAvailabilityContext(
@@ -57,7 +55,7 @@ export default async function PublicProfileRoute({
     }
 
     const [viewerSettings, viewerPremium] = await Promise.all([
-      getUserSettingsByUserId(persistedUser.id),
+      getUserSettingsByUserId(user.accountId),
       isPremiumUser(user),
     ]);
 

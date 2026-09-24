@@ -36,8 +36,9 @@ export type { SettingsFormValues };
 
 export type SettingsPageProps = {
   userId?: string;
+  blockedUsers?: React.ReactNode;
   defaultValues: SettingsFormValues;
-  onDeleteAccount: () => Promise<void> | void;
+  onDeleteAccount: () => Promise<'billing-error' | undefined> | undefined;
   onExportData: () => Promise<void> | void;
   onSubmit?: (data: SettingsFormValues) => Promise<void> | void;
   onUpdateDiscordConnection: () => void;
@@ -111,6 +112,7 @@ const SettingRow = ({
 );
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({
+  blockedUsers,
   defaultValues,
   onDeleteAccount,
   onExportData,
@@ -131,7 +133,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
   const [deleteStatus, setDeleteStatus] = useState<
-    'idle' | 'confirming' | 'loading' | 'error'
+    'idle' | 'confirming' | 'loading' | 'error' | 'billing-error'
   >('idle');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -288,7 +290,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     setDeleteStatus('loading');
 
     try {
-      await onDeleteAccount();
+      if ((await onDeleteAccount()) === 'billing-error') {
+        setDeleteStatus('billing-error');
+        return;
+      }
       reset();
       draft.clear();
     } catch {
@@ -513,9 +518,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <p className="text-[12px] text-gray-500 leading-relaxed">
                       {t('deleteAccountRetentionNote')}
                     </p>
-                    {deleteStatus === 'error' ? (
-                      <p className="text-red-400 text-xs">
-                        {t('deleteAccountError')}
+                    {deleteStatus === 'error' ||
+                    deleteStatus === 'billing-error' ? (
+                      <p role="alert" className="text-red-400 text-xs">
+                        {t(
+                          deleteStatus === 'billing-error'
+                            ? 'deleteAccountBillingError'
+                            : 'deleteAccountError',
+                        )}
                       </p>
                     ) : null}
                     <div className="flex flex-wrap gap-2">
@@ -832,6 +842,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   />
                 </SettingRow>
               </div>
+              {blockedUsers}
             </SectionCard>
           )}
 

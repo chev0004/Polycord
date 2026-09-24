@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   clearNotifications,
   createNotification,
   deleteNotification,
-  getProfileById,
+  getPublicProfileById,
   getUserByDiscordId,
   listNotificationsForUser,
   markAllNotificationsRead,
   setNotificationRead,
-  upsertDiscordUser,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
@@ -71,24 +71,22 @@ export const POST = async (request: Request) => {
   const body = await parseBody(request);
   const profileId = body.profileId;
 
-  if (typeof profileId !== 'string' || profileId.length === 0) {
+  if (typeof profileId !== 'string' || !z.uuid().safeParse(profileId).success) {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const target = await getProfileById(profileId);
+  const target = await getPublicProfileById(profileId, currentUser.accountId);
 
-  if (!target?.profile.isPublic) {
+  if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  const actor = await upsertDiscordUser(currentUser);
-
-  if (target.profile.userId === actor.id) {
+  if (target.profile.userId === currentUser.accountId) {
     return NextResponse.json({ created: false });
   }
 
   const limit = await enforceRateLimit('copy', {
-    userId: actor.id,
+    userId: currentUser.accountId,
     ip: requestIp(request),
   });
 
@@ -98,7 +96,7 @@ export const POST = async (request: Request) => {
 
   await trackEvent({
     name: ANALYTICS_EVENTS.profileCopyReceived,
-    userId: actor.id,
+    userId: currentUser.accountId,
     locale: localeFromRequest(request),
     metadata: { ownerUserId: target.profile.userId },
   });
@@ -106,8 +104,8 @@ export const POST = async (request: Request) => {
   await createNotification({
     userId: target.profile.userId,
     kind: 'copy',
-    actorName: actor.displayName,
-    actorAvatarUrl: actor.avatarUrl,
+    actorName: currentUser.name,
+    actorAvatarUrl: currentUser.avatarUrl ?? null,
     isGuest: false,
   });
 
@@ -134,7 +132,11 @@ export const PATCH = async (request: Request) => {
     return NextResponse.json({ ok: true });
   }
 
-  if (typeof body.id !== 'string' || typeof body.read !== 'boolean') {
+  if (
+    typeof body.id !== 'string' ||
+    !z.uuid().safeParse(body.id).success ||
+    typeof body.read !== 'boolean'
+  ) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
@@ -163,7 +165,7 @@ export const DELETE = async (request: Request) => {
     return NextResponse.json({ ok: true });
   }
 
-  if (typeof body.id !== 'string' || body.id.length === 0) {
+  if (typeof body.id !== 'string' || !z.uuid().safeParse(body.id).success) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 

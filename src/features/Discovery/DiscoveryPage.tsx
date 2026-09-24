@@ -390,6 +390,7 @@ export const DiscoveryPage = ({
   ) => {
     try {
       await blockProfileRequest(profileId, false);
+      router.refresh();
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -431,6 +432,7 @@ export const DiscoveryPage = ({
 
     try {
       await blockProfileRequest(profileId, true);
+      router.refresh();
       addToast({
         title: t('blockSuccessTitle'),
         description: (

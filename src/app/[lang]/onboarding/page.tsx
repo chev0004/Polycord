@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getProfileByUserId, upsertDiscordUser } from '@/db';
+import { getProfileByUserId } from '@/db';
 import { OnboardingPage } from '@/features/Onboarding';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -18,8 +18,7 @@ export default async function OnboardingRoute({
     redirect(`/${lang}`);
   }
 
-  const user = await upsertDiscordUser(currentUser);
-  const existingProfile = await getProfileByUserId(user.id);
+  const existingProfile = await getProfileByUserId(currentUser.accountId);
 
   if (existingProfile) {
     redirect(`/${lang}`);
@@ -27,7 +26,7 @@ export default async function OnboardingRoute({
 
   await trackEvent({
     name: ANALYTICS_EVENTS.onboardingStart,
-    userId: user.id,
+    userId: currentUser.accountId,
     locale: lang,
   });
 
