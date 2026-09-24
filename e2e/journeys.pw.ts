@@ -171,6 +171,7 @@ test('admins moderate a report while members cannot reach admin tools', async ({
 }) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const prefix = randomUUID().slice(0, 8);
+  await sql`delete from users where discord_user_id = 'e2e-admin'`;
   const accounts = await sql<
     Account[]
   >`insert into users (discord_user_id, discord_username, display_name)
