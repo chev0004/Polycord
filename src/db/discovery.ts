@@ -76,7 +76,8 @@ export const listDiscoveryPage = async (
     );
 
   const query = state.searchQuery.trim().toLowerCase();
-  if (query) conditions.push(discoverySearch(query, locale));
+  if (query)
+    conditions.push(discoverySearch(query, locale, Boolean(viewerUserId)));
   const availability = discoveryAvailability(viewer);
   if (selection('availability')[0] === 'available-now')
     conditions.push(availability.availableNow);

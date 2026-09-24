@@ -9,7 +9,11 @@ import { profiles, users } from './schema';
 
 let timezoneLabels: { hour: number; json: string } | undefined;
 
-export const discoverySearch = (query: string, locale: string) => {
+export const discoverySearch = (
+  query: string,
+  locale: string,
+  isLoggedIn: boolean,
+) => {
   const hour = Math.floor(Date.now() / 3600000);
   if (timezoneLabels?.hour !== hour) {
     timezoneLabels = {
@@ -45,7 +49,10 @@ export const discoverySearch = (query: string, locale: string) => {
     concat_ws(' ', coalesce(${languageLabels}::jsonb ->> ${profiles.targetLanguage}, ${profiles.targetLanguage}),
       coalesce(${levelLabels}::jsonb ->> ${profiles.proficiencyLevel}::text, ${profiles.proficiencyLevel}::text)))`;
   const timezone = sql`case when ${profiles.displayTimezone} then coalesce(${profiles.timezone}, '') else '' end`;
-  return sql`strpos(lower(concat_ws(' ', ${users.displayName}, ${users.discordUsername}, ${primary}, '',
+  const username = isLoggedIn
+    ? users.discordUsername
+    : sql`case when ${profiles.allowAnonymousCopy} then ${users.discordUsername} else '' end`;
+  return sql`strpos(lower(concat_ws(' ', ${users.displayName}, ${username}, ${primary}, '',
     coalesce(${profiles.country}, ''), ${timezone}, coalesce(${timezoneLabels.json}::jsonb ->> (${timezone}), ${timezone}),
     ${profiles.bio}, array_to_string(${profiles.tags}, ' '), ${targets})), ${query}) > 0`;
 };
