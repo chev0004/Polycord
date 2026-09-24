@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import { z } from 'zod';
 import {
   getProfileByUserId,
   getPublicProfileById,
@@ -22,15 +21,14 @@ export default async function PublicProfileRoute({
   params: Promise<{ lang: string; id: string }>;
 }) {
   const { lang, id } = await params;
-  if (!z.uuid().safeParse(id).success) notFound();
-  const row = await getPublicProfileById(id);
+  const user = await getCurrentUser();
+  const row = await getPublicProfileById(id, user?.accountId);
 
   if (!row) {
     notFound();
   }
 
-  const profile = mapProfileToDiscoveryProfile(row);
-  const user = await getCurrentUser();
+  const profile = mapProfileToDiscoveryProfile(row, Boolean(user));
 
   let isLoggedIn = false;
   let savedProfileIds: string[] = [];

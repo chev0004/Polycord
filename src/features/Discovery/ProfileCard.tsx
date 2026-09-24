@@ -50,7 +50,7 @@ export type DiscoveryTargetLanguage = {
 export type DiscoveryProfile = {
   id: string;
   displayName: string;
-  discordUsername: string;
+  discordUsername?: string;
   avatarUrl?: string;
   primaryLanguage: LanguageCode | string;
   primaryLanguageLevel?: Proficiency | string;
@@ -182,7 +182,7 @@ export const ProfileCard = ({
     (bumpAge ? t(bumpAge.key, { count: bumpAge.count ?? 0 }) : undefined);
 
   const handleCopyUsername = async () => {
-    if (!canCopyUsername || isCopying) return;
+    if (!canCopyUsername || isCopying || !profile.discordUsername) return;
 
     setIsCopying(true);
     setCopyFailed(false);
@@ -549,11 +549,11 @@ export const ProfileCard = ({
         )}
       </div>
 
-      {copyFailed && (
+      {copyFailed && profile.discordUsername ? (
         <p role="alert" className="text-red-200 text-sm">
           {t('copyFailed', { username: profile.discordUsername })}
         </p>
-      )}
+      ) : null}
       <div className="flex flex-wrap items-center gap-2">
         {renderLanguagePill(
           profile.primaryLanguage,

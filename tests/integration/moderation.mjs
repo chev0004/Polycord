@@ -65,7 +65,10 @@ try {
     (await listPublicProfiles()).some((row) => row.id === profile.id),
     false,
   );
-  assert.equal((await listPublicProfilesByIds([profile.id])).length, 0);
+  assert.equal(
+    (await listPublicProfilesByIds([profile.id], reporter.id)).length,
+    0,
+  );
   await setProfileHiddenByModeration(user.id, false);
   assert.ok(await getPublicProfileById(profile.id));
   const created = await db

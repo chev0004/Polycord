@@ -4,7 +4,7 @@ import {
   clearNotifications,
   createNotification,
   deleteNotification,
-  getProfileById,
+  getPublicProfileById,
   getUserByDiscordId,
   listNotificationsForUser,
   markAllNotificationsRead,
@@ -75,9 +75,9 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 });
   }
 
-  const target = await getProfileById(profileId);
+  const target = await getPublicProfileById(profileId, currentUser.accountId);
 
-  if (!target?.profile.isPublic) {
+  if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 

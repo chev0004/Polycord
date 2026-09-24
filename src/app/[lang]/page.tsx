@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
   getProfileByUserId,
-  listBlockedUserIds,
   listSavedProfileIds,
   toViewerAvailabilityContext,
 } from '@/db';
@@ -26,7 +25,6 @@ export default async function Home({
   const user = await getCurrentUser();
   let needsOnboarding = false;
   let savedProfileIds: string[] = [];
-  let blockedUserIds: string[] = [];
   let currentProfileId: string | undefined;
   let bumpReadyAt: string | undefined;
   let viewerTimezone: string | undefined;
@@ -39,7 +37,6 @@ export default async function Home({
     needsOnboarding = !profile;
     currentProfileId = profile?.profile.id;
     savedProfileIds = await listSavedProfileIds(user.accountId);
-    blockedUserIds = await listBlockedUserIds(user.accountId);
 
     if (profile) {
       const viewer = toViewerAvailabilityContext(profile.profile);
@@ -87,7 +84,7 @@ export default async function Home({
         locale={lang}
         needsOnboarding={needsOnboarding}
         savedProfileIds={savedProfileIds}
-        blockedUserIds={blockedUserIds}
+        viewerUserId={viewerUserId}
         currentProfileId={currentProfileId}
         bumpReadyAt={bumpReadyAt}
         viewerTimezone={viewerTimezone}

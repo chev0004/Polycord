@@ -202,6 +202,36 @@ Regression coverage uses an isolated localhost PostgreSQL database via `TEST_DAT
 | `bun run build-storybook` | Build the static Storybook output. |
 | `bun run prepare` | Install Husky Git hooks. |
 
+## Profile Privacy And Blocking
+
+Public profiles remain available to signed-out visitors. When anonymous copying
+is disabled, the server omits the Discord username from discovery and public
+profile payloads for guests. Signed-in viewers can receive it unless a block or
+profile visibility restriction applies.
+
+Blocks apply in both directions while signed in: discovery, saved lists, direct
+profile pages, voice media, saves, reports, and copy notifications exclude the
+other account. Private, moderation-hidden, suspended, banned, and deleted
+profiles are unavailable to other viewers. An active owner can preview their
+own private voice introduction. Existing bookmarks remain stored and can
+reappear after unblocking if the profile is still public.
+
+Settings → Privacy lists the accounts you blocked. Unblocking is immediate,
+including when the other account has removed or hidden their profile. You can
+only remove your own blocks; a block from the other account still applies.
+Previously disclosed information and signed-out public browsing cannot be
+revoked by an account block.
+
+The `copy` rate limit applies to requests that create copy notifications, not to
+the browser clipboard. The UI sends those requests only after a successful
+clipboard write. Rejected, blocked, and rate-limited requests create no
+notification. Once a username has been disclosed, clipboard operations cannot
+be reliably limited by the server.
+
+Browser privacy checks build and serve the production app against a disposable
+local database. Next.js development diagnostics can serialize database results
+into RSC debug data; do not expose the development server to public traffic.
+
 ## Before Opening A PR
 
 Run the core local checks:

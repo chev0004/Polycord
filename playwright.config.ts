@@ -22,10 +22,10 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'bun run build && bun run start -p 3119',
+    command: 'bun run build && bun run next start -p 3119',
     url: 'http://localhost:3119/en',
-    timeout: 180000,
-    reuseExistingServer: !process.env.CI,
+    timeout: 240000,
+    reuseExistingServer: false,
     env: {
       DATABASE_URL: databaseUrl,
       AUTH_SECRET: 'polycord-isolated-audit-secret',

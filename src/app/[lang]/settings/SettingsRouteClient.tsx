@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { BlockedUsers } from '@/features/Settings/BlockedUsers';
 import {
   type SettingsFormValues,
   SettingsPage,
@@ -96,6 +97,7 @@ export const SettingsRouteClient = ({
 
   return (
     <SettingsPage
+      blockedUsers={<BlockedUsers onChange={() => router.refresh()} />}
       defaultValues={defaultSettings}
       userAvatarUrl={userAvatarUrl}
       userDisplayName={userDisplayName}

@@ -1,11 +1,9 @@
-import { z } from 'zod';
 import {
   getProfileById,
   getPublicProfileById,
-  getUserByDiscordId,
   getVoiceIntroByUserId,
 } from '@/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getActiveUser, getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 
 export const GET = async (
@@ -13,19 +11,16 @@ export const GET = async (
   { params }: { params: Promise<{ profileId: string }> },
 ) => {
   const { profileId } = await params;
-  if (!z.uuid().safeParse(profileId).success) {
-    return new Response('Not found', { status: 404 });
-  }
-  let row = await getPublicProfileById(profileId);
+  const currentUser = await getCurrentUser();
+  let row = await getPublicProfileById(profileId, currentUser?.accountId);
 
-  if (!row) {
-    const currentUser = await getCurrentUser();
-    const viewer = currentUser
-      ? await getUserByDiscordId(currentUser.id)
-      : null;
-    const candidate = viewer ? await getProfileById(profileId) : null;
+  if (!row && currentUser) {
+    const candidate = await getProfileById(profileId);
 
-    if (candidate && viewer && candidate.profile.userId === viewer.id) {
+    if (
+      candidate?.profile.userId === currentUser.accountId &&
+      (await getActiveUser())
+    ) {
       row = candidate;
     }
   }
@@ -55,7 +50,7 @@ export const GET = async (
     headers: {
       'Content-Type': intro.mimeType,
       'Content-Length': String(bytes.byteLength),
-      'Cache-Control': 'private, max-age=300',
+      'Cache-Control': 'private, no-store',
     },
   });
 };
