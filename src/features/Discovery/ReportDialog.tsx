@@ -89,7 +89,7 @@ export const ReportDialog = ({
               </Dialog.Description>
             </div>
             <Dialog.Close
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground"
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus-visible:bg-background-main focus-visible:text-foreground"
               aria-label={t('reportCancel')}
             >
               <MdClose size={18} />
@@ -109,7 +109,7 @@ export const ReportDialog = ({
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
                     isSelected
                       ? 'border-primary bg-primary-darker text-foreground'
-                      : 'border-gray-500/30 text-soft hover:border-gray-500/60 hover:bg-background-darker'
+                      : 'border-gray-500/30 text-soft hover:border-gray-500/60 hover:bg-background-darker has-[:focus-visible]:border-gray-500/60 has-[:focus-visible]:bg-background-darker'
                   }`}
                 >
                   <input

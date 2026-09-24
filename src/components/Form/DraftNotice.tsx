@@ -21,7 +21,7 @@ export const DraftNotice = ({
       {t(unavailable ? 'unavailable' : restored ? 'restored' : 'savedLocally')}
       {sessionExpired ? (
         <a
-          className="mt-2 block font-semibold text-primary-light underline"
+          className="mt-2 block font-semibold text-primary-light underline focus-visible:text-primary-lighter"
           href={`/api/auth/discord?locale=${locale}&editor=${window.location.pathname.split('/').pop()}`}
         >
           {t('signInAgain')}

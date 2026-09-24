@@ -388,7 +388,7 @@ export const ProfileCard = ({
                   <button
                     type="button"
                     suppressHydrationWarning
-                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground"
+                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground focus-visible:bg-black/50"
                     aria-label={t('cardMenu')}
                   >
                     <MdMoreVert size={17} />
@@ -493,7 +493,7 @@ export const ProfileCard = ({
               className={`flex items-center justify-center transition-all duration-200 ${
                 copied
                   ? 'scale-110 text-discord-blue-light'
-                  : 'text-muted group-hover:text-foreground'
+                  : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
               }`}
             >
               {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
@@ -502,7 +502,7 @@ export const ProfileCard = ({
               className={`truncate text-xs transition-colors duration-200 ${
                 copied
                   ? 'font-medium text-discord-blue-light'
-                  : 'text-muted group-hover:text-foreground'
+                  : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
               }`}
             >
               {copied ? t('copied') : t('copyUsername')}
@@ -635,7 +635,7 @@ export const ProfileCard = ({
               <button
                 type="button"
                 onClick={handleCountryClick}
-                className="-my-2 flex items-center gap-1.5 py-2 transition-opacity hover:opacity-80 active:opacity-60"
+                className="-my-2 flex items-center gap-1.5 py-2 transition-opacity hover:opacity-80 focus-visible:opacity-80 active:opacity-60"
               >
                 {renderLocationContent()}
               </button>

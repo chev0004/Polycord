@@ -670,7 +670,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         type="button"
                         onClick={handleAddTag}
                         aria-label={t('addTag')}
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none active:scale-[0.98]"
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none focus-visible:bg-primary-light active:scale-[0.98]"
                       >
                         <MdAdd size={20} />
                       </button>
