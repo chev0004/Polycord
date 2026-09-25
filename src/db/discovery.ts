@@ -29,6 +29,7 @@ export const listDiscoveryPage = async (
   locale: string,
   viewer: ViewerAvailabilityContext,
   viewerUserId?: string,
+  stacked = false,
 ) => {
   const visible = and(
     publiclyVisible(),
@@ -136,8 +137,8 @@ export const listDiscoveryPage = async (
     .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
     .where(where)
     .orderBy(order)
-    .limit(DISCOVERY_PAGE_SIZE)
-    .offset((page - 1) * DISCOVERY_PAGE_SIZE);
+    .limit(DISCOVERY_PAGE_SIZE * (stacked ? page : 1))
+    .offset(stacked ? 0 : (page - 1) * DISCOVERY_PAGE_SIZE);
   const profileIds = rows.map((row) => row.profile.id);
   const [items, saved] = await Promise.all([
     mapDiscoveryProfiles(rows, Boolean(viewerUserId)),

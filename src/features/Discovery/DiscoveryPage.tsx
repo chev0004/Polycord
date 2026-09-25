@@ -254,16 +254,19 @@ export const DiscoveryPage = ({
   const totalResults = remoteData?.total ?? filteredProfiles.length;
   const totalPages = Math.max(1, Math.ceil(totalResults / PER_PAGE));
   const safePage = Math.min(page, totalPages);
+  const stacked = mobile === true;
   const pageItems = useMemo(
     () =>
       remoteData
         ? profileItems
         : filteredProfiles.slice(
-            (safePage - 1) * PER_PAGE,
+            stacked ? 0 : (safePage - 1) * PER_PAGE,
             safePage * PER_PAGE,
           ),
-    [filteredProfiles, safePage, remoteData, profileItems],
+    [filteredProfiles, safePage, remoteData, profileItems, stacked],
   );
+  const stackPending =
+    stacked && pageItems.length < Math.min(totalResults, safePage * PER_PAGE);
 
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
@@ -281,6 +284,8 @@ export const DiscoveryPage = ({
     page,
   });
 
+  const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
+
   const refreshDiscovery = useCallback(() => {
     if (!discoveryData) return;
     requestRef.current?.abort();
@@ -288,7 +293,7 @@ export const DiscoveryPage = ({
     requestRef.current = controller;
     setIsRefreshing(true);
     setRefreshFailed(false);
-    fetch(`/api/discovery?${query}&locale=${locale}`, {
+    fetch(requestUrl, {
       cache: 'no-store',
       signal: controller.signal,
     })
@@ -306,7 +311,7 @@ export const DiscoveryPage = ({
       .finally(() => {
         if (!controller.signal.aborted) setIsRefreshing(false);
       });
-  }, [discoveryData, query, locale]);
+  }, [discoveryData, requestUrl]);
 
   const countResults = useCallback(
     async (draft: FilterDraft, signal: AbortSignal) => {
@@ -358,6 +363,7 @@ export const DiscoveryPage = ({
   }, [refreshDiscovery]);
 
   useEffect(() => {
+    if (mobile === null || stackPending) return;
     try {
       const stored = sessionStorage.getItem(DISCOVERY_RETURN_KEY);
       if (!stored) return;
@@ -370,7 +376,7 @@ export const DiscoveryPage = ({
         sessionStorage.removeItem(DISCOVERY_RETURN_KEY);
       }
     } catch {}
-  }, []);
+  }, [mobile, stackPending]);
 
   useEffect(() => {
     const remember = () => {
@@ -863,7 +869,22 @@ export const DiscoveryPage = ({
               />
             )}
 
-            {showSkeleton ? null : (
+            {showSkeleton ? null : stacked ? (
+              safePage < totalPages ? (
+                <button
+                  type="button"
+                  onClick={() => setPage(safePage + 1)}
+                  disabled={isRefreshing}
+                  className="mt-1 mb-6 h-12 w-full rounded-lg border border-line font-semibold text-sm text-soft transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:bg-overlay active:scale-[0.98] disabled:opacity-60"
+                >
+                  {t('loadMore')}
+                </button>
+              ) : totalResults > 0 ? (
+                <p className="pt-1 pb-7 text-center text-subtle text-xs">
+                  {t('endOfResults')}
+                </p>
+              ) : null
+            ) : (
               <Pagination
                 page={safePage}
                 totalPages={totalPages}

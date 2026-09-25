@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     searchParams.get('locale') === 'ja' ? 'ja' : 'en',
     profile ? toViewerAvailabilityContext(profile.profile) : {},
     persistedUser?.id,
+    searchParams.get('stack') === '1',
   );
   return NextResponse.json(data, {
     headers: { 'Cache-Control': 'private, no-store' },

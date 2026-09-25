@@ -593,7 +593,9 @@
     "filterSheetShowResults": "結果を表示",
     "filterSheetNoMatches": "該当なし",
     "filterSheetShow": "{count, plural, other {#人のパートナーを表示}}",
-    "backToTop": "トップへ戻る：検索、並び替え、フィルター"
+    "backToTop": "トップへ戻る：検索、並び替え、フィルター",
+    "loadMore": "さらにパートナーを表示",
+    "endOfResults": "条件に合うパートナーはすべて表示しました。"
   },
   "Saved": {
     "eyebrow": "保存済み",

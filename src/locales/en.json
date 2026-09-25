@@ -593,7 +593,9 @@
     "filterSheetShowResults": "Show results",
     "filterSheetNoMatches": "No matches",
     "filterSheetShow": "{count, plural, one {Show # partner} other {Show # partners}}",
-    "backToTop": "Back to top: search, sort and filters"
+    "backToTop": "Back to top: search, sort and filters",
+    "loadMore": "Show more partners",
+    "endOfResults": "You've seen everyone who matches."
   },
   "Saved": {
     "eyebrow": "Saved",
