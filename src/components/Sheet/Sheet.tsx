@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import type { IconType } from 'react-icons';
-import { MdCheck, MdChevronRight, MdClose } from 'react-icons/md';
+import { MdCheck, MdChevronRight, MdClose, MdSearch } from 'react-icons/md';
 
 const DISMISS_DISTANCE = 80;
 
@@ -329,5 +329,87 @@ export const ActionSheet = ({
         ))}
       </SheetGroup>
     </Sheet>
+  );
+};
+
+export const SheetDrill = ({
+  drilled,
+  main,
+  sub,
+}: {
+  drilled: boolean;
+  main: ReactNode;
+  sub: ReactNode;
+}) => (
+  <>
+    <div
+      inert={drilled}
+      className={`absolute inset-0 overflow-y-auto overscroll-contain px-5 pt-1 pb-5 transition-[transform,opacity] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] [scrollbar-width:none] ${
+        drilled ? '-translate-x-[28%] opacity-0' : ''
+      }`}
+    >
+      {main}
+    </div>
+    <div
+      inert={!drilled}
+      className={`absolute inset-0 overflow-y-auto overscroll-contain bg-background-dark px-5 pt-1 pb-5 transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] [scrollbar-width:none] ${
+        drilled ? 'translate-x-0' : 'translate-x-full'
+      }`}
+    >
+      {sub}
+    </div>
+  </>
+);
+
+export const SheetPickList = ({
+  label,
+  options,
+  value,
+  onSelect,
+}: {
+  label: string;
+  options: { label: string; value: string }[];
+  value: string;
+  onSelect: (value: string) => void;
+}) => {
+  const t = useTranslations('Sheet');
+  const [search, setSearch] = useState('');
+  const query = search.trim().toLowerCase();
+  const shown = options.filter((option) =>
+    option.label.toLowerCase().includes(query),
+  );
+
+  return (
+    <>
+      <div className="sticky top-0 z-[2] bg-background-dark pb-2.5">
+        <label className="flex h-11 items-center gap-2 rounded-full border border-line-strong bg-background-darker pr-2 pl-4 text-subtle focus-within:border-primary">
+          <MdSearch size={20} aria-hidden />
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t('search')}
+            aria-label={label}
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle"
+          />
+        </label>
+      </div>
+      <SheetGroup>
+        {shown.length > 0 ? (
+          shown.map((option) => (
+            <SheetRow
+              key={option.value}
+              label={option.label}
+              pressed={option.value === value}
+              onClick={() => onSelect(option.value)}
+            >
+              <SheetCheck radio checked={option.value === value} />
+            </SheetRow>
+          ))
+        ) : (
+          <p className="px-4 py-4 text-sm text-subtle">{t('noResults')}</p>
+        )}
+      </SheetGroup>
+    </>
   );
 };

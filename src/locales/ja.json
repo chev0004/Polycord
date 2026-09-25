@@ -120,6 +120,36 @@
     "saveError": "言語を保存できませんでした。もう一度お試しください。"
   },
   "Profile": {
+    "yourCard": "マイカード",
+    "modeEdit": "編集",
+    "modePreview": "プレビュー",
+    "editHint": "カードの各部分をタップして変更できます。",
+    "previewHint": "ディスカバーでパートナーに表示される見た目です。",
+    "editPart": "{part}を編集",
+    "nameAndAvatar": "名前とアバター",
+    "nameSyncedHint": "Discordと同期",
+    "nameSheetDescription": "名前とアバターはDiscordから取得されます。変更を反映するには連携を更新してください。",
+    "updateConnection": "連携を更新",
+    "languagesTitle": "言語",
+    "chooseLanguage": "言語を選択",
+    "locationTitle": "地域",
+    "clearCountry": "クリア",
+    "addLanguages": "言語を追加",
+    "addVoice": "ボイスイントロを追加",
+    "addFreeTime": "空き時間を追加",
+    "addTags": "興味・トピックを追加",
+    "addBio": "タップして自己紹介を書く",
+    "addCountry": "国を追加",
+    "bioCounter": "{count}/{max}",
+    "back": "戻る",
+    "done": "完了",
+    "save": "保存",
+    "unsavedShort": "未保存の変更",
+    "savedProfiles": "保存したプロフィール",
+    "bumpSuccess": "プロフィールがディスカバーの上位に戻りました。",
+    "bumpCooldown": "最近バンプしました。クールダウン終了後にもう一度お試しください。",
+    "bumpError": "プロフィールをバンプできませんでした。もう一度お試しください。",
+    "bumpProfileCooldown": "あと{time}でバンプ可能",
     "editProfile": "プロフィールを編集",
     "editProfileSubtitle": "言語パートナー候補にどう表示されるかを設定しましょう。",
     "defaultDisplayName": "あなたのプロフィール",
@@ -734,6 +764,8 @@
     "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
   },
   "Sheet": {
+    "search": "検索",
+    "noResults": "見つかりませんでした",
     "close": "閉じる"
   }
 }

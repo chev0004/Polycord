@@ -1,5 +1,6 @@
 'use client';
 
+import { bumpProfileRequest } from '@/features/Discovery/bumpProfileRequest';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
@@ -9,6 +10,7 @@ type ProfileRouteClientProps = {
   userId: string;
   boostedUntil?: string;
   boostsRemaining?: number;
+  bumpReadyAt?: string;
   initialValues?: ProfileFormValues;
   locale: string;
   premium?: boolean;
@@ -22,6 +24,7 @@ export const ProfileRouteClient = ({
   userId,
   boostedUntil,
   boostsRemaining,
+  bumpReadyAt,
   initialValues,
   locale,
   premium = false,
@@ -38,6 +41,7 @@ export const ProfileRouteClient = ({
       userId={userId}
       boostedUntil={boostedUntil}
       boostsRemaining={boostsRemaining}
+      bumpReadyAt={bumpReadyAt}
       initialValues={initialValues}
       onBoostProfile={
         premium && initialValues
@@ -54,6 +58,15 @@ export const ProfileRouteClient = ({
             }
           : undefined
       }
+      onBumpProfile={
+        profileId
+          ? async () => {
+              await bumpProfileRequest();
+              router.refresh();
+            }
+          : undefined
+      }
+      onViewSaved={() => router.push(`/${locale}/saved`)}
       premium={premium}
       profileId={profileId}
       stats={stats}
