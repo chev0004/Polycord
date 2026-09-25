@@ -16,6 +16,9 @@
   --color-line: rgba(255, 255, 255, 0.1);
   --color-line-strong: rgba(255, 255, 255, 0.18);
   --color-overlay: rgba(255, 255, 255, 0.1);
+  --color-chip: rgba(107, 114, 128, 0.16);
+  --color-chip-active: rgba(155, 168, 196, 0.22);
+  --color-chip-ring: rgba(155, 168, 196, 0.45);
   --color-danger: #f87171;
   --color-danger-surface: #301b20;
   --color-success: #4ade80;
@@ -62,6 +65,9 @@
   --color-line: rgba(24, 35, 47, 0.14);
   --color-line-strong: rgba(24, 35, 47, 0.24);
   --color-overlay: rgba(24, 35, 47, 0.06);
+  --color-chip: rgba(89, 105, 122, 0.12);
+  --color-chip-active: rgba(53, 78, 101, 0.16);
+  --color-chip-ring: rgba(53, 78, 101, 0.4);
   --color-danger: #b42318;
   --color-danger-surface: #fff0f1;
   --color-success: #166534;
@@ -381,6 +387,55 @@
 }
 @keyframes shimmer {
   to {
+    transform: translateX(100%);
+  }
+}
+
+.SheetOverlay[data-state="open"] {
+  animation: sheetFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.SheetOverlay[data-state="closed"] {
+  animation: sheetFadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.SheetContent[data-state="open"] {
+  animation: sheetIn 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.SheetContent[data-state="closed"] {
+  animation: sheetOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sheetFadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheetFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheetOut {
+  from {
+    transform: translateY(var(--sheet-drag, 0px));
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes pushIn {
+  from {
     transform: translateX(100%);
   }
 }

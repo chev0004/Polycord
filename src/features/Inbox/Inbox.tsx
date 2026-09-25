@@ -1,61 +1,16 @@
 import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   MdOutlineInbox,
   MdOutlineKeyboardArrowLeft,
   MdOutlineKeyboardArrowRight,
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
-import type { Notification, Notifications } from '@/types';
+import type { Notifications } from '@/types';
 import { NotificationEntry } from './NotificationEntry';
-import {
-  clearNotificationsRequest,
-  deleteNotificationRequest,
-  fetchNotifications,
-  markAllNotificationsReadRequest,
-  setNotificationReadRequest,
-} from './notificationRequests';
-
-type InboxNotification = Notification & {
-  read: boolean;
-};
-
-const visibleForPremium = <T extends { kind: Notification['kind'] }>(
-  items: T[],
-  premium: boolean,
-) => items.filter((item) => premium || item.kind !== 'view');
-
-const initializeControlled = (
-  initial: Notifications,
-  premium: boolean,
-): InboxNotification[] =>
-  visibleForPremium(initial, premium).map((n) => ({
-    ...n,
-    read: false,
-  }));
-
-const notificationsSignature = (initial: Notifications, premium: boolean) =>
-  `${premium}:${initial.map((n) => n.id).join(',')}`;
-
-const formatRelativeTime = (
-  createdAt: string,
-  t: ReturnType<typeof useTranslations<'Inbox'>>,
-) => {
-  const minutes = Math.max(
-    0,
-    Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000),
-  );
-
-  if (minutes < 1) return t('justNow');
-  if (minutes < 60) return t('minutesAgo', { count: minutes });
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t('hoursAgo', { count: hours });
-
-  return t('daysAgo', { count: Math.floor(hours / 24) });
-};
+import { formatRelativeTime, useInbox } from './useInbox';
 
 export const Inbox = ({
   notifications: initialNotifications,
@@ -68,130 +23,33 @@ export const Inbox = ({
 }) => {
   const t = useTranslations('Inbox');
   const locale = useLocale();
-
-  const [notifications, setNotifications] = useState<InboxNotification[]>(() =>
-    persist ? [] : initializeControlled(initialNotifications, premium),
-  );
+  const {
+    notifications,
+    unreadCount,
+    premium: viewerPremium,
+    loading,
+    error,
+    pending,
+    refresh,
+    retry,
+    setRead,
+    remove,
+    markAllRead,
+    clearAll,
+  } = useInbox({ notifications: initialNotifications, premium, persist });
   const [currentPage, setCurrentPage] = useState(1);
-  const [serverPremium, setServerPremium] = useState(false);
-  const [loading, setLoading] = useState(persist);
-  const [error, setError] = useState<'loadError' | 'writeError' | null>(null);
-  const [pending, setPending] = useState(false);
-  const request = useRef<AbortController | null>(null);
-  const saving = useRef(false);
-  const viewerPremium = persist ? serverPremium : premium;
   const [isMounted, setIsMounted] = useState(false);
-  const [signature, setSignature] = useState(() =>
-    notificationsSignature(initialNotifications, premium),
-  );
   const itemsPerPage = 5;
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const refresh = useCallback(async () => {
-    if (!persist || saving.current || request.current) return;
-    const controller = new AbortController();
-    request.current = controller;
-    try {
-      const stored = await fetchNotifications(controller.signal);
-      if (controller.signal.aborted) return;
-      setNotifications(stored.notifications);
-      setServerPremium(stored.premium);
-      setError((previous) => (previous === 'loadError' ? null : previous));
-    } catch {
-      if (!controller.signal.aborted) setError('loadError');
-    } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-        request.current = null;
-      }
-    }
-  }, [persist]);
-
-  useEffect(() => {
-    void refresh();
-    const refreshVisible = () => {
-      if (document.visibilityState === 'visible') void refresh();
-    };
-    const interval = window.setInterval(refreshVisible, 30000);
-    window.addEventListener('focus', refreshVisible);
-    document.addEventListener('visibilitychange', refreshVisible);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener('focus', refreshVisible);
-      document.removeEventListener('visibilitychange', refreshVisible);
-      request.current?.abort();
-      request.current = null;
-    };
-  }, [refresh]);
-
-  if (!persist) {
-    const nextSignature = notificationsSignature(initialNotifications, premium);
-    if (nextSignature !== signature) {
-      setSignature(nextSignature);
-      setNotifications(initializeControlled(initialNotifications, premium));
-      setCurrentPage(1);
-    }
-  }
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
   const totalPages = Math.ceil(notifications.length / itemsPerPage);
   const page = Math.min(currentPage, Math.max(1, totalPages));
   const startIndex = (page - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentNotifications = notifications.slice(startIndex, endIndex);
-
-  const mutate = async (
-    write: () => Promise<void>,
-    update: (previous: InboxNotification[]) => InboxNotification[],
-  ) => {
-    if (saving.current) return;
-    saving.current = true;
-    request.current?.abort();
-    request.current = null;
-    setPending(true);
-    setError(null);
-    try {
-      if (persist) await write();
-      setNotifications(update);
-    } catch {
-      setError('writeError');
-    } finally {
-      saving.current = false;
-      setPending(false);
-    }
-  };
-
-  const handleMarkAsRead = (id: string) => {
-    const target = notifications.find((n) => n.id === id);
-    if (!target) return;
-
-    const nextRead = !target.read;
-    void mutate(
-      () => setNotificationReadRequest(id, nextRead),
-      (prev) => prev.map((n) => (n.id === id ? { ...n, read: nextRead } : n)),
-    );
-  };
-
-  const handleDelete = (id: string) => {
-    void mutate(
-      () => deleteNotificationRequest(id),
-      (prev) => prev.filter((n) => n.id !== id),
-    );
-  };
-
-  const handleMarkAllAsRead = () => {
-    void mutate(markAllNotificationsReadRequest, (prev) =>
-      prev.map((n) => ({ ...n, read: true })),
-    );
-  };
-
-  const handleClearAll = () => {
-    void mutate(clearNotificationsRequest, () => []);
-  };
 
   const handleNextPage = () => {
     setCurrentPage(Math.min(page + 1, totalPages));
@@ -255,14 +113,14 @@ export const Inbox = ({
             {notifications.length > 0 && (
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={handleMarkAllAsRead}
+                  onClick={markAllRead}
                   className="px-2 py-1 text-xs"
                   disabled={pending || unreadCount === 0}
                 >
                   {t('markAllRead')}
                 </Button>
                 <Button
-                  onClick={handleClearAll}
+                  onClick={clearAll}
                   className="px-2 py-1 text-xs"
                   disabled={pending || notifications.length === 0}
                   variant="outline"
@@ -280,14 +138,7 @@ export const Inbox = ({
                 className="flex flex-col gap-2 p-3 text-danger text-sm"
               >
                 <p>{t(error)}</p>
-                <Button
-                  onClick={() => {
-                    setError(null);
-                    void refresh();
-                  }}
-                >
-                  {t('retry')}
-                </Button>
+                <Button onClick={retry}>{t('retry')}</Button>
               </div>
             )}
             {loading && (
@@ -306,8 +157,10 @@ export const Inbox = ({
                     premium={viewerPremium}
                     disabled={pending}
                     key={notification.id}
-                    onMarkAsRead={() => handleMarkAsRead(notification.id)}
-                    onDelete={() => handleDelete(notification.id)}
+                    onMarkAsRead={() =>
+                      setRead(notification.id, !notification.read)
+                    }
+                    onDelete={() => remove(notification.id)}
                     style={{
                       animationDelay: `${index * 50}ms`,
                     }}

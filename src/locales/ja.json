@@ -19,6 +19,9 @@
     "noOptions": "選択肢がありません"
   },
   "Inbox": {
+    "title": "受信ボックス",
+    "unread": "未読",
+    "premiumUpsellDescription": "Premiumなら、ログインしていた相手の名前が表示されます。",
     "loading": "通知を読み込み中…",
     "loadError": "通知を更新できませんでした。もう一度お試しください。",
     "writeError": "変更を確認できませんでした。受信トレイを更新して確認してから、もう一度操作してください。",
@@ -264,6 +267,18 @@
     "cardColorBlue": "ブルー"
   },
   "Settings": {
+    "privacyAlertsTitle": "プライバシーと通知",
+    "privacyPublic": "公開",
+    "privacyUnlisted": "未掲載",
+    "notificationsOn": "{count}件オン",
+    "premiumActive": "有効",
+    "premiumFreePlan": "無料プラン",
+    "premiumYourPlan": "ご利用中のプラン",
+    "premiumPerMonth": "/ 月",
+    "unsavedShort": "未保存の変更",
+    "save": "保存",
+    "done": "完了",
+    "logout": "ログアウト",
     "blockedUsersTitle": "ブロックしたアカウント",
     "blockedUsersDescription": "ログイン中は、お互いのプロフィールの閲覧や操作ができません。ログアウト中は公開プロフィールを閲覧できます。ブロック解除はすぐに反映され、変更の保存は不要です。",
     "blockedUsersLoading": "ブロックしたアカウントを読み込み中…",
@@ -575,7 +590,27 @@
     "bumpNeedsProfileDescription": "バンプする前にプロフィールを完成させ、公開してください。",
     "bumpErrorTitle": "プロフィールをバンプできませんでした",
     "bumpErrorDescription": "問題が発生しました。もう一度お試しください。",
-    "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}"
+    "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}",
+    "searchClear": "検索をクリア",
+    "tagCloudMore": "他{count}件",
+    "tagCloudLess": "閉じる",
+    "removeFilter": "{label}を削除",
+    "filtersButton": "フィルター",
+    "filterSheetTitle": "フィルター",
+    "filterSheetBack": "戻る",
+    "filterSheetReset": "リセット",
+    "filterSheetClear": "クリア",
+    "filterSheetAny": "指定なし",
+    "filterSheetSelected": "{count}件選択中",
+    "filterSheetLanguages": "言語",
+    "filterSheetLocationTime": "場所と時間",
+    "filterSheetInterests": "興味",
+    "filterSheetShowResults": "結果を表示",
+    "filterSheetNoMatches": "該当なし",
+    "filterSheetShow": "{count, plural, other {#人のパートナーを表示}}",
+    "backToTop": "トップへ戻る：検索、並び替え、フィルター",
+    "loadMore": "さらにパートナーを表示",
+    "endOfResults": "条件に合うパートナーはすべて表示しました。"
   },
   "Saved": {
     "eyebrow": "保存済み",
@@ -679,7 +714,13 @@
     "hubDescription": "データ、プロフィール、Polycordの安全性に関するわかりやすいポリシーをまとめています。"
   },
   "Navigation": {
-    "backToDiscovery": "ディスカバリーに戻る"
+    "backToDiscovery": "ディスカバリーに戻る",
+    "dockLabel": "メイン",
+    "dockDiscover": "ディスカバリー",
+    "dockInbox": "受信ボックス",
+    "dockInboxUnread": "受信ボックス、未読{count}件",
+    "dockSettings": "設定",
+    "dockYourCard": "マイカード"
   },
   "Recovery": {
     "missingTitle": "ページが見つかりません",
@@ -691,5 +732,8 @@
   },
   "Metadata": {
     "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
+  },
+  "Sheet": {
+    "close": "閉じる"
   }
 }

@@ -12,7 +12,7 @@ type SortMenuProps = {
   options?: readonly DiscoverySortValue[];
 };
 
-const sortOptionLabelKeys: Record<DiscoverySortValue, string> = {
+export const sortOptionLabelKeys: Record<DiscoverySortValue, string> = {
   'bumped-desc': 'sortLastBumped',
   'bumped-asc': 'sortOldestBumped',
   'name-asc': 'sortNameAsc',

@@ -20,6 +20,7 @@ import { DraftNotice } from '@/components/Form/DraftNotice';
 import { languageOptions } from '@/constants/languages';
 import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { SessionExpiredError } from '@/lib/formErrors';
 import {
   disablePushNotifications,
@@ -28,6 +29,7 @@ import {
 } from '@/lib/push/client';
 import { isLocale } from '@/utils/localePaths';
 import { CompareTable } from './CompareTable';
+import { MobileSettings } from './MobileSettings';
 import {
   type SettingsFormValues,
   settingsDraftSchema,
@@ -139,6 +141,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'loading' | 'error'
   >('idle');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const mobile = useIsMobile();
 
   const handleManageSubscription = async () => {
     setBillingStatus('loading');
@@ -309,11 +312,59 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const emailValue = watch('email');
 
+  if (mobile) {
+    return (
+      <MobileSettings
+        form={form}
+        onSubmit={onSubmit}
+        onDiscard={handleDiscard}
+        draftNotice={
+          userId ? (
+            <DraftNotice {...draft} sessionExpired={sessionExpired} />
+          ) : null
+        }
+        ready={draft.ready}
+        premium={premium}
+        userAvatarUrl={userAvatarUrl}
+        userDisplayName={userDisplayName}
+        subscriptionRenewsAt={subscriptionRenewsAt}
+        subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
+        options={{
+          applicationLanguage: localizedLanguageOptions,
+          theme: themeOptions,
+          timeFormat: timeFormatOptions,
+          languageDisplay: languageDisplayOptions,
+        }}
+        blockedUsers={blockedUsers}
+        pushStatus={pushStatus}
+        pushBusy={pushBusy}
+        onPushToggle={handlePushToggle}
+        saveStatus={saveStatus}
+        billingStatus={billingStatus}
+        onManageSubscription={handleManageSubscription}
+        exportStatus={exportStatus}
+        onExportData={handleExportData}
+        onUpdateDiscordConnection={onUpdateDiscordConnection}
+        deleteStatus={deleteStatus}
+        deleteConfirmation={deleteConfirmation}
+        onDeleteConfirmationChange={setDeleteConfirmation}
+        onDeleteStart={() => setDeleteStatus('confirming')}
+        onDeleteReset={() => {
+          setDeleteStatus('idle');
+          setDeleteConfirmation('');
+        }}
+        onDeleteAccount={handleDeleteAccount}
+      />
+    );
+  }
+
   return (
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit, onInvalid)}
-      className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
+      className={`mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24 ${
+        mobile === null ? 'max-md:invisible' : ''
+      }`}
     >
       <ReturnLink />
       <div className="mb-6">
@@ -846,7 +897,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   <output className="text-[13px] text-muted">
                     {t(
                       pushStatus === 'denied'
-                        ? 'pushDenied'
+                        ? 'pushPermissionDenied'
                         : pushStatus === 'unsupported'
                           ? 'pushUnsupported'
                           : 'pushError',
@@ -918,7 +969,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </SectionCard>
           )}
 
-          <div className="sticky bottom-5 z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="sticky bottom-[calc(var(--dock-space,0px)+20px)] z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             {saveStatus === 'error' ? (
               <span className="text-[13px] text-danger">{t('saveError')}</span>
             ) : billingStatus === 'error' ? (

@@ -19,6 +19,9 @@
     "noOptions": "No options"
   },
   "Inbox": {
+    "title": "Inbox",
+    "unread": "Unread",
+    "premiumUpsellDescription": "Premium shows names when the person was signed in.",
     "loading": "Loading notifications…",
     "loadError": "Notifications could not be refreshed. Please try again.",
     "writeError": "Your change could not be confirmed. Refresh the inbox to check, then try the action again.",
@@ -264,6 +267,18 @@
     "cardColorBlue": "Blue"
   },
   "Settings": {
+    "privacyAlertsTitle": "Privacy & alerts",
+    "privacyPublic": "Public",
+    "privacyUnlisted": "Unlisted",
+    "notificationsOn": "{count} on",
+    "premiumActive": "Active",
+    "premiumFreePlan": "Free plan",
+    "premiumYourPlan": "Your plan",
+    "premiumPerMonth": "/ month",
+    "unsavedShort": "Unsaved changes",
+    "save": "Save",
+    "done": "Done",
+    "logout": "Logout",
     "blockedUsersTitle": "Blocked accounts",
     "blockedUsersDescription": "While signed in, neither account can see or interact with the other's profile. Public profiles remain visible when signed out. Unblocking takes effect immediately and does not need Save changes.",
     "blockedUsersLoading": "Loading blocked accounts…",
@@ -575,7 +590,27 @@
     "bumpNeedsProfileDescription": "Finish your profile and make it public before bumping.",
     "bumpErrorTitle": "Couldn't bump profile",
     "bumpErrorDescription": "Something went wrong. Please try again.",
-    "copyFailed": "Copy failed. Try again or copy this username manually: {username}"
+    "copyFailed": "Copy failed. Try again or copy this username manually: {username}",
+    "searchClear": "Clear search",
+    "tagCloudMore": "+{count} more",
+    "tagCloudLess": "Show less",
+    "removeFilter": "Remove {label}",
+    "filtersButton": "Filters",
+    "filterSheetTitle": "Filters",
+    "filterSheetBack": "Back",
+    "filterSheetReset": "Reset",
+    "filterSheetClear": "Clear",
+    "filterSheetAny": "Any",
+    "filterSheetSelected": "{count} selected",
+    "filterSheetLanguages": "Languages",
+    "filterSheetLocationTime": "Location & time",
+    "filterSheetInterests": "Interests",
+    "filterSheetShowResults": "Show results",
+    "filterSheetNoMatches": "No matches",
+    "filterSheetShow": "{count, plural, one {Show # partner} other {Show # partners}}",
+    "backToTop": "Back to top: search, sort and filters",
+    "loadMore": "Show more partners",
+    "endOfResults": "You've seen everyone who matches."
   },
   "Saved": {
     "eyebrow": "Saved",
@@ -679,7 +714,13 @@
     "hubDescription": "The plain-language policies that cover your data, your profile, and how we keep Polycord safe."
   },
   "Navigation": {
-    "backToDiscovery": "Back to discovery"
+    "backToDiscovery": "Back to discovery",
+    "dockLabel": "Main",
+    "dockDiscover": "Discover",
+    "dockInbox": "Inbox",
+    "dockInboxUnread": "Inbox, {count} unread",
+    "dockSettings": "Settings",
+    "dockYourCard": "Your Card"
   },
   "Recovery": {
     "missingTitle": "Page not found",
@@ -691,5 +732,8 @@
   },
   "Metadata": {
     "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
+  },
+  "Sheet": {
+    "close": "Close"
   }
 }

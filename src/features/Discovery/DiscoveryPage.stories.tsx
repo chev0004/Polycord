@@ -1,3 +1,4 @@
+import { getRouter } from '@storybook/nextjs/navigation.mock';
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   expect,
@@ -156,7 +157,57 @@ export const Mobile: Story = {
 
     return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
   },
-  play: filterAndClearPlay,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('9 partners')).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole('button', { name: 'Filters' }));
+    const sheet = within(await screen.findByRole('dialog'));
+    await userEvent.click(
+      sheet.getByRole('button', { name: /^Primary Language/ }),
+    );
+    await userEvent.click(
+      await sheet.findByRole('button', { name: 'Japanese' }),
+    );
+    const apply = await sheet.findByRole('button', {
+      name: 'Show 2 partners',
+    });
+    await userEvent.click(apply);
+
+    await waitFor(() =>
+      expect(canvas.getByText('2 partners')).toBeInTheDocument(),
+    );
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Remove Japanese' }),
+    );
+    await waitFor(() =>
+      expect(canvas.getByText('9 partners')).toBeInTheDocument(),
+    );
+  },
+};
+
+export const MobileYourCard: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+  },
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+
+    return <DiscoveryPage {...args} profiles={createSampleProfiles(t)} />;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Your Card' }),
+    );
+    await waitFor(() =>
+      expect(getRouter().push).toHaveBeenCalledWith('/en/profile'),
+    );
+    await expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  },
 };
 
 export const Search: Story = {

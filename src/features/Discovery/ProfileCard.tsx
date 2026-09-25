@@ -18,6 +18,7 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
+import { ActionSheet, type ActionSheetItem } from '@/components/Sheet';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
   capitalizeLanguageCode,
@@ -31,6 +32,7 @@ import {
 } from '@/constants/languages';
 import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
@@ -148,6 +150,7 @@ export const ProfileCard = ({
   const isPreview = variant === 'preview';
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const mobile = useIsMobile();
   const timeFormat = useTimeFormat();
   const languageDisplay = useLanguageDisplay();
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -246,30 +249,40 @@ export const ProfileCard = ({
     }
   };
 
-  const handleViewProfile = () => {
-    onViewProfile?.(profile.id);
-    setIsMenuOpen(false);
-  };
-
-  const handleReport = () => {
-    onReport?.(profile.id);
-    setIsMenuOpen(false);
-  };
-
-  const handleBlock = () => {
-    onBlock?.(profile.id);
-    setIsMenuOpen(false);
-  };
-
-  const handleShare = () => {
-    onShare?.(profile.id);
-    setIsMenuOpen(false);
-  };
-
-  const handleToggleSave = () => {
-    onToggleSave?.(profile.id);
-    setIsMenuOpen(false);
-  };
+  const menuItems: ActionSheetItem[] = [
+    onViewProfile && {
+      key: 'view',
+      icon: MdPersonOutline,
+      label: t('viewProfile'),
+      onSelect: () => onViewProfile(profile.id),
+    },
+    onToggleSave && {
+      key: 'save',
+      icon: isSaved ? MdBookmark : MdBookmarkBorder,
+      label: isSaved ? t('unsaveProfile') : t('saveProfile'),
+      onSelect: () => onToggleSave(profile.id),
+    },
+    onShare && {
+      key: 'share',
+      icon: MdShare,
+      label: t('shareProfile'),
+      onSelect: () => onShare(profile.id),
+    },
+    onReport && {
+      key: 'report',
+      icon: MdFlag,
+      label: t('reportProfile'),
+      danger: true,
+      onSelect: () => onReport(profile.id),
+    },
+    onBlock && {
+      key: 'block',
+      icon: MdBlock,
+      label: t('blockProfile'),
+      danger: true,
+      onSelect: () => onBlock(profile.id),
+    },
+  ].filter((item) => item !== undefined);
 
   const renderTag = (value: string, key?: string) => (
     <Chip key={key} label={value} onClick={() => handleTagClick(value)} />
@@ -311,29 +324,6 @@ export const ProfileCard = ({
       </button>
     );
   };
-
-  const MenuItem = ({
-    icon: Icon,
-    onClick,
-    children,
-    className,
-    iconClassName,
-  }: {
-    icon: React.ElementType;
-    onClick: () => void;
-    children: React.ReactNode;
-    className?: string;
-    iconClassName?: string;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main ${className || 'text-foreground'}`}
-    >
-      <Icon size={20} className={iconClassName || 'text-muted'} />
-      {children}
-    </button>
-  );
 
   const renderLocationContent = () => (
     <>
@@ -382,7 +372,25 @@ export const ProfileCard = ({
                 {lastBumpRelative}
               </span>
             )}
-            {!isPreview && (
+            {!isPreview && mobile ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen(true)}
+                  className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50"
+                  aria-label={t('cardMenu')}
+                >
+                  <MdMoreVert size={19} />
+                </button>
+                <ActionSheet
+                  open={isMenuOpen}
+                  onOpenChange={setIsMenuOpen}
+                  title={profile.displayName}
+                  items={menuItems}
+                />
+              </>
+            ) : null}
+            {!isPreview && !mobile && (
               <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <Popover.Trigger asChild>
                   <button
@@ -403,55 +411,40 @@ export const ProfileCard = ({
                     onOpenAutoFocus={(e) => e.preventDefault()}
                   >
                     <div className="flex flex-col gap-1">
-                      {onViewProfile ? (
-                        <MenuItem
-                          icon={MdPersonOutline}
-                          onClick={handleViewProfile}
-                        >
-                          {t('viewProfile')}
-                        </MenuItem>
-                      ) : null}
-                      {onToggleSave ? (
-                        <MenuItem
-                          icon={isSaved ? MdBookmark : MdBookmarkBorder}
-                          onClick={handleToggleSave}
-                          iconClassName={
-                            isSaved
-                              ? 'text-[var(--ct-accent,var(--color-primary))]'
-                              : undefined
-                          }
-                        >
-                          {isSaved ? t('unsaveProfile') : t('saveProfile')}
-                        </MenuItem>
-                      ) : null}
-                      {onShare ? (
-                        <MenuItem icon={MdShare} onClick={handleShare}>
-                          {t('shareProfile')}
-                        </MenuItem>
-                      ) : null}
-                      {onReport || onBlock ? (
-                        <div className="my-1 h-[1px] bg-gray-500/50" />
-                      ) : null}
-                      {onReport ? (
-                        <MenuItem
-                          icon={MdFlag}
-                          onClick={handleReport}
-                          className="hover:!text-danger text-danger"
-                          iconClassName="text-danger"
-                        >
-                          {t('reportProfile')}
-                        </MenuItem>
-                      ) : null}
-                      {onBlock ? (
-                        <MenuItem
-                          icon={MdBlock}
-                          onClick={handleBlock}
-                          className="hover:!text-danger text-danger"
-                          iconClassName="text-danger"
-                        >
-                          {t('blockProfile')}
-                        </MenuItem>
-                      ) : null}
+                      {menuItems.map(
+                        (
+                          { key, icon: Icon, label, danger, onSelect },
+                          index,
+                        ) => (
+                          <Fragment key={key}>
+                            {danger && !menuItems[index - 1]?.danger ? (
+                              <div className="my-1 h-[1px] bg-gray-500/50" />
+                            ) : null}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onSelect();
+                                setIsMenuOpen(false);
+                              }}
+                              className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main ${danger ? 'text-danger' : 'text-foreground'}`}
+                            >
+                              {Icon ? (
+                                <Icon
+                                  size={20}
+                                  className={
+                                    danger
+                                      ? 'text-danger'
+                                      : key === 'save' && isSaved
+                                        ? 'text-[var(--ct-accent,var(--color-primary))]'
+                                        : 'text-muted'
+                                  }
+                                />
+                              ) : null}
+                              {label}
+                            </button>
+                          </Fragment>
+                        ),
+                      )}
                     </div>
                     <Popover.Arrow className="fill-gray-500/50" />
                   </Popover.Content>

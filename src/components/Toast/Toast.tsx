@@ -15,7 +15,7 @@ export const ToastProvider = ({ children }: { children?: ReactNode }) => {
 };
 
 export const ToastViewport = ({ children }: { children?: ReactNode }) => (
-  <ol className="ToastViewport fixed right-0 bottom-0 z-50 flex w-[390px] max-w-[100vw] list-none flex-col-reverse gap-3 p-6 outline-none">
+  <ol className="ToastViewport fixed right-0 bottom-[var(--dock-space,0px)] z-50 flex w-[390px] max-w-[100vw] list-none flex-col-reverse gap-3 p-6 outline-none">
     {children}
   </ol>
 );

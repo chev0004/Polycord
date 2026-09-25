@@ -89,6 +89,7 @@ const useFilterDefs = () => {
         labelKey: 'filterProficiency',
         placeholderKey: 'filterSelectLevel',
         options: proficiencyOptions(locale),
+        multiple: true,
       },
       {
         id: 'timezone',

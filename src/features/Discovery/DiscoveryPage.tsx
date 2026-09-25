@@ -17,6 +17,7 @@ import {
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
 import { onboardingDraftSchema } from '@/features/Onboarding/schema';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import {
   BumpProfileError,
@@ -36,7 +37,17 @@ import {
   SORT_OPTIONS,
 } from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
-import { buildDiscoveryQuery, parseDiscoveryState } from './discoveryUrlState';
+import {
+  buildDiscoveryQuery,
+  MAX_STACK_PAGES,
+  parseDiscoveryState,
+} from './discoveryUrlState';
+import {
+  BackToTop,
+  type FilterDraft,
+  FilterSheet,
+  SortSheet,
+} from './MobileFilters';
 import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
@@ -52,7 +63,7 @@ import {
 } from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl, shareProfileUrl } from './shareProfile';
-import { TagCloud } from './TagCloud';
+import { type AppliedFilter, TagCloud } from './TagCloud';
 
 const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
@@ -112,6 +123,7 @@ export const DiscoveryPage = ({
   const searchParams = useSearchParams();
   const urlQuery = searchParams.toString();
   const t = useTranslations('Discovery');
+  const mobile = useIsMobile();
   const viewerHasAvailability = Boolean(viewerAvailability);
   const viewerContext = useMemo(
     () => ({
@@ -246,16 +258,19 @@ export const DiscoveryPage = ({
   const totalResults = remoteData?.total ?? filteredProfiles.length;
   const totalPages = Math.max(1, Math.ceil(totalResults / PER_PAGE));
   const safePage = Math.min(page, totalPages);
+  const stacked = mobile === true;
   const pageItems = useMemo(
     () =>
       remoteData
         ? profileItems
         : filteredProfiles.slice(
-            (safePage - 1) * PER_PAGE,
+            stacked ? 0 : (safePage - 1) * PER_PAGE,
             safePage * PER_PAGE,
           ),
-    [filteredProfiles, safePage, remoteData, profileItems],
+    [filteredProfiles, safePage, remoteData, profileItems, stacked],
   );
+  const stackPending =
+    stacked && pageItems.length < Math.min(totalResults, safePage * PER_PAGE);
 
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
@@ -273,6 +288,8 @@ export const DiscoveryPage = ({
     page,
   });
 
+  const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
+
   const refreshDiscovery = useCallback(() => {
     if (!discoveryData) return;
     requestRef.current?.abort();
@@ -280,7 +297,7 @@ export const DiscoveryPage = ({
     requestRef.current = controller;
     setIsRefreshing(true);
     setRefreshFailed(false);
-    fetch(`/api/discovery?${query}&locale=${locale}`, {
+    fetch(requestUrl, {
       cache: 'no-store',
       signal: controller.signal,
     })
@@ -298,7 +315,41 @@ export const DiscoveryPage = ({
       .finally(() => {
         if (!controller.signal.aborted) setIsRefreshing(false);
       });
-  }, [discoveryData, query, locale]);
+  }, [discoveryData, requestUrl]);
+
+  const countResults = useCallback(
+    async (draft: FilterDraft, signal: AbortSignal) => {
+      if (!discoveryData) {
+        return applyTagFilter(
+          applyDiscoverySearch(
+            applyDiscoveryFilters(
+              profileItems,
+              draft.filterValues,
+              viewerContext,
+            ),
+            searchQuery,
+            locale,
+          ),
+          draft.selectedTags,
+        ).length;
+      }
+      const response = await fetch(
+        `/api/discovery?${buildDiscoveryQuery({ ...draft, searchQuery: debouncedSearch, page: 1 })}&locale=${locale}`,
+        { cache: 'no-store', signal },
+      );
+      if (!response.ok) throw new Error('Discovery count failed');
+      const data: DiscoveryData = await response.json();
+      return data.total;
+    },
+    [
+      discoveryData,
+      profileItems,
+      viewerContext,
+      searchQuery,
+      debouncedSearch,
+      locale,
+    ],
+  );
 
   useEffect(() => {
     const refresh = refreshDiscovery;
@@ -316,6 +367,7 @@ export const DiscoveryPage = ({
   }, [refreshDiscovery]);
 
   useEffect(() => {
+    if (mobile === null || stackPending) return;
     try {
       const stored = sessionStorage.getItem(DISCOVERY_RETURN_KEY);
       if (!stored) return;
@@ -328,7 +380,7 @@ export const DiscoveryPage = ({
         sessionStorage.removeItem(DISCOVERY_RETURN_KEY);
       }
     } catch {}
-  }, []);
+  }, [mobile, stackPending]);
 
   useEffect(() => {
     const remember = () => {
@@ -384,6 +436,39 @@ export const DiscoveryPage = ({
     setFilterValues({});
     setPage(1);
   };
+
+  const handleRemoveFilter = (filterId: string, value: string) => {
+    setFilterValues((previous) => {
+      const current = previous[filterId];
+      return {
+        ...previous,
+        [filterId]: Array.isArray(current)
+          ? current.filter((entry) => entry !== value)
+          : '',
+      };
+    });
+    setPage(1);
+  };
+
+  const handleApplyFilters = (draft: FilterDraft) => {
+    setFilterValues(draft.filterValues);
+    setSelectedTags(draft.selectedTags);
+    setSortValue(draft.sortValue);
+    setPage(1);
+  };
+
+  const appliedFilters: AppliedFilter[] = filterDefs.flatMap((filter) =>
+    [filterValues[filter.id] ?? []]
+      .flat()
+      .filter(Boolean)
+      .map((value) => ({
+        key: `${filter.id}:${value}`,
+        label:
+          filter.options.find((option) => option.value === value)?.label ??
+          value,
+        onRemove: () => handleRemoveFilter(filter.id, value),
+      })),
+  );
 
   const handleToggleTag = (tag: string) => {
     setSelectedTags((previous) =>
@@ -673,17 +758,22 @@ export const DiscoveryPage = ({
           </div>
         ) : null}
 
-        <div className="mb-[26px] flex flex-col gap-[14px]">
+        <div className="max-md:-mx-4 max-md:-mt-2 mb-[14px] max-md:sticky max-md:top-0 max-md:z-10 max-md:bg-background-main max-md:px-4 max-md:py-2">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
+        </div>
+        <div className="mb-[26px] flex flex-col gap-[14px]">
           {tagCounts.length > 0 ? (
             <TagCloud
               tags={tagCounts}
               selected={selectedTags}
               onToggle={handleToggleTag}
               onClear={handleClearTags}
+              collapsible={mobile === true}
+              applied={mobile === true ? appliedFilters : undefined}
             />
           ) : null}
           <FilterBar
+            className="max-md:hidden"
             filters={filterDefs}
             values={filterValues}
             onFilterChange={handleFilterChange}
@@ -718,7 +808,7 @@ export const DiscoveryPage = ({
           <>
             <div
               ref={resultsHeadRef}
-              className="mb-[18px] flex scroll-mt-8 items-center"
+              className="mb-[18px] flex scroll-mt-8 flex-wrap items-center gap-2 max-md:scroll-mt-[76px]"
             >
               <span
                 aria-live="polite"
@@ -728,6 +818,21 @@ export const DiscoveryPage = ({
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}
               </span>
+              <div className="ml-auto flex min-w-0 items-center gap-1 md:hidden">
+                <SortSheet
+                  value={sortValue}
+                  options={sortOptions}
+                  onChange={handleSortChange}
+                />
+                <FilterSheet
+                  filters={filterDefs}
+                  tags={tagCounts}
+                  sortOptions={sortOptions}
+                  value={{ filterValues, selectedTags, sortValue }}
+                  onApply={handleApplyFilters}
+                  countResults={countResults}
+                />
+              </div>
             </div>
 
             {showSkeleton ? (
@@ -768,7 +873,22 @@ export const DiscoveryPage = ({
               />
             )}
 
-            {showSkeleton ? null : (
+            {showSkeleton ? null : stacked ? (
+              safePage < Math.min(totalPages, MAX_STACK_PAGES) ? (
+                <button
+                  type="button"
+                  onClick={() => setPage(safePage + 1)}
+                  disabled={isRefreshing}
+                  className="mt-1 mb-6 h-12 w-full rounded-lg border border-line font-semibold text-sm text-soft transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:bg-overlay active:scale-[0.98] disabled:opacity-60"
+                >
+                  {t('loadMore')}
+                </button>
+              ) : safePage >= totalPages && totalResults > 0 ? (
+                <p className="pt-1 pb-7 text-center text-subtle text-xs">
+                  {t('endOfResults')}
+                </p>
+              ) : null
+            ) : (
               <Pagination
                 page={safePage}
                 totalPages={totalPages}
@@ -780,7 +900,7 @@ export const DiscoveryPage = ({
       </main>
 
       {needsOnboarding && !isPromptDismissed ? (
-        <aside className="fixed right-4 bottom-4 z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
+        <aside className="fixed right-4 bottom-[calc(var(--dock-space,0px)+16px)] z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
           <div className="flex items-start">
             <button
               type="button"
@@ -829,6 +949,10 @@ export const DiscoveryPage = ({
         profileName={reportTarget?.name}
         onSubmit={handleSubmitReport}
       />
+
+      {needsOnboarding && !isPromptDismissed ? null : (
+        <BackToTop count={appliedFilters.length + selectedTags.length} />
+      )}
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </>

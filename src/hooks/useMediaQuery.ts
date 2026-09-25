@@ -1,0 +1,20 @@
+import { useCallback, useSyncExternalStore } from 'react';
+
+export const useMediaQuery = (query: string) => {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const list = window.matchMedia(query);
+      list.addEventListener('change', onChange);
+      return () => list.removeEventListener('change', onChange);
+    },
+    [query],
+  );
+
+  return useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(query).matches,
+    () => null,
+  );
+};
+
+export const useIsMobile = () => useMediaQuery('(max-width: 767px)');

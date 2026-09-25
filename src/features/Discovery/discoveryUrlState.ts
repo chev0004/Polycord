@@ -14,14 +14,14 @@ export type DiscoveryUrlState = {
   page: number;
 };
 
+export const MAX_STACK_PAGES = 20;
+
 type ReadableParams = URLSearchParams | ReadonlyURLSearchParams;
 
 const SEARCH_PARAM = 'q';
 const TAGS_PARAM = 'tag';
 const SORT_PARAM = 'sort';
 const PAGE_PARAM = 'page';
-const PROFICIENCY_PARAM = 'level';
-const PROFICIENCY_FILTER_ID = 'proficiency';
 const AVAILABILITY_PARAM = 'avail';
 const AVAILABILITY_FILTER_ID = 'availability';
 
@@ -30,6 +30,7 @@ const MULTI_FILTER_PARAMS = [
   ['targetLanguage', 'target'],
   ['country', 'country'],
   ['timezone', 'tz'],
+  ['proficiency', 'level'],
 ] as const;
 
 const MANAGED_PARAMS = [
@@ -37,7 +38,6 @@ const MANAGED_PARAMS = [
   TAGS_PARAM,
   SORT_PARAM,
   PAGE_PARAM,
-  PROFICIENCY_PARAM,
   AVAILABILITY_PARAM,
   ...MULTI_FILTER_PARAMS.map(([, param]) => param),
 ];
@@ -66,11 +66,6 @@ export const parseDiscoveryState = (
     if (values.length > 0) {
       filterValues[id] = values;
     }
-  }
-
-  const proficiency = params.get(PROFICIENCY_PARAM);
-  if (proficiency) {
-    filterValues[PROFICIENCY_FILTER_ID] = proficiency;
   }
 
   const availability = params.get(AVAILABILITY_PARAM);
@@ -133,11 +128,6 @@ export const buildDiscoveryQuery = (
     } else if (value) {
       params.append(param, value);
     }
-  }
-
-  const proficiency = toFirstValue(state.filterValues[PROFICIENCY_FILTER_ID]);
-  if (proficiency) {
-    params.set(PROFICIENCY_PARAM, proficiency);
   }
 
   const availability = toFirstValue(state.filterValues[AVAILABILITY_FILTER_ID]);

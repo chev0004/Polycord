@@ -2,7 +2,10 @@ import 'server-only';
 
 import { and, count, eq, inArray, or, type SQL, sql } from 'drizzle-orm';
 import type { DiscoveryTagCount } from '@/features/Discovery/discoveryTags';
-import type { DiscoveryUrlState } from '@/features/Discovery/discoveryUrlState';
+import {
+  type DiscoveryUrlState,
+  MAX_STACK_PAGES,
+} from '@/features/Discovery/discoveryUrlState';
 import { db } from './client';
 import { discoveryAvailability } from './discoveryAvailability';
 import { discoverySearch } from './discoverySearch';
@@ -29,6 +32,7 @@ export const listDiscoveryPage = async (
   locale: string,
   viewer: ViewerAvailabilityContext,
   viewerUserId?: string,
+  stacked = false,
 ) => {
   const visible = and(
     publiclyVisible(),
@@ -127,6 +131,7 @@ export const listDiscoveryPage = async (
   ]);
   const page = Math.min(
     state.page,
+    stacked ? MAX_STACK_PAGES : state.page,
     Math.max(1, Math.ceil(summary.total / DISCOVERY_PAGE_SIZE)),
   );
   const rows = await db
@@ -136,8 +141,8 @@ export const listDiscoveryPage = async (
     .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
     .where(where)
     .orderBy(order)
-    .limit(DISCOVERY_PAGE_SIZE)
-    .offset((page - 1) * DISCOVERY_PAGE_SIZE);
+    .limit(DISCOVERY_PAGE_SIZE * (stacked ? page : 1))
+    .offset(stacked ? 0 : (page - 1) * DISCOVERY_PAGE_SIZE);
   const profileIds = rows.map((row) => row.profile.id);
   const [items, saved] = await Promise.all([
     mapDiscoveryProfiles(rows, Boolean(viewerUserId)),

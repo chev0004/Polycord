@@ -131,25 +131,34 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     await page.goto(`/en?q=${encodeURIComponent(longName)}`);
     await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
     expect(await fitsWidth(page)).toBe(true);
+    await page
+      .getByRole('button', { name: 'Dismiss onboarding prompt' })
+      .click();
 
     await page
-      .getByRole('button', { name: 'Notifications', exact: true })
+      .getByRole('navigation', { name: 'Main' })
+      .getByRole('button', { name: /^Inbox/ })
       .click();
-    const markRead = page.getByTitle('Mark as read').first();
-    await expect(markRead).toBeInViewport();
-    expect(await markRead.evaluate((el) => getComputedStyle(el).opacity)).toBe(
-      '1',
-    );
+    const entry = page.getByRole('button', {
+      name: /A user copied your username/,
+    });
+    await expect(entry).toBeInViewport();
+    expect(await fitsWidth(page)).toBe(true);
+    await entry.click();
+    await expect(
+      page.getByRole('dialog').getByRole('button', { name: 'Mark as unread' }),
+    ).toBeInViewport();
     await page.screenshot({
       path: testInfo.outputPath('inbox-320.png'),
       animations: 'disabled',
     });
     await page.keyboard.press('Escape');
+    await page.goBack();
 
     const cardMenu = page.getByRole('button', { name: 'Card menu' }).first();
     await cardMenu.click();
     await page.getByRole('button', { name: 'Report profile' }).click();
-    const dialog = page.getByRole('dialog');
+    const dialog = page.getByRole('dialog', { name: 'Report profile' });
     await expect(dialog).toBeVisible();
     const dialogBox = await dialog.boundingBox();
     expect(dialogBox?.y).toBeGreaterThanOrEqual(0);
@@ -170,7 +179,7 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     await expect(dialog).toHaveCount(0);
     await expect(cardMenu).toBeFocused();
 
-    const sort = page.getByRole('button', { name: 'Sort', exact: true });
+    const sort = page.getByRole('button', { name: /^Sort by/ });
     const before = await sort.evaluate(
       (el) => getComputedStyle(el).backgroundColor,
     );
@@ -180,11 +189,10 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
       .not.toBe(before);
 
     await page.goto('/en/settings');
-    const email = page.getByLabel('Email Address');
+    await page.getByRole('button', { name: /^Email Address/ }).click();
+    const email = page.getByRole('dialog').getByLabel('Email Address');
     await email.fill('not-an-email');
-    await page
-      .getByRole('button', { name: 'Save Settings', exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Done', exact: true }).click();
     await expect(email).toHaveAttribute('aria-invalid', 'true');
     await expect(email).toHaveAccessibleDescription(
       'Please enter a valid email address.',

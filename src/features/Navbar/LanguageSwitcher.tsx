@@ -35,7 +35,7 @@ export const LanguageSwitcher: React.FC = () => {
       <button
         type="button"
         aria-hidden="true"
-        className="relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-foreground outline-none transition-colors duration-200 hover:text-muted focus-visible:bg-primary-dark"
+        className="relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg text-foreground outline-none transition-colors duration-200 hover:text-muted focus-visible:bg-primary-dark"
         tabIndex={-1}
       >
         {triggerContent}
@@ -49,7 +49,7 @@ export const LanguageSwitcher: React.FC = () => {
         <button
           type="button"
           aria-label={t('changeLanguage')}
-          className="after:-inset-x-2 relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg bg-background-darker text-foreground outline-none transition-colors duration-200 after:absolute after:inset-y-0 after:content-[''] hover:text-muted focus-visible:bg-primary-dark"
+          className="after:-inset-x-2 relative flex h-10 w-[26px] select-none items-center justify-center rounded-lg text-foreground outline-none transition-colors duration-200 after:absolute after:inset-y-0 after:content-[''] hover:text-muted focus-visible:bg-primary-dark"
         >
           {triggerContent}
         </button>

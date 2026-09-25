@@ -94,6 +94,7 @@ export const useDiscoveryFilterDefs = (options?: {
         labelKey: 'filterProficiency',
         placeholderKey: 'filterSelectLevel',
         options: proficiencyOptions(locale),
+        multiple: true,
       },
       {
         id: 'timezone',
