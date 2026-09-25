@@ -575,7 +575,10 @@
     "bumpNeedsProfileDescription": "バンプする前にプロフィールを完成させ、公開してください。",
     "bumpErrorTitle": "プロフィールをバンプできませんでした",
     "bumpErrorDescription": "問題が発生しました。もう一度お試しください。",
-    "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}"
+    "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}",
+    "tagCloudMore": "他{count}件",
+    "tagCloudLess": "閉じる",
+    "removeFilter": "{label}を削除"
   },
   "Saved": {
     "eyebrow": "保存済み",

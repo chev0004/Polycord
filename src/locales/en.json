@@ -575,7 +575,10 @@
     "bumpNeedsProfileDescription": "Finish your profile and make it public before bumping.",
     "bumpErrorTitle": "Couldn't bump profile",
     "bumpErrorDescription": "Something went wrong. Please try again.",
-    "copyFailed": "Copy failed. Try again or copy this username manually: {username}"
+    "copyFailed": "Copy failed. Try again or copy this username manually: {username}",
+    "tagCloudMore": "+{count} more",
+    "tagCloudLess": "Show less",
+    "removeFilter": "Remove {label}"
   },
   "Saved": {
     "eyebrow": "Saved",
