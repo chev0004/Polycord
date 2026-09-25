@@ -233,8 +233,9 @@ export const listDiscoveryPage = async (
     if (!matches.length) return { rows: [], total: await countRows() };
     const ids = matches.map((match) => match.id);
     const found = await selectRows(inArray(profiles.id, ids), ids.length);
+    const byId = new Map(found.map((row) => [row.profile.id, row]));
     return {
-      rows: ids.flatMap((id) => found.filter((row) => row.profile.id === id)),
+      rows: ids.flatMap((id) => byId.get(id) ?? []),
       total: matches[0].total,
     };
   };
