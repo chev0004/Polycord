@@ -92,6 +92,7 @@ try {
     );
   }
   assert.equal((await load('q=beginner')).total, 30);
+  assert.equal((await load('q=a+safe+isolated+discovery+fixture')).total, 30);
   assert.equal((await load('target=fr&country=US&level=beginner')).total, 30);
   assert.equal((await load('avail=overlaps')).total, 30);
   assert.equal((await load('sort=overlap-desc')).profiles.length, 9);
