@@ -84,6 +84,7 @@ export default async function ProfileRoute({
         profileId={profile?.profile.isPublic ? profile.profile.id : undefined}
         userAvatarUrl={user.avatarUrl}
         userDisplayName={user.name}
+        userUsername={user.username}
       />
     </main>
   );

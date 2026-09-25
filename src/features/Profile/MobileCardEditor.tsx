@@ -55,6 +55,7 @@ import {
   deriveCardAccent,
   FREE_ACCENT,
 } from '@/features/Discovery/cardTheme';
+import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
 import { SettingsToggleRow } from '@/features/Settings/MobileSettings';
 import { BIO_MAX } from '@/lib/profileFields';
 import {
@@ -195,6 +196,7 @@ export const MobileCardEditor = ({
   const [bioEditing, setBioEditing] = useState(false);
   const [languagePick, setLanguagePick] = useState<LanguagePick | null>(null);
   const [countryPicking, setCountryPicking] = useState(false);
+  const [publicOpen, setPublicOpen] = useState(false);
 
   const values = watch();
   const targetLanguages = values.targetLanguages ?? [];
@@ -368,12 +370,16 @@ export const MobileCardEditor = ({
 
       <fieldset className="min-w-0 px-3">
         {mode === 'preview' ? (
-          <ProfileCard
-            profile={previewProfile}
-            variant="preview"
-            bioFallback={t('previewBioFallback')}
-            emptyTagsLabel={t('previewNoTags')}
-          />
+          // biome-ignore lint/a11y/useKeyWithClickEvents: View public profile in the profile menu is the keyboard path
+          // biome-ignore lint/a11y/noStaticElementInteractions: the whole preview card is the tap target
+          <div onClick={() => setPublicOpen(true)} className="cursor-pointer">
+            <ProfileCard
+              profile={previewProfile}
+              variant="preview"
+              bioFallback={t('previewBioFallback')}
+              emptyTagsLabel={t('previewNoTags')}
+            />
+          </div>
         ) : (
           <article
             style={cardStyle}
@@ -981,7 +987,18 @@ export const MobileCardEditor = ({
         open={sheet === 'menu'}
         onOpenChange={(open) => setSheet(open ? 'menu' : null)}
         title={t('profileOptions')}
-        items={menuItems}
+        items={menuItems.map((item) =>
+          item.key === 'view'
+            ? { ...item, onSelect: () => setPublicOpen(true) }
+            : item,
+        )}
+      />
+
+      <MobileProfileSheet
+        profile={previewProfile}
+        open={publicOpen}
+        onOpenChange={setPublicOpen}
+        isLoggedIn
       />
     </form>
   );
