@@ -803,7 +803,7 @@ export const DiscoveryPage = ({
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}
               </span>
-              <div className="ml-auto flex min-w-0 gap-2 md:hidden">
+              <div className="ml-auto flex min-w-0 items-center gap-1 md:hidden">
                 <SortSheet
                   value={sortValue}
                   options={sortOptions}

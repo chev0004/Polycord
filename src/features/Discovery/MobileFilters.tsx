@@ -57,7 +57,13 @@ const toSelection = (value: string | string[] | undefined): string[] => {
   return value ? [value] : [];
 };
 
-const PillButton = ({
+const FilterCount = ({ count }: { count: number }) => (
+  <span className="inline-grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-[5px] font-bold text-[11px] text-on-primary">
+    {count}
+  </span>
+);
+
+const TextControl = ({
   active = false,
   icon,
   onClick,
@@ -71,10 +77,10 @@ const PillButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`inline-flex h-9 min-w-0 items-center gap-1.5 rounded-full border bg-background-darker pr-3.5 pl-[11px] font-semibold text-[13px] transition-[border-color,color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] ${
+    className={`inline-flex h-9 min-w-0 items-center gap-1.5 rounded-full px-2.5 font-semibold text-[13px] transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:bg-overlay active:scale-[0.97] ${
       active
-        ? 'border-primary text-primary-light [&>svg]:text-primary'
-        : 'border-line-strong text-soft focus-visible:border-primary-dark focus-visible:bg-primary-darker [&>svg]:text-muted'
+        ? 'text-primary-light [&>svg]:text-primary-light'
+        : 'text-soft [&>svg]:text-subtle'
     }`}
   >
     {icon}
@@ -118,13 +124,13 @@ export const SortSheet = ({ value, options, onChange }: SortSheetProps) => {
 
   return (
     <>
-      <PillButton
-        icon={<MdSwapVert size={18} aria-hidden />}
+      <TextControl
+        icon={<MdSwapVert size={17} aria-hidden />}
         onClick={() => setOpen(true)}
       >
         <span className="sr-only">{t('sortByLabel')}: </span>
         <span className="truncate">{t(sortOptionLabelKeys[value])}</span>
-      </PillButton>
+      </TextControl>
       <ActionSheet
         open={open}
         onOpenChange={setOpen}
@@ -261,18 +267,14 @@ export const FilterSheet = ({
 
   return (
     <>
-      <PillButton
+      <TextControl
         active={appliedCount > 0}
-        icon={<MdTune size={18} aria-hidden />}
+        icon={<MdTune size={17} aria-hidden />}
         onClick={openSheet}
       >
         {t('filtersButton')}
-        {appliedCount > 0 ? (
-          <span className="-mr-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-discord-blue px-[5px] font-bold text-[11px] text-white">
-            {appliedCount}
-          </span>
-        ) : null}
-      </PillButton>
+        {appliedCount > 0 ? <FilterCount count={appliedCount} /> : null}
+      </TextControl>
       <Sheet
         open={open}
         onOpenChange={setOpen}

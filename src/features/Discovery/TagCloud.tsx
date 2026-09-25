@@ -101,7 +101,7 @@ export const TagCloud = ({
             type="button"
             aria-expanded={open}
             onClick={() => setOpen((previous) => !previous)}
-            className="ml-auto inline-flex h-8 items-center gap-0.5 rounded-full bg-primary-darker pr-1.5 pl-3 font-bold text-primary-light text-xs focus-visible:bg-primary-dark"
+            className="ml-auto inline-flex h-8 items-center gap-0.5 pl-2 font-semibold text-[13px] text-primary focus-visible:text-primary-light active:opacity-70"
           >
             {open
               ? t('tagCloudLess')
@@ -161,21 +161,33 @@ export const TagCloud = ({
                   ? `transition-[opacity,transform,background-color,border-color] duration-500 ${hidden ? '-translate-y-2.5 scale-90 opacity-0' : ''}`
                   : 'transition-colors duration-150'
               } ${
-                active
-                  ? 'border-primary-dark bg-primary-dark'
-                  : 'border-transparent bg-primary-darker hover:bg-primary-dark'
+                collapsible
+                  ? active
+                    ? 'border-transparent bg-[rgba(155,168,196,0.22)] shadow-[inset_0_0_0_1px_rgba(155,168,196,0.45)]'
+                    : 'border-transparent bg-[rgba(107,114,128,0.16)] focus-visible:bg-[rgba(155,168,196,0.22)]'
+                  : active
+                    ? 'border-primary-dark bg-primary-dark'
+                    : 'border-transparent bg-primary-darker hover:bg-primary-dark'
               }`}
             >
               <span
                 className={`whitespace-nowrap text-[13px] ${
-                  active ? 'text-foreground' : 'text-primary-light'
+                  collapsible
+                    ? active
+                      ? 'text-primary-light'
+                      : 'text-soft'
+                    : active
+                      ? 'text-foreground'
+                      : 'text-primary-light'
                 }`}
               >
                 {tag}{' '}
                 <span
-                  className={`text-[12px] ${
-                    active ? 'text-primary-lighter' : 'text-subtle'
-                  }`}
+                  className={
+                    collapsible
+                      ? `text-[11px] tabular-nums ${active ? 'text-primary' : 'text-subtle'}`
+                      : `text-[12px] ${active ? 'text-primary-lighter' : 'text-subtle'}`
+                  }
                 >
                   ({count})
                 </span>
@@ -184,7 +196,9 @@ export const TagCloud = ({
                 <MdCheck
                   size={15}
                   aria-hidden
-                  className="text-primary-lighter"
+                  className={
+                    collapsible ? 'text-primary-light' : 'text-primary-lighter'
+                  }
                 />
               ) : null}
             </button>
