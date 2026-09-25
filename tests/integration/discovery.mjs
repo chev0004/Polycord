@@ -111,6 +111,8 @@ try {
     position: 0,
   });
   assert.equal((await load('target=de&level=advanced')).total, 1);
+  assert.equal((await load('level=advanced')).total, 1);
+  assert.equal((await load('level=advanced&level=beginner')).total, 30);
   assert.equal((await load('target=fr')).total, 29);
   assert.equal((await load('level=invalid')).total, 0);
   const searchable = await listPublicProfilesByIds(

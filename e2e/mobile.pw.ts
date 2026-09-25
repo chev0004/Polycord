@@ -213,6 +213,12 @@ test('dock and filter sheets drive discovery on phones', async ({
     await page.getByRole('button', { name: /^Filters/ }).click();
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
+    for (const level of ['Beginner', 'Intermediate'])
+      await sheet.getByRole('button', { name: level, exact: true }).click();
+    for (const level of ['Beginner', 'Intermediate'])
+      await expect(
+        sheet.getByRole('button', { name: level, exact: true }),
+      ).toHaveAttribute('aria-pressed', 'true');
     await sheet.getByRole('button', { name: /^Country/ }).click();
     await sheet.getByRole('textbox', { name: 'Country' }).fill('Japan');
     await sheet.getByRole('button', { name: 'Japan', exact: true }).click();
@@ -225,6 +231,7 @@ test('dock and filter sheets drive discovery on phones', async ({
     });
     await page.getByRole('button', { name: 'Show 1 partner' }).click();
     await expect(page).toHaveURL(/country=JP/);
+    await expect(page).toHaveURL(/level=beginner&level=intermediate/);
     await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Remove Japan', exact: true }),
