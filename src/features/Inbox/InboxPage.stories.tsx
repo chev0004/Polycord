@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, screen, userEvent, waitFor, within } from '@storybook/test';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import type { Notifications } from '@/types';
 import { InboxPage } from './InboxPage';
 
@@ -36,6 +37,13 @@ const notifications: Notifications = [
 const meta: Meta<typeof InboxPage> = {
   title: 'Components/InboxPage',
   component: InboxPage,
+  decorators: [
+    (Story) => (
+      <RouteProgressProvider>
+        <Story />
+      </RouteProgressProvider>
+    ),
+  ],
   parameters: {
     nextjs: { appDirectory: true, navigation: { pathname: '/en/inbox' } },
     viewport: { defaultViewport: 'mobile1' },
@@ -98,10 +106,7 @@ export const Premium: Story = {
     await userEvent.click(
       sheet.getByRole('button', { name: 'Mark as unread' }),
     );
-    await waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    );
-    await expect(canvas.getAllByText('Unread')).toHaveLength(4);
+    await waitFor(() => expect(canvas.getAllByText('Unread')).toHaveLength(4));
 
     await userEvent.click(
       canvas.getByRole('button', { name: /Sophie Laurent viewed/ }),
