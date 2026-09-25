@@ -84,6 +84,11 @@ export const AutoDismiss: Story = {
         expect(canvas.queryByText('Username copied')).not.toBeInTheDocument(),
       { timeout: 8000 },
     );
+
+    await userEvent.click(canvas.getByText('Show toast'));
+
+    const toast = (await canvas.findByText('Username copied')).closest('li');
+    await expect(toast?.parentElement?.children).toHaveLength(1);
   },
 };
 
