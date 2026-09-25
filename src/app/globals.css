@@ -385,6 +385,49 @@
   }
 }
 
+.SheetOverlay[data-state="open"] {
+  animation: sheetFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.SheetOverlay[data-state="closed"] {
+  animation: sheetFadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.SheetContent[data-state="open"] {
+  animation: sheetIn 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.SheetContent[data-state="closed"] {
+  animation: sheetOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sheetFadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheetFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheetOut {
+  from {
+    transform: translateY(var(--sheet-drag, 0px));
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
 /* biome-ignore-start lint/complexity/noImportantStyles: reduced motion must override component animations */
 @media (prefers-reduced-motion: reduce) {
   *,
