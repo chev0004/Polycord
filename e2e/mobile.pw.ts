@@ -610,6 +610,14 @@ test('your card edits every profile part through sheets on phones', async ({
     ).toBeDisabled();
     await sheet.getByRole('button', { name: 'View public profile' }).click();
     await expect(page).toHaveURL(/\/en\/u\//);
+
+    await sql`update profiles set is_public = false where user_id = ${owner.id}`;
+    await page.goto('/en/profile');
+    await main.getByRole('button', { name: 'Profile options' }).click();
+    await expect(
+      sheet.getByRole('button', { name: 'Delete profile' }),
+    ).toBeVisible();
+    await expect(sheet.getByRole('button', { name: /^Bump/ })).toHaveCount(0);
   } finally {
     await sql`delete from users where id = ${owner.id}`;
     await sql.end();
