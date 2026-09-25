@@ -138,7 +138,7 @@ export const InboxPage = ({
                   onClick={() =>
                     openNotification(notification.id, notification.read)
                   }
-                  className={`${rowClassName} ${notification.read ? 'opacity-60' : ''}`}
+                  className={rowClassName}
                 >
                   <Avatar
                     avatarUrl={
@@ -147,7 +147,9 @@ export const InboxPage = ({
                     size="sm"
                   />
                   <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                    <span className="break-words text-sm leading-snug">
+                    <span
+                      className={`break-words text-sm leading-snug ${notification.read ? '' : 'font-semibold'}`}
+                    >
                       {getNotificationMessage(notification, inbox.premium, t)}
                     </span>
                     <span className="text-muted text-xs">
