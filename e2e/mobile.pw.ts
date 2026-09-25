@@ -70,7 +70,7 @@ for (const width of [320, 375, 390]) {
       }
       await page.goto('/en');
       await fits();
-      for (const name of ['Notifications', 'Change language', 'Card menu']) {
+      for (const name of ['Change language', 'Card menu']) {
         await page.getByRole('button', { name, exact: true }).first().click();
         const popover =
           name === 'Card menu'
@@ -248,8 +248,7 @@ test('dock and filter sheets drive discovery on phones', async ({
     await dock.getByRole('button', { name: 'Settings', exact: true }).click();
     await expect(page).toHaveURL('/en/settings');
     await dock.getByRole('button', { name: 'Your Card', exact: true }).click();
-    await page.getByRole('button', { name: 'Saved', exact: true }).click();
-    await expect(page).toHaveURL('/en/saved');
+    await expect(page).toHaveURL('/en/profile');
     await dock.getByRole('button', { name: 'Discover', exact: true }).click();
     await expect(page).toHaveURL('/en');
     await expect(

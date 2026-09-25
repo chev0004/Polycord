@@ -704,8 +704,7 @@
     "dockDiscover": "Discover",
     "dockInbox": "Inbox",
     "dockSettings": "Settings",
-    "dockYourCard": "Your Card",
-    "dockAccount": "Account"
+    "dockYourCard": "Your Card"
   },
   "Recovery": {
     "missingTitle": "Page not found",

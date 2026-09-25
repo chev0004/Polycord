@@ -1,3 +1,4 @@
+import { getRouter } from '@storybook/nextjs/navigation.mock';
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   expect,
@@ -185,7 +186,7 @@ export const Mobile: Story = {
   },
 };
 
-export const MobileAccount: Story = {
+export const MobileYourCard: Story = {
   parameters: {
     viewport: {
       defaultViewport: 'mobile1',
@@ -202,12 +203,10 @@ export const MobileAccount: Story = {
     await userEvent.click(
       await canvas.findByRole('button', { name: 'Your Card' }),
     );
-    const sheet = within(await screen.findByRole('dialog'));
-    await expect(sheet.getByRole('button', { name: 'Saved' })).toBeVisible();
-    await expect(
-      sheet.getByRole('button', { name: 'Bump profile' }),
-    ).toBeVisible();
-    await expect(sheet.getByRole('button', { name: 'Logout' })).toBeVisible();
+    await waitFor(() =>
+      expect(getRouter().push).toHaveBeenCalledWith('/en/profile'),
+    );
+    await expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   },
 };
 

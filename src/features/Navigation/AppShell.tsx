@@ -55,8 +55,6 @@ export const AppShell = ({
   const mobile = useIsMobile();
   const dockable = isLoggedIn && !pathname.endsWith('/onboarding');
   const docked = dockable && mobile === true;
-  const logout = () =>
-    window.location.assign(`/api/auth/logout?locale=${locale}`);
 
   return (
     <BumpContext.Provider value={setBump}>
@@ -82,7 +80,9 @@ export const AppShell = ({
           bumpReadyAt={bump?.readyAt}
           onSavedClick={() => router.push(`/${locale}/saved`)}
           onSettingsClick={() => router.push(`/${locale}/settings`)}
-          onLogoutClick={logout}
+          onLogoutClick={() =>
+            window.location.assign(`/api/auth/logout?locale=${locale}`)
+          }
         />
         <div className="flex flex-1 flex-col">{children}</div>
         <Footer locale={locale} />
@@ -91,9 +91,6 @@ export const AppShell = ({
             locale={locale}
             userAvatarUrl={userAvatarUrl}
             onNavigate={(href) => router.push(href)}
-            onLogout={logout}
-            onBumpProfile={bump?.onClick}
-            bumpReadyAt={bump?.readyAt}
           />
         ) : null}
       </div>

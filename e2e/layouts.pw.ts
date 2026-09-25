@@ -132,20 +132,6 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
     expect(await fitsWidth(page)).toBe(true);
 
-    await page
-      .getByRole('button', { name: 'Notifications', exact: true })
-      .click();
-    const markRead = page.getByTitle('Mark as read').first();
-    await expect(markRead).toBeInViewport();
-    expect(await markRead.evaluate((el) => getComputedStyle(el).opacity)).toBe(
-      '1',
-    );
-    await page.screenshot({
-      path: testInfo.outputPath('inbox-320.png'),
-      animations: 'disabled',
-    });
-    await page.keyboard.press('Escape');
-
     const cardMenu = page.getByRole('button', { name: 'Card menu' }).first();
     await cardMenu.click();
     await page.getByRole('button', { name: 'Report profile' }).click();

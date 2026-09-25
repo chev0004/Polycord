@@ -704,8 +704,7 @@
     "dockDiscover": "ディスカバリー",
     "dockInbox": "受信ボックス",
     "dockSettings": "設定",
-    "dockYourCard": "マイカード",
-    "dockAccount": "アカウント"
+    "dockYourCard": "マイカード"
   },
   "Recovery": {
     "missingTitle": "ページが見つかりません",
