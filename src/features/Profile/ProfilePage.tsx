@@ -226,7 +226,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [bumpStatus, setBumpStatus] = useState<
     'idle' | 'bumping' | 'success' | 'cooldown' | 'error'
   >('idle');
-  const mobile = useIsMobile() === true;
+  const mobile = useIsMobile();
   const bumpCountdown = useBumpCountdown(bumpReadyAt);
   const bumpLabel = bumpCountdown
     ? t('bumpProfileCooldown', { time: bumpCountdown })
@@ -715,7 +715,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
+      className={`mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24 ${
+        mobile === null ? 'max-md:invisible' : ''
+      }`}
     >
       <ReturnLink />
       <div className="mb-6 flex items-end justify-between gap-5">
