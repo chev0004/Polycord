@@ -33,8 +33,6 @@ import {
 import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { trackClientEvent } from '@/lib/analytics/client';
-import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { AvailabilityRow } from './AvailabilityRow';
 import {
   type CardTheme,
@@ -42,6 +40,8 @@ import {
   FREE_ACCENT,
   getFreeCardTheme,
 } from './cardTheme';
+import { MobileNameCopy, MobileProfileSheet } from './MobileProfileSheet';
+import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
 import { VoiceChip } from './VoiceChip';
 
 export type DiscoveryTargetLanguage = {
@@ -81,12 +81,7 @@ type ProfileCardProps = {
   bioFallback?: string;
   className?: string;
   emptyTagsLabel?: string;
-  onCopyUsername?: (
-    username: string,
-    profileId: string,
-    avatarUrl: string | undefined,
-    copiedToClipboard: boolean,
-  ) => void;
+  onCopyUsername?: CopyUsernameHandler;
   onTagClick?: (tag: string, profileId: string) => void;
   onLanguageClick?: (
     language: string,
@@ -155,9 +150,9 @@ export const ProfileCard = ({
   const timeFormat = useTimeFormat();
   const languageDisplay = useLanguageDisplay();
   const [currentTime, setCurrentTime] = useState<string>('');
-  const [copied, setCopied] = useState(false);
-  const [isCopying, setIsCopying] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
+  const usernameCopy = useUsernameCopy(profile, onCopyUsername);
+  const { copied, copyFailed } = usernameCopy;
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const canCopyUsername =
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
@@ -175,36 +170,8 @@ export const ProfileCard = ({
     profile.lastBumpRelative ??
     (bumpAge ? t(bumpAge.key, { count: bumpAge.count ?? 0 }) : undefined);
 
-  const handleCopyUsername = async () => {
-    if (!canCopyUsername || isCopying || !profile.discordUsername) return;
-
-    setIsCopying(true);
-    setCopyFailed(false);
-    const copiedToClipboard = await navigator.clipboard
-      .writeText(profile.discordUsername)
-      .then(
-        () => true,
-        () => false,
-      );
-    trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
-    onCopyUsername?.(
-      profile.discordUsername,
-      profile.id,
-      profile.avatarUrl,
-      copiedToClipboard,
-    );
-
-    if (!copiedToClipboard) {
-      setCopyFailed(true);
-      setIsCopying(false);
-      return;
-    }
-
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-      setIsCopying(false);
-    }, 2000);
+  const handleCopyUsername = () => {
+    if (canCopyUsername) void usernameCopy.copy();
   };
 
   useEffect(() => {
@@ -263,7 +230,9 @@ export const ProfileCard = ({
       key: 'view',
       icon: MdPersonOutline,
       label: t('viewProfile'),
-      onSelect: () => onViewProfile(profile.id),
+      onSelect: mobile
+        ? () => setDetailOpen(true)
+        : () => onViewProfile(profile.id),
     },
     onToggleSave && {
       key: 'save',
@@ -355,19 +324,21 @@ export const ProfileCard = ({
   );
 
   const opensProfile = Boolean(onViewProfile) && !isPreview && mobile === false;
+  const opensSheet = !isPreview && mobile === true;
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     const target = event.target as Element;
     if (
-      event.currentTarget.contains(target) &&
-      !target.closest('button, a, input, audio')
-    ) {
-      onViewProfile?.(profile.id);
-    }
+      !event.currentTarget.contains(target) ||
+      target.closest('button, a, input, audio')
+    )
+      return;
+    if (opensSheet) setDetailOpen(true);
+    else onViewProfile?.(profile.id);
   };
 
   const cardClassName = [
     'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-transform duration-200',
-    opensProfile && 'group/card cursor-pointer',
+    (opensProfile || opensSheet) && 'group/card cursor-pointer',
     isPreview
       ? 'mb-0 border border-line shadow-none'
       : `mb-6 shadow-lg ${
@@ -385,7 +356,7 @@ export const ProfileCard = ({
     <article
       style={themeStyle}
       className={cardClassName}
-      onClick={opensProfile ? handleCardClick : undefined}
+      onClick={opensProfile || opensSheet ? handleCardClick : undefined}
     >
       <div className="-mx-5 -mt-5 relative h-[84px] flex-shrink-0">
         <div
@@ -413,6 +384,15 @@ export const ProfileCard = ({
                   onOpenChange={setIsMenuOpen}
                   title={profile.displayName}
                   items={menuItems}
+                />
+                <MobileProfileSheet
+                  profile={profile}
+                  open={detailOpen}
+                  onOpenChange={setDetailOpen}
+                  isLoggedIn={isLoggedIn}
+                  viewerTimezone={viewerTimezone}
+                  onCopyUsername={onCopyUsername}
+                  menuItems={menuItems.filter(({ key }) => key !== 'view')}
                 />
               </>
             ) : null}
@@ -493,57 +473,68 @@ export const ProfileCard = ({
       </div>
 
       <div className="flex min-w-0 flex-col gap-[3px]">
-        <h3 className="truncate font-figtree font-semibold text-foreground text-lg">
-          {opensProfile ? (
-            <button
-              type="button"
-              onClick={() => onViewProfile?.(profile.id)}
-              className="max-w-full truncate text-left transition-colors focus:outline-none focus-visible:text-primary-light group-hover/card:text-primary-light"
-            >
-              {profile.displayName}
-            </button>
-          ) : (
-            profile.displayName
-          )}
-        </h3>
-        {isPreview ? (
-          <span className="flex items-center gap-1.5 self-start text-muted text-xs">
-            <MdContentCopy size={14} />
-            <span>{t('copyUsername')}</span>
-          </span>
-        ) : canCopyUsername ? (
-          <button
-            type="button"
-            onClick={handleCopyUsername}
-            className="-my-2 group flex items-center gap-1.5 self-start py-2 text-left transition-colors"
-            aria-label={t('copyUsername')}
-          >
-            <div
-              className={`flex items-center justify-center transition-all duration-200 ${
-                copied
-                  ? 'scale-110 text-discord-blue-light'
-                  : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
-              }`}
-            >
-              {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
-            </div>
-            <span
-              className={`truncate text-xs transition-colors duration-200 ${
-                copied
-                  ? 'font-medium text-discord-blue-light'
-                  : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
-              }`}
-            >
-              {copied ? t('copied') : t('copyUsername')}
-            </span>
-          </button>
+        {opensSheet && canCopyUsername ? (
+          <h3 className="min-w-0">
+            <MobileNameCopy
+              name={profile.displayName}
+              copied={copied}
+              onCopy={handleCopyUsername}
+            />
+          </h3>
         ) : (
-          <span className="truncate text-subtle text-xs">
-            {t('signInToViewUsername')}
-          </span>
+          <>
+            <h3 className="truncate font-figtree font-semibold text-foreground text-lg">
+              {opensProfile ? (
+                <button
+                  type="button"
+                  onClick={() => onViewProfile?.(profile.id)}
+                  className="max-w-full truncate text-left transition-colors focus:outline-none focus-visible:text-primary-light group-hover/card:text-primary-light"
+                >
+                  {profile.displayName}
+                </button>
+              ) : (
+                profile.displayName
+              )}
+            </h3>
+            {isPreview ? (
+              <span className="flex items-center gap-1.5 self-start text-muted text-xs">
+                <MdContentCopy size={14} />
+                <span>{t('copyUsername')}</span>
+              </span>
+            ) : canCopyUsername ? (
+              <button
+                type="button"
+                onClick={handleCopyUsername}
+                className="-my-2 group flex items-center gap-1.5 self-start py-2 text-left transition-colors"
+                aria-label={t('copyUsername')}
+              >
+                <div
+                  className={`flex items-center justify-center transition-all duration-200 ${
+                    copied
+                      ? 'scale-110 text-discord-blue-light'
+                      : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
+                  }`}
+                >
+                  {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
+                </div>
+                <span
+                  className={`truncate text-xs transition-colors duration-200 ${
+                    copied
+                      ? 'font-medium text-discord-blue-light'
+                      : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
+                  }`}
+                >
+                  {copied ? t('copied') : t('copyUsername')}
+                </span>
+              </button>
+            ) : (
+              <span className="truncate text-subtle text-xs">
+                {t('signInToViewUsername')}
+              </span>
+            )}
+          </>
         )}
       </div>
-
       {copyFailed && profile.discordUsername ? (
         <p role="alert" className="text-danger text-sm">
           {t('copyFailed', { username: profile.discordUsername })}

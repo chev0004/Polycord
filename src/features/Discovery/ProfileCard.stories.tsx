@@ -366,6 +366,35 @@ export const OpensProfile: Story = {
     await expect(args.onViewProfile).toHaveBeenCalledTimes(2);
   },
 };
+export const MobileOpensSheet: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return <ProfileCard {...args} profile={createMockProfile(t)} />;
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    await expect(
+      canvas.queryByRole('button', { name: 'Copy username' }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(
+      canvasElement.querySelector('article') as HTMLElement,
+    );
+    const sheet = await body.findByRole('dialog', { name: 'User 1' });
+    await expect(
+      within(sheet).getByRole('button', { name: "Copy User 1's username" }),
+    ).toBeInTheDocument();
+    await expect(args.onViewProfile).not.toHaveBeenCalled();
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: 'More actions' }),
+    );
+    await expect(
+      await body.findByRole('button', { name: 'Report profile' }),
+    ).toBeInTheDocument();
+  },
+};
 export const SaveAction: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');

@@ -478,6 +478,9 @@
     "eventPremiumUpgrade": "プレミアムアップグレード"
   },
   "Discovery": {
+    "copyNamedUsername": "{name}さんのユーザー名をコピー",
+    "tapToCopyHint": "名前をタップするとDiscordのユーザー名をコピーできます",
+    "detailPrimary": "主要言語",
     "pageEyebrow": "Discovery",
     "pageTitle": "Discordで言語パートナーを見つける",
     "pageDescription": "公開されているPolycordプロフィールを閲覧できます。プロフィール作成やアカウント管理はログイン後に利用できます。",
