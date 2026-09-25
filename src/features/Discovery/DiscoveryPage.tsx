@@ -62,7 +62,7 @@ import {
   reportProfileRequest,
 } from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
-import { buildPublicProfileUrl, shareProfileUrl } from './shareProfile';
+import { buildPublicProfileUrl, copyProfileUrl } from './shareProfile';
 import { type AppliedFilter, TagCloud } from './TagCloud';
 
 const PER_PAGE = 9;
@@ -515,17 +515,13 @@ export const DiscoveryPage = ({
   };
 
   const handleShareProfile = async (profileId: string) => {
-    const result = await shareProfileUrl(
-      buildPublicProfileUrl(locale, profileId),
-    );
-
-    if (result === 'copied') {
+    if (await copyProfileUrl(buildPublicProfileUrl(locale, profileId))) {
       addToast({
         title: t('shareCopiedTitle'),
         description: t('shareCopiedDescription'),
         duration: BUMP_TOAST_DURATION,
       });
-    } else if (result === 'error') {
+    } else {
       addToast({
         title: t('shareErrorTitle'),
         description: t('shareErrorDescription'),

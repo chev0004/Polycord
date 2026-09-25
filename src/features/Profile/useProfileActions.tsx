@@ -13,7 +13,7 @@ import {
 } from '@/features/Discovery/safetyRequests';
 import {
   buildPublicProfileUrl,
-  shareProfileUrl,
+  copyProfileUrl,
 } from '@/features/Discovery/shareProfile';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { useToastStack } from '@/hooks/useToast';
@@ -93,21 +93,16 @@ export const useProfileActions = (
   };
 
   const share = async (profileId: string) => {
-    const result = await shareProfileUrl(
+    const copied = await copyProfileUrl(
       buildPublicProfileUrl(locale, profileId),
     );
-    if (result === 'copied')
-      addToast({
-        title: t('shareCopiedTitle'),
-        description: t('shareCopiedDescription'),
-        duration: 4000,
-      });
-    if (result === 'error')
-      addToast({
-        title: t('shareErrorTitle'),
-        description: t('shareErrorDescription'),
-        duration: 4000,
-      });
+    addToast({
+      title: t(copied ? 'shareCopiedTitle' : 'shareErrorTitle'),
+      description: t(
+        copied ? 'shareCopiedDescription' : 'shareErrorDescription',
+      ),
+      duration: 4000,
+    });
   };
 
   const copyUsername = async ({ id, discordUsername }: DiscoveryProfile) => {
