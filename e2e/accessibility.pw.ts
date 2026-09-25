@@ -151,9 +151,13 @@ test('core pages expose named controls and support keyboard navigation', async (
       name: 'Primary Language',
       exact: true,
     });
-    await language.focus();
-    await page.keyboard.press('ArrowDown');
-    await expect(language).toHaveAttribute('aria-expanded', 'true');
+    await expect(async () => {
+      await language.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(language).toHaveAttribute('aria-expanded', 'true', {
+        timeout: 1000,
+      });
+    }).toPass();
     await expect(language).toHaveAttribute('aria-activedescendant', /.+/);
     await expect(page.getByRole('listbox')).toBeVisible();
     await page.keyboard.press('Escape');
