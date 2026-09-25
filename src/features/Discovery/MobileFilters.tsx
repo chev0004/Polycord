@@ -12,7 +12,10 @@ import {
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import type { FilterConfig } from '@/components/Filter/FilterBar';
-import { SEARCHABLE_THRESHOLD } from '@/components/Filter/FilterButton';
+import {
+  SEARCHABLE_THRESHOLD,
+  toSelection,
+} from '@/components/Filter/FilterButton';
 import {
   ActionSheet,
   Sheet,
@@ -52,11 +55,6 @@ const SECTIONS = [
     ids: ['availability'],
   },
 ];
-
-const toSelection = (value: string | string[] | undefined): string[] => {
-  if (Array.isArray(value)) return value;
-  return value ? [value] : [];
-};
 
 const FilterCount = ({ count }: { count: number }) => (
   <span className="inline-grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-[5px] font-bold text-[11px] text-on-primary">

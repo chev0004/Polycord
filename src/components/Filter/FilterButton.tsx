@@ -20,7 +20,7 @@ export type FilterButtonProps = {
 
 export const SEARCHABLE_THRESHOLD = 8;
 
-const toSelection = (value: string | string[] | undefined): string[] => {
+export const toSelection = (value: string | string[] | undefined): string[] => {
   if (Array.isArray(value)) return value;
   return value ? [value] : [];
 };
