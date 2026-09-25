@@ -146,6 +146,7 @@
     "bumpSuccess": "プロフィールがディスカバーの上位に戻りました。",
     "bumpCooldown": "最近バンプしました。クールダウン終了後にもう一度お試しください。",
     "bumpError": "プロフィールをバンプできませんでした。もう一度お試しください。",
+    "bumpProfileCooldown": "あと{time}でバンプ可能",
     "editProfile": "プロフィールを編集",
     "editProfileSubtitle": "言語パートナー候補にどう表示されるかを設定しましょう。",
     "defaultDisplayName": "あなたのプロフィール",

@@ -42,6 +42,7 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { useBumpCountdown } from '@/features/Navbar/UserMenu';
 import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -65,6 +66,7 @@ type ProfilePageProps = {
   userId?: string;
   boostedUntil?: string;
   boostsRemaining?: number;
+  bumpReadyAt?: string;
   initialValues?: ProfileFormValues;
   onBoostProfile?: () => Promise<void> | void;
   onBumpProfile?: () => Promise<void> | void;
@@ -192,6 +194,7 @@ const MenuItem = ({
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   boostedUntil,
   boostsRemaining,
+  bumpReadyAt,
   initialValues,
   onBoostProfile,
   onSubmit: onSubmitProp,
@@ -224,6 +227,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     'idle' | 'bumping' | 'success' | 'cooldown' | 'error'
   >('idle');
   const mobile = useIsMobile() === true;
+  const bumpCountdown = useBumpCountdown(bumpReadyAt);
+  const bumpLabel = bumpCountdown
+    ? t('bumpProfileCooldown', { time: bumpCountdown })
+    : t('bumpProfile');
+  const bumpDisabled = bumpStatus === 'bumping' || bumpCountdown !== null;
 
   const handleBumpProfile = async () => {
     if (!onBumpProfile || bumpStatus === 'bumping') return;
@@ -644,8 +652,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     onBumpProfile && {
       key: 'bump',
       icon: MdArrowUpward,
-      label: t('bumpProfile'),
-      disabled: bumpStatus === 'bumping',
+      label: bumpLabel,
+      disabled: bumpDisabled,
       onSelect: handleBumpProfile,
     },
     premium &&
@@ -741,9 +749,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <MenuItem
                   icon={MdArrowUpward}
                   onClick={handleBumpProfile}
-                  disabled={bumpStatus === 'bumping'}
+                  disabled={bumpDisabled}
                 >
-                  {t('bumpProfile')}
+                  {bumpLabel}
                 </MenuItem>
                 {premium && onBoostProfile ? (
                   <MenuItem

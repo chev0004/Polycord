@@ -146,6 +146,7 @@
     "bumpSuccess": "Your profile is back at the top of Discover.",
     "bumpCooldown": "You bumped recently. Try again once the cooldown ends.",
     "bumpError": "Your profile could not be bumped. Please try again.",
+    "bumpProfileCooldown": "Bump in {time}",
     "editProfile": "Edit Profile",
     "editProfileSubtitle": "Shape how you appear to potential language partners.",
     "defaultDisplayName": "Your profile",
