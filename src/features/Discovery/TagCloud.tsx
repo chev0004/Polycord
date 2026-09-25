@@ -163,8 +163,8 @@ export const TagCloud = ({
               } ${
                 collapsible
                   ? active
-                    ? 'border-transparent bg-[rgba(155,168,196,0.22)] shadow-[inset_0_0_0_1px_rgba(155,168,196,0.45)]'
-                    : 'border-transparent bg-[rgba(107,114,128,0.16)] focus-visible:bg-[rgba(155,168,196,0.22)]'
+                    ? 'border-chip-ring bg-chip-active'
+                    : 'border-transparent bg-chip focus-visible:bg-chip-active'
                   : active
                     ? 'border-primary-dark bg-primary-dark'
                     : 'border-transparent bg-primary-darker hover:bg-primary-dark'
