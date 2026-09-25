@@ -10,6 +10,7 @@ import type { IconType } from 'react-icons';
 import {
   MdAdd,
   MdArrowUpward,
+  MdBookmarkBorder,
   MdDeleteOutline,
   MdErrorOutline,
   MdMoreVert,
@@ -28,9 +29,11 @@ import {
   Toggle,
 } from '@/components/Form';
 import { DraftNotice } from '@/components/Form/DraftNotice';
+import type { ActionSheetItem } from '@/components/Sheet';
 import { countryOptions, languageOptions } from '@/constants';
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
+import { BumpProfileError } from '@/features/Discovery/bumpProfileRequest';
 import {
   CUSTOM_CARD_THEME_ID,
   DEFAULT_CARD_COLOR,
@@ -39,12 +42,15 @@ import {
   getCustomCardTheme,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { useBumpCountdown } from '@/features/Navbar/UserMenu';
 import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { entitlementLimit } from '@/lib/entitlements';
 import { SessionExpiredError } from '@/lib/formErrors';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
+import { MobileCardEditor } from './MobileCardEditor';
 import {
   type ProfileFormValues,
   profileDraftSchema,
@@ -60,12 +66,14 @@ type ProfilePageProps = {
   userId?: string;
   boostedUntil?: string;
   boostsRemaining?: number;
+  bumpReadyAt?: string;
   initialValues?: ProfileFormValues;
   onBoostProfile?: () => Promise<void> | void;
-  onBumpProfile?: () => void;
+  onBumpProfile?: () => Promise<void> | void;
   onDeleteProfile?: () => Promise<void> | void;
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
   onViewPublicProfile?: () => void;
+  onViewSaved?: () => void;
   premium?: boolean;
   profileId?: string;
   stats?: { views30d: number; copies30d: number; saves: number };
@@ -133,6 +141,30 @@ const SettingsRow = ({
   </div>
 );
 
+const Notice = ({
+  id,
+  tone,
+  children,
+}: {
+  id?: string;
+  tone: 'error' | 'info';
+  children: React.ReactNode;
+}) =>
+  tone === 'error' ? (
+    <div
+      id={id}
+      role="alert"
+      className="flex items-center gap-2 rounded-md border border-red-800 bg-danger-surface px-3.5 py-3 text-[14px] text-danger"
+    >
+      <MdErrorOutline size={18} className="shrink-0" />
+      {children}
+    </div>
+  ) : (
+    <output className="rounded-md bg-background-dark px-3.5 py-3 text-[14px] text-soft">
+      {children}
+    </output>
+  );
+
 const MenuItem = ({
   icon: Icon,
   onClick,
@@ -162,12 +194,14 @@ const MenuItem = ({
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   boostedUntil,
   boostsRemaining,
+  bumpReadyAt,
   initialValues,
   onBoostProfile,
   onSubmit: onSubmitProp,
   onBumpProfile,
   onDeleteProfile,
   onViewPublicProfile,
+  onViewSaved,
   premium = false,
   profileId,
   stats,
@@ -189,6 +223,31 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [isBoosting, setIsBoosting] = useState(false);
   const [boostFailed, setBoostFailed] = useState(false);
   const [tease, setTease] = useState<string | null>(null);
+  const [bumpStatus, setBumpStatus] = useState<
+    'idle' | 'bumping' | 'success' | 'cooldown' | 'error'
+  >('idle');
+  const mobile = useIsMobile();
+  const bumpCountdown = useBumpCountdown(bumpReadyAt);
+  const bumpLabel = bumpCountdown
+    ? t('bumpProfileCooldown', { time: bumpCountdown })
+    : t('bumpProfile');
+  const bumpDisabled = bumpStatus === 'bumping' || bumpCountdown !== null;
+
+  const handleBumpProfile = async () => {
+    if (!onBumpProfile || bumpStatus === 'bumping') return;
+
+    setBumpStatus('bumping');
+    try {
+      await onBumpProfile();
+      setBumpStatus('success');
+    } catch (error) {
+      setBumpStatus(
+        error instanceof BumpProfileError && error.status === 429
+          ? 'cooldown'
+          : 'error',
+      );
+    }
+  };
 
   const boostActive = boostedUntil
     ? new Date(boostedUntil).getTime() > Date.now()
@@ -303,6 +362,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     setSaveFailed(false);
     setDeleteFailed(false);
     setTease(null);
+    setBumpStatus('idle');
   };
 
   const handleDeleteProfile = async () => {
@@ -401,10 +461,263 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     (deleteFailed ? t('deleteError') : null) ??
     (boostFailed ? t('boostError') : null);
 
+  const tagEditor = (
+    <Controller
+      name="tags"
+      control={control}
+      render={({ field }) => {
+        const currentTags = field.value ?? [];
+
+        const handleAddTag = () => {
+          const newTag = tagInput.trim();
+
+          if (!newTag) return;
+          if (newTag.length < 2) {
+            setTagError(t('tagTooShort'));
+            return;
+          }
+          if (newTag.length > 20) {
+            setTagError(t('tagTooLong'));
+            return;
+          }
+          if (currentTags.length >= tagCap) {
+            setTagError(t('maxTags', { cap: tagCap }));
+            return;
+          }
+          if (
+            currentTags.some(
+              (tag) => tag.toLowerCase() === newTag.toLowerCase(),
+            )
+          ) {
+            setTagError(t('duplicateTag'));
+            return;
+          }
+
+          setTagError(null);
+          field.onChange([...currentTags, newTag]);
+          setTagInput('');
+        };
+
+        const handleRemoveTag = (indexToRemove: number) => {
+          field.onChange(
+            currentTags.filter((_, index) => index !== indexToRemove),
+          );
+        };
+
+        return (
+          <FormGroup>
+            <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
+            {currentTags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-background-darker p-2.5">
+                {currentTags.map((tag, index) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    onRemove={() => handleRemoveTag(index)}
+                    removeLabel={t('removeTag', { tag })}
+                  />
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <TextInput
+                id={tagsInputId}
+                value={tagInput}
+                onChange={(event) => setTagInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                placeholder={t('tagsPlaceholder')}
+                className="flex-1"
+                error={!!errors.tags}
+              />
+              <button
+                type="button"
+                onClick={handleAddTag}
+                aria-label={t('addTag')}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none focus-visible:bg-primary-light active:scale-[0.98]"
+              >
+                <MdAdd size={20} />
+              </button>
+            </div>
+            <p className="text-[12px] text-subtle">
+              {t('tagCounterHint', {
+                count: currentTags.length,
+                cap: tagCap,
+              })}
+            </p>
+            {!premium && currentTags.length >= FREE_TAG_CAP && (
+              <p className="text-[13px] text-muted leading-relaxed">
+                {t.rich('tagCapUpsell', {
+                  freeCap: FREE_TAG_CAP,
+                  premiumCap: PREMIUM_TAG_CAP,
+                  strong: (chunks) => (
+                    <strong className="font-semibold text-foreground">
+                      {chunks}
+                    </strong>
+                  ),
+                })}
+              </p>
+            )}
+          </FormGroup>
+        );
+      }}
+    />
+  );
+
+  const voiceEditor = (
+    <Controller
+      name="voiceIntroSeconds"
+      control={control}
+      render={({ field }) => (
+        <VoiceIntroEditor
+          premium={premium}
+          voiceSeconds={field.value ?? 0}
+          onChange={(seconds) =>
+            resetField('voiceIntroSeconds', { defaultValue: seconds })
+          }
+        />
+      )}
+    />
+  );
+
+  const availabilityEditor = (
+    <Controller
+      name="availability"
+      control={control}
+      render={({ field }) => (
+        <AvailabilityEditor value={field.value} onChange={field.onChange} />
+      )}
+    />
+  );
+
+  const cardStylePicker = (
+    <Controller
+      name="cardColor"
+      control={control}
+      render={({ field }) => (
+        <CardColorPicker
+          value={field.value ?? DEFAULT_CARD_COLOR}
+          onChange={field.onChange}
+          premium={premium}
+          tease={tease}
+          onTease={setTease}
+          customGradient={customGradient}
+          accentOverride={accentOverride}
+          autoAccent={autoAccent}
+          onCustomGradient={(gradient) =>
+            setValue('customGradient', gradient, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+          onAccentOverride={(color) =>
+            setValue('accentOverride', color, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+      )}
+    />
+  );
+
+  const bumpMessage =
+    bumpStatus === 'success'
+      ? t('bumpSuccess')
+      : bumpStatus === 'cooldown'
+        ? t('bumpCooldown')
+        : bumpStatus === 'error'
+          ? t('bumpError')
+          : null;
+
+  const statusMessage = bannerError ? (
+    <Notice id={`${tagsInputId}-error`} tone="error">
+      {bannerError}
+    </Notice>
+  ) : bumpMessage ? (
+    <Notice tone={bumpStatus === 'success' ? 'info' : 'error'}>
+      {bumpMessage}
+    </Notice>
+  ) : null;
+
+  const draftNotice = userId ? (
+    <DraftNotice {...draft} sessionExpired={sessionExpired} />
+  ) : null;
+
+  const menuItems: ActionSheetItem[] = [
+    onBumpProfile && {
+      key: 'bump',
+      icon: MdArrowUpward,
+      label: bumpLabel,
+      disabled: bumpDisabled,
+      onSelect: handleBumpProfile,
+    },
+    premium &&
+      onBoostProfile && {
+        key: 'boost',
+        icon: MdRocketLaunch,
+        label: boostActive
+          ? t('boostActive')
+          : t('boostProfile', { count: boostsRemaining ?? 0 }),
+        disabled: isBoosting || boostActive || (boostsRemaining ?? 0) <= 0,
+        onSelect: handleBoostProfile,
+      },
+    onViewPublicProfile && {
+      key: 'view',
+      icon: MdVisibility,
+      label: t('viewPublicProfile'),
+      onSelect: onViewPublicProfile,
+    },
+    onViewSaved && {
+      key: 'saved',
+      icon: MdBookmarkBorder,
+      label: t('savedProfiles'),
+      onSelect: onViewSaved,
+    },
+    onDeleteProfile && {
+      key: 'delete',
+      icon: MdDeleteOutline,
+      label: isDeleting ? t('deletingProfile') : t('deleteProfile'),
+      danger: true,
+      disabled: isDeleting,
+      onSelect: handleDeleteProfile,
+    },
+  ].filter((item) => item !== undefined && item !== false);
+
+  if (mobile) {
+    return (
+      <MobileCardEditor
+        form={form}
+        onSubmit={onSubmit}
+        onDiscard={handleDiscard}
+        onStyleClose={() => setTease(null)}
+        premium={premium}
+        premiumLook={previewIsPremiumLook}
+        theme={previewTheme}
+        displayName={displayName}
+        userAvatarUrl={userAvatarUrl}
+        previewProfile={previewProfile}
+        statusMessage={statusMessage}
+        draftNotice={draftNotice}
+        menuItems={menuItems}
+        cardStylePicker={cardStylePicker}
+        voiceEditor={voiceEditor}
+        availabilityEditor={availabilityEditor}
+        tagEditor={tagEditor}
+      />
+    );
+  }
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
+      className={`mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24 ${
+        mobile === null ? 'max-md:invisible' : ''
+      }`}
     >
       <ReturnLink />
       <div className="mb-6 flex items-end justify-between gap-5">
@@ -435,9 +748,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               sideOffset={6}
             >
               <div className="flex flex-col">
-                <MenuItem icon={MdArrowUpward} onClick={onBumpProfile}>
-                  {t('bumpProfile')}
-                </MenuItem>
+                {onBumpProfile ? (
+                  <MenuItem
+                    icon={MdArrowUpward}
+                    onClick={handleBumpProfile}
+                    disabled={bumpDisabled}
+                  >
+                    {bumpLabel}
+                  </MenuItem>
+                ) : null}
                 {premium && onBoostProfile ? (
                   <MenuItem
                     icon={MdRocketLaunch}
@@ -475,24 +794,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </Popover.Root>
       </div>
 
-      {userId ? (
-        <DraftNotice {...draft} sessionExpired={sessionExpired} />
-      ) : null}
+      {draftNotice}
       <fieldset
         disabled={!draft.ready}
         className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
       >
         <div className="flex min-w-0 flex-col gap-5">
-          {bannerError ? (
-            <div
-              id={`${tagsInputId}-error`}
-              role="alert"
-              className="flex items-center gap-2 rounded-md border border-red-800 bg-danger-surface px-3.5 py-3 text-[14px] text-danger"
-            >
-              <MdErrorOutline size={18} className="shrink-0" />
-              {bannerError}
-            </div>
-          ) : null}
+          {statusMessage}
 
           <SectionCard
             title={t('languageProfile')}
@@ -570,16 +878,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             title={t('aboutMe')}
             description={t('aboutMeDescription')}
           >
-            <Controller
-              name="availability"
-              control={control}
-              render={({ field }) => (
-                <AvailabilityEditor
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
-            />
+            {availabilityEditor}
 
             <FormGroup>
               <Label htmlFor={bioId}>{t('bioLabel')}</Label>
@@ -597,158 +896,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               )}
             </FormGroup>
 
-            <Controller
-              name="tags"
-              control={control}
-              render={({ field }) => {
-                const currentTags = field.value ?? [];
+            {tagEditor}
 
-                const handleAddTag = () => {
-                  const newTag = tagInput.trim();
-
-                  if (!newTag) return;
-                  if (newTag.length < 2) {
-                    setTagError(t('tagTooShort'));
-                    return;
-                  }
-                  if (newTag.length > 20) {
-                    setTagError(t('tagTooLong'));
-                    return;
-                  }
-                  if (currentTags.length >= tagCap) {
-                    setTagError(t('maxTags', { cap: tagCap }));
-                    return;
-                  }
-                  if (
-                    currentTags.some(
-                      (tag) => tag.toLowerCase() === newTag.toLowerCase(),
-                    )
-                  ) {
-                    setTagError(t('duplicateTag'));
-                    return;
-                  }
-
-                  setTagError(null);
-                  field.onChange([...currentTags, newTag]);
-                  setTagInput('');
-                };
-
-                const handleRemoveTag = (indexToRemove: number) => {
-                  field.onChange(
-                    currentTags.filter((_, index) => index !== indexToRemove),
-                  );
-                };
-
-                return (
-                  <FormGroup>
-                    <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
-                    {currentTags.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-background-darker p-2.5">
-                        {currentTags.map((tag, index) => (
-                          <Chip
-                            key={tag}
-                            label={tag}
-                            onRemove={() => handleRemoveTag(index)}
-                            removeLabel={t('removeTag', { tag })}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <TextInput
-                        id={tagsInputId}
-                        value={tagInput}
-                        onChange={(event) => setTagInput(event.target.value)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter') {
-                            event.preventDefault();
-                            handleAddTag();
-                          }
-                        }}
-                        placeholder={t('tagsPlaceholder')}
-                        className="flex-1"
-                        error={!!errors.tags}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddTag}
-                        aria-label={t('addTag')}
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none focus-visible:bg-primary-light active:scale-[0.98]"
-                      >
-                        <MdAdd size={20} />
-                      </button>
-                    </div>
-                    <p className="text-[12px] text-subtle">
-                      {t('tagCounterHint', {
-                        count: currentTags.length,
-                        cap: tagCap,
-                      })}
-                    </p>
-                    {!premium && currentTags.length >= FREE_TAG_CAP && (
-                      <p className="text-[13px] text-muted leading-relaxed">
-                        {t.rich('tagCapUpsell', {
-                          freeCap: FREE_TAG_CAP,
-                          premiumCap: PREMIUM_TAG_CAP,
-                          strong: (chunks) => (
-                            <strong className="font-semibold text-foreground">
-                              {chunks}
-                            </strong>
-                          ),
-                        })}
-                      </p>
-                    )}
-                  </FormGroup>
-                );
-              }}
-            />
-
-            <Controller
-              name="voiceIntroSeconds"
-              control={control}
-              render={({ field }) => (
-                <VoiceIntroEditor
-                  premium={premium}
-                  voiceSeconds={field.value ?? 0}
-                  onChange={(seconds) =>
-                    resetField('voiceIntroSeconds', { defaultValue: seconds })
-                  }
-                />
-              )}
-            />
+            {voiceEditor}
           </SectionCard>
 
           <SectionCard
             title={t('cardStyle')}
             description={t('cardStyleDescription')}
           >
-            <Controller
-              name="cardColor"
-              control={control}
-              render={({ field }) => (
-                <CardColorPicker
-                  value={field.value ?? DEFAULT_CARD_COLOR}
-                  onChange={field.onChange}
-                  premium={premium}
-                  tease={tease}
-                  onTease={setTease}
-                  customGradient={customGradient}
-                  accentOverride={accentOverride}
-                  autoAccent={autoAccent}
-                  onCustomGradient={(gradient) =>
-                    setValue('customGradient', gradient, {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                  onAccentOverride={(color) =>
-                    setValue('accentOverride', color, {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                />
-              )}
-            />
+            {cardStylePicker}
           </SectionCard>
 
           <SectionCard

@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fireEvent, fn, waitFor, within } from '@storybook/test';
+import {
+  expect,
+  fireEvent,
+  fn,
+  screen,
+  waitFor,
+  within,
+} from '@storybook/test';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from './ProfilePage';
 import type { ProfileFormValues } from './schema';
@@ -440,6 +447,39 @@ export const DirtySaveFlow: Story = {
     await waitFor(
       () => expect(canvas.getByText('All changes saved')).toBeInTheDocument(),
       { timeout: 5000 },
+    );
+  },
+};
+
+export const Mobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Edit Languages' }),
+    );
+    const sheet = within(await screen.findByRole('dialog'));
+    fireEvent.click(sheet.getByRole('button', { name: 'Advanced' }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Done' }));
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Edit Languages' }),
+      ).toHaveTextContent('English / Advanced'),
+    );
+    fireEvent.click(canvas.getByRole('button', { name: 'Preview' }));
+    const preview = (await canvas.findByText('Copy username')).closest(
+      'article',
+    ) as HTMLElement;
+    await expect(within(preview).getByText(/\/ Advanced$/)).toBeInTheDocument();
+    fireEvent.click(canvas.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetLanguages: [{ language: 'en', level: 'advanced' }],
+        }),
+      ),
     );
   },
 };

@@ -120,6 +120,36 @@
     "saveError": "Could not save language. Try again."
   },
   "Profile": {
+    "yourCard": "Your Card",
+    "modeEdit": "Edit",
+    "modePreview": "Preview",
+    "editHint": "Tap any part of your card to change it.",
+    "previewHint": "This is how partners see you in Discover.",
+    "editPart": "Edit {part}",
+    "nameAndAvatar": "Name & Avatar",
+    "nameSyncedHint": "Synced from Discord",
+    "nameSheetDescription": "Your name and avatar come from Discord. Update the connection to pull in changes.",
+    "updateConnection": "Update Connection",
+    "languagesTitle": "Languages",
+    "chooseLanguage": "Choose a language",
+    "locationTitle": "Location",
+    "clearCountry": "Clear",
+    "addLanguages": "Add your languages",
+    "addVoice": "Add a voice intro",
+    "addFreeTime": "Add your free time",
+    "addTags": "Add interests & topics",
+    "addBio": "Tap to write a short intro.",
+    "addCountry": "Add your country",
+    "bioCounter": "{count}/{max}",
+    "back": "Back",
+    "done": "Done",
+    "save": "Save",
+    "unsavedShort": "Unsaved changes",
+    "savedProfiles": "Saved profiles",
+    "bumpSuccess": "Your profile is back at the top of Discover.",
+    "bumpCooldown": "You bumped recently. Try again once the cooldown ends.",
+    "bumpError": "Your profile could not be bumped. Please try again.",
+    "bumpProfileCooldown": "Bump in {time}",
     "editProfile": "Edit Profile",
     "editProfileSubtitle": "Shape how you appear to potential language partners.",
     "defaultDisplayName": "Your profile",
@@ -734,6 +764,8 @@
     "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
   },
   "Sheet": {
+    "search": "Search",
+    "noResults": "No results found",
     "close": "Close"
   }
 }
