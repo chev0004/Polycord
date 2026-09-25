@@ -169,11 +169,10 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
       .not.toBe(before);
 
     await page.goto('/en/settings');
-    const email = page.getByLabel('Email Address');
+    await page.getByRole('button', { name: /^Email Address/ }).click();
+    const email = page.getByRole('dialog').getByLabel('Email Address');
     await email.fill('not-an-email');
-    await page
-      .getByRole('button', { name: 'Save Settings', exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Done', exact: true }).click();
     await expect(email).toHaveAttribute('aria-invalid', 'true');
     await expect(email).toHaveAccessibleDescription(
       'Please enter a valid email address.',
