@@ -578,7 +578,20 @@
     "copyFailed": "Copy failed. Try again or copy this username manually: {username}",
     "tagCloudMore": "+{count} more",
     "tagCloudLess": "Show less",
-    "removeFilter": "Remove {label}"
+    "removeFilter": "Remove {label}",
+    "filtersButton": "Filters",
+    "filterSheetTitle": "Filters",
+    "filterSheetBack": "Back",
+    "filterSheetReset": "Reset",
+    "filterSheetClear": "Clear",
+    "filterSheetAny": "Any",
+    "filterSheetSelected": "{count} selected",
+    "filterSheetLanguages": "Languages",
+    "filterSheetLocationTime": "Location & time",
+    "filterSheetInterests": "Interests",
+    "filterSheetShowResults": "Show results",
+    "filterSheetNoMatches": "No matches",
+    "filterSheetShow": "{count, plural, one {Show # partner} other {Show # partners}}"
   },
   "Saved": {
     "eyebrow": "Saved",

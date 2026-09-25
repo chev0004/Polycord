@@ -578,7 +578,20 @@
     "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}",
     "tagCloudMore": "他{count}件",
     "tagCloudLess": "閉じる",
-    "removeFilter": "{label}を削除"
+    "removeFilter": "{label}を削除",
+    "filtersButton": "フィルター",
+    "filterSheetTitle": "フィルター",
+    "filterSheetBack": "戻る",
+    "filterSheetReset": "リセット",
+    "filterSheetClear": "クリア",
+    "filterSheetAny": "指定なし",
+    "filterSheetSelected": "{count}件選択中",
+    "filterSheetLanguages": "言語",
+    "filterSheetLocationTime": "場所と時間",
+    "filterSheetInterests": "興味",
+    "filterSheetShowResults": "結果を表示",
+    "filterSheetNoMatches": "該当なし",
+    "filterSheetShow": "{count, plural, other {#人のパートナーを表示}}"
   },
   "Saved": {
     "eyebrow": "保存済み",
