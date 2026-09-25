@@ -58,10 +58,26 @@ const formatBumpCooldown = (ms: number) => {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
 
-export const useBumpCountdown = (bumpReadyAt?: string) => {
+export const UserMenu: React.FC<UserMenuProps> = ({
+  iconUrl,
+  onProfileClick,
+  onBumpProfileClick,
+  bumpReadyAt,
+  onSavedClick,
+  onSettingsClick,
+  onLogoutClick,
+}) => {
+  const t = useTranslations('UserMenu');
+  const [isMounted, setIsMounted] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const readyTime = bumpReadyAt ? new Date(bumpReadyAt).getTime() : 0;
-  const remainingMs = Math.max(0, readyTime - now);
+  const bumpRemainingMs = Math.max(0, readyTime - now);
+  const isBumpOnCooldown = bumpRemainingMs > 0;
 
   useEffect(() => {
     if (readyTime <= Date.now()) {
@@ -79,26 +95,6 @@ export const useBumpCountdown = (bumpReadyAt?: string) => {
 
     return () => clearInterval(interval);
   }, [readyTime]);
-
-  return remainingMs > 0 ? formatBumpCooldown(remainingMs) : null;
-};
-
-export const UserMenu: React.FC<UserMenuProps> = ({
-  iconUrl,
-  onProfileClick,
-  onBumpProfileClick,
-  bumpReadyAt,
-  onSavedClick,
-  onSettingsClick,
-  onLogoutClick,
-}) => {
-  const t = useTranslations('UserMenu');
-  const [isMounted, setIsMounted] = useState(false);
-  const bumpCountdown = useBumpCountdown(bumpReadyAt);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const triggerButton = (
     <button
@@ -144,10 +140,12 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               <MenuItem
                 icon={MdArrowUpward}
                 onClick={onBumpProfileClick}
-                disabled={bumpCountdown !== null}
+                disabled={isBumpOnCooldown}
               >
-                {bumpCountdown
-                  ? t('bumpProfileCooldown', { time: bumpCountdown })
+                {isBumpOnCooldown
+                  ? t('bumpProfileCooldown', {
+                      time: formatBumpCooldown(bumpRemainingMs),
+                    })
                   : t('bumpProfile')}
               </MenuItem>
             ) : null}
