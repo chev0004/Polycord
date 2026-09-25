@@ -135,6 +135,26 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
       .getByRole('button', { name: 'Dismiss onboarding prompt' })
       .click();
 
+    await page
+      .getByRole('navigation', { name: 'Main' })
+      .getByRole('button', { name: /^Inbox/ })
+      .click();
+    const entry = page.getByRole('button', {
+      name: /A user copied your username/,
+    });
+    await expect(entry).toBeInViewport();
+    expect(await fitsWidth(page)).toBe(true);
+    await entry.click();
+    await expect(
+      page.getByRole('dialog').getByRole('button', { name: 'Mark as unread' }),
+    ).toBeInViewport();
+    await page.screenshot({
+      path: testInfo.outputPath('inbox-320.png'),
+      animations: 'disabled',
+    });
+    await page.keyboard.press('Escape');
+    await page.goBack();
+
     const cardMenu = page.getByRole('button', { name: 'Card menu' }).first();
     await cardMenu.click();
     await page.getByRole('button', { name: 'Report profile' }).click();

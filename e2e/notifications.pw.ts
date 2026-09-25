@@ -112,11 +112,13 @@ test('inbox honors server Premium on every navbar and refreshes without navigati
       page.getByRole('link', { name: 'Review community guidelines' }),
     ).toBeVisible();
     await page.goto('/ja/saved');
-    await page
-      .getByRole('button', { name: '受信ボックス', exact: true })
-      .click();
+    await page.getByRole('button', { name: /^受信ボックス/ }).click();
+    await expect(page).toHaveURL('/ja/inbox');
+    await page.getByRole('button', { name: /モデレーション/ }).click();
     await expect(
-      page.getByRole('link', { name: 'コミュニティガイドラインを確認' }),
+      page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'コミュニティガイドラインを確認' }),
     ).toBeVisible();
     await page.screenshot({
       path: testInfo.outputPath('free-warning-japanese.png'),
