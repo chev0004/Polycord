@@ -149,7 +149,7 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     const cardMenu = page.getByRole('button', { name: 'Card menu' }).first();
     await cardMenu.click();
     await page.getByRole('button', { name: 'Report profile' }).click();
-    const dialog = page.getByRole('dialog');
+    const dialog = page.getByRole('dialog', { name: 'Report profile' });
     await expect(dialog).toBeVisible();
     const dialogBox = await dialog.boundingBox();
     expect(dialogBox?.y).toBeGreaterThanOrEqual(0);
@@ -170,7 +170,7 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     await expect(dialog).toHaveCount(0);
     await expect(cardMenu).toBeFocused();
 
-    const sort = page.getByRole('button', { name: 'Sort', exact: true });
+    const sort = page.getByRole('button', { name: /^Sort by/ });
     const before = await sort.evaluate(
       (el) => getComputedStyle(el).backgroundColor,
     );

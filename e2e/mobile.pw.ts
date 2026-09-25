@@ -72,9 +72,10 @@ for (const width of [320, 375, 390]) {
       await fits();
       for (const name of ['Notifications', 'Change language', 'Card menu']) {
         await page.getByRole('button', { name, exact: true }).first().click();
-        const popover = page
-          .locator('[data-radix-popper-content-wrapper]')
-          .last();
+        const popover =
+          name === 'Card menu'
+            ? page.getByRole('dialog')
+            : page.locator('[data-radix-popper-content-wrapper]').last();
         await expect(popover).toBeVisible();
         const bounds = await popover.boundingBox();
         expect(bounds?.x).toBeGreaterThanOrEqual(0);
@@ -146,3 +147,88 @@ for (const width of [320, 375, 390]) {
     }
   });
 }
+
+test('dock and filter sheets drive discovery on phones', async ({
+  page,
+  context,
+}, testInfo) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  const id = randomUUID().replaceAll('-', '');
+  const prefix = id.slice(0, 8);
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const [viewer] =
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, 'Dock test') returning id`;
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Partner ' || n from generate_series(1,3) n returning id`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id, accountId: viewer.id, name: 'Dock test' },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  try {
+    await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
+      select id,true,'en','ja','intermediate','A mobile dock fixture profile.',array[${prefix}],case when row_number() over () = 1 then 'JP' else 'US' end,'America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await page.goto(`/en?tag=${prefix}`);
+    await expect(page.getByText('3 partners', { exact: true })).toBeVisible();
+    const dock = page.getByRole('navigation', { name: 'Main' });
+    await expect(dock).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Account menu' }),
+    ).toHaveCount(0);
+
+    await page.getByRole('button', { name: /^Filters/ }).click();
+    const sheet = page.getByRole('dialog');
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole('button', { name: /^Country/ }).click();
+    await sheet.getByRole('textbox', { name: 'Country' }).fill('Japan');
+    await sheet.getByRole('button', { name: 'Japan', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Show 1 partner', exact: true }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath('filter-sheet.png'),
+      animations: 'disabled',
+    });
+    await page.getByRole('button', { name: 'Show 1 partner' }).click();
+    await expect(page).toHaveURL(/country=JP/);
+    await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Remove Japan', exact: true }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath('discovery-filtered.png'),
+      animations: 'disabled',
+    });
+
+    await page.getByRole('button', { name: /^Sort by/ }).click();
+    await page.getByRole('button', { name: 'Name (Z-A)', exact: true }).click();
+    await expect(page).toHaveURL(/sort=name-desc/);
+
+    await dock.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(page).toHaveURL('/en/settings');
+    await dock.getByRole('button', { name: 'Your Card', exact: true }).click();
+    await page.getByRole('button', { name: 'Saved', exact: true }).click();
+    await expect(page).toHaveURL('/en/saved');
+    await dock.getByRole('button', { name: 'Discover', exact: true }).click();
+    await expect(page).toHaveURL('/en');
+    await expect(
+      dock.getByRole('button', { name: 'Discover' }),
+    ).toHaveAttribute('aria-current', 'page');
+  } finally {
+    await sql`delete from users where id in ${sql([viewer.id, ...owners.map((owner) => owner.id)])}`;
+    await sql.end();
+  }
+});
