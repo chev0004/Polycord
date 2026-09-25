@@ -9,14 +9,14 @@ const profile = (overrides: Partial<DiscoveryProfile>): DiscoveryProfile => ({
   discordUsername: 'yuki_lang',
   primaryLanguage: 'ja',
   targetLanguages: [{ language: 'en', level: 'advanced' }],
-  interests: [],
+  tags: [],
   ...overrides,
 });
 
 const yuki = profile({
   id: 'yuki',
   displayName: 'Yuki',
-  interests: ['Anime'],
+  tags: ['Anime'],
   about: 'Preparing for the IELTS exam.',
 });
 const carlos = profile({
@@ -25,7 +25,7 @@ const carlos = profile({
   discordUsername: 'carlos_ba',
   primaryLanguage: 'es',
   targetLanguages: [{ language: 'en', level: 'intermediate' }],
-  interests: ['Football'],
+  tags: ['Football'],
 });
 
 describe('applyDiscoverySearch', () => {
@@ -48,7 +48,7 @@ describe('applyDiscoverySearch', () => {
     ]);
   });
 
-  it('matches interests and bio text', () => {
+  it('matches tags and bio text', () => {
     expect(applyDiscoverySearch([yuki, carlos], 'football', 'en')).toEqual([
       carlos,
     ]);

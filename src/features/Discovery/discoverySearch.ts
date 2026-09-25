@@ -25,7 +25,7 @@ export const buildProfileSearchText = (
     profile.timezone ?? '',
     profile.timezone ? formatTimezone(profile.timezone) : '',
     profile.about ?? '',
-    profile.interests.join(' '),
+    profile.tags.join(' '),
     profile.targetLanguages
       .map(
         (language) =>

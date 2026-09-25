@@ -179,7 +179,7 @@ const toDiscoveryProfile = (
   primaryLanguage: profile.primaryLanguage,
   targetLanguages,
   about: profile.bio,
-  interests: profile.tags,
+  tags: profile.tags,
   country: profile.country ?? undefined,
   timezone: profile.displayTimezone
     ? (profile.timezone ?? undefined)

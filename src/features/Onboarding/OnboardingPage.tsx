@@ -133,7 +133,7 @@ export const OnboardingPage = ({
           ]
         : [],
       about: values.bio,
-      interests: tags,
+      tags,
       country: countryLabel,
       timezone: values.timezone,
       availability: values.availability

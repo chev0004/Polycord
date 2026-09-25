@@ -58,7 +58,7 @@ export type DiscoveryProfile = {
   primaryLanguageLevel?: Proficiency | string;
   targetLanguages: DiscoveryTargetLanguage[];
   about?: string;
-  interests: string[];
+  tags: string[];
   country?: string;
   timezone?: IANATimezone | string;
   allowAnonymousCopy?: boolean;
@@ -587,15 +587,15 @@ export const ProfileCard = ({
       ) : null}
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
-        {(profile.interests.length > 0 || isPreview) && (
+        {(profile.tags.length > 0 || isPreview) && (
           <section className="flex flex-col gap-2">
             <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
               {t('tagsLabel')}
             </span>
             <div className="flex flex-wrap items-center gap-2">
-              {profile.interests.length > 0
-                ? profile.interests.map((interest) =>
-                    renderTag(interest, `${profile.id}-tag-${interest}`),
+              {profile.tags.length > 0
+                ? profile.tags.map((tag) =>
+                    renderTag(tag, `${profile.id}-tag-${tag}`),
                   )
                 : emptyTagsLabel && (
                     <span className="text-subtle text-xs">

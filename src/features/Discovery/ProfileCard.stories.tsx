@@ -40,7 +40,7 @@ export const ClipboardDenied: Story = {
       discordUsername: 'clipboard.fixture',
       primaryLanguage: 'ja',
       targetLanguages: [],
-      interests: [],
+      tags: [],
     },
   },
   play: async ({ canvasElement, args }) => {
@@ -98,7 +98,7 @@ const createMockProfile = (t: ReturnType<typeof useTranslations>) =>
       },
     ],
     about: longBio,
-    interests: ['Anime', 'K-Pop', 'Gaming'],
+    tags: ['Anime', 'K-Pop', 'Gaming'],
     country: 'Japan',
     timezone: 'Asia/Tokyo',
     allowAnonymousCopy: true,
@@ -219,7 +219,7 @@ export const TagOverflow: Story = {
     const t = useTranslations('DiscoveryStories');
     const profile: DiscoveryProfile = {
       ...createMockProfile(t),
-      interests: [
+      tags: [
         'Anime',
         'K-Pop',
         'Gaming',
