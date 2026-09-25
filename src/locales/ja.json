@@ -592,7 +592,8 @@
     "filterSheetInterests": "興味",
     "filterSheetShowResults": "結果を表示",
     "filterSheetNoMatches": "該当なし",
-    "filterSheetShow": "{count, plural, other {#人のパートナーを表示}}"
+    "filterSheetShow": "{count, plural, other {#人のパートナーを表示}}",
+    "backToTop": "トップへ戻る：検索、並び替え、フィルター"
   },
   "Saved": {
     "eyebrow": "保存済み",

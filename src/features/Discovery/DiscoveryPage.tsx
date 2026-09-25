@@ -38,7 +38,12 @@ import {
 } from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
 import { buildDiscoveryQuery, parseDiscoveryState } from './discoveryUrlState';
-import { type FilterDraft, FilterSheet, SortSheet } from './MobileFilters';
+import {
+  BackToTop,
+  type FilterDraft,
+  FilterSheet,
+  SortSheet,
+} from './MobileFilters';
 import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
@@ -919,6 +924,10 @@ export const DiscoveryPage = ({
         profileName={reportTarget?.name}
         onSubmit={handleSubmitReport}
       />
+
+      {needsOnboarding && !isPromptDismissed ? null : (
+        <BackToTop count={appliedFilters.length + selectedTags.length} />
+      )}
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </>

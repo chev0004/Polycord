@@ -592,7 +592,8 @@
     "filterSheetInterests": "Interests",
     "filterSheetShowResults": "Show results",
     "filterSheetNoMatches": "No matches",
-    "filterSheetShow": "{count, plural, one {Show # partner} other {Show # partners}}"
+    "filterSheetShow": "{count, plural, one {Show # partner} other {Show # partners}}",
+    "backToTop": "Back to top: search, sort and filters"
   },
   "Saved": {
     "eyebrow": "Saved",

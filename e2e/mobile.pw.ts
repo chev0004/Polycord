@@ -183,6 +183,16 @@ test('dock and filter sheets drive discovery on phones', async ({
       select id,true,'en','ja','intermediate','A mobile dock fixture profile.',array[${prefix}],case when row_number() over () = 1 then 'JP' else 'US' end,'America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
     await page.goto(`/en?tag=${prefix}`);
     await expect(page.getByText('3 partners', { exact: true })).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Dismiss onboarding prompt' })
+      .click();
+    const toTop = page.locator('button[aria-label^="Back to top"]');
+    await expect(toTop).toHaveCSS('opacity', '0');
+    await page.evaluate(() => window.scrollTo(0, 900));
+    await expect(toTop).toHaveCSS('opacity', '1');
+    await toTop.click();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(toTop).toHaveCSS('opacity', '0');
     const dock = page.getByRole('navigation', { name: 'Main' });
     await expect(dock).toBeVisible();
     await expect(

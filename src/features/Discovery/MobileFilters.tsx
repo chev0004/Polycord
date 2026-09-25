@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { type ReactNode, useEffect, useState } from 'react';
 import {
   MdArrowBack,
+  MdArrowUpward,
   MdCheck,
   MdSearch,
   MdSwapVert,
@@ -111,6 +112,39 @@ const ToggleChip = ({
     {children}
   </button>
 );
+
+export const BackToTop = ({ count }: { count: number }) => {
+  const t = useTranslations('Discovery');
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const update = () => setShown(window.scrollY > 520);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      inert={!shown}
+      aria-label={t('backToTop')}
+      className={`fixed right-4 bottom-[calc(var(--dock-space,0px)+12px)] z-30 grid h-11 w-11 place-items-center rounded-full bg-background-darker text-soft shadow-[0_0_0_1px_var(--color-line-strong),0_10px_24px_-6px_rgba(0,0,0,0.75)] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:text-foreground active:scale-[0.92] md:hidden ${
+        shown
+          ? ''
+          : 'pointer-events-none translate-y-3.5 scale-[0.85] opacity-0'
+      }`}
+    >
+      <MdArrowUpward size={22} aria-hidden />
+      {count > 0 ? (
+        <span className="-top-[3px] -right-[3px] absolute rounded-full ring-2 ring-background-darker">
+          <FilterCount count={count} />
+        </span>
+      ) : null}
+    </button>
+  );
+};
 
 type SortSheetProps = {
   value: DiscoverySortValue;
