@@ -2,7 +2,10 @@ import 'server-only';
 
 import { and, count, eq, inArray, or, type SQL, sql } from 'drizzle-orm';
 import type { DiscoveryTagCount } from '@/features/Discovery/discoveryTags';
-import type { DiscoveryUrlState } from '@/features/Discovery/discoveryUrlState';
+import {
+  type DiscoveryUrlState,
+  MAX_STACK_PAGES,
+} from '@/features/Discovery/discoveryUrlState';
 import { db } from './client';
 import { discoveryAvailability } from './discoveryAvailability';
 import { discoverySearch } from './discoverySearch';
@@ -128,6 +131,7 @@ export const listDiscoveryPage = async (
   ]);
   const page = Math.min(
     state.page,
+    stacked ? MAX_STACK_PAGES : state.page,
     Math.max(1, Math.ceil(summary.total / DISCOVERY_PAGE_SIZE)),
   );
   const rows = await db

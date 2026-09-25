@@ -14,6 +14,8 @@ export type DiscoveryUrlState = {
   page: number;
 };
 
+export const MAX_STACK_PAGES = 20;
+
 type ReadableParams = URLSearchParams | ReadonlyURLSearchParams;
 
 const SEARCH_PARAM = 'q';

@@ -37,7 +37,11 @@ import {
   SORT_OPTIONS,
 } from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
-import { buildDiscoveryQuery, parseDiscoveryState } from './discoveryUrlState';
+import {
+  buildDiscoveryQuery,
+  MAX_STACK_PAGES,
+  parseDiscoveryState,
+} from './discoveryUrlState';
 import {
   BackToTop,
   type FilterDraft,
@@ -870,7 +874,7 @@ export const DiscoveryPage = ({
             )}
 
             {showSkeleton ? null : stacked ? (
-              safePage < totalPages ? (
+              safePage < Math.min(totalPages, MAX_STACK_PAGES) ? (
                 <button
                   type="button"
                   onClick={() => setPage(safePage + 1)}
@@ -879,7 +883,7 @@ export const DiscoveryPage = ({
                 >
                   {t('loadMore')}
                 </button>
-              ) : totalResults > 0 ? (
+              ) : safePage >= totalPages && totalResults > 0 ? (
                 <p className="pt-1 pb-7 text-center text-subtle text-xs">
                   {t('endOfResults')}
                 </p>
