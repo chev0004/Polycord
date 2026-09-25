@@ -110,7 +110,7 @@ const Zone = ({
     type="button"
     aria-label={label}
     onClick={onClick}
-    className="-m-1 relative rounded-lg p-1 text-left outline-dashed outline-1 outline-[rgba(193,213,233,0.28)] transition-colors duration-200 active:bg-overlay active:outline-primary"
+    className="-m-1 relative rounded-lg p-1 text-left outline-dashed outline-1 outline-primary-dark transition-colors duration-200 active:bg-overlay active:outline-primary"
   >
     {children}
     <span
