@@ -17,7 +17,7 @@ type NotificationEntryProps = {
   onDelete: () => void;
 } & HTMLAttributes<HTMLDivElement>;
 
-const getNotificationMessage = (
+export const getNotificationMessage = (
   notification: Notification,
   premium: boolean,
   t: ReturnType<typeof useTranslations<'Inbox'>>,

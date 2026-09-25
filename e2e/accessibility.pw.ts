@@ -70,7 +70,7 @@ test('core pages expose named controls and support keyboard navigation', async (
     });
     expect(profile.status()).toBe(200);
     const violations = [];
-    for (const route of ['/en', '/en/profile', '/en/settings']) {
+    for (const route of ['/en', '/en/profile', '/en/inbox', '/en/settings']) {
       await page.goto(route);
       await settle(page);
       const scan = await new AxeBuilder({ page })

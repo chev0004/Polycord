@@ -64,7 +64,7 @@ for (const width of [320, 375, 390]) {
       });
       expect(created.status()).toBe(200);
       const { profileId } = await created.json();
-      for (const route of ['/en/saved', `/en/u/${profileId}`]) {
+      for (const route of ['/en/saved', '/en/inbox', `/en/u/${profileId}`]) {
         await page.goto(route);
         await fits();
       }
@@ -88,59 +88,82 @@ for (const width of [320, 375, 390]) {
         });
         await page.keyboard.press('Escape');
       }
-      for (const route of ['profile', 'settings']) {
-        await page.goto(`/en/${route}`);
-        await fits();
-        if (route === 'profile') {
-          const language = page.getByRole('combobox', {
-            name: 'Target Languages 1',
-          });
-          await expect(language).toBeVisible();
-          expect((await language.boundingBox())?.width).toBeGreaterThan(150);
-          await page.screenshot({
-            path: testInfo.outputPath('profile-fields.png'),
-            animations: 'disabled',
-          });
-        }
-        const field =
-          route === 'profile'
-            ? page.getByLabel('Bio', { exact: true })
-            : page.getByLabel('Email Address');
-        await field.fill(
-          route === 'profile'
-            ? 'Updated mobile profile with a useful description.'
-            : 'mobile@example.com',
-        );
-        const save = page.getByRole('button', {
-          name: route === 'profile' ? 'Save Profile' : 'Save Settings',
-          exact: true,
-        });
-        await save.scrollIntoViewIfNeeded();
-        await expect(save).toBeInViewport();
-        const bounds = await save.boundingBox();
-        expect(bounds?.height).toBeGreaterThanOrEqual(40);
-        const status = await page
-          .getByText('You have unsaved changes', { exact: true })
-          .boundingBox();
-        expect((status?.y ?? 0) + (status?.height ?? 0)).toBeLessThanOrEqual(
-          bounds?.y ?? 0,
-        );
-        expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(
-          width,
-        );
-        await fits();
-        await page.screenshot({
-          path: testInfo.outputPath(`${route}-save.png`),
-          animations: 'disabled',
-        });
-        const response = page.waitForResponse(
-          (r) =>
-            r.url().endsWith(`/api/${route}`) &&
-            r.request().method() === 'POST',
-        );
-        await save.click();
-        expect((await response).status()).toBe(200);
-      }
+      await page.goto('/en/profile');
+      await fits();
+      const language = page.getByRole('combobox', {
+        name: 'Target Languages 1',
+      });
+      await expect(language).toBeVisible();
+      expect((await language.boundingBox())?.width).toBeGreaterThan(150);
+      await page.screenshot({
+        path: testInfo.outputPath('profile-fields.png'),
+        animations: 'disabled',
+      });
+      await page
+        .getByLabel('Bio', { exact: true })
+        .fill('Updated mobile profile with a useful description.');
+      const saveProfile = page.getByRole('button', {
+        name: 'Save Profile',
+        exact: true,
+      });
+      await saveProfile.scrollIntoViewIfNeeded();
+      await expect(saveProfile).toBeInViewport();
+      const profileBounds = await saveProfile.boundingBox();
+      expect(profileBounds?.height).toBeGreaterThanOrEqual(40);
+      const status = await page
+        .getByText('You have unsaved changes', { exact: true })
+        .boundingBox();
+      expect((status?.y ?? 0) + (status?.height ?? 0)).toBeLessThanOrEqual(
+        profileBounds?.y ?? 0,
+      );
+      await fits();
+      await page.screenshot({
+        path: testInfo.outputPath('profile-save.png'),
+        animations: 'disabled',
+      });
+      const profileSaved = page.waitForResponse(
+        (r) =>
+          r.url().endsWith('/api/profile') && r.request().method() === 'POST',
+      );
+      await saveProfile.click();
+      expect((await profileSaved).status()).toBe(200);
+
+      await page.goto('/en/settings');
+      await fits();
+      await page.getByRole('button', { name: /^Email Address/ }).click();
+      await page
+        .getByRole('dialog')
+        .getByLabel('Email Address')
+        .fill('mobile@example.com');
+      await page.getByRole('button', { name: 'Done', exact: true }).click();
+      const save = page.getByRole('button', { name: 'Save', exact: true });
+      await expect(save).toBeInViewport();
+      const bounds = await save.boundingBox();
+      expect(bounds?.height).toBeGreaterThanOrEqual(40);
+      expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(
+        width,
+      );
+      const dock = await page
+        .getByRole('navigation', { name: 'Main' })
+        .boundingBox();
+      expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(
+        dock?.y ?? 0,
+      );
+      await fits();
+      await page.screenshot({
+        path: testInfo.outputPath('settings-save.png'),
+        animations: 'disabled',
+      });
+      const settingsSaved = page.waitForResponse(
+        (r) =>
+          r.url().endsWith('/api/settings') && r.request().method() === 'POST',
+      );
+      await save.click();
+      expect((await settingsSaved).status()).toBe(200);
+      await expect(save).toHaveCount(0);
+      await expect(
+        page.getByRole('button', { name: /^Email Address/ }),
+      ).toContainText('mobile@example.com');
     } finally {
       await sql`delete from users where discord_user_id = ${id}`;
       await sql.end();
@@ -256,6 +279,260 @@ test('dock and filter sheets drive discovery on phones', async ({
     ).toHaveAttribute('aria-current', 'page');
   } finally {
     await sql`delete from users where id in ${sql([viewer.id, ...owners.map((owner) => owner.id)])}`;
+    await sql.end();
+  }
+});
+
+test('settings drill-in pages reach and save every setting on phones', async ({
+  page,
+  context,
+}, testInfo) => {
+  const id = randomUUID().replaceAll('-', '');
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const [owner] =
+    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, ${id}, 'Settings phone', 'phone@example.com') returning id`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id, accountId: owner.id, name: 'Settings phone' },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  const main = page.getByRole('main');
+  const fits = (width: number) =>
+    expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(width);
+  try {
+    const created = await context.request.post('/api/profile', {
+      data: {
+        isPublic: true,
+        allowAnonymousCopy: true,
+        displayTimezone: true,
+        displayAvailability: false,
+        primaryLanguage: 'ja',
+        targetLanguages: [{ language: 'en', level: 'intermediate' }],
+        bio: 'Looking for a patient English conversation partner.',
+        tags: ['Cooking'],
+        country: 'JP',
+        timezone: 'Asia/Tokyo',
+      },
+    });
+    expect(created.status()).toBe(200);
+
+    for (const width of [320, 375, 390]) {
+      await page.setViewportSize({ width, height: 812 });
+      for (const [locale, pages] of [
+        ['en', ['Privacy', 'Notifications', 'Premium']],
+        ['ja', ['プライバシー', '通知', 'プレミアム']],
+      ] as const) {
+        await page.goto(`/${locale}/settings`);
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        await fits(width);
+        for (const name of pages) {
+          await main
+            .getByRole('button', { name: new RegExp(`^${name}`) })
+            .click();
+          await expect(
+            page.getByRole('heading', { level: 1, name, exact: true }),
+          ).toBeVisible();
+          await fits(width);
+          await page.screenshot({
+            path: testInfo.outputPath(`${locale}-${width}-${name}.png`),
+            animations: 'disabled',
+          });
+          await page.goBack();
+          await expect(
+            page.getByRole('heading', { level: 1, name, exact: true }),
+          ).toHaveCount(0);
+        }
+      }
+    }
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/en/settings');
+    await main.getByRole('button', { name: /^Privacy/ }).click();
+    await main.getByRole('switch', { name: 'Make Profile Public' }).click();
+    await main.getByRole('switch', { name: 'Hidden browsing' }).click();
+    await expect(page).toHaveURL(/#premium$/);
+    await expect(page.getByRole('table')).toBeVisible();
+    await expect(
+      main.getByRole('button', { name: 'Upgrade', exact: true }),
+    ).toBeVisible();
+    await main.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(page).toHaveURL(/#privacy$/);
+    await main.getByRole('button', { name: 'Settings', exact: true }).click();
+    await main.getByRole('button', { name: /^Notifications/ }).click();
+    await main
+      .getByRole('switch', { name: 'Profile Interaction Alert' })
+      .click();
+    await main.getByRole('button', { name: 'Settings', exact: true }).click();
+    for (const [row, option] of [
+      ['Theme', 'Light Mode'],
+      ['Time Format', '12-hour'],
+      ['Language Names', 'Short codes'],
+    ]) {
+      await main.getByRole('button', { name: new RegExp(`^${row}`) }).click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: option, exact: true })
+        .click();
+      await expect(
+        main.getByRole('button', { name: new RegExp(`^${row}`) }),
+      ).toContainText(option);
+    }
+    await expect(main.getByRole('button', { name: /^Privacy/ })).toContainText(
+      'Unlisted',
+    );
+    const saved = page.waitForResponse(
+      (r) =>
+        r.url().endsWith('/api/settings') && r.request().method() === 'POST',
+    );
+    await main.getByRole('button', { name: 'Save', exact: true }).click();
+    expect((await saved).status()).toBe(200);
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await expect(main.getByRole('button', { name: /^Privacy/ })).toContainText(
+      'Unlisted',
+    );
+    await expect(
+      main.getByRole('button', { name: /^Notifications/ }),
+    ).toContainText('0 on');
+    await page.screenshot({
+      path: testInfo.outputPath('settings-light.png'),
+      animations: 'disabled',
+    });
+    const [settings] =
+      await sql`select theme, time_format, language_display, profile_interaction_alert from user_settings where user_id = ${owner.id}`;
+    expect(settings).toMatchObject({
+      theme: 'light',
+      time_format: '12hr',
+      language_display: 'short',
+      profile_interaction_alert: false,
+    });
+    const [profile] =
+      await sql`select is_public from profiles where user_id = ${owner.id}`;
+    expect(profile.is_public).toBe(false);
+
+    await main.getByRole('button', { name: /^Application Language/ }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /\(JA\)$/ })
+      .click();
+    await main.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page).toHaveURL('/ja/settings');
+    await expect(
+      page.getByRole('heading', { level: 1, name: '設定' }),
+    ).toBeVisible();
+
+    await main.getByRole('button', { name: /^アカウントを削除/ }).click();
+    const sheet = page.getByRole('dialog');
+    await expect(sheet).toBeVisible();
+    await sheet
+      .getByRole('button', { name: 'キャンセル', exact: true })
+      .click();
+    await expect(sheet).toHaveCount(0);
+  } finally {
+    await sql`delete from users where id = ${owner.id}`;
+    await sql.end();
+  }
+});
+
+test('dock inbox opens the full-screen inbox on phones', async ({
+  page,
+  context,
+}, testInfo) => {
+  const id = randomUUID().replaceAll('-', '');
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const [owner] =
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, 'Inbox phone') returning id`;
+  await sql`insert into notifications (user_id, kind, created_at)
+    select ${owner.id}, 'copy', now() - n * interval '1 hour' from generate_series(1,7) n`;
+  await sql`insert into notifications (user_id, kind) values (${owner.id}, 'warning')`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id, accountId: owner.id, name: 'Inbox phone' },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  try {
+    for (const width of [320, 375, 390]) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto('/en');
+      const dock = page.getByRole('navigation', { name: 'Main' });
+      const inbox = dock.getByRole('button', { name: /^Inbox/ });
+      await expect(inbox).toHaveAccessibleName('Inbox, 8 unread');
+      await inbox.click();
+      await expect(page).toHaveURL('/en/inbox');
+      await expect(inbox).toHaveAttribute('aria-current', 'page');
+      await expect(
+        page.getByRole('heading', { name: 'Inbox', exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /A user copied your username/ }),
+      ).toHaveCount(7);
+      await expect
+        .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width);
+      await page.screenshot({
+        path: testInfo.outputPath(`inbox-${width}.png`),
+        animations: 'disabled',
+      });
+    }
+
+    const dock = page.getByRole('navigation', { name: 'Main' });
+    const inbox = dock.getByRole('button', { name: /^Inbox/ });
+    await page.getByRole('button', { name: /You received a warning/ }).click();
+    const sheet = page.getByRole('dialog');
+    await expect(
+      sheet.getByRole('button', { name: 'Review community guidelines' }),
+    ).toBeVisible();
+    await sheet.getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: /You received a warning/ }),
+    ).toHaveCount(0);
+    await expect(inbox).toHaveAccessibleName('Inbox, 7 unread');
+
+    await page.getByRole('button', { name: 'Mark all as read' }).click();
+    await expect(inbox).toHaveAccessibleName('Inbox');
+    await page.reload();
+    await expect(page.getByText('Unread', { exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Clear all', exact: true }).click();
+    await expect(
+      page.getByRole('heading', { name: 'No notifications yet' }),
+    ).toBeVisible();
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/en');
+    await page
+      .getByRole('button', { name: 'Notifications', exact: true })
+      .click();
+    await expect(
+      page.locator('[data-radix-popper-content-wrapper]'),
+    ).toBeVisible();
+  } finally {
+    await sql`delete from users where id = ${owner.id}`;
     await sql.end();
   }
 });
