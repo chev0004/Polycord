@@ -279,6 +279,13 @@ test('ten thousand profiles keep page and facet responses bounded', async ({
       expect(data.tags.length).toBeLessThanOrEqual(32);
       expect(body.length).toBeLessThan(16000);
     }
+    const stacked = await request.get(
+      `/api/discovery?tag=${prefix}&stack=1&page=100000`,
+    );
+    expect(stacked.ok()).toBe(true);
+    const stackedData = await stacked.json();
+    expect(stackedData.page).toBe(20);
+    expect(stackedData.profiles).toHaveLength(180);
     const resultsPath = testInfo.outputPath('large-fixture-results.json');
     await writeFile(resultsPath, JSON.stringify(measurements, null, 2));
     await testInfo.attach('large-fixture-results', {
