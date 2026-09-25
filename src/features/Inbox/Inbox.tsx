@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  MdInbox,
   MdOutlineInbox,
   MdOutlineKeyboardArrowLeft,
   MdOutlineKeyboardArrowRight,
@@ -61,10 +62,14 @@ export const Inbox = ({
   notifications: initialNotifications,
   premium = false,
   persist = true,
+  docked = false,
+  onOpenChange,
 }: {
   notifications: Notifications;
   premium?: boolean;
   persist?: boolean;
+  docked?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) => {
   const t = useTranslations('Inbox');
   const locale = useLocale();
@@ -201,7 +206,21 @@ export const Inbox = ({
     setCurrentPage(Math.max(page - 1, 1));
   };
 
-  const triggerContent = (
+  const triggerClassName = docked
+    ? 'group relative flex h-12 w-12 items-center justify-center rounded-full text-muted transition-colors duration-300 focus-visible:text-foreground data-[state=open]:text-on-primary'
+    : '-m-2 relative p-2 focus-visible:opacity-80';
+
+  const triggerContent = docked ? (
+    <>
+      <MdOutlineInbox size={24} className="group-data-[state=open]:hidden" />
+      <MdInbox size={24} className="hidden group-data-[state=open]:block" />
+      {unreadCount > 0 && (
+        <span className="absolute top-1.5 right-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-discord-blue px-[5px] font-bold text-[10px] text-white ring-2 ring-background-darker group-data-[state=open]:ring-primary">
+          {unreadCount}
+        </span>
+      )}
+    </>
+  ) : (
     <>
       <MdOutlineInbox
         className="cursor-pointer select-none text-foreground text-xl transition-all duration-200 hover:text-soft"
@@ -220,7 +239,7 @@ export const Inbox = ({
       <button
         type="button"
         aria-hidden="true"
-        className="relative"
+        className={docked ? triggerClassName : 'relative'}
         tabIndex={-1}
       >
         {triggerContent}
@@ -232,10 +251,11 @@ export const Inbox = ({
     <Popover.Root
       onOpenChange={(open) => {
         if (open) void refresh();
+        onOpenChange?.(open);
       }}
     >
       <Popover.Trigger
-        className="-m-2 relative p-2 focus-visible:opacity-80"
+        className={triggerClassName}
         aria-label={t('notifications')}
       >
         {triggerContent}
@@ -243,9 +263,9 @@ export const Inbox = ({
       <Popover.Portal>
         <Popover.Content
           className="PopoverContent max-h-[var(--radix-popover-content-available-height)] w-[420px] max-w-[calc(100vw-20px)] overflow-y-auto rounded-[18px] border border-gray-500/50 bg-background-dark shadow-lg"
-          side="bottom"
-          align="end"
-          sideOffset={5}
+          side={docked ? 'top' : 'bottom'}
+          align={docked ? 'center' : 'end'}
+          sideOffset={docked ? 14 : 5}
           collisionPadding={10}
         >
           <div className="flex flex-wrap items-center justify-between gap-2 border-gray-500/50 border-b p-3">

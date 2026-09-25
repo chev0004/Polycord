@@ -679,7 +679,13 @@
     "hubDescription": "データ、プロフィール、Polycordの安全性に関するわかりやすいポリシーをまとめています。"
   },
   "Navigation": {
-    "backToDiscovery": "ディスカバリーに戻る"
+    "backToDiscovery": "ディスカバリーに戻る",
+    "dockLabel": "メイン",
+    "dockDiscover": "ディスカバリー",
+    "dockInbox": "受信ボックス",
+    "dockSettings": "設定",
+    "dockYourCard": "マイカード",
+    "dockAccount": "アカウント"
   },
   "Recovery": {
     "missingTitle": "ページが見つかりません",

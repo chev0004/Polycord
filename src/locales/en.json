@@ -679,7 +679,13 @@
     "hubDescription": "The plain-language policies that cover your data, your profile, and how we keep Polycord safe."
   },
   "Navigation": {
-    "backToDiscovery": "Back to discovery"
+    "backToDiscovery": "Back to discovery",
+    "dockLabel": "Main",
+    "dockDiscover": "Discover",
+    "dockInbox": "Inbox",
+    "dockSettings": "Settings",
+    "dockYourCard": "Your Card",
+    "dockAccount": "Account"
   },
   "Recovery": {
     "missingTitle": "Page not found",

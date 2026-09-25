@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { FaDiscord } from 'react-icons/fa';
 import { Button } from '@/components/Button';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Notifications } from '@/types';
 import { Inbox } from '../Inbox';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -10,6 +11,7 @@ import { UserMenu } from './UserMenu';
 type NavbarProps = {
   iconUrl?: string;
   isLoggedIn: boolean;
+  dockable?: boolean;
   notifications: Notifications;
   persistNotifications?: boolean;
   premium?: boolean;
@@ -26,6 +28,7 @@ type NavbarProps = {
 export const Navbar: React.FC<NavbarProps> = ({
   iconUrl,
   isLoggedIn,
+  dockable = false,
   onHomeClick,
   onLoginClick,
   notifications,
@@ -40,9 +43,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const t = useTranslations();
   const loginText = t('loginWithDiscord');
+  const mobile = useIsMobile();
+  const docked = dockable && mobile === true;
 
   return (
-    <nav className="flex h-16 w-full items-center justify-between gap-4 bg-background-darker px-4 font-zen sm:px-10">
+    <nav className="flex h-16 w-full items-center justify-between gap-4 bg-background-main px-4 font-zen sm:px-10 md:bg-background-darker">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -66,8 +71,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-[18px]">
         <LanguageSwitcher />
 
-        {isLoggedIn ? (
-          <>
+        {docked ? null : isLoggedIn ? (
+          <div
+            className={`flex items-center gap-[18px] ${dockable ? 'max-md:hidden' : ''}`}
+          >
             <Inbox
               notifications={notifications}
               persist={persistNotifications}
@@ -82,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onSettingsClick={onSettingsClick}
               onLogoutClick={onLogoutClick}
             />
-          </>
+          </div>
         ) : (
           <Button
             variant="discord"
