@@ -141,7 +141,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'loading' | 'error'
   >('idle');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const mobile = useIsMobile() === true;
+  const mobile = useIsMobile();
 
   const handleManageSubscription = async () => {
     setBillingStatus('loading');
@@ -362,7 +362,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit, onInvalid)}
-      className="mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24"
+      className={`mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24 ${
+        mobile === null ? 'max-md:invisible' : ''
+      }`}
     >
       <ReturnLink />
       <div className="mb-6">
