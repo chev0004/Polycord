@@ -17,6 +17,7 @@ import {
   type OnboardingDraft,
 } from '@/features/Onboarding/completion';
 import { onboardingDraftSchema } from '@/features/Onboarding/schema';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import {
   BumpProfileError,
@@ -37,6 +38,7 @@ import {
 } from './discoverySort';
 import { applyTagFilter, buildTagCounts } from './discoveryTags';
 import { buildDiscoveryQuery, parseDiscoveryState } from './discoveryUrlState';
+import { type FilterDraft, FilterSheet, SortSheet } from './MobileFilters';
 import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
@@ -52,7 +54,7 @@ import {
 } from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl, shareProfileUrl } from './shareProfile';
-import { TagCloud } from './TagCloud';
+import { type AppliedFilter, TagCloud } from './TagCloud';
 
 const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
@@ -112,6 +114,7 @@ export const DiscoveryPage = ({
   const searchParams = useSearchParams();
   const urlQuery = searchParams.toString();
   const t = useTranslations('Discovery');
+  const mobile = useIsMobile();
   const viewerHasAvailability = Boolean(viewerAvailability);
   const viewerContext = useMemo(
     () => ({
@@ -300,6 +303,40 @@ export const DiscoveryPage = ({
       });
   }, [discoveryData, query, locale]);
 
+  const countResults = useCallback(
+    async (draft: FilterDraft, signal: AbortSignal) => {
+      if (!discoveryData) {
+        return applyTagFilter(
+          applyDiscoverySearch(
+            applyDiscoveryFilters(
+              profileItems,
+              draft.filterValues,
+              viewerContext,
+            ),
+            searchQuery,
+            locale,
+          ),
+          draft.selectedTags,
+        ).length;
+      }
+      const response = await fetch(
+        `/api/discovery?${buildDiscoveryQuery({ ...draft, searchQuery: debouncedSearch, page: 1 })}&locale=${locale}`,
+        { cache: 'no-store', signal },
+      );
+      if (!response.ok) throw new Error('Discovery count failed');
+      const data: DiscoveryData = await response.json();
+      return data.total;
+    },
+    [
+      discoveryData,
+      profileItems,
+      viewerContext,
+      searchQuery,
+      debouncedSearch,
+      locale,
+    ],
+  );
+
   useEffect(() => {
     const refresh = refreshDiscovery;
     if (skipInitialRefresh.current) skipInitialRefresh.current = false;
@@ -384,6 +421,39 @@ export const DiscoveryPage = ({
     setFilterValues({});
     setPage(1);
   };
+
+  const handleRemoveFilter = (filterId: string, value: string) => {
+    setFilterValues((previous) => {
+      const current = previous[filterId];
+      return {
+        ...previous,
+        [filterId]: Array.isArray(current)
+          ? current.filter((entry) => entry !== value)
+          : '',
+      };
+    });
+    setPage(1);
+  };
+
+  const handleApplyFilters = (draft: FilterDraft) => {
+    setFilterValues(draft.filterValues);
+    setSelectedTags(draft.selectedTags);
+    setSortValue(draft.sortValue);
+    setPage(1);
+  };
+
+  const appliedFilters: AppliedFilter[] = filterDefs.flatMap((filter) =>
+    [filterValues[filter.id] ?? []]
+      .flat()
+      .filter(Boolean)
+      .map((value) => ({
+        key: `${filter.id}:${value}`,
+        label:
+          filter.options.find((option) => option.value === value)?.label ??
+          value,
+        onRemove: () => handleRemoveFilter(filter.id, value),
+      })),
+  );
 
   const handleToggleTag = (tag: string) => {
     setSelectedTags((previous) =>
@@ -673,17 +743,22 @@ export const DiscoveryPage = ({
           </div>
         ) : null}
 
-        <div className="mb-[26px] flex flex-col gap-[14px]">
+        <div className="max-md:-mx-4 max-md:-mt-2 mb-[14px] max-md:sticky max-md:top-0 max-md:z-10 max-md:bg-background-main max-md:px-4 max-md:py-2">
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
+        </div>
+        <div className="mb-[26px] flex flex-col gap-[14px]">
           {tagCounts.length > 0 ? (
             <TagCloud
               tags={tagCounts}
               selected={selectedTags}
               onToggle={handleToggleTag}
               onClear={handleClearTags}
+              collapsible={mobile === true}
+              applied={mobile === true ? appliedFilters : undefined}
             />
           ) : null}
           <FilterBar
+            className="max-md:hidden"
             filters={filterDefs}
             values={filterValues}
             onFilterChange={handleFilterChange}
@@ -718,7 +793,7 @@ export const DiscoveryPage = ({
           <>
             <div
               ref={resultsHeadRef}
-              className="mb-[18px] flex scroll-mt-8 items-center"
+              className="mb-[18px] flex scroll-mt-8 flex-wrap items-center gap-2 max-md:scroll-mt-[76px]"
             >
               <span
                 aria-live="polite"
@@ -728,6 +803,21 @@ export const DiscoveryPage = ({
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}
               </span>
+              <div className="ml-auto flex min-w-0 gap-2 md:hidden">
+                <SortSheet
+                  value={sortValue}
+                  options={sortOptions}
+                  onChange={handleSortChange}
+                />
+                <FilterSheet
+                  filters={filterDefs}
+                  tags={tagCounts}
+                  sortOptions={sortOptions}
+                  value={{ filterValues, selectedTags, sortValue }}
+                  onApply={handleApplyFilters}
+                  countResults={countResults}
+                />
+              </div>
             </div>
 
             {showSkeleton ? (

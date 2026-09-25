@@ -576,6 +576,7 @@
     "bumpErrorTitle": "プロフィールをバンプできませんでした",
     "bumpErrorDescription": "問題が発生しました。もう一度お試しください。",
     "copyFailed": "コピーできませんでした。再試行するか、ユーザー名を手動でコピーしてください: {username}",
+    "searchClear": "検索をクリア",
     "tagCloudMore": "他{count}件",
     "tagCloudLess": "閉じる",
     "removeFilter": "{label}を削除",

@@ -576,6 +576,7 @@
     "bumpErrorTitle": "Couldn't bump profile",
     "bumpErrorDescription": "Something went wrong. Please try again.",
     "copyFailed": "Copy failed. Try again or copy this username manually: {username}",
+    "searchClear": "Clear search",
     "tagCloudMore": "+{count} more",
     "tagCloudLess": "Show less",
     "removeFilter": "Remove {label}",
