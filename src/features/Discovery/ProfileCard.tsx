@@ -84,7 +84,8 @@ type ProfileCardProps = {
   onCopyUsername?: (
     username: string,
     profileId: string,
-    avatarUrl?: string,
+    avatarUrl: string | undefined,
+    copiedToClipboard: boolean,
   ) => void;
   onTagClick?: (tag: string, profileId: string) => void;
   onLanguageClick?: (
@@ -179,23 +180,31 @@ export const ProfileCard = ({
 
     setIsCopying(true);
     setCopyFailed(false);
-    try {
-      await navigator.clipboard.writeText(profile.discordUsername);
-      setCopied(true);
-      trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
+    const copiedToClipboard = await navigator.clipboard
+      .writeText(profile.discordUsername)
+      .then(
+        () => true,
+        () => false,
+      );
+    trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
+    onCopyUsername?.(
+      profile.discordUsername,
+      profile.id,
+      profile.avatarUrl,
+      copiedToClipboard,
+    );
 
-      if (onCopyUsername) {
-        onCopyUsername(profile.discordUsername, profile.id, profile.avatarUrl);
-      }
-
-      setTimeout(() => {
-        setCopied(false);
-        setIsCopying(false);
-      }, 2000);
-    } catch {
+    if (!copiedToClipboard) {
       setCopyFailed(true);
       setIsCopying(false);
+      return;
     }
+
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+      setIsCopying(false);
+    }, 2000);
   };
 
   useEffect(() => {

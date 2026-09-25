@@ -26,7 +26,6 @@ export const useProfileActions = (
   onBlocked: (id: string) => void,
 ) => {
   const t = useTranslations('Discovery');
-  const tPublic = useTranslations('PublicProfile');
   const { toasts, addToast, dismissToast } = useToastStack();
   const [reportTarget, setReportTarget] = useState<DiscoveryProfile | null>(
     null,
@@ -112,11 +111,16 @@ export const useProfileActions = (
   };
 
   const copyUsername = async ({ id, discordUsername }: DiscoveryProfile) => {
-    if (!discordUsername) return;
-    try {
-      await navigator.clipboard.writeText(discordUsername);
-      trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
-      if (isLoggedIn) void notifyUsernameCopied(id).catch(() => {});
+    if (!discordUsername) return false;
+    const copiedToClipboard = await navigator.clipboard
+      .writeText(discordUsername)
+      .then(
+        () => true,
+        () => false,
+      );
+    trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
+    if (isLoggedIn) void notifyUsernameCopied(id).catch(() => {});
+    if (copiedToClipboard) {
       addToast({
         title: t('copied'),
         description: t('copiedToClipboard', {
@@ -124,13 +128,8 @@ export const useProfileActions = (
         }),
         duration: 4000,
       });
-    } catch {
-      addToast({
-        title: tPublic('copyErrorTitle'),
-        description: tPublic('copyErrorDescription'),
-        duration: 4000,
-      });
     }
+    return copiedToClipboard;
   };
 
   return {
