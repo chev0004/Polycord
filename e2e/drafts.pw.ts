@@ -200,13 +200,14 @@ test('profile drafts recover after navigation and expiry without crossing accoun
     });
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/ja/profile');
-    await expect(page.locator('textarea[name="bio"]')).toHaveValue(
-      'My unfinished draft stays private until I save it.',
-    );
+    await expect(
+      page.getByText('My unfinished draft stays private until I save it.'),
+    ).toBeVisible();
     await page.screenshot({
       path: testInfo.outputPath('profile-restored-mobile-ja.png'),
       fullPage: true,
     });
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/en/profile');
     await context.clearCookies();
     const failed = page.waitForResponse(

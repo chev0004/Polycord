@@ -90,31 +90,18 @@ for (const width of [320, 375, 390]) {
       }
       await page.goto('/en/profile');
       await fits();
-      const language = page.getByRole('combobox', {
-        name: 'Target Languages 1',
-      });
-      await expect(language).toBeVisible();
-      expect((await language.boundingBox())?.width).toBeGreaterThan(150);
-      await page.screenshot({
-        path: testInfo.outputPath('profile-fields.png'),
-        animations: 'disabled',
-      });
+      await page.getByRole('button', { name: 'Edit Bio', exact: true }).click();
       await page
-        .getByLabel('Bio', { exact: true })
+        .getByRole('textbox', { name: 'Bio', exact: true })
         .fill('Updated mobile profile with a useful description.');
+      await page.getByRole('button', { name: 'Done', exact: true }).click();
       const saveProfile = page.getByRole('button', {
-        name: 'Save Profile',
+        name: 'Save',
         exact: true,
       });
-      await saveProfile.scrollIntoViewIfNeeded();
       await expect(saveProfile).toBeInViewport();
-      const profileBounds = await saveProfile.boundingBox();
-      expect(profileBounds?.height).toBeGreaterThanOrEqual(40);
-      const status = await page
-        .getByText('You have unsaved changes', { exact: true })
-        .boundingBox();
-      expect((status?.y ?? 0) + (status?.height ?? 0)).toBeLessThanOrEqual(
-        profileBounds?.y ?? 0,
+      expect((await saveProfile.boundingBox())?.height).toBeGreaterThanOrEqual(
+        40,
       );
       await fits();
       await page.screenshot({
@@ -127,6 +114,7 @@ for (const width of [320, 375, 390]) {
       );
       await saveProfile.click();
       expect((await profileSaved).status()).toBe(200);
+      await expect(saveProfile).toHaveCount(0);
 
       await page.goto('/en/settings');
       await fits();
@@ -272,6 +260,11 @@ test('dock and filter sheets drive discovery on phones', async ({
     await expect(page).toHaveURL('/en/settings');
     await dock.getByRole('button', { name: 'Your Card', exact: true }).click();
     await expect(page).toHaveURL('/en/profile');
+    await page.getByRole('button', { name: 'Profile options' }).click();
+    await page
+      .getByRole('button', { name: 'Saved profiles', exact: true })
+      .click();
+    await expect(page).toHaveURL('/en/saved');
     await dock.getByRole('button', { name: 'Discover', exact: true }).click();
     await expect(page).toHaveURL('/en');
     await expect(
@@ -442,6 +435,173 @@ test('settings drill-in pages reach and save every setting on phones', async ({
       .getByRole('button', { name: 'キャンセル', exact: true })
       .click();
     await expect(sheet).toHaveCount(0);
+  } finally {
+    await sql`delete from users where id = ${owner.id}`;
+    await sql.end();
+  }
+});
+
+test('your card edits every profile part through sheets on phones', async ({
+  page,
+  context,
+}, testInfo) => {
+  const id = randomUUID().replaceAll('-', '');
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const [owner] =
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, 'Card phone') returning id`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id, accountId: owner.id, name: 'Card phone' },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  const main = page.getByRole('main');
+  const sheet = page.getByRole('dialog');
+  const done = () =>
+    sheet.getByRole('button', { name: 'Done', exact: true }).click();
+  try {
+    const created = await context.request.post('/api/profile', {
+      data: {
+        isPublic: true,
+        allowAnonymousCopy: true,
+        displayTimezone: true,
+        displayAvailability: false,
+        primaryLanguage: 'ja',
+        targetLanguages: [{ language: 'en', level: 'intermediate' }],
+        bio: 'Looking for a patient English conversation partner.',
+        tags: ['Cooking'],
+        country: 'JP',
+        timezone: 'Asia/Tokyo',
+      },
+    });
+    expect(created.status()).toBe(200);
+
+    for (const width of [320, 375, 390]) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto('/en/profile');
+      await expect(
+        page.getByRole('heading', { level: 1, name: 'Your Card' }),
+      ).toBeVisible();
+      await expect
+        .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width);
+      await page.screenshot({
+        path: testInfo.outputPath(`card-${width}.png`),
+        animations: 'disabled',
+      });
+    }
+
+    await main.getByRole('button', { name: 'Edit Languages' }).click();
+    await sheet.getByRole('button', { name: 'Advanced', exact: true }).click();
+    await sheet.getByRole('button', { name: 'Add a language' }).click();
+    await sheet.getByRole('textbox', { name: 'Choose a language' }).fill('Kor');
+    await sheet.getByRole('button', { name: 'Korean', exact: true }).click();
+    await expect(sheet.getByText(/free limit of 2 languages/)).toBeVisible();
+    await expect(
+      sheet.getByRole('button', { name: 'Add a language' }),
+    ).toHaveCount(0);
+    await page.screenshot({
+      path: testInfo.outputPath('languages-sheet.png'),
+      animations: 'disabled',
+    });
+    await done();
+
+    await main.getByRole('button', { name: 'Edit Interests & Topics' }).click();
+    await sheet
+      .getByRole('textbox', { name: 'Interests & Topics' })
+      .fill('Hiking');
+    await sheet.getByRole('button', { name: 'Add Tag' }).click();
+    await done();
+
+    await main.getByRole('button', { name: 'Edit Location' }).click();
+    await sheet.getByRole('button', { name: 'Japan' }).click();
+    await sheet.getByRole('textbox', { name: 'Country' }).fill('Canada');
+    await sheet.getByRole('button', { name: 'Canada', exact: true }).click();
+    await done();
+
+    await main.getByRole('button', { name: 'Add your free time' }).click();
+    await sheet.getByRole('switch', { name: 'Free Time' }).click();
+    await done();
+
+    await main.getByRole('button', { name: 'Public' }).click();
+    await sheet.getByRole('switch', { name: 'Display availability' }).click();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+
+    await main.getByRole('button', { name: 'Edit Bio' }).click();
+    await main.getByRole('textbox', { name: 'Bio' }).fill('Too short');
+    await main.getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(
+      main.getByText('Please enter at least 10 characters for your bio.'),
+    ).toBeVisible();
+    await main
+      .getByRole('textbox', { name: 'Bio' })
+      .fill('Updated from the mobile card editor.');
+    await main.getByRole('button', { name: 'Done', exact: true }).click();
+
+    await main.getByRole('button', { name: 'Preview', exact: true }).click();
+    await expect(main.locator('article')).toContainText(
+      'Updated from the mobile card editor.',
+    );
+    await expect(main.locator('article')).toContainText('Hiking');
+    await page.screenshot({
+      path: testInfo.outputPath('card-preview.png'),
+      animations: 'disabled',
+    });
+
+    const saved = page.waitForResponse(
+      (r) =>
+        r.url().endsWith('/api/profile') && r.request().method() === 'POST',
+    );
+    await main.getByRole('button', { name: 'Save', exact: true }).click();
+    expect((await saved).status()).toBe(200);
+    const [profile] =
+      await sql`select bio, tags, country, display_availability, availability_days from profiles where user_id = ${owner.id}`;
+    expect(profile).toMatchObject({
+      bio: 'Updated from the mobile card editor.',
+      tags: ['Cooking', 'Hiking'],
+      country: 'CA',
+      display_availability: true,
+    });
+    expect(profile.availability_days).not.toBeNull();
+    const languages =
+      await sql`select language, proficiency_level from profile_target_languages where profile_id = (select id from profiles where user_id = ${owner.id}) order by position`;
+    expect(
+      languages.map((row) => [row.language, row.proficiency_level]),
+    ).toEqual([
+      ['en', 'advanced'],
+      ['ko', 'beginner'],
+    ]);
+
+    await page.reload();
+    await main.getByRole('button', { name: 'Edit Bio' }).click();
+    await main
+      .getByRole('textbox', { name: 'Bio' })
+      .fill('This change will be discarded.');
+    await main.getByRole('button', { name: 'Discard', exact: true }).click();
+    await expect(main.getByRole('button', { name: 'Edit Bio' })).toContainText(
+      'Updated from the mobile card editor.',
+    );
+
+    await sql`update profiles set last_bumped_at = now() - interval '1 day' where user_id = ${owner.id}`;
+    await main.getByRole('button', { name: 'Profile options' }).click();
+    await sheet.getByRole('button', { name: 'Bump profile' }).click();
+    await expect(
+      main.getByText('Your profile is back at the top of Discover.'),
+    ).toBeVisible();
+    await main.getByRole('button', { name: 'Profile options' }).click();
+    await sheet.getByRole('button', { name: 'View public profile' }).click();
+    await expect(page).toHaveURL(/\/en\/u\//);
   } finally {
     await sql`delete from users where id = ${owner.id}`;
     await sql.end();
