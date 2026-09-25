@@ -1,5 +1,6 @@
 'use client';
 
+import { bumpProfileRequest } from '@/features/Discovery/bumpProfileRequest';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
@@ -54,6 +55,15 @@ export const ProfileRouteClient = ({
             }
           : undefined
       }
+      onBumpProfile={
+        initialValues
+          ? async () => {
+              await bumpProfileRequest();
+              router.refresh();
+            }
+          : undefined
+      }
+      onViewSaved={() => router.push(`/${locale}/saved`)}
       premium={premium}
       profileId={profileId}
       stats={stats}
