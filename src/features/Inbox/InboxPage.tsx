@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import {
-  MdChevronRight,
   MdDeleteOutline,
   MdOutlineMarkEmailRead,
   MdOutlineMarkEmailUnread,
@@ -188,11 +187,6 @@ export const InboxPage = ({
                 {t('premiumUpsellDescription')}
               </span>
             </span>
-            <MdChevronRight
-              size={20}
-              aria-hidden
-              className="flex-shrink-0 text-subtle"
-            />
           </Link>
         ) : null}
 
