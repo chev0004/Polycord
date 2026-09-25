@@ -703,6 +703,7 @@
     "dockLabel": "Main",
     "dockDiscover": "Discover",
     "dockInbox": "Inbox",
+    "dockInboxUnread": "Inbox, {count} unread",
     "dockSettings": "Settings",
     "dockYourCard": "Your Card"
   },

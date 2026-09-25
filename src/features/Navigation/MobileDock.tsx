@@ -112,14 +112,19 @@ export const MobileDock = ({
     </span>
   );
 
-  const dockButton = (id: DockTab, onClick: () => void, icon: ReactNode) => (
+  const dockButton = (
+    id: DockTab,
+    onClick: () => void,
+    icon: ReactNode,
+    label = labels[id],
+  ) => (
     <button
       ref={(element) => {
         items.current[id] = element;
       }}
       type="button"
       onClick={onClick}
-      aria-label={labels[id]}
+      aria-label={label}
       aria-current={tab === id ? 'page' : undefined}
       className={`z-[2] ${dockButtonClassName(tab === id)}`}
     >
@@ -175,6 +180,9 @@ export const MobileDock = ({
               </span>
             ) : null}
           </>,
+          unreadCount > 0
+            ? t('dockInboxUnread', { count: unreadCount })
+            : labels.inbox,
         )}
         {dockButton(
           'settings',

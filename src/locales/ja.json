@@ -703,6 +703,7 @@
     "dockLabel": "メイン",
     "dockDiscover": "ディスカバリー",
     "dockInbox": "受信ボックス",
+    "dockInboxUnread": "受信ボックス、未読{count}件",
     "dockSettings": "設定",
     "dockYourCard": "マイカード"
   },
