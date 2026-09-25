@@ -252,6 +252,7 @@ test('ten thousand profiles keep page and facet responses bounded', async ({
   try {
     await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
       select id,true,'en','ja','intermediate',repeat('A large discovery fixture. ',10),array[${prefix},'Group ' || (row_number() over () % 100)],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql`analyze profiles, users`;
     const measurements = [];
     for (const query of [
       '',
@@ -278,6 +279,13 @@ test('ten thousand profiles keep page and facet responses bounded', async ({
       expect(data.tags.length).toBeLessThanOrEqual(32);
       expect(body.length).toBeLessThan(16000);
     }
+    const stacked = await request.get(
+      `/api/discovery?tag=${prefix}&stack=1&page=100000`,
+    );
+    expect(stacked.ok()).toBe(true);
+    const stackedData = await stacked.json();
+    expect(stackedData.page).toBe(20);
+    expect(stackedData.profiles).toHaveLength(180);
     const resultsPath = testInfo.outputPath('large-fixture-results.json');
     await writeFile(resultsPath, JSON.stringify(measurements, null, 2));
     await testInfo.attach('large-fixture-results', {

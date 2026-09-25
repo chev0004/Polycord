@@ -80,7 +80,18 @@ export const users = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [uniqueIndex('users_discord_user_id_idx').on(table.discordUserId)],
+  (table) => [
+    uniqueIndex('users_discord_user_id_idx').on(table.discordUserId),
+    index('users_display_name_idx').on(table.displayName),
+    index('users_display_name_trgm_idx').using(
+      'gin',
+      sql`lower(${table.displayName}) gin_trgm_ops`,
+    ),
+    index('users_discord_username_trgm_idx').using(
+      'gin',
+      sql`lower(${table.discordUsername}) gin_trgm_ops`,
+    ),
+  ],
 );
 
 export const moderationRestrictions = pgTable('moderation_restrictions', {
@@ -142,7 +153,18 @@ export const profiles = pgTable(
     index('profiles_primary_language_idx').on(table.primaryLanguage),
     index('profiles_target_language_idx').on(table.targetLanguage),
     index('profiles_country_idx').on(table.country),
-    index('profiles_last_bumped_at_idx').on(table.lastBumpedAt),
+    index('profiles_timezone_idx').on(table.timezone),
+    index('profiles_last_bumped_at_idx').on(
+      table.lastBumpedAt.desc().nullsLast(),
+    ),
+    index('profiles_boosted_until_idx')
+      .on(table.boostedUntil)
+      .where(sql`${table.boostedUntil} is not null`),
+    index('profiles_tags_idx').using('gin', table.tags),
+    index('profiles_search_idx').using(
+      'gin',
+      sql`discovery_profile_text(${table.bio}, ${table.country}, ${table.tags}, ${table.displayTimezone}, ${table.timezone}) gin_trgm_ops`,
+    ),
     check(
       'profiles_bio_length_check',
       sql`char_length(${table.bio}) between 10 and 500`,

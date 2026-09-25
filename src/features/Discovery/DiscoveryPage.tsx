@@ -334,11 +334,11 @@ export const DiscoveryPage = ({
         ).length;
       }
       const response = await fetch(
-        `/api/discovery?${buildDiscoveryQuery({ ...draft, searchQuery: debouncedSearch, page: 1 })}&locale=${locale}`,
+        `/api/discovery?${buildDiscoveryQuery({ ...draft, searchQuery: debouncedSearch, page: 1 })}&locale=${locale}&count=1`,
         { cache: 'no-store', signal },
       );
       if (!response.ok) throw new Error('Discovery count failed');
-      const data: DiscoveryData = await response.json();
+      const data: Pick<DiscoveryData, 'total'> = await response.json();
       return data.total;
     },
     [

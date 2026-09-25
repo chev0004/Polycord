@@ -148,6 +148,13 @@
       "when": 1789507901895,
       "tag": "0020_brief_manta",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1790328598922,
+      "tag": "0021_discovery_scale",
+      "breakpoints": true
     }
   ]
 }
