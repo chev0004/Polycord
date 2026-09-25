@@ -111,11 +111,6 @@ test('inbox honors server Premium on every navbar and refreshes without navigati
     await expect(
       page.getByRole('link', { name: 'Review community guidelines' }),
     ).toBeVisible();
-    await page.setViewportSize({ width: 320, height: 844 });
-    await page.screenshot({
-      path: testInfo.outputPath('free-warning-mobile.png'),
-      animations: 'disabled',
-    });
     await page.goto('/ja/saved');
     await page
       .getByRole('button', { name: '受信ボックス', exact: true })
@@ -125,6 +120,11 @@ test('inbox honors server Premium on every navbar and refreshes without navigati
     ).toBeVisible();
     await page.screenshot({
       path: testInfo.outputPath('free-warning-japanese.png'),
+      animations: 'disabled',
+    });
+    await page.setViewportSize({ width: 320, height: 844 });
+    await page.screenshot({
+      path: testInfo.outputPath('free-warning-mobile.png'),
       animations: 'disabled',
     });
   } finally {
