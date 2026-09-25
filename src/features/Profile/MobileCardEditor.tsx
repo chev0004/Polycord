@@ -128,7 +128,7 @@ const Ghost = ({
   tag,
   onClick,
 }: {
-  icon: IconType;
+  icon?: IconType;
   label: string;
   tag?: string;
   onClick: () => void;
@@ -138,7 +138,9 @@ const Ghost = ({
     onClick={onClick}
     className="flex min-h-10 w-full items-center gap-2 rounded-xl border border-primary-dark border-dashed px-3 text-left font-semibold text-[13px] text-muted active:bg-overlay"
   >
-    <Icon size={18} aria-hidden className="flex-shrink-0 text-primary" />
+    {Icon ? (
+      <Icon size={18} aria-hidden className="flex-shrink-0 text-primary" />
+    ) : null}
     <span className="min-w-0 flex-1 truncate">{label}</span>
     {tag ? (
       <span className="rounded bg-primary-darker px-1.5 py-0.5 font-bold text-[10px] text-primary-light uppercase tracking-[0.04em]">
@@ -457,7 +459,7 @@ export const MobileCardEditor = ({
               </Zone>
             ) : (
               <Ghost
-                icon={MdMic}
+                icon={premium ? MdMic : undefined}
                 label={t('addVoice')}
                 tag={premium ? undefined : t('voiceIntroPremiumTag')}
                 onClick={() => openSheet('voice')}
