@@ -4,8 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Controller, type DefaultValues, useForm } from 'react-hook-form';
-import { Avatar } from '@/components/Avatar';
+import { MdAdd, MdErrorOutline, MdVisibility } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import { Chip } from '@/components/Chip';
 import {
   Combobox,
   FieldError,
@@ -25,6 +26,7 @@ import {
 import { availabilityPresetToPattern } from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { SectionCard } from '@/features/Profile/SectionCard';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { entitlementLimit } from '@/lib/entitlements';
 import { SessionExpiredError } from '@/lib/formErrors';
@@ -71,6 +73,7 @@ export const OnboardingPage = ({
   const locale = useLocale();
   const router = useRouteProgressRouter();
   const t = useTranslations('Onboarding');
+  const tProfile = useTranslations('Profile');
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -211,303 +214,266 @@ export const OnboardingPage = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <fieldset
-          disabled={!draft.ready}
-          className="min-w-0 rounded-lg border border-line bg-background-dark shadow-xl"
-        >
-          <header className="border-line border-b px-4 py-5 sm:px-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar avatarUrl={userAvatarUrl} size="lg" />
-                <div>
-                  <p className="font-semibold text-primary text-xs uppercase tracking-wide">
-                    {t('firstRunSetup')}
-                  </p>
-                  <h1 className="font-bold font-figtree text-2xl text-foreground sm:text-3xl">
-                    {t('createTitle')}
-                  </h1>
-                </div>
-              </div>
-              <div className="min-w-[160px]">
-                <div className="mb-2 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-muted">
-                    {t('completeness')}
-                  </span>
-                  <span className="text-primary-light">{completion}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-background-darker">
-                  <div
-                    className="h-2 rounded-full bg-primary transition-all"
-                    style={{ width: `${completion}%` }}
-                  />
-                </div>
-              </div>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="mx-auto w-full max-w-[1140px] px-4 pt-8 pb-24 sm:px-6"
+    >
+      <div className="mb-6">
+        <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
+          {t('createTitle')}
+        </h1>
+        <p className="mt-1.5 font-light text-[15px] text-muted">
+          {t('createSubtitle')}
+        </p>
+      </div>
+
+      <DraftNotice {...draft} sessionExpired={sessionExpired} />
+      <fieldset
+        disabled={!draft.ready}
+        className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
+      >
+        <div className="flex min-w-0 flex-col gap-5">
+          {submitError ? (
+            <div
+              role="alert"
+              className="flex items-center gap-2 rounded-md border border-red-800 bg-danger-surface px-3.5 py-3 text-[14px] text-danger"
+            >
+              <MdErrorOutline size={18} className="shrink-0" />
+              {submitError}
             </div>
-          </header>
+          ) : null}
 
-          <div className="grid gap-6 px-4 py-6 sm:px-6">
-            <DraftNotice {...draft} sessionExpired={sessionExpired} />
-            {submitError ? (
-              <div
-                className="rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 text-danger text-sm"
-                role="alert"
-              >
-                {submitError}
-              </div>
-            ) : null}
-
-            <section className="grid gap-4">
-              <div>
-                <h2 className="font-figtree font-semibold text-foreground text-xl">
-                  {t('languagesSection')}
-                </h2>
-                <p className="mt-1 text-sm text-subtle">
-                  {t('languagesSectionDescription')}
-                </p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormGroup>
-                  <Label htmlFor="primaryLanguage" required>
-                    {t('primaryLanguageLabel')}
-                  </Label>
-                  <Controller
-                    control={control}
-                    name="primaryLanguage"
-                    render={({ field }) => (
-                      <Combobox
-                        {...field}
-                        id="primaryLanguage"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        options={localizedLanguageOptions}
-                        placeholder={t('primaryLanguagePlaceholder')}
-                        error={!!errors.primaryLanguage}
-                      />
-                    )}
+          <SectionCard
+            title={t('languagesSection')}
+            description={t('languagesSectionDescription')}
+          >
+            <FormGroup>
+              <Label htmlFor="primaryLanguage" required>
+                {t('primaryLanguageLabel')}
+              </Label>
+              <Controller
+                control={control}
+                name="primaryLanguage"
+                render={({ field }) => (
+                  <Combobox
+                    {...field}
+                    id="primaryLanguage"
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    options={localizedLanguageOptions}
+                    placeholder={t('primaryLanguagePlaceholder')}
+                    error={!!errors.primaryLanguage}
                   />
-                  {errors.primaryLanguage ? (
-                    <FieldError id="primaryLanguage-error">
-                      {errors.primaryLanguage.message}
-                    </FieldError>
-                  ) : null}
-                </FormGroup>
+                )}
+              />
+              {errors.primaryLanguage ? (
+                <FieldError id="primaryLanguage-error">
+                  {errors.primaryLanguage.message}
+                </FieldError>
+              ) : null}
+            </FormGroup>
 
-                <FormGroup>
-                  <Label htmlFor="targetLanguage" required>
-                    {t('targetLanguageLabel')}
-                  </Label>
-                  <Controller
-                    control={control}
-                    name="targetLanguage"
-                    render={({ field }) => (
-                      <Combobox
-                        {...field}
-                        id="targetLanguage"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        options={localizedLanguageOptions}
-                        placeholder={t('targetLanguagePlaceholder')}
-                        error={!!errors.targetLanguage}
-                      />
-                    )}
-                  />
-                  {errors.targetLanguage ? (
-                    <FieldError id="targetLanguage-error">
-                      {errors.targetLanguage.message}
-                    </FieldError>
-                  ) : null}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label required>{t('currentLevelLabel')}</Label>
-                  <Controller
-                    control={control}
-                    name="proficiencyLevel"
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        ariaLabel={t('currentLevelLabel')}
-                        options={localizedProficiencyOptions}
-                        placeholder={t('currentLevelPlaceholder')}
-                        onValueChange={field.onChange}
-                        value={field.value ?? ''}
-                        error={!!errors.proficiencyLevel}
-                      />
-                    )}
-                  />
-                  {errors.proficiencyLevel ? (
-                    <FieldError>{errors.proficiencyLevel.message}</FieldError>
-                  ) : null}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label htmlFor="country">{t('countryLabel')}</Label>
-                  <Controller
-                    control={control}
-                    name="country"
-                    render={({ field }) => (
-                      <Combobox
-                        {...field}
-                        id="country"
-                        value={field.value ?? ''}
-                        onValueChange={field.onChange}
-                        options={localizedCountryOptions}
-                        placeholder={t('countryPlaceholder')}
-                      />
-                    )}
-                  />
-                </FormGroup>
-              </div>
-            </section>
-
-            <section className="grid gap-4 border-line border-t pt-6">
-              <div>
-                <h2 className="font-figtree font-semibold text-foreground text-xl">
-                  {t('bioSection')}
-                </h2>
-                <p className="mt-1 text-sm text-subtle">
-                  {t('bioSectionDescription')}
-                </p>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormGroup>
-                  <Label htmlFor={timezoneId} required>
-                    {t('timezoneLabel')}
-                  </Label>
-                  <TextInput
-                    id={timezoneId}
-                    {...register('timezone')}
-                    placeholder={t('timezonePlaceholder')}
-                    error={!!errors.timezone}
-                  />
-                  {errors.timezone ? (
-                    <FieldError id={`${timezoneId}-error`}>
-                      {errors.timezone.message}
-                    </FieldError>
-                  ) : null}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label required>{t('availabilityLabel')}</Label>
-                  <Controller
-                    control={control}
-                    name="availability"
-                    render={({ field }) => (
-                      <div className="grid grid-cols-2 gap-2">
-                        {availabilityValues.map((value) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => field.onChange(value)}
-                            className={`h-11 rounded-lg border px-3 text-sm transition-colors ${
-                              field.value === value
-                                ? 'border-primary bg-primary-darker text-primary-light'
-                                : 'border-line bg-background-darker text-soft hover:border-primary-dark'
-                            }`}
-                          >
-                            {t(availabilityLabelKeys[value])}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  />
-                  {errors.availability ? (
-                    <FieldError>{errors.availability.message}</FieldError>
-                  ) : null}
-                </FormGroup>
-              </div>
-
-              <FormGroup>
-                <Label htmlFor={bioId} required>
-                  {t('bioLabel')}
-                </Label>
-                <TextArea
-                  id={bioId}
-                  rows={4}
-                  {...register('bio')}
-                  placeholder={t('bioPlaceholder')}
-                  error={!!errors.bio}
+            <FormGroup>
+              <Label htmlFor="targetLanguage" required>
+                {t('targetLanguageLabel')}
+              </Label>
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_170px]">
+                <Controller
+                  control={control}
+                  name="targetLanguage"
+                  render={({ field }) => (
+                    <Combobox
+                      {...field}
+                      id="targetLanguage"
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={localizedLanguageOptions}
+                      placeholder={t('targetLanguagePlaceholder')}
+                      error={!!errors.targetLanguage}
+                    />
+                  )}
                 />
-                {errors.bio ? (
-                  <FieldError id={`${bioId}-error`}>
-                    {errors.bio.message}
-                  </FieldError>
-                ) : null}
-              </FormGroup>
-            </section>
-
-            <section className="grid gap-4 border-line border-t pt-6">
-              <div>
-                <h2 className="font-figtree font-semibold text-foreground text-xl">
-                  {t('tagsSection')}
-                </h2>
-                <p className="mt-1 text-sm text-subtle">
-                  {t('tagsSectionDescription')}
-                </p>
+                <Controller
+                  control={control}
+                  name="proficiencyLevel"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      ariaLabel={t('currentLevelLabel')}
+                      options={localizedProficiencyOptions}
+                      placeholder={t('currentLevelPlaceholder')}
+                      onValueChange={field.onChange}
+                      value={field.value ?? ''}
+                      error={!!errors.proficiencyLevel}
+                    />
+                  )}
+                />
               </div>
+              {errors.targetLanguage ? (
+                <FieldError id="targetLanguage-error">
+                  {errors.targetLanguage.message}
+                </FieldError>
+              ) : null}
+              {errors.proficiencyLevel ? (
+                <FieldError>{errors.proficiencyLevel.message}</FieldError>
+              ) : null}
+            </FormGroup>
 
-              <FormGroup>
-                <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
-                {tags.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-background-darker p-2">
-                    {tags.map((tag, index) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center gap-2 rounded-md bg-primary-darker px-2.5 py-1"
+            <FormGroup>
+              <Label htmlFor="country">{t('countryLabel')}</Label>
+              <Controller
+                control={control}
+                name="country"
+                render={({ field }) => (
+                  <Combobox
+                    {...field}
+                    id="country"
+                    value={field.value ?? ''}
+                    onValueChange={field.onChange}
+                    options={localizedCountryOptions}
+                    placeholder={t('countryPlaceholder')}
+                  />
+                )}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor={timezoneId} required>
+                {t('timezoneLabel')}
+              </Label>
+              <TextInput
+                id={timezoneId}
+                {...register('timezone')}
+                placeholder={t('timezonePlaceholder')}
+                error={!!errors.timezone}
+              />
+              {errors.timezone ? (
+                <FieldError id={`${timezoneId}-error`}>
+                  {errors.timezone.message}
+                </FieldError>
+              ) : null}
+            </FormGroup>
+          </SectionCard>
+
+          <SectionCard
+            title={t('aboutSection')}
+            description={t('aboutSectionDescription')}
+          >
+            <FormGroup>
+              <Label required>{t('availabilityLabel')}</Label>
+              <Controller
+                control={control}
+                name="availability"
+                render={({ field }) => (
+                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                    {availabilityValues.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => field.onChange(value)}
+                        aria-pressed={field.value === value}
+                        className={`whitespace-nowrap rounded-lg border px-1 py-[9px] font-medium text-[13px] transition-colors focus:outline-none ${
+                          field.value === value
+                            ? 'border-primary-dark bg-primary-darker text-primary-light'
+                            : 'border-line bg-background-darker text-soft hover:bg-background-main hover:text-foreground'
+                        }`}
                       >
-                        <span className="text-primary-light text-sm">
-                          {tag}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeTag(index)}
-                          className="text-primary-light transition-colors hover:text-foreground focus:outline-none"
-                          aria-label={t('removeTag', { tag })}
-                        >
-                          x
-                        </button>
-                      </span>
+                        {t(availabilityLabelKeys[value])}
+                      </button>
                     ))}
                   </div>
-                ) : null}
-                <div className="flex gap-2">
-                  <TextInput
-                    id={tagsInputId}
-                    value={tagInput}
-                    onChange={(event) => setTagInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.preventDefault();
-                        addTag();
-                      }
-                    }}
-                    placeholder={t('tagsPlaceholder')}
-                  />
-                  <button
-                    type="button"
-                    onClick={addTag}
-                    className="h-11 w-24 shrink-0 rounded-lg border border-line bg-background-darker px-3 font-medium text-sm text-soft transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
-                  >
-                    {t('addTag')}
-                  </button>
-                </div>
-                {tagError ? <FieldError>{tagError}</FieldError> : null}
-                {errors.tags?.message ? (
-                  <FieldError>
-                    {errors.tags.message === 'tagLimitReached'
-                      ? t('tagLimitReached', { cap: tagCap })
-                      : errors.tags.message}
-                  </FieldError>
-                ) : null}
-              </FormGroup>
-            </section>
-          </div>
+                )}
+              />
+              {errors.availability ? (
+                <FieldError>{errors.availability.message}</FieldError>
+              ) : null}
+            </FormGroup>
 
-          <div className="sticky bottom-0 border-line border-t bg-background-dark px-4 py-4 sm:px-6">
-            <div className="flex justify-end gap-3">
+            <FormGroup>
+              <Label htmlFor={bioId} required>
+                {t('bioLabel')}
+              </Label>
+              <TextArea
+                id={bioId}
+                rows={4}
+                {...register('bio')}
+                placeholder={t('bioPlaceholder')}
+                error={!!errors.bio}
+              />
+              {errors.bio ? (
+                <FieldError id={`${bioId}-error`}>
+                  {errors.bio.message}
+                </FieldError>
+              ) : null}
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
+              {tags.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-background-darker p-2.5">
+                  {tags.map((tag, index) => (
+                    <Chip
+                      key={tag}
+                      label={tag}
+                      onRemove={() => removeTag(index)}
+                      removeLabel={t('removeTag', { tag })}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              <div className="flex gap-2">
+                <TextInput
+                  id={tagsInputId}
+                  value={tagInput}
+                  onChange={(event) => setTagInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      addTag();
+                    }
+                  }}
+                  placeholder={t('tagsPlaceholder')}
+                  className="flex-1"
+                  error={!!tagError || !!errors.tags}
+                />
+                <button
+                  type="button"
+                  onClick={addTag}
+                  aria-label={t('addTag')}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none focus-visible:bg-primary-light active:scale-[0.98]"
+                >
+                  <MdAdd size={20} />
+                </button>
+              </div>
+              <p className="text-[12px] text-subtle">
+                {tProfile('tagCounterHint', {
+                  count: tags.length,
+                  cap: tagCap,
+                })}
+              </p>
+              {tagError ? <FieldError>{tagError}</FieldError> : null}
+              {errors.tags?.message ? (
+                <FieldError>
+                  {errors.tags.message === 'tagLimitReached'
+                    ? t('tagLimitReached', { cap: tagCap })
+                    : errors.tags.message}
+                </FieldError>
+              ) : null}
+            </FormGroup>
+          </SectionCard>
+
+          <div className="sticky bottom-[calc(var(--dock-space,0px)+20px)] z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 items-center gap-3 text-[13px]">
+              <span className="text-muted">{t('completeness')}</span>
+              <div className="h-1.5 w-[120px] rounded-full bg-background-dark">
+                <div
+                  className="h-1.5 rounded-full bg-primary transition-all"
+                  style={{ width: `${completion}%` }}
+                />
+              </div>
+              <span className="text-primary-light">{completion}%</span>
+            </div>
+            <div className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -515,6 +481,7 @@ export const OnboardingPage = ({
                   draft.clear();
                 }}
                 disabled={isSubmitting}
+                className="h-10"
               >
                 {t('discardDraft')}
               </Button>
@@ -523,13 +490,14 @@ export const OnboardingPage = ({
               </Button>
             </div>
           </div>
-        </fieldset>
+        </div>
 
-        <aside className="lg:pt-0">
-          <div className="sticky top-6 rounded-lg border border-line bg-background-dark p-4 shadow-xl">
-            <p className="mb-3 font-semibold text-subtle text-xs uppercase tracking-wide">
+        <aside className="lg:sticky lg:top-6">
+          <div className="flex flex-col gap-2.5">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
+              <MdVisibility size={15} className="text-primary" />
               {t('previewTitle')}
-            </p>
+            </span>
             <ProfileCard
               profile={previewProfile}
               variant="preview"
@@ -538,7 +506,7 @@ export const OnboardingPage = ({
             />
           </div>
         </aside>
-      </main>
+      </fieldset>
     </form>
   );
 };
