@@ -8,6 +8,7 @@ import {
 import { profiles, users } from './schema';
 
 const MIN_INDEXED_TOKEN = 3;
+const MAX_INDEXED_TOKENS = 3;
 
 let timezoneLabels:
   | { hour: number; labels: Record<string, string>; json: string }
@@ -121,6 +122,8 @@ export const discoverySearch = (
   return and(
     ...tokens
       .filter((token) => token.length >= MIN_INDEXED_TOKEN)
+      .sort((a, b) => b.length - a.length)
+      .slice(0, MAX_INDEXED_TOKENS)
       .map((token) => tokenMatches(token, locale, isLoggedIn)),
     exactMatch(query, locale, isLoggedIn),
   );
