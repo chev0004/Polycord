@@ -613,7 +613,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <output className="px-1 text-[13px] text-muted">
                   {t(
                     pushStatus === 'denied'
-                      ? 'pushDenied'
+                      ? 'pushPermissionDenied'
                       : pushStatus === 'unsupported'
                         ? 'pushUnsupported'
                         : 'pushError',
@@ -1479,7 +1479,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   <output className="text-[13px] text-muted">
                     {t(
                       pushStatus === 'denied'
-                        ? 'pushDenied'
+                        ? 'pushPermissionDenied'
                         : pushStatus === 'unsupported'
                           ? 'pushUnsupported'
                           : 'pushError',
