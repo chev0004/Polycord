@@ -731,6 +731,8 @@
     "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
   },
   "Sheet": {
+    "search": "Search",
+    "noResults": "No results found",
     "close": "Close"
   }
 }
