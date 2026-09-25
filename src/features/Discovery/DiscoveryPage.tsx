@@ -780,7 +780,7 @@ export const DiscoveryPage = ({
       </main>
 
       {needsOnboarding && !isPromptDismissed ? (
-        <aside className="fixed right-4 bottom-4 z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
+        <aside className="fixed right-4 bottom-[calc(var(--dock-space,0px)+16px)] z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
           <div className="flex items-start">
             <button
               type="button"
