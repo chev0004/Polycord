@@ -64,7 +64,7 @@ for (const width of [320, 375, 390]) {
       });
       expect(created.status()).toBe(200);
       const { profileId } = await created.json();
-      for (const route of ['/en/saved', `/en/u/${profileId}`]) {
+      for (const route of ['/en/saved', '/en/inbox', `/en/u/${profileId}`]) {
         await page.goto(route);
         await fits();
       }
@@ -442,6 +442,95 @@ test('settings drill-in pages reach and save every setting on phones', async ({
       .getByRole('button', { name: 'キャンセル', exact: true })
       .click();
     await expect(sheet).toHaveCount(0);
+  } finally {
+    await sql`delete from users where id = ${owner.id}`;
+    await sql.end();
+  }
+});
+
+test('dock inbox opens the full-screen inbox on phones', async ({
+  page,
+  context,
+}, testInfo) => {
+  const id = randomUUID().replaceAll('-', '');
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const [owner] =
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, 'Inbox phone') returning id`;
+  await sql`insert into notifications (user_id, kind, created_at)
+    select ${owner.id}, 'copy', now() - n * interval '1 hour' from generate_series(1,7) n`;
+  await sql`insert into notifications (user_id, kind) values (${owner.id}, 'warning')`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id, accountId: owner.id, name: 'Inbox phone' },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  try {
+    for (const width of [320, 375, 390]) {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto('/en');
+      const dock = page.getByRole('navigation', { name: 'Main' });
+      const inbox = dock.getByRole('button', { name: /^Inbox/ });
+      await expect(inbox).toHaveAccessibleName('Inbox, 8 unread');
+      await inbox.click();
+      await expect(page).toHaveURL('/en/inbox');
+      await expect(inbox).toHaveAttribute('aria-current', 'page');
+      await expect(
+        page.getByRole('heading', { name: 'Inbox', exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /A user copied your username/ }),
+      ).toHaveCount(7);
+      await expect
+        .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width);
+      await page.screenshot({
+        path: testInfo.outputPath(`inbox-${width}.png`),
+        animations: 'disabled',
+      });
+    }
+
+    const dock = page.getByRole('navigation', { name: 'Main' });
+    const inbox = dock.getByRole('button', { name: /^Inbox/ });
+    await page.getByRole('button', { name: /You received a warning/ }).click();
+    const sheet = page.getByRole('dialog');
+    await expect(
+      sheet.getByRole('button', { name: 'Review community guidelines' }),
+    ).toBeVisible();
+    await sheet.getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: /You received a warning/ }),
+    ).toHaveCount(0);
+    await expect(inbox).toHaveAccessibleName('Inbox, 7 unread');
+
+    await page.getByRole('button', { name: 'Mark all as read' }).click();
+    await expect(inbox).toHaveAccessibleName('Inbox');
+    await page.reload();
+    await expect(page.getByText('Unread', { exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Clear all', exact: true }).click();
+    await expect(
+      page.getByRole('heading', { name: 'No notifications yet' }),
+    ).toBeVisible();
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/en');
+    await page
+      .getByRole('button', { name: 'Notifications', exact: true })
+      .click();
+    await expect(
+      page.locator('[data-radix-popper-content-wrapper]'),
+    ).toBeVisible();
   } finally {
     await sql`delete from users where id = ${owner.id}`;
     await sql.end();

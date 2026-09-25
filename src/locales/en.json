@@ -19,6 +19,9 @@
     "noOptions": "No options"
   },
   "Inbox": {
+    "title": "Inbox",
+    "unread": "Unread",
+    "premiumUpsellDescription": "Premium shows names when the person was signed in.",
     "loading": "Loading notifications…",
     "loadError": "Notifications could not be refreshed. Please try again.",
     "writeError": "Your change could not be confirmed. Refresh the inbox to check, then try the action again.",

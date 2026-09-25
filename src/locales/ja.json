@@ -19,6 +19,9 @@
     "noOptions": "選択肢がありません"
   },
   "Inbox": {
+    "title": "受信ボックス",
+    "unread": "未読",
+    "premiumUpsellDescription": "Premiumなら、ログインしていた相手の名前が表示されます。",
     "loading": "通知を読み込み中…",
     "loadError": "通知を更新できませんでした。もう一度お試しください。",
     "writeError": "変更を確認できませんでした。受信トレイを更新して確認してから、もう一度操作してください。",
