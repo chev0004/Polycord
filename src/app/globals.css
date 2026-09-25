@@ -440,6 +440,12 @@
   }
 }
 
+@keyframes rowFlash {
+  from {
+    background: var(--color-overlay);
+  }
+}
+
 /* biome-ignore-start lint/complexity/noImportantStyles: reduced motion must override component animations */
 @media (prefers-reduced-motion: reduce) {
   *,

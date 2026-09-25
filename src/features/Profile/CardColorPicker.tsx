@@ -22,7 +22,7 @@ type EyeDropperConstructor = new () => {
   open: () => Promise<{ sRGBHex: string }>;
 };
 
-const COLOR_LABEL_KEYS: Record<string, string> = {
+export const COLOR_LABEL_KEYS: Record<string, string> = {
   sky: 'cardColorSky',
   pink: 'cardColorPink',
   slate: 'cardColorSlate',
