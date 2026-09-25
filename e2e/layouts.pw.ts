@@ -131,6 +131,9 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     await page.goto(`/en?q=${encodeURIComponent(longName)}`);
     await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
     expect(await fitsWidth(page)).toBe(true);
+    await page
+      .getByRole('button', { name: 'Dismiss onboarding prompt' })
+      .click();
 
     const cardMenu = page.getByRole('button', { name: 'Card menu' }).first();
     await cardMenu.click();
