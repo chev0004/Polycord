@@ -57,7 +57,12 @@ export const ClipboardDenied: Story = {
       await expect(await canvas.findByRole('alert')).toHaveTextContent(
         'clipboard.fixture',
       );
-      await expect(args.onCopyUsername).not.toHaveBeenCalled();
+      await expect(args.onCopyUsername).toHaveBeenCalledWith(
+        'clipboard.fixture',
+        'clipboard',
+        undefined,
+        false,
+      );
       Object.defineProperty(navigator, 'clipboard', {
         configurable: true,
         value: { writeText: () => Promise.resolve() },
@@ -68,7 +73,12 @@ export const ClipboardDenied: Story = {
       await waitFor(() =>
         expect(canvas.queryByRole('alert')).not.toBeInTheDocument(),
       );
-      await expect(args.onCopyUsername).toHaveBeenCalledOnce();
+      await expect(args.onCopyUsername).toHaveBeenLastCalledWith(
+        'clipboard.fixture',
+        'clipboard',
+        undefined,
+        true,
+      );
     } finally {
       if (original) Object.defineProperty(navigator, 'clipboard', original);
       else Reflect.deleteProperty(navigator, 'clipboard');
@@ -324,7 +334,12 @@ export const CopyUsername: Story = {
     );
 
     await waitFor(() =>
-      expect(args.onCopyUsername).toHaveBeenCalledWith('user1', '1', undefined),
+      expect(args.onCopyUsername).toHaveBeenCalledWith(
+        'user1',
+        '1',
+        undefined,
+        true,
+      ),
     );
     await expect(canvas.getByText('Copied!')).toBeInTheDocument();
   },
