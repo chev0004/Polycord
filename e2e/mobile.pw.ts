@@ -505,6 +505,11 @@ test('your card edits every profile part through sheets on phones', async ({
     await main.getByRole('button', { name: 'Edit Languages' }).click();
     await sheet.getByRole('button', { name: 'Advanced', exact: true }).click();
     await sheet.getByRole('button', { name: 'Add a language' }).click();
+    await sheet.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(
+      sheet.getByRole('button', { name: 'Add a language' }),
+    ).toBeVisible();
+    await sheet.getByRole('button', { name: 'Add a language' }).click();
     await sheet.getByRole('textbox', { name: 'Choose a language' }).fill('Kor');
     await sheet.getByRole('button', { name: 'Korean', exact: true }).click();
     await expect(sheet.getByText(/free limit of 2 languages/)).toBeVisible();
@@ -600,6 +605,9 @@ test('your card edits every profile part through sheets on phones', async ({
       main.getByText('Your profile is back at the top of Discover.'),
     ).toBeVisible();
     await main.getByRole('button', { name: 'Profile options' }).click();
+    await expect(
+      sheet.getByRole('button', { name: /^Bump in / }),
+    ).toBeDisabled();
     await sheet.getByRole('button', { name: 'View public profile' }).click();
     await expect(page).toHaveURL(/\/en\/u\//);
   } finally {
