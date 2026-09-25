@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fireEvent, fn, waitFor, within } from '@storybook/test';
+import {
+  expect,
+  fireEvent,
+  fn,
+  screen,
+  waitFor,
+  within,
+} from '@storybook/test';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { type SettingsFormValues, SettingsPage } from './SettingsPage';
 
@@ -365,5 +372,40 @@ export const GatedProfileViewAlert: Story = {
         'Everything in Free, plus more room to learn and be found.',
       ),
     ).toBeInTheDocument();
+  },
+};
+
+export const Mobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Privacy/ }));
+    await expect(
+      await canvas.findByRole('heading', { name: 'Privacy', level: 1 }),
+    ).toBeInTheDocument();
+    fireEvent.click(canvas.getByRole('button', { name: 'Settings' }));
+    fireEvent.click(await canvas.findByRole('button', { name: /^Theme/ }));
+    fireEvent.click(
+      await within(await screen.findByRole('dialog')).findByRole('button', {
+        name: 'Light Mode',
+      }),
+    );
+    await waitFor(() =>
+      expect(canvas.getByRole('button', { name: /^Theme/ })).toHaveTextContent(
+        'Light Mode',
+      ),
+    );
+    fireEvent.click(canvas.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ theme: 'light' }),
+      ),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('button', { name: 'Save' }),
+      ).not.toBeInTheDocument(),
+    );
   },
 };
