@@ -5,6 +5,7 @@ const sizeMap = {
   sm: 32,
   md: 56,
   lg: 96,
+  xl: 112,
 };
 
 type AvatarProps = {

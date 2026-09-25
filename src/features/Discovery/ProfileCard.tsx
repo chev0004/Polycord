@@ -109,7 +109,7 @@ const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip
 const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
-const getBumpAge = (value?: string) => {
+export const getBumpAge = (value?: string) => {
   if (!value) return null;
 
   const minutes = Math.max(

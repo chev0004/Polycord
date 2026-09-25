@@ -11,6 +11,7 @@ import {
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
+  type ViewerAvailabilityContext,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -69,7 +70,7 @@ export default async function PublicProfileRoute({
   let isLoggedIn = false;
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
-  let viewerTimezone: string | undefined;
+  let viewerContext: ViewerAvailabilityContext = {};
   let viewerUserId: string | undefined;
   let viewerActor: {
     id: string;
@@ -96,9 +97,7 @@ export default async function PublicProfileRoute({
     savedProfileIds = savedIds;
 
     if (viewerProfile) {
-      viewerTimezone = toViewerAvailabilityContext(
-        viewerProfile.profile,
-      ).timezone;
+      viewerContext = toViewerAvailabilityContext(viewerProfile.profile);
     }
 
     if (
@@ -132,7 +131,8 @@ export default async function PublicProfileRoute({
       isLoggedIn={isLoggedIn}
       isSaved={savedProfileIds.includes(profile.id)}
       currentProfileId={currentProfileId}
-      viewerTimezone={viewerTimezone}
+      viewerTimezone={viewerContext.timezone}
+      viewerAvailability={viewerContext.availability}
     />
   );
 }
