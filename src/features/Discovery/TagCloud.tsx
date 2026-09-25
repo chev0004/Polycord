@@ -91,7 +91,7 @@ export const TagCloud = ({
           <button
             type="button"
             onClick={onClear}
-            className="font-medium text-[13px] text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground"
+            className="font-medium text-[13px] text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground focus-visible:text-foreground"
           >
             {t('tagCloudClear', { count: selected.length })}
           </button>
