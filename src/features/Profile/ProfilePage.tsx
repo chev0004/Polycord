@@ -748,13 +748,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               sideOffset={6}
             >
               <div className="flex flex-col">
-                <MenuItem
-                  icon={MdArrowUpward}
-                  onClick={handleBumpProfile}
-                  disabled={bumpDisabled}
-                >
-                  {bumpLabel}
-                </MenuItem>
+                {onBumpProfile ? (
+                  <MenuItem
+                    icon={MdArrowUpward}
+                    onClick={handleBumpProfile}
+                    disabled={bumpDisabled}
+                  >
+                    {bumpLabel}
+                  </MenuItem>
+                ) : null}
                 {premium && onBoostProfile ? (
                   <MenuItem
                     icon={MdRocketLaunch}

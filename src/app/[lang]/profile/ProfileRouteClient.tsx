@@ -59,7 +59,7 @@ export const ProfileRouteClient = ({
           : undefined
       }
       onBumpProfile={
-        initialValues
+        profileId
           ? async () => {
               await bumpProfileRequest();
               router.refresh();
