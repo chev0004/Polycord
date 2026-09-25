@@ -252,6 +252,7 @@ test('ten thousand profiles keep page and facet responses bounded', async ({
   try {
     await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
       select id,true,'en','ja','intermediate',repeat('A large discovery fixture. ',10),array[${prefix},'Group ' || (row_number() over () % 100)],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql`analyze profiles, users`;
     const measurements = [];
     for (const query of [
       '',

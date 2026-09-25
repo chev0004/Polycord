@@ -16,7 +16,9 @@ const {
   userBlocks,
   subscriptions,
 } = await import('../../src/db/schema');
-const { listDiscoveryPage } = await import('../../src/db/discovery');
+const { countDiscovery, listDiscoveryPage } = await import(
+  '../../src/db/discovery'
+);
 const { listPublicProfilesByIds } = await import('../../src/db/profiles');
 const { applyDiscoverySearch } = await import(
   '../../src/features/Discovery/discoverySearch'
@@ -78,6 +80,17 @@ try {
   assert.equal((await load('page=4')).profiles.length, 3);
   assert.equal((await load('primary=ja')).total, 15);
   assert.equal((await load('q=Japanese')).total, 15);
+  for (const query of ['primary=ja', 'q=Japanese', 'q=japanese+a', 'q=ja']) {
+    assert.equal(
+      await countDiscovery(
+        parseDiscoveryState(new URLSearchParams(`tag=${prefix}&${query}`)),
+        'en',
+        viewer,
+      ),
+      (await load(query)).total,
+      query,
+    );
+  }
   assert.equal((await load('q=beginner')).total, 30);
   assert.equal((await load('target=fr&country=US&level=beginner')).total, 30);
   assert.equal((await load('avail=overlaps')).total, 30);
