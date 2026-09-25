@@ -160,7 +160,7 @@ test('dock and filter sheets drive discovery on phones', async ({
     await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, 'Dock test') returning id`;
   const owners =
     await sql`insert into users (discord_user_id, discord_username, display_name)
-    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Partner ' || n from generate_series(1,3) n returning id`;
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Partner ' || n from generate_series(1,12) n returning id`;
   const payload = Buffer.from(
     JSON.stringify({
       user: { id, accountId: viewer.id, name: 'Dock test' },
@@ -182,7 +182,7 @@ test('dock and filter sheets drive discovery on phones', async ({
     await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
       select id,true,'en','ja','intermediate','A mobile dock fixture profile.',array[${prefix}],case when row_number() over () = 1 then 'JP' else 'US' end,'America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
     await page.goto(`/en?tag=${prefix}`);
-    await expect(page.getByText('3 partners', { exact: true })).toBeVisible();
+    await expect(page.getByText('12 partners', { exact: true })).toBeVisible();
     await page
       .getByRole('button', { name: 'Dismiss onboarding prompt' })
       .click();
@@ -193,6 +193,17 @@ test('dock and filter sheets drive discovery on phones', async ({
     await toTop.click();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
     await expect(toTop).toHaveCSS('opacity', '0');
+
+    await expect(page.locator('article')).toHaveCount(9);
+    await page.getByRole('button', { name: 'Show more partners' }).click();
+    await expect(page).toHaveURL(/page=2/);
+    await expect(page.locator('article')).toHaveCount(12);
+    await expect(
+      page.getByText("You've seen everyone who matches.", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator('article')).toHaveCount(12);
+
     const dock = page.getByRole('navigation', { name: 'Main' });
     await expect(dock).toBeVisible();
     await expect(
