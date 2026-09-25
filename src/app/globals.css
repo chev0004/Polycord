@@ -434,6 +434,12 @@
   }
 }
 
+@keyframes pushIn {
+  from {
+    transform: translateX(100%);
+  }
+}
+
 /* biome-ignore-start lint/complexity/noImportantStyles: reduced motion must override component animations */
 @media (prefers-reduced-motion: reduce) {
   *,

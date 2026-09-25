@@ -267,6 +267,18 @@
     "cardColorBlue": "Blue"
   },
   "Settings": {
+    "privacyAlertsTitle": "Privacy & alerts",
+    "privacyPublic": "Public",
+    "privacyUnlisted": "Unlisted",
+    "notificationsOn": "{count} on",
+    "premiumActive": "Active",
+    "premiumFreePlan": "Free plan",
+    "premiumYourPlan": "Your plan",
+    "premiumPerMonth": "/ month",
+    "unsavedShort": "Unsaved changes",
+    "save": "Save",
+    "done": "Done",
+    "logout": "Logout",
     "blockedUsersTitle": "Blocked accounts",
     "blockedUsersDescription": "While signed in, neither account can see or interact with the other's profile. Public profiles remain visible when signed out. Unblocking takes effect immediately and does not need Save changes.",
     "blockedUsersLoading": "Loading blocked accounts…",
