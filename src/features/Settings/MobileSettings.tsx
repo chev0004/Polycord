@@ -2,7 +2,11 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Controller, type UseFormReturn } from 'react-hook-form';
+import {
+  Controller,
+  type PathValue,
+  type UseFormReturn,
+} from 'react-hook-form';
 import {
   MdChevronLeft,
   MdDarkMode,
@@ -22,6 +26,8 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { FieldError, Label, TextInput, Toggle } from '@/components/Form';
 import { ActionSheet, Sheet, SheetLabel, SheetRow } from '@/components/Sheet';
+import { ToastStack } from '@/components/Toast';
+import { useToastStack } from '@/hooks/useToast';
 import { CompareTable } from './CompareTable';
 import { type SettingsFormValues, settingsSchema } from './schema';
 
@@ -100,6 +106,8 @@ type ChoiceField =
   | 'timeFormat'
   | 'languageDisplay';
 
+type SaveField = ChoiceField | ToggleField | 'email';
+
 type ToggleField =
   | 'isPublic'
   | 'allowAnonymousCopy'
@@ -111,9 +119,7 @@ type ToggleField =
 
 type MobileSettingsProps = {
   form: UseFormReturn<SettingsFormValues>;
-  onSubmit: (data: SettingsFormValues) => Promise<void>;
-  onDiscard: () => void;
-  draftNotice: ReactNode;
+  onSave: (data: SettingsFormValues) => Promise<boolean>;
   ready: boolean;
   premium: boolean;
   userAvatarUrl?: string;
@@ -125,7 +131,6 @@ type MobileSettingsProps = {
   pushStatus: 'idle' | 'denied' | 'unsupported' | 'error';
   pushBusy: boolean;
   onPushToggle: (checked: boolean) => Promise<void>;
-  saveStatus: 'idle' | 'error';
   billingStatus: 'idle' | 'loading' | 'error';
   onManageSubscription: () => Promise<void>;
   exportStatus: 'idle' | 'loading' | 'success' | 'error';
@@ -141,9 +146,7 @@ type MobileSettingsProps = {
 
 export const MobileSettings = ({
   form,
-  onSubmit,
-  onDiscard,
-  draftNotice,
+  onSave,
   ready,
   premium,
   userAvatarUrl,
@@ -155,7 +158,6 @@ export const MobileSettings = ({
   pushStatus,
   pushBusy,
   onPushToggle,
-  saveStatus,
   billingStatus,
   onManageSubscription,
   exportStatus,
@@ -170,14 +172,8 @@ export const MobileSettings = ({
 }: MobileSettingsProps) => {
   const t = useTranslations('Settings');
   const locale = useLocale();
-  const {
-    control,
-    handleSubmit,
-    watch,
-    getValues,
-    setValue,
-    formState: { isSubmitting, isDirty },
-  } = form;
+  const { control, watch, getValues, setValue, resetField } = form;
+  const { toasts, addToast, dismissToast } = useToastStack();
   const [mobilePage, setMobilePage] = useState<MobilePage | null>(null);
   const [sheet, setSheet] = useState<ChoiceField | 'email' | 'delete' | null>(
     null,
@@ -226,14 +222,35 @@ export const MobileSettings = ({
     setSheet('email');
   };
 
+  const save = async <K extends SaveField>(
+    name: K,
+    value: PathValue<SettingsFormValues, K>,
+  ) => {
+    setValue(name, value, { shouldDirty: true });
+    const parsed = settingsSchema.safeParse(getValues());
+    if (!parsed.success) {
+      resetField(name);
+      openEmailSheet();
+      setEmailError(parsed.error.issues[0].message);
+      return;
+    }
+    const saved = await onSave(parsed.data);
+    if (!saved) resetField(name);
+    addToast({
+      title: t(saved ? 'savedTitle' : 'saveFailedTitle'),
+      description: t(saved ? 'savedDescription' : 'saveError'),
+      duration: saved ? 2500 : 4000,
+    });
+  };
+
   const applyEmail = () => {
     const result = settingsSchema.shape.email.safeParse(emailDraft);
     if (!result.success) {
       setEmailError(result.error.issues[0].message);
       return;
     }
-    setValue('email', emailDraft, { shouldDirty: true, shouldValidate: true });
     setSheet(null);
+    void save('email', emailDraft);
   };
 
   const values = watch();
@@ -286,7 +303,7 @@ export const MobileSettings = ({
         render={({ field }) => (
           <Toggle
             checked={field.value}
-            onCheckedChange={field.onChange}
+            onCheckedChange={(checked) => void save(name, checked)}
             aria-label={label}
           />
         )}
@@ -326,22 +343,8 @@ export const MobileSettings = ({
     onDeleteReset();
   };
 
-  const statusText =
-    saveStatus === 'error' ? (
-      <span className="text-[13px] text-danger">{t('saveError')}</span>
-    ) : billingStatus === 'error' ? (
-      <span className="text-[13px] text-danger">{t('billingError')}</span>
-    ) : null;
-
   return (
-    <form
-      noValidate
-      onSubmit={handleSubmit(onSubmit, (errors) => {
-        if (errors.email) openEmailSheet();
-      })}
-      className="mx-auto w-full max-w-xl overflow-x-clip pb-24 font-figtree"
-    >
-      {draftNotice ? <div className="px-4">{draftNotice}</div> : null}
+    <div className="mx-auto w-full max-w-xl overflow-x-clip pb-24 font-figtree">
       <fieldset disabled={!ready} className="min-w-0">
         {mobilePage === 'privacy' ? (
           <SettingsPushPage
@@ -351,7 +354,7 @@ export const MobileSettings = ({
             onBack={closePage}
           >
             <p className="px-1 text-[13px] text-subtle leading-snug">
-              {t('privacyDescription')}
+              {t('privacyInstantDescription')}
             </p>
             <SettingsGroup>
               {toggleRow(
@@ -499,6 +502,11 @@ export const MobileSettings = ({
             <p className="text-center text-subtle text-xs">
               {premium ? t('premiumPlanNote') : t('premiumUpgradeNote')}
             </p>
+            {billingStatus === 'error' ? (
+              <p role="alert" className="text-center text-[13px] text-danger">
+                {t('billingError')}
+              </p>
+            ) : null}
           </SettingsPushPage>
         ) : (
           <div className="flex flex-col px-4">
@@ -617,35 +625,6 @@ export const MobileSettings = ({
             </div>
           </div>
         )}
-
-        {isDirty || statusText ? (
-          <div className="fixed inset-x-2.5 bottom-[calc(var(--dock-space,0px)+12px)] z-[6] mx-auto flex max-w-xl items-center gap-2 rounded-full border border-line bg-background-darker py-2 pr-2 pl-[18px] shadow-lg">
-            <span className="min-w-0 flex-1">
-              {statusText ?? (
-                <span className="font-semibold text-[13px] text-discord-yellow">
-                  {t('unsavedShort')}
-                </span>
-              )}
-            </span>
-            <Button
-              variant="outline"
-              weight="semibold"
-              onClick={onDiscard}
-              disabled={!isDirty || isSubmitting}
-              className="h-10 rounded-full"
-            >
-              {t('discard')}
-            </Button>
-            <Button
-              type="submit"
-              weight="semibold"
-              disabled={!isDirty || isSubmitting}
-              className="h-10 rounded-full"
-            >
-              {isSubmitting ? t('saving') : t('save')}
-            </Button>
-          </div>
-        ) : null}
       </fieldset>
 
       <Sheet
@@ -658,7 +637,7 @@ export const MobileSettings = ({
             onClick={applyEmail}
             className="h-[50px] flex-1 rounded-full text-[15px]"
           >
-            {t('done')}
+            {t('save')}
           </Button>
         }
       >
@@ -695,8 +674,7 @@ export const MobileSettings = ({
             key: option.value,
             label: option.label,
             selected: values[field] === option.value,
-            onSelect: () =>
-              setValue(field, option.value as never, { shouldDirty: true }),
+            onSelect: () => void save(field, option.value as never),
           }))}
         />
       ))}
@@ -762,6 +740,7 @@ export const MobileSettings = ({
           ) : null}
         </div>
       </Sheet>
-    </form>
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
+    </div>
   );
 };

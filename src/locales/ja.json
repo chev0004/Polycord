@@ -297,6 +297,10 @@
     "cardColorBlue": "ブルー"
   },
   "Settings": {
+    "savedTitle": "保存しました",
+    "savedDescription": "変更が反映されました。",
+    "saveFailedTitle": "保存できませんでした",
+    "privacyInstantDescription": "誰があなたを見つけ、アクティビティを見られるか。変更はすぐに保存されます。",
     "privacyAlertsTitle": "プライバシーと通知",
     "privacyPublic": "公開",
     "privacyUnlisted": "未掲載",
@@ -305,9 +309,7 @@
     "premiumFreePlan": "無料プラン",
     "premiumYourPlan": "ご利用中のプラン",
     "premiumPerMonth": "/ 月",
-    "unsavedShort": "未保存の変更",
     "save": "保存",
-    "done": "完了",
     "logout": "ログアウト",
     "blockedUsersTitle": "ブロックしたアカウント",
     "blockedUsersDescription": "ログイン中は、お互いのプロフィールの閲覧や操作ができません。ログアウト中は公開プロフィールを閲覧できます。ブロック解除はすぐに反映され、変更の保存は不要です。",
