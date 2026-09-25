@@ -209,6 +209,7 @@ export const MobileCardEditor = ({
 
   const closeSheet = () => {
     if (sheet === 'style') onStyleClose();
+    cancelPick();
     setSheet(null);
   };
 
@@ -261,6 +262,17 @@ export const MobileCardEditor = ({
             (option.value !== values.primaryLanguage &&
               !targetLanguages.some((row) => row.language === option.value)),
         );
+
+  const cancelPick = () => {
+    if (
+      languagePick?.kind === 'target' &&
+      !targetLanguages[languagePick.index]?.language
+    )
+      setTargets(
+        targetLanguages.filter((_, index) => index !== languagePick.index),
+      );
+    setLanguagePick(null);
+  };
 
   const pickLanguage = (code: string) => {
     if (!languagePick) return;
@@ -637,10 +649,7 @@ export const MobileCardEditor = ({
         }
         leading={
           languagePick ? (
-            <SheetIconButton
-              label={t('back')}
-              onClick={() => setLanguagePick(null)}
-            >
+            <SheetIconButton label={t('back')} onClick={cancelPick}>
               <MdArrowBack size={24} />
             </SheetIconButton>
           ) : undefined
