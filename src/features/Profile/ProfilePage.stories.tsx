@@ -457,16 +457,14 @@ export const Mobile: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
 
-    fireEvent.click(
-      await canvas.findByRole('button', { name: 'Edit Languages' }),
-    );
+    fireEvent.click(await canvas.findByRole('button', { name: /^Native/ }));
     const sheet = within(await screen.findByRole('dialog'));
     fireEvent.click(sheet.getByRole('button', { name: 'Advanced' }));
     fireEvent.click(sheet.getByRole('button', { name: 'Done' }));
     await waitFor(() =>
       expect(
-        canvas.getByRole('button', { name: 'Edit Languages' }),
-      ).toHaveTextContent('English / Advanced'),
+        canvas.getByRole('button', { name: /^English/ }),
+      ).toHaveTextContent('Advanced'),
     );
     fireEvent.click(canvas.getByRole('button', { name: 'Preview' }));
     const preview = (await canvas.findByText('Copy username')).closest(
