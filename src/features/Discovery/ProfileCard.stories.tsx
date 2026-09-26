@@ -86,6 +86,33 @@ export const ClipboardDenied: Story = {
   },
 };
 
+export const ClipboardUnavailable: Story = {
+  args: ClipboardDenied.args,
+  play: async ({ canvasElement, args }) => {
+    const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: undefined,
+    });
+    try {
+      const canvas = within(canvasElement);
+      await userEvent.click(
+        canvas.getByRole('button', { name: 'Copy username' }),
+      );
+      await expect(await canvas.findByRole('alert')).toHaveTextContent(
+        'clipboard.fixture',
+      );
+      await userEvent.click(
+        canvas.getByRole('button', { name: 'Copy username' }),
+      );
+      await waitFor(() => expect(args.onCopyUsername).toHaveBeenCalledTimes(2));
+    } finally {
+      if (original) Object.defineProperty(navigator, 'clipboard', original);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  },
+};
+
 const longBio =
   'I am a graphic designer in Osaka looking for a patient partner to practice everyday English with. I can already read and write fairly well, but speaking still makes me nervous, so I would love someone who does not mind a few long pauses while I find the right words. In return I am happy to help with Japanese at any level.';
 
