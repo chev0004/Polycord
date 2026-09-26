@@ -12,6 +12,7 @@ type ProfileRouteClientProps = {
   boostsRemaining?: number;
   bumpReadyAt?: string;
   initialValues?: ProfileFormValues;
+  lastBumpedAt?: string;
   locale: string;
   premium?: boolean;
   profileId?: string;
@@ -27,6 +28,7 @@ export const ProfileRouteClient = ({
   boostsRemaining,
   bumpReadyAt,
   initialValues,
+  lastBumpedAt,
   locale,
   premium = false,
   profileId,
@@ -45,6 +47,7 @@ export const ProfileRouteClient = ({
       boostsRemaining={boostsRemaining}
       bumpReadyAt={bumpReadyAt}
       initialValues={initialValues}
+      lastBumpedAt={lastBumpedAt}
       onBoostProfile={
         premium && initialValues
           ? async () => {

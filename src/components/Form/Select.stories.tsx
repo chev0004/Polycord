@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, screen, userEvent, within } from '@storybook/test';
+import { useEffect, useState } from 'react';
 import { countryOptions } from '@/constants/countries';
 import { proficiencyOptions } from '@/constants/languages';
 import { Select } from './Select';
@@ -46,6 +47,32 @@ export const Default: Story = {
 export const WithValue: Story = {
   args: {
     defaultValue: options[0].value,
+  },
+};
+
+const RestoredValueForm = (args: React.ComponentProps<typeof Select>) => {
+  const [value, setValue] = useState('');
+  useEffect(() => setValue(options[2].value), []);
+
+  return (
+    <form>
+      <Select {...args} value={value} onValueChange={setValue} />
+    </form>
+  );
+};
+
+export const RestoredValue: Story = {
+  render: (args) => <RestoredValueForm {...args} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByRole('combobox')).toHaveTextContent(
+      options[2].label,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await expect(canvas.getByRole('combobox')).toHaveTextContent(
+      options[2].label,
+    );
   },
 };
 

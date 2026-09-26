@@ -70,6 +70,7 @@ type ProfilePageProps = {
   bumpReadyAt?: string;
   initialValues?: ProfileFormValues;
   mode?: 'create' | 'edit';
+  lastBumpedAt?: string;
   onBoostProfile?: () => Promise<void> | void;
   onBumpProfile?: () => Promise<void> | void;
   onDeleteProfile?: () => Promise<void> | void;
@@ -180,6 +181,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   bumpReadyAt,
   initialValues,
   mode = 'edit',
+  lastBumpedAt,
   onBoostProfile,
   onSubmit: onSubmitProp,
   onBumpProfile,
@@ -408,7 +410,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       country: getLabel(localizedCountryOptions, country),
       timezone: displayTimezone ? timezone : '',
       allowAnonymousCopy,
-      lastBumpRelative: t('previewJustNow'),
+      lastBumpedAt,
       premium: previewIsPremiumLook,
       cardTheme: previewTheme,
       availability: displayAvailability
@@ -426,6 +428,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     displayName,
     displayAvailability,
     displayTimezone,
+    lastBumpedAt,
     localizedCountryOptions,
     premium,
     primaryLanguage,

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "test:e2e": "playwright test",
+    "test:storybook": "playwright test -c playwright.storybook.config.ts",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
