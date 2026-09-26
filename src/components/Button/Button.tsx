@@ -28,7 +28,7 @@ export const Button = ({
     outline:
       'border border-primary-dark bg-transparent text-primary-light hover:bg-primary-darker focus-visible:bg-primary-darker',
     discord:
-      'bg-discord-blue text-white hover:bg-discord-blue-light focus-visible:bg-discord-blue-light',
+      'bg-discord-blue text-white hover:bg-discord-blue-dark focus-visible:bg-discord-blue-dark',
     white: 'bg-white text-black hover:bg-gray-200 focus-visible:bg-gray-200',
   };
 
