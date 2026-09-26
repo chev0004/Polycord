@@ -535,7 +535,7 @@ test('your card edits every profile part through sheets on phones', async ({
     await sheet.getByRole('switch', { name: 'Free Time' }).click();
     await done();
 
-    await main.getByRole('button', { name: 'Public' }).click();
+    await main.getByRole('button', { name: 'Public', exact: true }).click();
     await sheet.getByRole('switch', { name: 'Display availability' }).click();
     await sheet.getByRole('button', { name: 'Close' }).click();
 
