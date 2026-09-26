@@ -99,7 +99,7 @@ export const PublicProfileClient = ({
             viewerTimezone={viewerTimezone}
             viewerAvailability={viewerAvailability}
             onToggleSave={isOwnProfile ? undefined : toggleSave}
-            onCopyUsername={() => actions.copyUsername(profile)}
+            onCopyUsername={() => actions.copyUsername(profile, isOwnProfile)}
             onShare={() => actions.share(profile.id)}
             onReport={isOwnProfile ? undefined : () => actions.report(profile)}
             onBlock={isOwnProfile ? undefined : () => actions.block(profile.id)}

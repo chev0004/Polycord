@@ -15,6 +15,8 @@ import {
   useProfileMatching,
 } from '@/hooks/useProfileMatching';
 import { type ToastData, useToastStack } from '@/hooks/useToast';
+import { trackClientEvent } from '@/lib/analytics/client';
+import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { getFreeCardTheme } from './cardTheme';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
@@ -171,9 +173,10 @@ export const ProfileGrid = ({
       });
     }
 
-    if (onCopyUsername) {
-      onCopyUsername(username, profileId);
-    }
+    if (profileId === currentProfileId) return;
+
+    trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy, { profileId });
+    onCopyUsername?.(username, profileId);
   };
 
   const renderProfileCard = ({ profile, index }: ProfileGridItem) => {

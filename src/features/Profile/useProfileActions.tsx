@@ -101,11 +101,16 @@ export const useProfileActions = (
     });
   };
 
-  const copyUsername = async ({ id, discordUsername }: DiscoveryProfile) => {
+  const copyUsername = async (
+    { id, discordUsername }: DiscoveryProfile,
+    own: boolean,
+  ) => {
     if (!discordUsername) return false;
     const copiedToClipboard = await copyText(discordUsername);
-    trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
-    if (isLoggedIn) void notifyUsernameCopied(id).catch(() => {});
+    if (!own) {
+      trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy, { profileId: id });
+      if (isLoggedIn) void notifyUsernameCopied(id).catch(() => {});
+    }
     if (copiedToClipboard) {
       addToast({
         title: t('copied'),

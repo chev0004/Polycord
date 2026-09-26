@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { trackClientEvent } from '@/lib/analytics/client';
-import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { copyText } from '@/lib/clipboard';
 import type { DiscoveryProfile } from './ProfileCard';
 
@@ -24,7 +22,6 @@ export const useUsernameCopy = (
     setStatus('copying');
     setCopyFailed(false);
     const copiedToClipboard = await copyText(profile.discordUsername);
-    trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
     onCopyUsername?.(
       profile.discordUsername,
       profile.id,
