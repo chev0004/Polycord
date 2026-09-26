@@ -19,6 +19,7 @@ import {
 import { onboardingDraftSchema } from '@/features/Onboarding/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
+import { copyText } from '@/lib/clipboard';
 import {
   BumpProfileError,
   type BumpProfileResponse,
@@ -62,7 +63,7 @@ import {
   reportProfileRequest,
 } from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
-import { buildPublicProfileUrl, copyProfileUrl } from './shareProfile';
+import { buildPublicProfileUrl } from './shareProfile';
 import { type AppliedFilter, TagCloud } from './TagCloud';
 
 const PER_PAGE = 9;
@@ -515,7 +516,7 @@ export const DiscoveryPage = ({
   };
 
   const handleShareProfile = async (profileId: string) => {
-    if (await copyProfileUrl(buildPublicProfileUrl(locale, profileId))) {
+    if (await copyText(buildPublicProfileUrl(locale, profileId))) {
       addToast({
         title: t('shareCopiedTitle'),
         description: t('shareCopiedDescription'),

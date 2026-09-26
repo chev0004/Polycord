@@ -11,10 +11,7 @@ import {
   type ReportReason,
   reportProfileRequest,
 } from '@/features/Discovery/safetyRequests';
-import {
-  buildPublicProfileUrl,
-  copyProfileUrl,
-} from '@/features/Discovery/shareProfile';
+import { buildPublicProfileUrl } from '@/features/Discovery/shareProfile';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { useToastStack } from '@/hooks/useToast';
 import { trackClientEvent } from '@/lib/analytics/client';
@@ -94,9 +91,7 @@ export const useProfileActions = (
   };
 
   const share = async (profileId: string) => {
-    const copied = await copyProfileUrl(
-      buildPublicProfileUrl(locale, profileId),
-    );
+    const copied = await copyText(buildPublicProfileUrl(locale, profileId));
     addToast({
       title: t(copied ? 'shareCopiedTitle' : 'shareErrorTitle'),
       description: t(
