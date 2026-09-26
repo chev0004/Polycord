@@ -87,12 +87,9 @@ test('malformed mutation identifiers are rejected before database queries', asyn
       ],
     );
     await page.goto('/en/onboarding');
-    await page
-      .getByRole('combobox', { name: 'Current level', exact: true })
-      .click();
-    await page
-      .getByRole('option', { name: 'Intermediate', exact: true })
-      .click();
+    await expect(
+      page.getByRole('combobox', { name: 'Current level', exact: true }),
+    ).toHaveText('Intermediate');
     await page.route('**/api/onboarding', (route) => route.abort());
     await page.getByRole('button', { name: 'Publish Profile' }).click();
     await expect(
