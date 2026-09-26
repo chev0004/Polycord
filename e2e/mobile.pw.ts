@@ -90,11 +90,9 @@ for (const width of [320, 375, 390]) {
       }
       await page.goto('/en/profile');
       await fits();
-      await page.getByRole('button', { name: 'Edit Bio', exact: true }).click();
       await page
         .getByRole('textbox', { name: 'Bio', exact: true })
         .fill('Updated mobile profile with a useful description.');
-      await page.getByRole('button', { name: 'Done', exact: true }).click();
       const saveProfile = page.getByRole('button', {
         name: 'Save',
         exact: true,
@@ -495,7 +493,7 @@ test('your card edits every profile part through sheets on phones', async ({
       });
     }
 
-    await main.getByRole('button', { name: 'Edit Languages' }).click();
+    await main.getByRole('button', { name: /^Native/ }).click();
     await sheet.getByRole('button', { name: 'Advanced', exact: true }).click();
     await sheet.getByRole('button', { name: 'Add a language' }).click();
     await sheet.getByRole('button', { name: 'Back', exact: true }).click();
@@ -515,35 +513,33 @@ test('your card edits every profile part through sheets on phones', async ({
     });
     await done();
 
-    await main.getByRole('button', { name: 'Edit Tags' }).click();
+    await main.getByRole('button', { name: /^Tags/ }).click();
     await sheet.getByRole('textbox', { name: 'Tags' }).fill('Hiking');
     await sheet.getByRole('button', { name: 'Add Tag' }).click();
     await done();
 
-    await main.getByRole('button', { name: 'Edit Location' }).click();
+    await main.getByRole('button', { name: /^Country/ }).click();
     await sheet.getByRole('button', { name: 'Japan' }).click();
     await sheet.getByRole('textbox', { name: 'Country' }).fill('Canada');
     await sheet.getByRole('button', { name: 'Canada', exact: true }).click();
     await done();
 
-    await main.getByRole('button', { name: 'Add your free time' }).click();
+    await main.getByRole('button', { name: /^Free Time/ }).click();
     await sheet.getByRole('switch', { name: 'Free Time' }).click();
     await done();
 
-    await main.getByRole('button', { name: 'Public' }).click();
+    await main.getByRole('button', { name: 'Public', exact: true }).click();
     await sheet.getByRole('switch', { name: 'Display availability' }).click();
     await sheet.getByRole('button', { name: 'Close' }).click();
 
-    await main.getByRole('button', { name: 'Edit Bio' }).click();
     await main.getByRole('textbox', { name: 'Bio' }).fill('Too short');
-    await main.getByRole('button', { name: 'Done', exact: true }).click();
+    await main.getByRole('textbox', { name: 'Bio' }).blur();
     await expect(
       main.getByText('Please enter at least 10 characters for your bio.'),
     ).toBeVisible();
     await main
       .getByRole('textbox', { name: 'Bio' })
       .fill('Updated from the mobile card editor.');
-    await main.getByRole('button', { name: 'Done', exact: true }).click();
 
     await main.getByRole('button', { name: 'Preview', exact: true }).click();
     await expect(main.locator('article')).toContainText(
@@ -580,12 +576,11 @@ test('your card edits every profile part through sheets on phones', async ({
     ]);
 
     await page.reload();
-    await main.getByRole('button', { name: 'Edit Bio' }).click();
     await main
       .getByRole('textbox', { name: 'Bio' })
       .fill('This change will be discarded.');
     await main.getByRole('button', { name: 'Discard', exact: true }).click();
-    await expect(main.getByRole('button', { name: 'Edit Bio' })).toContainText(
+    await expect(main.getByRole('textbox', { name: 'Bio' })).toHaveValue(
       'Updated from the mobile card editor.',
     );
 

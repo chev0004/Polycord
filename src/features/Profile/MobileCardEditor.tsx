@@ -1,34 +1,35 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { type ReactNode, useMemo, useState } from 'react';
+import {
+  type ReactNode,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Controller,
   type FieldErrors,
   type UseFormReturn,
 } from 'react-hook-form';
 import type { IconType } from 'react-icons';
+import { FaDiscord } from 'react-icons/fa';
 import {
   MdAdd,
   MdArrowBack,
+  MdChevronRight,
   MdDeleteOutline,
-  MdEdit,
-  MdGraphicEq,
-  MdLocationOn,
-  MdMic,
   MdMoreVert,
-  MdOutlineSchedule,
   MdPalette,
   MdPublic,
-  MdSell,
-  MdTouchApp,
   MdVisibility,
   MdVisibilityOff,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
-import { FieldError, TextArea, TextInput, Toggle } from '@/components/Form';
+import { FieldError, TextInput, Toggle } from '@/components/Form';
 import {
   ActionSheet,
   type ActionSheetItem,
@@ -48,16 +49,25 @@ import {
   languageOptions,
   proficiencyOptions,
 } from '@/constants';
+import {
+  formatCurrentTime,
+  getAllProficiencyValues,
+  type Proficiency,
+} from '@/constants/languages';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { AvailabilityRow } from '@/features/Discovery/AvailabilityRow';
 import {
   type CardTheme,
+  CUSTOM_CARD_THEME_ID,
   deriveCardAccent,
   FREE_ACCENT,
 } from '@/features/Discovery/cardTheme';
 import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
 import { SettingsToggleRow } from '@/features/Settings/MobileSettings';
+import { useTimeFormat } from '@/features/Settings/TimeFormat';
+import { entitlementLimit } from '@/lib/entitlements';
 import { BIO_MAX } from '@/lib/profileFields';
+import { COLOR_LABEL_KEYS } from './CardColorPicker';
 import {
   FREE_LANGUAGE_CAP,
   PREMIUM_LANGUAGE_CAP,
@@ -98,31 +108,139 @@ type MobileCardEditorProps = {
   tagEditor: ReactNode;
 };
 
-const Zone = ({
+const flashClass = 'animate-[rowFlash_0.9s_cubic-bezier(0.16,1,0.3,1)]';
+const rowDivider =
+  'relative before:absolute before:top-0 before:right-0 before:left-4 before:h-px before:bg-line first:before:hidden';
+
+const EditGroup = ({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count?: string;
+  children: ReactNode;
+}) => (
+  <section className="mt-[22px] flex flex-col gap-2">
+    <h2 className="flex items-baseline justify-between px-1 font-semibold text-subtle text-xs uppercase tracking-[0.06em]">
+      {title}
+      {count ? (
+        <span className="font-medium normal-case tracking-normal">{count}</span>
+      ) : null}
+    </h2>
+    <div className="overflow-hidden rounded-3xl bg-background-dark">
+      {children}
+    </div>
+  </section>
+);
+
+const ListRow = ({
   label,
+  value,
+  meta,
+  stacked = false,
+  add = false,
+  flash = false,
   onClick,
   children,
 }: {
   label: string;
+  value?: ReactNode;
+  meta?: ReactNode;
+  stacked?: boolean;
+  add?: boolean;
+  flash?: boolean;
   onClick: () => void;
-  children: ReactNode;
+  children?: ReactNode;
 }) => (
   <button
     type="button"
-    aria-label={label}
     onClick={onClick}
-    className="-m-1 relative rounded-lg p-1 text-left outline-dashed outline-1 outline-primary-dark transition-colors duration-200 active:bg-overlay active:outline-primary"
+    className={`flex min-h-[52px] w-full items-center gap-2.5 py-3 pr-3 pl-4 text-left transition-colors duration-150 active:bg-overlay ${rowDivider} ${flash ? flashClass : ''}`}
   >
-    {children}
-    <span
-      aria-hidden
-      className="-top-[9px] -right-[9px] absolute z-[2] flex h-[22px] w-[22px] items-center justify-center rounded-full bg-primary text-on-primary shadow-[0_0_0_3px_var(--color-background-dark)]"
-    >
-      <MdEdit size={13} />
+    <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <span className="flex min-w-0 items-center gap-2">
+        <span
+          className={`truncate ${
+            stacked
+              ? 'text-[13px] text-subtle'
+              : add
+                ? 'font-medium text-[15px] text-[var(--ct-accent,var(--color-primary))]'
+                : 'font-medium text-[15px]'
+          }`}
+        >
+          {label}
+        </span>
+        {meta}
+      </span>
+      {children}
     </span>
+    {value ? (
+      <span className="flex min-w-0 max-w-[55%] items-center truncate text-[15px] text-muted">
+        {value}
+      </span>
+    ) : null}
+    {add ? (
+      <MdAdd
+        size={20}
+        aria-hidden
+        className="flex-shrink-0 text-[var(--ct-accent,var(--color-primary))]"
+      />
+    ) : (
+      <MdChevronRight
+        size={20}
+        aria-hidden
+        className="flex-shrink-0 text-subtle"
+      />
+    )}
   </button>
 );
 
+const SwitchRow = ({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description: string;
+  children: ReactNode;
+}) => (
+  <div
+    className={`flex min-h-[52px] items-center gap-2.5 px-4 py-3 ${rowDivider}`}
+  >
+    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <span className="font-medium text-[15px]">{label}</span>
+      <span className="text-[13px] text-subtle leading-snug">
+        {description}
+      </span>
+    </span>
+    {children}
+  </div>
+);
+
+const LevelMeter = ({ level }: { level: string }) => {
+  const t = useTranslations('Profile');
+  const step = getAllProficiencyValues().indexOf(level as Proficiency) + 1;
+
+  return (
+    <span className="flex min-w-0 items-center gap-[3px]">
+      {getAllProficiencyValues().map((value, index) => (
+        <span
+          key={value}
+          aria-hidden
+          className={`h-1 w-3 flex-shrink-0 rounded-sm ${
+            index < step
+              ? 'bg-[var(--ct-accent,var(--color-primary))]'
+              : 'bg-overlay'
+          }`}
+        />
+      ))}
+      <span className="ml-1.5 truncate text-[13px] text-muted">
+        {t(getProficiencyTranslationKey(level))}
+      </span>
+    </span>
+  );
+};
 const Ghost = ({
   icon: Icon,
   label,
@@ -193,16 +311,20 @@ export const MobileCardEditor = ({
   } = form;
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   const [sheet, setSheet] = useState<EditorSheet | null>(null);
-  const [bioEditing, setBioEditing] = useState(false);
   const [languagePick, setLanguagePick] = useState<LanguagePick | null>(null);
   const [countryPicking, setCountryPicking] = useState(false);
   const [publicOpen, setPublicOpen] = useState(false);
+  const [flash, setFlash] = useState<EditorSheet | null>(null);
+  const bioRef = useRef<HTMLTextAreaElement | null>(null);
+  const bioField = register('bio');
+  const timeFormat = useTimeFormat();
 
   const values = watch();
   const targetLanguages = values.targetLanguages ?? [];
   const tags = values.tags ?? [];
   const voiceSeconds = values.voiceIntroSeconds ?? 0;
   const languageCap = premium ? PREMIUM_LANGUAGE_CAP : FREE_LANGUAGE_CAP;
+  const tagCap = entitlementLimit('profile.tags', premium);
   const allLanguages = useMemo(() => languageOptions(locale), [locale]);
   const levels = useMemo(() => proficiencyOptions(locale), [locale]);
   const countries = useMemo(() => countryOptions(locale), [locale]);
@@ -215,7 +337,17 @@ export const MobileCardEditor = ({
     if (sheet === 'style') onStyleClose();
     cancelPick();
     setSheet(null);
+    setFlash(sheet);
+    setTimeout(() => setFlash(null), 900);
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the bio text and edit mode change the textarea height
+  useLayoutEffect(() => {
+    const element = bioRef.current;
+    if (!element) return;
+    element.style.height = 'auto';
+    element.style.height = `${element.scrollHeight}px`;
+  }, [values.bio, mode]);
 
   const openSheet = (next: EditorSheet) => {
     setLanguagePick(null);
@@ -229,20 +361,11 @@ export const MobileCardEditor = ({
       shouldValidate: true,
     });
 
-  const languageLabel = (code: string, level?: string) =>
-    `${getLanguageName(code, locale)}${
-      level ? ` / ${t(getProficiencyTranslationKey(level))}` : ''
-    }`;
-
-  const finishBio = async () => {
-    if (await trigger('bio')) setBioEditing(false);
-  };
-
   const onInvalid = (invalid: FieldErrors<ProfileFormValues>) => {
     setMode('edit');
     if (invalid.primaryLanguage || invalid.targetLanguages)
       openSheet('languages');
-    else if (invalid.bio) setBioEditing(true);
+    else if (invalid.bio) setTimeout(() => bioRef.current?.focus());
     else if (invalid.country || invalid.timezone) openSheet('location');
     else if (invalid.tags) openSheet('tags');
   };
@@ -295,10 +418,6 @@ export const MobileCardEditor = ({
     setLanguagePick(null);
   };
 
-  const hasLanguages =
-    Boolean(values.primaryLanguage) ||
-    targetLanguages.some((row) => row.language);
-
   return (
     <form
       noValidate
@@ -344,10 +463,7 @@ export const MobileCardEditor = ({
               key={value}
               type="button"
               aria-pressed={mode === value}
-              onClick={() => {
-                if (bioEditing) void finishBio();
-                setMode(value);
-              }}
+              onClick={() => setMode(value)}
               className={`h-9 rounded-full font-semibold text-[13px] transition-colors duration-200 ${
                 mode === value
                   ? 'bg-primary-dark text-foreground'
@@ -358,14 +474,12 @@ export const MobileCardEditor = ({
             </button>
           ))}
         </div>
-        <p className="flex items-center gap-1.5 text-[13px] text-muted">
-          {mode === 'edit' ? (
-            <MdTouchApp size={16} aria-hidden className="text-primary" />
-          ) : (
+        {mode === 'preview' ? (
+          <p className="flex items-center gap-1.5 text-[13px] text-muted">
             <MdVisibility size={16} aria-hidden className="text-primary" />
-          )}
-          {mode === 'edit' ? t('editHint') : t('previewHint')}
-        </p>
+            {t('previewHint')}
+          </p>
+        ) : null}
       </div>
 
       <fieldset className="min-w-0 px-3">
@@ -387,204 +501,283 @@ export const MobileCardEditor = ({
             />
           </div>
         ) : (
-          <article
-            style={cardStyle}
-            className="flex flex-col gap-5 rounded-3xl bg-background-dark p-[18px]"
-          >
-            <button
-              type="button"
-              aria-label={t('cardStyle')}
-              onClick={() => openSheet('style')}
-              className="-mx-[18px] -mt-[18px] flex h-[60px] items-end justify-end rounded-t-3xl px-2.5 pb-2"
-              style={{ background: theme.banner }}
+          <div style={cardStyle} className="flex flex-col px-1">
+            <div
+              className={`overflow-hidden rounded-3xl bg-background-dark ${flash === 'style' || flash === 'name' ? flashClass : ''}`}
             >
-              <span className="flex h-[30px] items-center gap-1.5 rounded-full bg-black/40 px-2.5 font-semibold text-white text-xs">
-                <MdPalette size={15} aria-hidden />
-                {t('cardStyle')}
-              </span>
-            </button>
-            <button
-              type="button"
-              aria-label={t('nameAndAvatar')}
-              onClick={() => openSheet('name')}
-              className="-mt-[55px] relative self-start rounded-full bg-background-dark p-[5px]"
-            >
-              <Avatar avatarUrl={userAvatarUrl} size="md" />
-            </button>
-
-            <Zone
-              label={t('editPart', { part: t('nameAndAvatar') })}
-              onClick={() => openSheet('name')}
-            >
-              <span className="block truncate font-semibold text-[19px]">
-                {displayName}
-              </span>
-              <span className="mt-[3px] block text-muted text-xs">
-                {t('nameSyncedHint')}
-              </span>
-            </Zone>
-
-            {hasLanguages ? (
-              <Zone
-                label={t('editPart', { part: t('languagesTitle') })}
-                onClick={() => openSheet('languages')}
+              <button
+                type="button"
+                aria-label={t('cardStyle')}
+                onClick={() => openSheet('style')}
+                className="relative block h-[92px] w-full"
+                style={{ background: theme.banner }}
               >
-                <span className="flex flex-wrap gap-2">
-                  {values.primaryLanguage ? (
-                    <span className="rounded-full bg-[var(--ct-chip-bg,var(--color-primary-darker))] px-[11px] py-[5px] font-medium text-[var(--ct-chip-text,var(--color-foreground))] text-xs">
-                      {getLanguageName(values.primaryLanguage, locale)}
-                    </span>
-                  ) : null}
-                  {targetLanguages
-                    .filter((row) => row.language)
-                    .map((row) => (
-                      <span
-                        key={row.language}
-                        className="rounded-full bg-background-darker px-[11px] py-[5px] font-medium text-soft text-xs"
-                      >
-                        {languageLabel(row.language, row.level)}
-                      </span>
-                    ))}
+                <span className="absolute top-2.5 right-2.5 flex h-8 items-center gap-1.5 rounded-full bg-black/40 pr-3 pl-2.5 font-semibold text-[13px] text-white backdrop-blur-sm">
+                  <MdPalette size={16} aria-hidden />
+                  {t(
+                    values.cardColor === CUSTOM_CARD_THEME_ID
+                      ? 'cardColorCustom'
+                      : (COLOR_LABEL_KEYS[values.cardColor ?? ''] ??
+                          'cardColorSky'),
+                  )}
                 </span>
-              </Zone>
-            ) : (
-              <Ghost
-                icon={MdAdd}
-                label={t('addLanguages')}
-                onClick={() => openSheet('languages')}
-              />
-            )}
-
-            {premium && voiceSeconds > 0 ? (
-              <Zone
-                label={t('editPart', { part: t('voiceIntroTitle') })}
-                onClick={() => openSheet('voice')}
+              </button>
+              <button
+                type="button"
+                onClick={() => openSheet('name')}
+                className="-mt-[30px] relative flex w-full items-end gap-3 px-3.5 pb-3.5 text-left"
               >
-                <span className="inline-flex h-9 items-center gap-2 rounded-full bg-background-darker px-3.5 text-sm text-soft">
-                  <MdGraphicEq
-                    size={18}
-                    aria-hidden
-                    className="text-[var(--ct-accent,var(--color-primary))]"
-                  />
-                  {`0:${String(voiceSeconds).padStart(2, '0')}`}
+                <span className="flex flex-shrink-0 rounded-full bg-background-dark p-1">
+                  <Avatar avatarUrl={userAvatarUrl} size="md" />
                 </span>
-              </Zone>
-            ) : (
-              <Ghost
-                icon={premium ? MdMic : undefined}
-                label={t('addVoice')}
-                tag={premium ? undefined : t('voiceIntroPremiumTag')}
-                onClick={() => openSheet('voice')}
-              />
-            )}
-
-            {values.availability ? (
-              <Zone
-                label={t('editPart', { part: t('freeTimeLabel') })}
-                onClick={() => openSheet('availability')}
-              >
-                <AvailabilityRow
-                  availability={values.availability}
-                  ownerTimezone={values.timezone}
+                <span className="flex min-w-0 flex-1 flex-col gap-[3px] pt-9 pb-1">
+                  <span className="truncate font-bold text-lg">
+                    {displayName}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-muted text-xs">
+                    <FaDiscord size={14} aria-hidden className="opacity-70" />
+                    {t('nameSyncedHint')}
+                  </span>
+                </span>
+                <MdChevronRight
+                  size={20}
+                  aria-hidden
+                  className="mb-2 flex-shrink-0 text-subtle"
                 />
-              </Zone>
-            ) : (
-              <Ghost
-                icon={MdOutlineSchedule}
-                label={t('addFreeTime')}
-                onClick={() => openSheet('availability')}
-              />
-            )}
+              </button>
+            </div>
 
-            {tags.length > 0 ? (
-              <Zone
-                label={t('editPart', { part: t('tagsLabel') })}
-                onClick={() => openSheet('tags')}
-              >
-                <span className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <Chip key={tag} label={tag} />
-                  ))}
+            <EditGroup
+              title={t('languagesTitle')}
+              count={`${targetLanguages.length}/${languageCap}`}
+            >
+              <ListRow
+                label={t('nativeLabel')}
+                value={
+                  values.primaryLanguage
+                    ? getLanguageName(values.primaryLanguage, locale)
+                    : t('addShort')
+                }
+                flash={flash === 'languages'}
+                onClick={() => openSheet('languages')}
+              />
+              {targetLanguages
+                .filter((row) => row.language)
+                .map((row) => (
+                  <ListRow
+                    key={row.language}
+                    label={getLanguageName(row.language, locale)}
+                    value={row.level ? <LevelMeter level={row.level} /> : null}
+                    flash={flash === 'languages'}
+                    onClick={() => openSheet('languages')}
+                  />
+                ))}
+              {targetLanguages.length < languageCap ? (
+                <ListRow
+                  add
+                  label={t('addLanguage')}
+                  onClick={() => openSheet('languages')}
+                />
+              ) : null}
+            </EditGroup>
+            {errors.primaryLanguage || targetError ? (
+              <FieldError id="mobile-languages-error">
+                {t((errors.primaryLanguage?.message ?? targetError) as string)}
+              </FieldError>
+            ) : null}
+
+            <EditGroup title={t('aboutYouTitle')}>
+              <label className="relative flex min-h-[52px] w-full cursor-text flex-col gap-1.5 px-4 py-3 before:absolute before:top-0 before:right-0 before:left-4 before:h-px before:bg-line first:before:hidden">
+                <span className="flex items-center justify-between gap-2">
+                  <span
+                    className={`font-medium text-[13px] ${errors.bio ? 'text-danger' : 'text-subtle'}`}
+                  >
+                    {t('bioLabel')}
+                  </span>
+                  <span
+                    className={`text-xs ${errors.bio ? 'text-danger' : 'text-subtle'}`}
+                  >
+                    {t('bioCounter', {
+                      count: values.bio.length,
+                      max: BIO_MAX,
+                    })}
+                  </span>
                 </span>
-              </Zone>
-            ) : (
-              <Ghost
-                icon={MdSell}
-                label={t('addTags')}
-                onClick={() => openSheet('tags')}
-              />
-            )}
-
-            {bioEditing ? (
-              <div className="flex flex-col gap-2">
-                <TextArea
+                <textarea
+                  {...bioField}
+                  ref={(element) => {
+                    bioField.ref(element);
+                    bioRef.current = element;
+                  }}
                   id="mobile-bio"
-                  rows={4}
                   aria-label={t('bioLabel')}
+                  rows={3}
                   placeholder={t('bioPlaceholder')}
-                  error={Boolean(errors.bio)}
-                  {...register('bio')}
+                  aria-invalid={Boolean(errors.bio)}
+                  aria-describedby={errors.bio ? 'mobile-bio-error' : undefined}
+                  onChange={(event) => {
+                    void bioField.onChange(event);
+                    if (errors.bio) void trigger('bio');
+                  }}
+                  onBlur={(event) => {
+                    void bioField.onBlur(event);
+                    void trigger('bio');
+                  }}
+                  className="min-h-[66px] w-full resize-none overflow-hidden bg-transparent font-light text-[15px] text-soft leading-normal outline-none placeholder:text-subtle"
                 />
                 {errors.bio ? (
                   <FieldError id="mobile-bio-error">
                     {t(errors.bio.message as string)}
                   </FieldError>
                 ) : null}
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-subtle text-xs">
-                    {t('bioCounter', {
-                      count: values.bio.length,
-                      max: BIO_MAX,
-                    })}
-                  </span>
-                  <Button
-                    weight="semibold"
-                    onClick={() => void finishBio()}
-                    className="h-10 rounded-full"
-                  >
-                    {t('done')}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Zone
-                label={t('editPart', { part: t('bioLabel') })}
-                onClick={() => setBioEditing(true)}
-              >
-                <span
-                  className={`block whitespace-pre-wrap break-words font-light text-sm leading-normal ${
-                    values.bio ? 'text-soft' : 'text-muted'
-                  }`}
-                >
-                  {values.bio || t('addBio')}
-                </span>
-              </Zone>
-            )}
+              </label>
+              <ListRow
+                label={t('voiceIntroTitle')}
+                meta={
+                  premium ? null : (
+                    <span className="rounded bg-primary-darker px-1.5 py-0.5 font-bold text-[10px] text-primary-light uppercase tracking-[0.04em]">
+                      {t('voiceIntroPremiumTag')}
+                    </span>
+                  )
+                }
+                value={
+                  premium
+                    ? voiceSeconds > 0
+                      ? `0:${String(voiceSeconds).padStart(2, '0')}`
+                      : t('voiceRecord')
+                    : null
+                }
+                flash={flash === 'voice'}
+                onClick={() => openSheet('voice')}
+              />
+            </EditGroup>
 
-            {values.country ? (
-              <Zone
-                label={t('editPart', { part: t('locationTitle') })}
-                onClick={() => openSheet('location')}
+            <EditGroup
+              title={t('tagsLabel')}
+              count={`${tags.length}/${tagCap}`}
+            >
+              {tags.length > 0 ? (
+                <ListRow
+                  stacked
+                  label={t('tagsLabel')}
+                  flash={flash === 'tags'}
+                  onClick={() => openSheet('tags')}
+                >
+                  <span className="flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <Chip key={tag} label={tag} />
+                    ))}
+                  </span>
+                </ListRow>
+              ) : (
+                <ListRow
+                  add
+                  label={t('addTags')}
+                  onClick={() => openSheet('tags')}
+                />
+              )}
+            </EditGroup>
+
+            <EditGroup title={t('timePlaceTitle')}>
+              <ListRow
+                stacked
+                label={t('freeTimeLabel')}
+                flash={flash === 'availability'}
+                onClick={() => openSheet('availability')}
               >
-                <span className="flex items-center gap-1.5 text-muted text-xs">
-                  <MdLocationOn
-                    size={16}
-                    aria-hidden
-                    className="flex-shrink-0 text-[var(--ct-accent,var(--color-primary))]"
+                {values.availability ? (
+                  <AvailabilityRow
+                    availability={values.availability}
+                    ownerTimezone={values.timezone}
                   />
-                  {values.displayTimezone && values.timezone
-                    ? `${countryLabel} · ${values.timezone}`
-                    : countryLabel}
-                </span>
-              </Zone>
-            ) : (
-              <Ghost
-                icon={MdLocationOn}
-                label={t('addCountry')}
+                ) : (
+                  <span className="text-muted text-sm">
+                    {t('freeTimeHidden')}
+                  </span>
+                )}
+              </ListRow>
+              <ListRow
+                label={t('countryLabel')}
+                value={countryLabel ?? t('addShort')}
+                flash={flash === 'location'}
                 onClick={() => openSheet('location')}
               />
-            )}
-          </article>
+              <SwitchRow
+                label={t('showLocalTime')}
+                description={
+                  values.displayTimezone && values.timezone
+                    ? t('localTimeShown', {
+                        time: formatCurrentTime(
+                          values.timezone,
+                          timeFormat,
+                          locale,
+                        ),
+                      })
+                    : t('localTimeHidden')
+                }
+              >
+                <Controller
+                  name="displayTimezone"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label={t('showLocalTime')}
+                    />
+                  )}
+                />
+              </SwitchRow>
+            </EditGroup>
+
+            <EditGroup title={t('visibilityTitle')}>
+              <SwitchRow
+                label={t('showInDiscover')}
+                description={
+                  values.isPublic
+                    ? t('showInDiscoverOn')
+                    : t('showInDiscoverOff')
+                }
+              >
+                <Controller
+                  name="isPublic"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label={t('showInDiscover')}
+                    />
+                  )}
+                />
+              </SwitchRow>
+              <SwitchRow
+                label={t('guestsCanCopy')}
+                description={t('guestsCanCopyDescription')}
+              >
+                <Controller
+                  name="allowAnonymousCopy"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label={t('guestsCanCopy')}
+                    />
+                  )}
+                />
+              </SwitchRow>
+            </EditGroup>
+
+            <Button
+              variant="outline"
+              weight="semibold"
+              onClick={() => setPublicOpen(true)}
+              className="mt-5 h-[50px] w-full rounded-full text-[15px]"
+            >
+              {t('viewPublicProfile')}
+            </Button>
+          </div>
         )}
 
         {isDirty ? (
@@ -595,10 +788,7 @@ export const MobileCardEditor = ({
             <Button
               variant="outline"
               weight="semibold"
-              onClick={() => {
-                setBioEditing(false);
-                onDiscard();
-              }}
+              onClick={onDiscard}
               disabled={isSubmitting}
               className="h-10 rounded-full"
             >

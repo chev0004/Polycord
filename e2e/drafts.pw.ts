@@ -201,8 +201,8 @@ test('profile drafts recover after navigation and expiry without crossing accoun
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/ja/profile');
     await expect(
-      page.getByText('My unfinished draft stays private until I save it.'),
-    ).toBeVisible();
+      page.getByRole('textbox', { name: '自己紹介', exact: true }),
+    ).toHaveValue('My unfinished draft stays private until I save it.');
     await page.screenshot({
       path: testInfo.outputPath('profile-restored-mobile-ja.png'),
       fullPage: true,
