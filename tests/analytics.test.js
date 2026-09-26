@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 
 test.skipIf(!process.env.TEST_DATABASE_URL)(
-  'analytics honors the opt-out and unlinks events on account deletion',
+  'analytics honors the opt-out, unlinks deleted accounts and skips self copies',
   () => {
     expect(
       execFileSync(
