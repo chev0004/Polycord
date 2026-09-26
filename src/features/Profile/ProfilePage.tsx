@@ -69,6 +69,7 @@ type ProfilePageProps = {
   boostsRemaining?: number;
   bumpReadyAt?: string;
   initialValues?: ProfileFormValues;
+  mode?: 'create' | 'edit';
   onBoostProfile?: () => Promise<void> | void;
   onBumpProfile?: () => Promise<void> | void;
   onDeleteProfile?: () => Promise<void> | void;
@@ -178,6 +179,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   boostsRemaining,
   bumpReadyAt,
   initialValues,
+  mode = 'edit',
   onBoostProfile,
   onSubmit: onSubmitProp,
   onBumpProfile,
@@ -197,6 +199,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const tagsInputId = useId();
   const t = useTranslations('Profile');
   const locale = useLocale();
+  const isCreate = mode === 'create';
+  const submitIdleLabel = isCreate ? t('publishButton') : t('saveProfile');
+  const submittingLabel = isCreate ? t('publishing') : t('saving');
+  const mobileSubmitIdleLabel = isCreate ? t('publish') : t('save');
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
@@ -692,6 +698,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         voiceEditor={voiceEditor}
         availabilityEditor={availabilityEditor}
         tagEditor={tagEditor}
+        submitLabel={mobileSubmitIdleLabel}
+        submittingLabel={submittingLabel}
       />
     );
   }
@@ -707,75 +715,80 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       <div className="mb-6 flex items-end justify-between gap-5">
         <div className="min-w-0">
           <h1 className="font-bold font-figtree text-[30px] text-foreground leading-[1.1]">
-            {t('editProfile')}
+            {isCreate ? t('createTitle') : t('editProfile')}
           </h1>
           <p className="mt-1.5 font-light text-[15px] text-muted">
-            {t('editProfileSubtitle')}
+            {isCreate ? t('createSubtitle') : t('editProfileSubtitle')}
           </p>
         </div>
 
-        <Popover.Root>
-          <Popover.Trigger asChild>
-            <button
-              type="button"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-soft transition-colors hover:bg-background-darker hover:text-foreground focus:outline-none focus-visible:bg-background-darker focus-visible:text-foreground"
-              aria-label={t('profileOptions')}
-            >
-              <MdMoreVert size={20} />
-            </button>
-          </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Content
-              className="z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
-              side="bottom"
-              align="end"
-              sideOffset={6}
-            >
-              <div className="flex flex-col">
-                {onBumpProfile ? (
-                  <MenuItem
-                    icon={MdArrowUpward}
-                    onClick={handleBumpProfile}
-                    disabled={bumpDisabled}
-                  >
-                    {bumpLabel}
-                  </MenuItem>
-                ) : null}
-                {premium && onBoostProfile ? (
-                  <MenuItem
-                    icon={MdRocketLaunch}
-                    onClick={handleBoostProfile}
-                    disabled={
-                      isBoosting || boostActive || (boostsRemaining ?? 0) <= 0
-                    }
-                  >
-                    {boostActive
-                      ? t('boostActive')
-                      : t('boostProfile', { count: boostsRemaining ?? 0 })}
-                  </MenuItem>
-                ) : null}
-                {onViewPublicProfile ? (
-                  <MenuItem icon={MdVisibility} onClick={onViewPublicProfile}>
-                    {t('viewPublicProfile')}
-                  </MenuItem>
-                ) : null}
-                {onDeleteProfile ? (
-                  <>
-                    <div className="my-1 h-px bg-overlay" />
+        {onBumpProfile ||
+        onBoostProfile ||
+        onViewPublicProfile ||
+        onDeleteProfile ? (
+          <Popover.Root>
+            <Popover.Trigger asChild>
+              <button
+                type="button"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-soft transition-colors hover:bg-background-darker hover:text-foreground focus:outline-none focus-visible:bg-background-darker focus-visible:text-foreground"
+                aria-label={t('profileOptions')}
+              >
+                <MdMoreVert size={20} />
+              </button>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content
+                className="z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                side="bottom"
+                align="end"
+                sideOffset={6}
+              >
+                <div className="flex flex-col">
+                  {onBumpProfile ? (
                     <MenuItem
-                      icon={MdDeleteOutline}
-                      danger
-                      disabled={isDeleting}
-                      onClick={handleDeleteProfile}
+                      icon={MdArrowUpward}
+                      onClick={handleBumpProfile}
+                      disabled={bumpDisabled}
                     >
-                      {isDeleting ? t('deletingProfile') : t('deleteProfile')}
+                      {bumpLabel}
                     </MenuItem>
-                  </>
-                ) : null}
-              </div>
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
+                  ) : null}
+                  {premium && onBoostProfile ? (
+                    <MenuItem
+                      icon={MdRocketLaunch}
+                      onClick={handleBoostProfile}
+                      disabled={
+                        isBoosting || boostActive || (boostsRemaining ?? 0) <= 0
+                      }
+                    >
+                      {boostActive
+                        ? t('boostActive')
+                        : t('boostProfile', { count: boostsRemaining ?? 0 })}
+                    </MenuItem>
+                  ) : null}
+                  {onViewPublicProfile ? (
+                    <MenuItem icon={MdVisibility} onClick={onViewPublicProfile}>
+                      {t('viewPublicProfile')}
+                    </MenuItem>
+                  ) : null}
+                  {onDeleteProfile ? (
+                    <>
+                      <div className="my-1 h-px bg-overlay" />
+                      <MenuItem
+                        icon={MdDeleteOutline}
+                        danger
+                        disabled={isDeleting}
+                        onClick={handleDeleteProfile}
+                      >
+                        {isDeleting ? t('deletingProfile') : t('deleteProfile')}
+                      </MenuItem>
+                    </>
+                  ) : null}
+                </div>
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+        ) : null}
       </div>
 
       {draftNotice}
@@ -987,7 +1000,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 disabled={!isDirty || isSubmitting}
                 className="h-10"
               >
-                {isSubmitting ? t('saving') : t('saveProfile')}
+                {isSubmitting ? submittingLabel : submitIdleLabel}
               </Button>
             </div>
           </div>
