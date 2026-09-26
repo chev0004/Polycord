@@ -300,6 +300,7 @@
     "savedTitle": "Saved",
     "savedDescription": "Your change is live.",
     "saveFailedTitle": "Couldn't save",
+    "sessionExpired": "Your session expired. Sign in again to save changes.",
     "privacyInstantDescription": "Who can find and see your activity. Changes save instantly.",
     "privacyAlertsTitle": "Privacy & alerts",
     "privacyPublic": "Public",

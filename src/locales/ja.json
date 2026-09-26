@@ -300,6 +300,7 @@
     "savedTitle": "保存しました",
     "savedDescription": "変更が反映されました。",
     "saveFailedTitle": "保存できませんでした",
+    "sessionExpired": "セッションの有効期限が切れました。再度ログインして変更を保存してください。",
     "privacyInstantDescription": "誰があなたを見つけ、アクティビティを見られるか。変更はすぐに保存されます。",
     "privacyAlertsTitle": "プライバシーと通知",
     "privacyPublic": "公開",

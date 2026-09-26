@@ -319,6 +319,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       <MobileSettings
         form={form}
         onSave={onSubmit}
+        sessionExpired={sessionExpired}
         ready={draft.ready}
         premium={premium}
         userAvatarUrl={userAvatarUrl}

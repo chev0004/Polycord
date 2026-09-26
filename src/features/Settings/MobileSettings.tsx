@@ -27,6 +27,7 @@ import { Button } from '@/components/Button';
 import { FieldError, Label, TextInput, Toggle } from '@/components/Form';
 import { ActionSheet, Sheet, SheetLabel, SheetRow } from '@/components/Sheet';
 import { ToastStack } from '@/components/Toast';
+import { signInHref } from '@/features/Navigation/signIn';
 import { useToastStack } from '@/hooks/useToast';
 import { CompareTable } from './CompareTable';
 import { type SettingsFormValues, settingsSchema } from './schema';
@@ -120,6 +121,7 @@ type ToggleField =
 type MobileSettingsProps = {
   form: UseFormReturn<SettingsFormValues>;
   onSave: (data: SettingsFormValues) => Promise<boolean>;
+  sessionExpired: boolean;
   ready: boolean;
   premium: boolean;
   userAvatarUrl?: string;
@@ -147,6 +149,7 @@ type MobileSettingsProps = {
 export const MobileSettings = ({
   form,
   onSave,
+  sessionExpired,
   ready,
   premium,
   userAvatarUrl,
@@ -348,6 +351,19 @@ export const MobileSettings = ({
 
   return (
     <div className="mx-auto w-full max-w-xl overflow-x-clip pb-24 font-figtree">
+      {sessionExpired ? (
+        <p
+          role="alert"
+          className="mx-4 mb-3 rounded-xl bg-background-dark px-4 py-3 text-sm"
+        >
+          <a
+            className="font-semibold text-primary-light underline focus-visible:text-primary-lighter"
+            href={signInHref(locale)}
+          >
+            {t('sessionExpired')}
+          </a>
+        </p>
+      ) : null}
       <fieldset disabled={!ready || saving} className="min-w-0">
         {mobilePage === 'privacy' ? (
           <SettingsPushPage
