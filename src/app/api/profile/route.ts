@@ -150,6 +150,19 @@ export const POST = async (request: Request) => {
     },
   });
 
+  if (!existing) {
+    await trackEvent({
+      name: ANALYTICS_EVENTS.onboardingComplete,
+      userId: currentUser.accountId,
+      locale: localeFromRequest(request),
+      metadata: {
+        primaryLanguage: values.primaryLanguage,
+        targetLanguageCount: values.targetLanguages.length,
+        tagCount: (values.tags ?? []).length,
+      },
+    });
+  }
+
   return NextResponse.json({ profileId: profile.id });
 };
 

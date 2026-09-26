@@ -74,13 +74,11 @@ test('malformed mutation identifiers are rejected before database queries', asyn
     await page.addInitScript(
       ([key, draft]) => sessionStorage.setItem(key, draft),
       [
-        `polycord:onboarding:${id}`,
+        `polycord:profile:${id}`,
         JSON.stringify({
           primaryLanguage: 'ja',
-          targetLanguage: 'en',
-          proficiencyLevel: 'intermediate',
+          targetLanguages: [{ language: 'en', level: '' }],
           timezone: 'Asia/Tokyo',
-          availability: 'flexible',
           bio: 'A recoverable onboarding draft.',
           tags: [],
         }),
@@ -88,24 +86,24 @@ test('malformed mutation identifiers are rejected before database queries', asyn
     );
     await page.goto('/en/onboarding');
     await page
-      .getByRole('combobox', { name: 'Current level', exact: true })
+      .getByRole('combobox', { name: 'Proficiency level', exact: true })
       .click();
     await page
       .getByRole('option', { name: 'Intermediate', exact: true })
       .click();
-    await page.route('**/api/onboarding', (route) => route.abort());
-    await page.getByRole('button', { name: 'Publish Profile' }).click();
+    await page.route('**/api/profile', (route) => route.abort());
+    await page.getByRole('button', { name: 'Publish profile' }).click();
     await expect(
-      page.getByText('Profile publishing failed. Please try again.'),
+      page.getByText('Profile could not be saved. Please try again.'),
     ).toBeVisible();
     await expect(page.getByLabel('Bio', { exact: true })).toHaveValue(
       'A recoverable onboarding draft.',
     );
-    await page.unroute('**/api/onboarding');
-    await page.route('**/api/onboarding', (route) =>
+    await page.unroute('**/api/profile');
+    await page.route('**/api/profile', (route) =>
       route.fulfill({ status: 401, json: { error: 'Unauthorized' } }),
     );
-    await page.getByRole('button', { name: 'Publish Profile' }).click();
+    await page.getByRole('button', { name: 'Publish profile' }).click();
     await expect(
       page.getByRole('link', { name: 'Sign in again' }),
     ).toBeVisible();

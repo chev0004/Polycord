@@ -106,6 +106,29 @@ export const WithProfile: Story = {
   },
 };
 
+export const LastBump: Story = {
+  args: {
+    initialValues: sampleProfile,
+    lastBumpedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByText('2 hours ago')).toBeInTheDocument();
+    await expect(canvas.queryByText('just now')).not.toBeInTheDocument();
+  },
+};
+
+export const NeverBumped: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText('Copy username');
+    await expect(canvas.queryByText('just now')).not.toBeInTheDocument();
+  },
+};
+
 export const RestoredDraft: Story = {
   args: { initialValues: sampleProfile, userId: 'profile-draft-story' },
   loaders: [
@@ -479,6 +502,49 @@ export const Mobile: Story = {
         }),
       ),
     );
+  },
+};
+
+export const CreateMode: Story = {
+  args: { mode: 'create', userId: 'create-mode-story' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByText('Create your language profile'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('button', { name: 'Profile options' }),
+    ).not.toBeInTheDocument();
+
+    const submitButton = canvas.getByRole('button', {
+      name: 'Publish profile',
+    });
+    await expect(submitButton).toBeDisabled();
+
+    const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
+    setFieldValue(bio, sampleProfile.bio);
+
+    await waitFor(() => expect(submitButton).toBeEnabled());
+  },
+};
+
+export const CreateModeMobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { mode: 'create', userId: 'create-mode-mobile-story' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.queryByRole('button', { name: 'Profile options' }),
+    ).not.toBeInTheDocument();
+
+    const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
+    setFieldValue(bio, sampleProfile.bio);
+
+    await expect(
+      await canvas.findByRole('button', { name: 'Publish' }),
+    ).toBeInTheDocument();
   },
 };
 

@@ -350,30 +350,27 @@ test('onboarding scopes incomplete drafts and enforces the same tag caps as edit
     await signIn(context, ids[0]);
     await page.reload();
     await expect(page.getByLabel('Bio', { exact: true })).toHaveValue('short');
-    await page
-      .getByRole('button', { name: 'Discard draft', exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Discard', exact: true }).click();
     await page.reload();
     await expect(page.getByLabel('Bio', { exact: true })).toHaveValue('');
     const values = {
+      isPublic: true,
+      allowAnonymousCopy: true,
+      displayTimezone: true,
+      displayAvailability: true,
       primaryLanguage: 'ja',
-      targetLanguage: 'en',
-      proficiencyLevel: 'native-level',
+      targetLanguages: [{ language: 'en', level: 'native-level' }],
       timezone: 'Asia/Tokyo',
-      availability: 'weeknights',
+      availability: { days: 'weekdays', from: '18:00', to: '22:00' },
       bio: profile.bio,
       tags: ['One', 'Two', 'Three', 'Four', 'Five', 'Six'],
     };
     expect(
-      (
-        await context.request.post('/api/onboarding', { data: values })
-      ).status(),
+      (await context.request.post('/api/profile', { data: values })).status(),
     ).toBe(400);
     values.tags.pop();
     expect(
-      (
-        await context.request.post('/api/onboarding', { data: values })
-      ).status(),
+      (await context.request.post('/api/profile', { data: values })).status(),
     ).toBe(200);
     await page.goto('/en/profile');
     await page

@@ -61,6 +61,31 @@ export const PremiumIdle: Story = {
 
 export const PremiumRecording: Story = {
   args: { premium: true },
+  beforeEach: () => {
+    const { mediaDevices } = navigator;
+    const original = globalThis.fetch;
+    Object.defineProperty(navigator, 'mediaDevices', {
+      value: {
+        getUserMedia: async () =>
+          new AudioContext().createMediaStreamDestination().stream,
+      },
+      configurable: true,
+    });
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        String(args[0]) === '/api/profile/voice'
+          ? Promise.resolve(Response.json({ durationSeconds: 12 }))
+          : original(...args),
+      { preconnect: original.preconnect },
+    );
+    return () => {
+      Object.defineProperty(navigator, 'mediaDevices', {
+        value: mediaDevices,
+        configurable: true,
+      });
+      globalThis.fetch = original;
+    };
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
@@ -72,6 +97,9 @@ export const PremiumRecording: Story = {
     await expect(stop).toBeInTheDocument();
 
     await userEvent.click(stop);
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Save clip' }),
+    );
 
     await waitFor(() =>
       expect(

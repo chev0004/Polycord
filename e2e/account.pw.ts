@@ -61,7 +61,6 @@ test('deleted sessions cannot read, write, or recreate an account', async ({
       for (const route of [
         'profile',
         'settings',
-        'onboarding',
         'saved',
         'block',
         'report',

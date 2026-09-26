@@ -201,7 +201,7 @@ export const PrivacyTab: Story = {
     );
     await expect(
       canvas.getByText(
-        'Help improve Polycord by sharing anonymous, non-personal usage events.',
+        'Help improve Polycord by sharing usage events linked to your account. Turning this off stops future product analytics while signed in.',
       ),
     ).toBeInTheDocument();
   },
