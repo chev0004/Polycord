@@ -4,10 +4,12 @@ import {
   fireEvent,
   fn,
   screen,
+  userEvent,
   waitFor,
   within,
 } from '@storybook/test';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
+import { SessionExpiredError } from '@/lib/formErrors';
 import { type SettingsFormValues, SettingsPage } from './SettingsPage';
 
 const defaultSettings: SettingsFormValues = {
@@ -396,16 +398,82 @@ export const Mobile: Story = {
         'Light Mode',
       ),
     );
-    fireEvent.click(canvas.getByRole('button', { name: 'Save' }));
     await waitFor(() =>
       expect(args.onSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ theme: 'light' }),
       ),
     );
-    await waitFor(() =>
-      expect(
-        canvas.queryByRole('button', { name: 'Save' }),
-      ).not.toBeInTheDocument(),
+    await expect(await canvas.findByText('Saved')).toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('button', { name: 'Save' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const MobileSaveFailure: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    onSubmit: fn(async () => {
+      throw new Error('Settings save failed');
+    }),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Privacy/ }));
+    const toggle = await canvas.findByRole('switch', {
+      name: 'Make Profile Public',
+    });
+    await expect(toggle).toBeChecked();
+    fireEvent.click(toggle);
+    await waitFor(() => expect(args.onSubmit).toHaveBeenCalled());
+    await expect(await canvas.findByText("Couldn't save")).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('switch', { name: 'Make Profile Public' }),
+    ).toBeChecked();
+  },
+};
+
+export const MobileSavePending: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    onSubmit: fn(() => new Promise<void>(() => {})),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Privacy/ }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
     );
+    await waitFor(() => expect(args.onSubmit).toHaveBeenCalledTimes(1));
+    const other = canvas.getByRole('switch', {
+      name: 'Allow anonymous copying',
+    });
+    await waitFor(() => expect(other).toBeDisabled());
+    await userEvent.click(other);
+    await expect(args.onSubmit).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const MobileSessionExpired: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    onSubmit: fn(async () => {
+      throw new SessionExpiredError();
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Privacy/ }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    );
+    await expect(
+      await canvas.findByRole('link', {
+        name: 'Your session expired. Sign in again to save changes.',
+      }),
+    ).toBeInTheDocument();
   },
 };

@@ -297,6 +297,11 @@
     "cardColorBlue": "Blue"
   },
   "Settings": {
+    "savedTitle": "Saved",
+    "savedDescription": "Your change is live.",
+    "saveFailedTitle": "Couldn't save",
+    "sessionExpired": "Your session expired. Sign in again to save changes.",
+    "privacyInstantDescription": "Who can find and see your activity. Changes save instantly.",
     "privacyAlertsTitle": "Privacy & alerts",
     "privacyPublic": "Public",
     "privacyUnlisted": "Unlisted",
@@ -305,9 +310,7 @@
     "premiumFreePlan": "Free plan",
     "premiumYourPlan": "Your plan",
     "premiumPerMonth": "/ month",
-    "unsavedShort": "Unsaved changes",
     "save": "Save",
-    "done": "Done",
     "logout": "Logout",
     "blockedUsersTitle": "Blocked accounts",
     "blockedUsersDescription": "While signed in, neither account can see or interact with the other's profile. Public profiles remain visible when signed out. Unblocking takes effect immediately and does not need Save changes.",
