@@ -372,6 +372,27 @@ export const CopyUsername: Story = {
   },
 };
 
+export const OpensProfile: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return <ProfileCard {...args} profile={createMockProfile(t)} />;
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const card = canvasElement.querySelector('article') as HTMLElement;
+
+    await userEvent.click(card);
+    await expect(args.onViewProfile).toHaveBeenCalledWith('1');
+    await userEvent.click(canvas.getByRole('button', { name: 'Card menu' }));
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Copy username' }),
+    );
+    await expect(args.onViewProfile).toHaveBeenCalledOnce();
+    await userEvent.click(canvas.getByRole('button', { name: 'User 1' }));
+    await expect(args.onViewProfile).toHaveBeenCalledTimes(2);
+  },
+};
 export const SaveAction: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');

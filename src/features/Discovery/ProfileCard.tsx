@@ -350,8 +350,20 @@ export const ProfileCard = ({
     </>
   );
 
+  const opensProfile = Boolean(onViewProfile) && !isPreview && mobile === false;
+  const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
+    const target = event.target as Element;
+    if (
+      event.currentTarget.contains(target) &&
+      !target.closest('button, a, input, audio')
+    ) {
+      onViewProfile?.(profile.id);
+    }
+  };
+
   const cardClassName = [
     'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-transform duration-200',
+    opensProfile && 'group/card cursor-pointer',
     isPreview
       ? 'mb-0 border border-line shadow-none'
       : `mb-6 shadow-lg ${
@@ -365,7 +377,12 @@ export const ProfileCard = ({
     .join(' ');
 
   return (
-    <article style={themeStyle} className={cardClassName}>
+    // biome-ignore lint/a11y/useKeyWithClickEvents: the display name button opens the profile from the keyboard
+    <article
+      style={themeStyle}
+      className={cardClassName}
+      onClick={opensProfile ? handleCardClick : undefined}
+    >
       <div className="-mx-5 -mt-5 relative h-[84px] flex-shrink-0">
         <div
           className="flex h-16 items-center justify-end rounded-t-3xl px-2.5"
@@ -473,7 +490,17 @@ export const ProfileCard = ({
 
       <div className="flex min-w-0 flex-col gap-[3px]">
         <h3 className="truncate font-figtree font-semibold text-foreground text-lg">
-          {profile.displayName}
+          {opensProfile ? (
+            <button
+              type="button"
+              onClick={() => onViewProfile?.(profile.id)}
+              className="max-w-full truncate text-left transition-colors focus:outline-none focus-visible:text-primary-light group-hover/card:text-primary-light"
+            >
+              {profile.displayName}
+            </button>
+          ) : (
+            profile.displayName
+          )}
         </h3>
         {isPreview ? (
           <span className="flex items-center gap-1.5 self-start text-muted text-xs">

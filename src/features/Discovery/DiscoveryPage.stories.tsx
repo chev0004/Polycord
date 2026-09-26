@@ -146,6 +146,30 @@ export const Default: Story = {
   },
 };
 
+export const ShareWithoutClipboard: Story = {
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: undefined,
+    });
+    try {
+      const canvas = within(canvasElement);
+      await userEvent.click(
+        canvas.getAllByRole('button', { name: 'Card menu' })[0],
+      );
+      await userEvent.click(await screen.findByText('Share profile'));
+      await expect(
+        await screen.findByText("Couldn't share profile"),
+      ).toBeInTheDocument();
+    } finally {
+      if (original) Object.defineProperty(navigator, 'clipboard', original);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  },
+};
+
 export const Mobile: Story = {
   parameters: {
     viewport: {
