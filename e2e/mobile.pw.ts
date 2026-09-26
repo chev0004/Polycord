@@ -121,32 +121,24 @@ for (const width of [320, 375, 390]) {
         .getByRole('dialog')
         .getByLabel('Email Address')
         .fill('mobile@example.com');
-      await page.getByRole('button', { name: 'Done', exact: true }).click();
-      const save = page.getByRole('button', { name: 'Save', exact: true });
-      await expect(save).toBeInViewport();
-      const bounds = await save.boundingBox();
-      expect(bounds?.height).toBeGreaterThanOrEqual(40);
-      expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(
-        width,
+      const settingsSaved = page.waitForResponse(
+        (r) =>
+          r.url().endsWith('/api/settings') && r.request().method() === 'POST',
       );
-      const dock = await page
-        .getByRole('navigation', { name: 'Main' })
-        .boundingBox();
-      expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(
-        dock?.y ?? 0,
-      );
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Save', exact: true })
+        .click();
+      expect((await settingsSaved).status()).toBe(200);
+      await expect(page.getByText('Saved', { exact: true })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Save', exact: true }),
+      ).toHaveCount(0);
       await fits();
       await page.screenshot({
         path: testInfo.outputPath('settings-save.png'),
         animations: 'disabled',
       });
-      const settingsSaved = page.waitForResponse(
-        (r) =>
-          r.url().endsWith('/api/settings') && r.request().method() === 'POST',
-      );
-      await save.click();
-      expect((await settingsSaved).status()).toBe(200);
-      await expect(save).toHaveCount(0);
       await expect(
         page.getByRole('button', { name: /^Email Address/ }),
       ).toContainText('mobile@example.com');
@@ -385,12 +377,14 @@ test('settings drill-in pages reach and save every setting on phones', async ({
     await expect(main.getByRole('button', { name: /^Privacy/ })).toContainText(
       'Unlisted',
     );
-    const saved = page.waitForResponse(
-      (r) =>
-        r.url().endsWith('/api/settings') && r.request().method() === 'POST',
-    );
-    await main.getByRole('button', { name: 'Save', exact: true }).click();
-    expect((await saved).status()).toBe(200);
+    await expect
+      .poll(
+        async () =>
+          (
+            await sql`select language_display from user_settings where user_id = ${owner.id}`
+          )[0]?.language_display,
+      )
+      .toBe('short');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(main.getByRole('button', { name: /^Privacy/ })).toContainText(
@@ -420,7 +414,6 @@ test('settings drill-in pages reach and save every setting on phones', async ({
       .getByRole('dialog')
       .getByRole('button', { name: /\(JA\)$/ })
       .click();
-    await main.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page).toHaveURL('/ja/settings');
     await expect(
       page.getByRole('heading', { level: 1, name: '設定' }),

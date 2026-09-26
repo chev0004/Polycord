@@ -301,8 +301,11 @@ test('settings preserve incomplete drafts and clear discarded changes', async ({
     await expect(
       page.getByRole('main').getByRole('button', { name: /^Email Address/ }),
     ).toContainText('unfinished');
-    await page.getByRole('button', { name: 'Discard', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Discard', exact: true }),
+    ).toHaveCount(0);
     await page.setViewportSize({ width: 1280, height: 800 });
+    await page.getByRole('button', { name: 'Discard', exact: true }).click();
     await page.reload();
     await expect(page.getByLabel('Email Address')).toHaveValue(
       'draft@example.com',

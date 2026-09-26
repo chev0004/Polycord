@@ -168,7 +168,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     formState: { isSubmitting, isDirty, errors },
   } = form;
   const draft = useFormDraft(
-    userId ? `polycord:settings:${userId}` : undefined,
+    userId && mobile === false ? `polycord:settings:${userId}` : undefined,
     form,
     settingsDraftSchema,
   );
@@ -231,9 +231,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
       reset(data);
       draft.clear();
+      return true;
     } catch (error) {
       setSessionExpired(error instanceof SessionExpiredError);
       setSaveStatus('error');
+      return false;
     }
   };
 
@@ -316,13 +318,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     return (
       <MobileSettings
         form={form}
-        onSubmit={onSubmit}
-        onDiscard={handleDiscard}
-        draftNotice={
-          userId ? (
-            <DraftNotice {...draft} sessionExpired={sessionExpired} />
-          ) : null
-        }
+        onSave={onSubmit}
+        sessionExpired={sessionExpired}
         ready={draft.ready}
         premium={premium}
         userAvatarUrl={userAvatarUrl}
@@ -339,7 +336,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         pushStatus={pushStatus}
         pushBusy={pushBusy}
         onPushToggle={handlePushToggle}
-        saveStatus={saveStatus}
         billingStatus={billingStatus}
         onManageSubscription={handleManageSubscription}
         exportStatus={exportStatus}

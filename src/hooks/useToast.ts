@@ -44,11 +44,26 @@ export const useToast = ({
   const [open, setOpen] = useState(true);
   const timerRef = useRef<HTMLDivElement | null>(null);
 
-  const handleBarAnimationEnd = useCallback((event: AnimationEvent) => {
-    if (event.animationName === 'shrink') {
-      setOpen(false);
-    }
-  }, []);
+  const handleOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen) {
+        setOpen(false);
+        setTimeout(() => {
+          onDismiss(toast.id);
+        }, ANIMATION_DURATION);
+      }
+    },
+    [onDismiss, toast.id],
+  );
+
+  const handleBarAnimationEnd = useCallback(
+    (event: AnimationEvent) => {
+      if (event.animationName === 'shrink') {
+        handleOpenChange(false);
+      }
+    },
+    [handleOpenChange],
+  );
 
   useEffect(() => {
     const barElement = timerRef.current;
@@ -61,18 +76,6 @@ export const useToast = ({
       };
     }
   }, [open, handleBarAnimationEnd]);
-
-  const handleOpenChange = useCallback(
-    (isOpen: boolean) => {
-      if (!isOpen) {
-        setOpen(false);
-        setTimeout(() => {
-          onDismiss(toast.id);
-        }, ANIMATION_DURATION);
-      }
-    },
-    [onDismiss, toast.id],
-  );
 
   return { open, onOpenChange: handleOpenChange, timerRef };
 };

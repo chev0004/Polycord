@@ -3,8 +3,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 import postgres from 'postgres';
 
-const settle = (page: Page) =>
-  page.evaluate(() =>
+const settle = async (page: Page) => {
+  await expect(page.locator('fieldset:disabled')).toHaveCount(0);
+  await page.evaluate(() =>
     Promise.all(
       document
         .getAnimations()
@@ -16,6 +17,7 @@ const settle = (page: Page) =>
         .map((animation) => animation.finished.catch(() => {})),
     ),
   );
+};
 
 test('core pages expose named controls and support keyboard navigation', async ({
   page,

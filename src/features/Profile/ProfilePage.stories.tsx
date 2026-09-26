@@ -481,3 +481,23 @@ export const Mobile: Story = {
     );
   },
 };
+
+export const MobilePreviewTap: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    premium: true,
+    initialValues: { ...sampleProfile, voiceIntroSeconds: 8 },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: 'Preview' }));
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Play voice intro' }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.click(canvas.getByText(sampleProfile.bio));
+    await expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  },
+};
