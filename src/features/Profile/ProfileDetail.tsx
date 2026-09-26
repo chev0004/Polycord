@@ -347,6 +347,17 @@ export const ProfileDetail = ({
     },
   ].filter((item) => item !== undefined);
 
+  const bumpPill = (className: string) =>
+    bumpAge ? (
+      <span
+        className={`whitespace-nowrap rounded-full bg-background-darker px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide ${className}`}
+      >
+        {t('bumped', {
+          time: tDiscovery(bumpAge.key, { count: bumpAge.count ?? 0 }),
+        })}
+      </span>
+    ) : null;
+
   const menuTrigger = (
     <button
       type="button"
@@ -375,7 +386,7 @@ export const ProfileDetail = ({
         className="h-[132px] min-[861px]:h-[176px]"
         style={{ background: theme.banner }}
       />
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-5 gap-y-3.5 px-5 pb-2 min-[861px]:px-7">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-3.5 px-5 pb-2 min-[861px]:gap-x-5 min-[861px]:px-7">
         <div
           className="-mt-[62px] relative z-[1] justify-self-start rounded-full bg-background-dark p-2"
           style={tinted ? { background: tintedSurface } : undefined}
@@ -383,13 +394,7 @@ export const ProfileDetail = ({
           <Avatar avatarUrl={profile.avatarUrl} size="xl" />
         </div>
         <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 pb-1">
-          {bumpAge ? (
-            <span className="mr-1 whitespace-nowrap rounded-full bg-background-darker px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide">
-              {t('bumped', {
-                time: tDiscovery(bumpAge.key, { count: bumpAge.count ?? 0 }),
-              })}
-            </span>
-          ) : null}
+          {bumpPill('mr-1 hidden min-[861px]:inline')}
           <button
             type="button"
             onClick={onShare}
@@ -455,7 +460,7 @@ export const ProfileDetail = ({
             </Popover.Root>
           ) : null}
         </div>
-        <div className="col-start-1 flex min-w-0 flex-col gap-1.5">
+        <div className="col-span-2 col-start-1 flex min-w-0 flex-col gap-1.5 min-[861px]:col-span-1">
           <h1 className="min-w-0">
             <button
               type="button"
@@ -487,6 +492,7 @@ export const ProfileDetail = ({
               </span>
             </button>
           </h1>
+          {bumpPill('self-start min-[861px]:hidden')}
           {copyFailed && profile.discordUsername ? (
             <p role="alert" className="text-danger text-sm">
               {tDiscovery('copyFailed', { username: profile.discordUsername })}
