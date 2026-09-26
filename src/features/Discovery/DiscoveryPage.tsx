@@ -2,7 +2,14 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { MdClose } from 'react-icons/md';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
@@ -201,6 +208,21 @@ export const DiscoveryPage = ({
       setDraft({});
     }
   }, [needsOnboarding, userId]);
+
+  const promptDismissedKey = `polycord:onboarding-prompt-dismissed:${userId}`;
+
+  useLayoutEffect(() => {
+    try {
+      setIsPromptDismissed(sessionStorage.getItem(promptDismissedKey) === '1');
+    } catch {}
+  }, [promptDismissedKey]);
+
+  const dismissPrompt = () => {
+    setIsPromptDismissed(true);
+    try {
+      sessionStorage.setItem(promptDismissedKey, '1');
+    } catch {}
+  };
 
   const missingRequiredFields = useMemo(
     () => getMissingRequiredFields(draft),
@@ -926,7 +948,7 @@ export const DiscoveryPage = ({
             </button>
             <button
               type="button"
-              onClick={() => setIsPromptDismissed(true)}
+              onClick={dismissPrompt}
               className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
               aria-label={t('onboardingPromptDismiss')}
             >
