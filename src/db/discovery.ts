@@ -25,9 +25,15 @@ const TAG_CACHE_MS = 60000;
 let postgresTimezones: Promise<string[]> | undefined;
 
 const loadPostgresTimezones = () => {
-  postgresTimezones ??= db
-    .execute<{ name: string }>(sql`select name from pg_timezone_names`)
-    .then((rows) => [...rows].map(({ name }) => name));
+  if (!postgresTimezones) {
+    const timezones = db
+      .execute<{ name: string }>(sql`select name from pg_timezone_names`)
+      .then((rows) => [...rows].map(({ name }) => name));
+    postgresTimezones = timezones;
+    timezones.catch(() => {
+      if (postgresTimezones === timezones) postgresTimezones = undefined;
+    });
+  }
   return postgresTimezones;
 };
 
