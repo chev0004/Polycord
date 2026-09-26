@@ -969,9 +969,7 @@ export const DiscoveryPage = ({
         onSubmit={handleSubmitReport}
       />
 
-      {needsOnboarding && !isPromptDismissed ? null : (
-        <BackToTop count={appliedFilters.length + selectedTags.length} />
-      )}
+      <BackToTop count={appliedFilters.length + selectedTags.length} />
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </>
