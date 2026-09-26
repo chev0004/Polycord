@@ -106,6 +106,8 @@ type MobileCardEditorProps = {
   voiceEditor: ReactNode;
   availabilityEditor: ReactNode;
   tagEditor: ReactNode;
+  submitLabel: string;
+  submittingLabel: string;
 };
 
 const flashClass = 'animate-[rowFlash_0.9s_cubic-bezier(0.16,1,0.3,1)]';
@@ -297,6 +299,8 @@ export const MobileCardEditor = ({
   voiceEditor,
   availabilityEditor,
   tagEditor,
+  submitLabel,
+  submittingLabel,
 }: MobileCardEditorProps) => {
   const t = useTranslations('Profile');
   const locale = useLocale();
@@ -445,12 +449,14 @@ export const MobileCardEditor = ({
             )}
             {values.isPublic ? t('statusPublic') : t('statusUnlisted')}
           </button>
-          <SheetIconButton
-            label={t('profileOptions')}
-            onClick={() => openSheet('menu')}
-          >
-            <MdMoreVert size={24} />
-          </SheetIconButton>
+          {menuItems.length > 0 ? (
+            <SheetIconButton
+              label={t('profileOptions')}
+              onClick={() => openSheet('menu')}
+            >
+              <MdMoreVert size={24} />
+            </SheetIconButton>
+          ) : null}
         </div>
       </div>
 
@@ -800,7 +806,7 @@ export const MobileCardEditor = ({
               disabled={isSubmitting}
               className="h-10 rounded-full"
             >
-              {isSubmitting ? t('saving') : t('save')}
+              {isSubmitting ? submittingLabel : submitLabel}
             </Button>
           </div>
         ) : null}

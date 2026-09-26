@@ -11,12 +11,7 @@ import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { useNavbarBump } from '@/features/Navigation/AppShell';
 import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
-import {
-  getMissingRequiredFields,
-  getOnboardingCompletion,
-  type OnboardingDraft,
-} from '@/features/Onboarding/completion';
-import { onboardingDraftSchema } from '@/features/Onboarding/schema';
+import { profileDraftSchema } from '@/features/Profile/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import { copyText } from '@/lib/clipboard';
@@ -90,15 +85,54 @@ type DiscoveryPageProps = {
 
 const BUMP_TOAST_DURATION = 4000;
 
-const onboardingFieldLabelKeys: Record<keyof OnboardingDraft, string> = {
-  availability: 'onboardingFieldAvailability',
-  bio: 'onboardingFieldBio',
-  country: 'onboardingFieldCountry',
+type ProfileDraft = {
+  primaryLanguage?: string;
+  targetLanguages?: { language?: string; level?: string }[];
+  bio?: string;
+  country?: string;
+  tags?: string[];
+};
+
+const REQUIRED_PROFILE_FIELDS = [
+  'primaryLanguage',
+  'targetLanguage',
+  'bio',
+] as const;
+
+const onboardingFieldLabelKeys: Record<
+  (typeof REQUIRED_PROFILE_FIELDS)[number],
+  string
+> = {
   primaryLanguage: 'onboardingFieldPrimaryLanguage',
-  proficiencyLevel: 'onboardingFieldProficiencyLevel',
-  tags: 'onboardingFieldTags',
   targetLanguage: 'onboardingFieldTargetLanguage',
-  timezone: 'onboardingFieldTimezone',
+  bio: 'onboardingFieldBio',
+};
+
+const getMissingRequiredFields = (draft: ProfileDraft) => {
+  const missing: (typeof REQUIRED_PROFILE_FIELDS)[number][] = [];
+  if (!draft.primaryLanguage) missing.push('primaryLanguage');
+  const firstTarget = draft.targetLanguages?.[0];
+  if (!firstTarget?.language || !firstTarget?.level)
+    missing.push('targetLanguage');
+  if (!draft.bio) missing.push('bio');
+  return missing;
+};
+
+const getProfileCompletion = (draft: ProfileDraft) => {
+  const missingCount = getMissingRequiredFields(draft).length;
+  const completedRequired = REQUIRED_PROFILE_FIELDS.length - missingCount;
+  const optionalBoost = [draft.country, ...(draft.tags ?? [])].filter(
+    Boolean,
+  ).length;
+
+  return Math.min(
+    100,
+    Math.round(
+      ((completedRequired + Math.min(optionalBoost, 2)) /
+        (REQUIRED_PROFILE_FIELDS.length + 2)) *
+        100,
+    ),
+  );
 };
 
 export const DiscoveryPage = ({
@@ -158,7 +192,7 @@ export const DiscoveryPage = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(feedError);
   const requestRef = useRef<AbortController | null>(null);
-  const [draft, setDraft] = useState<OnboardingDraft>({});
+  const [draft, setDraft] = useState<ProfileDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
   const [profileItems, setProfileItems] = useState(profiles);
   const [isBumping, setIsBumping] = useState(false);
@@ -192,8 +226,8 @@ export const DiscoveryPage = ({
       return;
     }
     try {
-      const rawDraft = sessionStorage.getItem(`polycord:onboarding:${userId}`);
-      const parsed = onboardingDraftSchema.safeParse(
+      const rawDraft = sessionStorage.getItem(`polycord:profile:${userId}`);
+      const parsed = profileDraftSchema.safeParse(
         rawDraft ? JSON.parse(rawDraft) : {},
       );
       setDraft(parsed.success ? parsed.data : {});
@@ -207,7 +241,7 @@ export const DiscoveryPage = ({
     [draft],
   );
 
-  const completion = useMemo(() => getOnboardingCompletion(draft), [draft]);
+  const completion = useMemo(() => getProfileCompletion(draft), [draft]);
 
   const tagCounts = useMemo(
     () => remoteData?.tags ?? buildTagCounts(profileItems),
