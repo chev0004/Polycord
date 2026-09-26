@@ -122,7 +122,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         ],
         list: [
           'Discord account data you authorise at sign-in: your Discord ID, username, avatar, and email address.',
-          'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, interests, card styling, and voice introductions.',
+          'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, tags, card styling, and voice introductions.',
           'Usage data: product events, timestamps, locale, and limited feature metadata. Events from signed-in users can be linked to their account.',
           'Service data: saved profiles, blocks, reports, moderation records, notifications, preferences, and technical logs, including IP addresses for abuse prevention.',
           'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Premium, we store Stripe customer and subscription identifiers and billing status; Stripe processes payment details.',
