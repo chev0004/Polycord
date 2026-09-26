@@ -180,6 +180,7 @@ export const MobileSettings = ({
   );
   const [emailDraft, setEmailDraft] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const pagePushed = useRef(false);
   const [animatePage, setAnimatePage] = useState(false);
 
@@ -234,7 +235,9 @@ export const MobileSettings = ({
       setEmailError(parsed.error.issues[0].message);
       return;
     }
+    setSaving(true);
     const saved = await onSave(parsed.data);
+    setSaving(false);
     if (!saved) resetField(name);
     addToast({
       title: t(saved ? 'savedTitle' : 'saveFailedTitle'),
@@ -345,7 +348,7 @@ export const MobileSettings = ({
 
   return (
     <div className="mx-auto w-full max-w-xl overflow-x-clip pb-24 font-figtree">
-      <fieldset disabled={!ready} className="min-w-0">
+      <fieldset disabled={!ready || saving} className="min-w-0">
         {mobilePage === 'privacy' ? (
           <SettingsPushPage
             title={t('privacyTitle')}
