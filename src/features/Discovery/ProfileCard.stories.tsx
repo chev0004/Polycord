@@ -342,6 +342,26 @@ export const ShortBio: Story = {
   },
 };
 
+export const CountryName: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    const profile: DiscoveryProfile = {
+      ...createMockProfile(t),
+      country: 'KR',
+      timezone: undefined,
+    };
+    return <ProfileCard {...args} profile={profile} />;
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Korea' }));
+
+    await expect(canvas.queryByText('KR')).not.toBeInTheDocument();
+    await expect(args.onCountryClick).toHaveBeenCalledWith('KR', '1');
+  },
+};
+
 export const CopyUsername: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');

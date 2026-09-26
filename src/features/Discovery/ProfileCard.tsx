@@ -20,6 +20,7 @@ import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
 import { ActionSheet, type ActionSheetItem } from '@/components/Sheet';
 import type { AvailabilityPattern } from '@/constants/availability';
+import { countryOptions } from '@/constants/countries';
 import {
   capitalizeLanguageCode,
   formatCurrentTime,
@@ -153,6 +154,10 @@ export const ProfileCard = ({
   const usernameCopy = useUsernameCopy(profile, onCopyUsername);
   const { copied, copyFailed } = usernameCopy;
   const [detailOpen, setDetailOpen] = useState(false);
+
+  const countryName =
+    countryOptions(locale).find(({ value }) => value === profile.country)
+      ?.label ?? profile.country;
 
   const canCopyUsername =
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
@@ -310,9 +315,7 @@ export const ProfileCard = ({
         size={16}
       />
       <span>
-        {profile.country
-          ? t('locationValue', { location: profile.country })
-          : ''}
+        {countryName ? t('locationValue', { location: countryName }) : ''}
         {currentTime ? (
           <Fragment>
             {' · '}
