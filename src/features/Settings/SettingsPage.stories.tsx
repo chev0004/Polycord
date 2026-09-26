@@ -8,6 +8,7 @@ import {
   within,
 } from '@storybook/test';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
+import { SessionExpiredError } from '@/lib/formErrors';
 import { type SettingsFormValues, SettingsPage } from './SettingsPage';
 
 const defaultSettings: SettingsFormValues = {
@@ -451,5 +452,27 @@ export const MobileSavePending: Story = {
     await waitFor(() => expect(other).toBeDisabled());
     fireEvent.click(other);
     await expect(args.onSubmit).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const MobileSessionExpired: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    onSubmit: fn(async () => {
+      throw new SessionExpiredError();
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Privacy/ }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    );
+    await expect(
+      await canvas.findByRole('link', {
+        name: 'Your session expired. Sign in again to save changes.',
+      }),
+    ).toBeInTheDocument();
   },
 };
