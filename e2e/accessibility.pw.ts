@@ -109,6 +109,31 @@ test('core pages expose named controls and support keyboard navigation', async (
         })),
       ).toEqual([]);
     }
+    for (const [lang, theme, button] of [
+      ['en', 'dark', 'Update Connection'],
+      ['en', 'light', 'Update Connection'],
+      ['ja', 'dark', '連携を更新'],
+      ['ja', 'light', '連携を更新'],
+    ]) {
+      await sql`delete from user_settings where user_id = ${accountId}`;
+      await sql`insert into user_settings (user_id, theme, application_language) values (${accountId}, ${theme}, ${lang})`;
+      await page.goto(`/${lang}/settings`);
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      await page.getByRole('button', { name: button, exact: true }).hover();
+      await settle(page);
+      const scan = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .analyze();
+      expect(
+        scan.violations.map((v) => ({
+          lang,
+          theme,
+          rule: v.id,
+          nodes: v.nodes.map((n) => n.target),
+        })),
+      ).toEqual([]);
+    }
+    await sql`delete from user_settings where user_id = ${accountId}`;
     await page.goto('/en');
     const languageMenu = page.getByRole('button', { name: 'Change language' });
     await languageMenu.click();
