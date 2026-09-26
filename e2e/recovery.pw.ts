@@ -10,10 +10,14 @@ test('missing routes and malformed profile identifiers recover in both locales',
     for (const route of ['missing-page', 'u/not-a-uuid', `u/${randomUUID()}`]) {
       const response = await page.goto(`/${locale}/${route}`);
       expect(response?.status()).toBe(404);
+      const missing = route.startsWith('u/')
+        ? {
+            en: 'This profile is not available',
+            ja: 'このプロフィールは表示できません',
+          }
+        : { en: 'Page not found', ja: 'ページが見つかりません' };
       await expect(
-        page.getByRole('heading', {
-          name: locale === 'en' ? 'Page not found' : 'ページが見つかりません',
-        }),
+        page.getByRole('heading', { name: missing[locale as 'en' | 'ja'] }),
       ).toBeVisible();
       await expect(page.getByRole('main').getByRole('link')).toHaveAttribute(
         'href',
