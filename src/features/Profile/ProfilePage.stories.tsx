@@ -106,6 +106,29 @@ export const WithProfile: Story = {
   },
 };
 
+export const LastBump: Story = {
+  args: {
+    initialValues: sampleProfile,
+    lastBumpedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByText('2 hours ago')).toBeInTheDocument();
+    await expect(canvas.queryByText('just now')).not.toBeInTheDocument();
+  },
+};
+
+export const NeverBumped: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await canvas.findByText('Copy username');
+    await expect(canvas.queryByText('just now')).not.toBeInTheDocument();
+  },
+};
+
 export const RestoredDraft: Story = {
   args: { initialValues: sampleProfile, userId: 'profile-draft-story' },
   loaders: [

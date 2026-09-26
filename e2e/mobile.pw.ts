@@ -585,6 +585,13 @@ test('your card edits every profile part through sheets on phones', async ({
     );
 
     await sql`update profiles set last_bumped_at = now() - interval '1 day' where user_id = ${owner.id}`;
+    await page.reload();
+    await main.getByRole('button', { name: 'Profile options' }).click();
+    await sheet.getByRole('button', { name: 'View public profile' }).click();
+    await expect(
+      page.getByRole('dialog', { name: 'Card phone' }),
+    ).toContainText('Bumped 1 day ago');
+    await page.keyboard.press('Escape');
     await main.getByRole('button', { name: 'Profile options' }).click();
     await sheet.getByRole('button', { name: 'Bump profile' }).click();
     await expect(
@@ -597,7 +604,7 @@ test('your card edits every profile part through sheets on phones', async ({
     await sheet.getByRole('button', { name: 'View public profile' }).click();
     await expect(
       page.getByRole('dialog', { name: 'Card phone' }),
-    ).toBeVisible();
+    ).toContainText('Bumped just now');
     await expect(page).toHaveURL('/en/profile');
     await page.keyboard.press('Escape');
 
