@@ -79,6 +79,7 @@ export const RefreshError: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    canvasElement.ownerDocument.defaultView?.dispatchEvent(new Event('focus'));
     await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
     expect(canvasElement.querySelectorAll('article')).toHaveLength(9);
     expect(canvas.queryByLabelText('Loading profiles')).not.toBeInTheDocument();
