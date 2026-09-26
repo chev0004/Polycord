@@ -766,6 +766,46 @@ export const DiscoveryPage = ({
 
   return (
     <>
+      {needsOnboarding && !isPromptDismissed ? (
+        <aside className="relative mx-4 mt-4 rounded-lg bg-background-darker p-4 pr-11 shadow-xl sm:mx-8 md:fixed md:right-4 md:bottom-[calc(var(--dock-space,0px)+16px)] md:z-40 md:m-0 md:w-[min(420px,calc(100vw-2rem))]">
+          <div className="flex items-start">
+            <button
+              type="button"
+              onClick={() => router.push(`/${locale}/onboarding`)}
+              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
+            >
+              <p className="font-figtree font-semibold text-foreground">
+                {t('onboardingPromptTitle')}
+              </p>
+              <p className="mt-1 text-muted text-sm">
+                {t('onboardingPromptProgress', { completion })}
+                {missingRequiredFields.length > 0
+                  ? ` ${t('onboardingPromptStillNeeded', {
+                      fields: missingRequiredFields
+                        .map((field) => t(onboardingFieldLabelKeys[field]))
+                        .join(', '),
+                    })}`
+                  : ` ${t('onboardingPromptReady')}`}
+              </p>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-background-main">
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${completion}%` }}
+                />
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={dismissPrompt}
+              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
+              aria-label={t('onboardingPromptDismiss')}
+            >
+              <MdClose size={16} />
+            </button>
+          </div>
+        </aside>
+      ) : null}
+
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
         {authError ? (
           <div
@@ -917,46 +957,6 @@ export const DiscoveryPage = ({
           </>
         )}
       </main>
-
-      {needsOnboarding && !isPromptDismissed ? (
-        <aside className="fixed right-4 bottom-[calc(var(--dock-space,0px)+16px)] z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
-          <div className="flex items-start">
-            <button
-              type="button"
-              onClick={() => router.push(`/${locale}/onboarding`)}
-              className="min-w-0 flex-1 text-left focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
-            >
-              <p className="font-figtree font-semibold text-foreground">
-                {t('onboardingPromptTitle')}
-              </p>
-              <p className="mt-1 text-muted text-sm">
-                {t('onboardingPromptProgress', { completion })}
-                {missingRequiredFields.length > 0
-                  ? ` ${t('onboardingPromptStillNeeded', {
-                      fields: missingRequiredFields
-                        .map((field) => t(onboardingFieldLabelKeys[field]))
-                        .join(', '),
-                    })}`
-                  : ` ${t('onboardingPromptReady')}`}
-              </p>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-background-main">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${completion}%` }}
-                />
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={dismissPrompt}
-              className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
-              aria-label={t('onboardingPromptDismiss')}
-            >
-              <MdClose size={16} />
-            </button>
-          </div>
-        </aside>
-      ) : null}
 
       <ReportDialog
         open={reportTarget !== null}
