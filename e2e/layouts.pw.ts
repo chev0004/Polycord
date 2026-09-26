@@ -132,6 +132,15 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
     expect(await fitsWidth(page)).toBe(true);
     await page
+      .getByRole('button', { name: 'Card menu' })
+      .first()
+      .click({ trial: true });
+    await page.screenshot({
+      path: testInfo.outputPath('onboarding-prompt-320.png'),
+      fullPage: true,
+      animations: 'disabled',
+    });
+    await page
       .getByRole('button', { name: 'Dismiss onboarding prompt' })
       .click();
 
@@ -154,6 +163,10 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     });
     await page.keyboard.press('Escape');
     await page.goBack();
+    await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Dismiss onboarding prompt' }),
+    ).toHaveCount(0);
 
     const cardMenu = page.getByRole('button', { name: 'Card menu' }).first();
     await cardMenu.click();
@@ -211,6 +224,13 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
         await popover.evaluate((el) => getComputedStyle(el).animationDuration),
       ),
     ).toBeLessThan(0.001);
+
+    const visit = await context.newPage();
+    await visit.goto('/en');
+    await expect(
+      visit.getByRole('button', { name: 'Dismiss onboarding prompt' }),
+    ).toBeVisible();
+    await visit.close();
 
     await page.emulateMedia({ reducedMotion: null });
     await page.setViewportSize({ width: 320, height: 844 });
