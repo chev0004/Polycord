@@ -431,3 +431,25 @@ export const MobileSaveFailure: Story = {
     ).toBeChecked();
   },
 };
+
+export const MobileSavePending: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    onSubmit: fn(() => new Promise<void>(() => {})),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Privacy/ }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    );
+    await waitFor(() => expect(args.onSubmit).toHaveBeenCalledTimes(1));
+    const other = canvas.getByRole('switch', {
+      name: 'Allow anonymous copying',
+    });
+    await waitFor(() => expect(other).toBeDisabled());
+    fireEvent.click(other);
+    await expect(args.onSubmit).toHaveBeenCalledTimes(1);
+  },
+};
