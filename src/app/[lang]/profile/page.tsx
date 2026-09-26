@@ -79,6 +79,11 @@ export default async function ProfileRoute({
               ).nextBumpAt.toISOString()
             : undefined
         }
+        lastBumpedAt={
+          profile?.profile.isPublic
+            ? profile.profile.lastBumpedAt?.toISOString()
+            : undefined
+        }
         stats={stats}
         initialValues={profile ? toProfileFormValues(profile) : undefined}
         profileId={profile?.profile.isPublic ? profile.profile.id : undefined}
