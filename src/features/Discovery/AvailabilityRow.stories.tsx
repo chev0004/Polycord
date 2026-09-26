@@ -28,7 +28,7 @@ export const SameZone: Story = {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.getByText(/Weekdays · 8pm to 11pm/),
+      canvas.getByText(/Weekdays · 20:00 to 23:00/),
     ).toBeInTheDocument();
     await expect(canvas.queryByText(/your time/)).not.toBeInTheDocument();
   },
@@ -43,7 +43,9 @@ export const CrossZone: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expect(canvas.getByText(/Weekends · 2pm to 8pm/)).toBeInTheDocument();
+    await expect(
+      canvas.getByText(/Weekends · 14:00 to 20:00/),
+    ).toBeInTheDocument();
     await expect(canvas.getByText(/your time/)).toBeInTheDocument();
   },
 };
