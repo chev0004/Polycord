@@ -159,14 +159,17 @@ export const ProfileGrid = ({
   const handleCopyUsername = (
     username: string,
     profileId: string,
-    avatarUrl?: string,
+    avatarUrl: string | undefined,
+    copiedToClipboard: boolean,
   ) => {
-    addToast({
-      title: t('copied'),
-      description: t('copiedToClipboard', { username }),
-      iconUrl: avatarUrl,
-      duration: 4000,
-    });
+    if (copiedToClipboard) {
+      addToast({
+        title: t('copied'),
+        description: t('copiedToClipboard', { username }),
+        iconUrl: avatarUrl,
+        duration: 4000,
+      });
+    }
 
     if (onCopyUsername) {
       onCopyUsername(username, profileId);

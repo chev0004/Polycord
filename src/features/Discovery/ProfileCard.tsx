@@ -35,6 +35,7 @@ import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { copyText } from '@/lib/clipboard';
 import { AvailabilityRow } from './AvailabilityRow';
 import {
   type CardTheme,
@@ -84,7 +85,8 @@ type ProfileCardProps = {
   onCopyUsername?: (
     username: string,
     profileId: string,
-    avatarUrl?: string,
+    avatarUrl: string | undefined,
+    copiedToClipboard: boolean,
   ) => void;
   onTagClick?: (tag: string, profileId: string) => void;
   onLanguageClick?: (
@@ -108,7 +110,7 @@ const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip
 const tintedSurface =
   'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
-const getBumpAge = (value?: string) => {
+export const getBumpAge = (value?: string) => {
   if (!value) return null;
 
   const minutes = Math.max(
@@ -179,23 +181,26 @@ export const ProfileCard = ({
 
     setIsCopying(true);
     setCopyFailed(false);
-    try {
-      await navigator.clipboard.writeText(profile.discordUsername);
-      setCopied(true);
-      trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
+    const copiedToClipboard = await copyText(profile.discordUsername);
+    trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
+    onCopyUsername?.(
+      profile.discordUsername,
+      profile.id,
+      profile.avatarUrl,
+      copiedToClipboard,
+    );
 
-      if (onCopyUsername) {
-        onCopyUsername(profile.discordUsername, profile.id, profile.avatarUrl);
-      }
-
-      setTimeout(() => {
-        setCopied(false);
-        setIsCopying(false);
-      }, 2000);
-    } catch {
+    if (!copiedToClipboard) {
       setCopyFailed(true);
       setIsCopying(false);
+      return;
     }
+
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+      setIsCopying(false);
+    }, 2000);
   };
 
   useEffect(() => {

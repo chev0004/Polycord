@@ -77,9 +77,13 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
         response.url().endsWith('/api/block') &&
         response.request().method() === 'POST',
     );
-    await page.getByText('Block user', { exact: true }).click();
+    await page.getByRole('button', { name: 'More actions' }).click();
+    await page.getByRole('button', { name: 'Block user', exact: true }).click();
     expect((await blocked).status()).toBe(200);
-    await expect(page).toHaveURL(/\/en$/);
+    await expect(
+      page.getByRole('heading', { name: 'You blocked this user' }),
+    ).toBeVisible();
+    await page.goto('/en');
     await expect(
       page.getByRole('heading', { name: identities[1].name, exact: true }),
     ).toHaveCount(0);

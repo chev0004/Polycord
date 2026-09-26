@@ -104,7 +104,7 @@ test('discovery keeps results through refresh, failure and return navigation', a
     await expect(page.locator('article')).toHaveCount(0);
     await page.goForward();
     await expect(
-      page.getByRole('heading', { name: 'Page not found' }),
+      page.getByRole('heading', { name: 'This profile is not available' }),
     ).toBeVisible();
   } finally {
     await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
