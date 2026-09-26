@@ -481,6 +481,9 @@
     "eventPremiumUpgrade": "Premium upgrades"
   },
   "Discovery": {
+    "copyNamedUsername": "Copy {name}'s username",
+    "tapToCopyHint": "Tap the name to copy their Discord username",
+    "detailPrimary": "Primary",
     "pageEyebrow": "Discovery",
     "pageTitle": "Find a language partner on Discord",
     "pageDescription": "Browse public Polycord profiles, then sign in when you are ready to create your own profile or manage your account.",

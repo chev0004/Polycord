@@ -18,6 +18,7 @@ type ProfileRouteClientProps = {
   stats?: { views30d: number; copies30d: number; saves: number };
   userAvatarUrl?: string;
   userDisplayName: string;
+  userUsername?: string;
 };
 
 export const ProfileRouteClient = ({
@@ -32,6 +33,7 @@ export const ProfileRouteClient = ({
   stats,
   userAvatarUrl,
   userDisplayName,
+  userUsername,
 }: ProfileRouteClientProps) => {
   const router = useRouteProgressRouter();
 
@@ -72,6 +74,7 @@ export const ProfileRouteClient = ({
       stats={stats}
       userAvatarUrl={userAvatarUrl}
       userDisplayName={userDisplayName}
+      userUsername={userUsername}
       onViewPublicProfile={
         profileId
           ? () =>

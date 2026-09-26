@@ -600,7 +600,11 @@ test('your card edits every profile part through sheets on phones', async ({
       sheet.getByRole('button', { name: /^Bump in / }),
     ).toBeDisabled();
     await sheet.getByRole('button', { name: 'View public profile' }).click();
-    await expect(page).toHaveURL(/\/en\/u\//);
+    await expect(
+      page.getByRole('dialog', { name: 'Card phone' }),
+    ).toBeVisible();
+    await expect(page).toHaveURL('/en/profile');
+    await page.keyboard.press('Escape');
 
     await sql`update profiles set is_public = false where user_id = ${owner.id}`;
     await page.goto('/en/profile');

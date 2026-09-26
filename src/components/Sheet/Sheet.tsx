@@ -23,6 +23,7 @@ type SheetProps = {
   footer?: ReactNode;
   full?: boolean;
   flush?: boolean;
+  bare?: boolean;
   onCloseAutoFocus?: () => void;
   children: ReactNode;
 };
@@ -36,6 +37,7 @@ export const Sheet = ({
   footer,
   full = false,
   flush = false,
+  bare = false,
   onCloseAutoFocus,
   children,
 }: SheetProps) => {
@@ -90,23 +92,27 @@ export const Sheet = ({
           >
             <span className="h-1 w-9 rounded-full bg-line-strong" />
           </div>
-          <div
-            className={`flex min-h-12 flex-shrink-0 items-center gap-1 pr-2 pb-1.5 ${leading ? 'pl-1' : 'pl-5'}`}
-          >
-            {leading}
-            <Dialog.Title
-              {...dragHandlers}
-              className="min-w-0 flex-1 touch-none truncate font-bold text-lg"
+          {bare ? (
+            <Dialog.Title className="sr-only">{title}</Dialog.Title>
+          ) : (
+            <div
+              className={`flex min-h-12 flex-shrink-0 items-center gap-1 pr-2 pb-1.5 ${leading ? 'pl-1' : 'pl-5'}`}
             >
-              {title}
-            </Dialog.Title>
-            {trailing}
-            <Dialog.Close asChild>
-              <SheetIconButton label={t('close')}>
-                <MdClose size={24} />
-              </SheetIconButton>
-            </Dialog.Close>
-          </div>
+              {leading}
+              <Dialog.Title
+                {...dragHandlers}
+                className="min-w-0 flex-1 touch-none truncate font-bold text-lg"
+              >
+                {title}
+              </Dialog.Title>
+              {trailing}
+              <Dialog.Close asChild>
+                <SheetIconButton label={t('close')}>
+                  <MdClose size={24} />
+                </SheetIconButton>
+              </Dialog.Close>
+            </div>
+          )}
           <div
             className={`relative min-h-0 flex-1 ${
               flush

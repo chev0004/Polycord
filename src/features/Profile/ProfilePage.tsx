@@ -80,6 +80,7 @@ type ProfilePageProps = {
   stats?: { views30d: number; copies30d: number; saves: number };
   userAvatarUrl?: string;
   userDisplayName?: string;
+  userUsername?: string;
 };
 
 const FREE_TAG_CAP = entitlementLimit('profile.tags', false);
@@ -188,6 +189,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   stats,
   userAvatarUrl,
   userDisplayName,
+  userUsername,
   userId,
 }) => {
   const timezoneId = useId();
@@ -386,7 +388,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     return {
       id: profileId ?? 'profile-preview',
       displayName,
-      discordUsername: displayName,
+      discordUsername: userUsername,
       avatarUrl: userAvatarUrl,
       primaryLanguage: primaryLanguage || t('previewPrimaryFallback'),
       targetLanguages: targetLanguages
@@ -428,6 +430,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     targetLanguages,
     timezone,
     userAvatarUrl,
+    userUsername,
     voiceIntroSeconds,
     profileId,
   ]);
