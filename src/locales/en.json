@@ -323,7 +323,7 @@
     "save": "Save",
     "logout": "Logout",
     "blockedUsersTitle": "Blocked accounts",
-    "blockedUsersDescription": "While signed in, neither account can see or interact with the other's profile. Public profiles remain visible when signed out. Unblocking takes effect immediately and does not need Save changes.",
+    "blockedUsersDescription": "While signed in, neither account can see or interact with the other's profile. Public profiles remain visible when signed out. Unblocking takes effect immediately, separately from your other settings.",
     "blockedUsersLoading": "Loading blocked accounts…",
     "blockedUsersEmpty": "You have no blocked accounts.",
     "blockedUsersLoadError": "Couldn't load blocked accounts.",
