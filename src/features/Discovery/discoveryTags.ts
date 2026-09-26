@@ -11,7 +11,7 @@ export const buildTagCounts = (
   const counts = new Map<string, number>();
 
   for (const profile of profiles) {
-    for (const tag of profile.interests) {
+    for (const tag of profile.tags) {
       counts.set(tag, (counts.get(tag) ?? 0) + 1);
     }
   }
@@ -33,6 +33,6 @@ export const applyTagFilter = (
   }
 
   return profiles.filter((profile) =>
-    selectedTags.every((tag) => profile.interests.includes(tag)),
+    selectedTags.every((tag) => profile.tags.includes(tag)),
   );
 };

@@ -172,16 +172,16 @@ export const ProfileDetail = ({
                 {profile.about}
               </p>
             </section>
-            {profile.interests.length ? (
-              <section aria-labelledby="profile-interests">
+            {profile.tags.length ? (
+              <section aria-labelledby="profile-tags">
                 <h2
-                  id="profile-interests"
+                  id="profile-tags"
                   className="mb-3 font-semibold text-foreground text-lg"
                 >
                   {tProfile('tagsLabel')}
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {profile.interests.map((tag) => (
+                  {profile.tags.map((tag) => (
                     <Chip
                       key={tag}
                       label={tag}

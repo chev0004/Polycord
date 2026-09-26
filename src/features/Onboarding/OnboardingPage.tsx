@@ -133,7 +133,7 @@ export const OnboardingPage = ({
           ]
         : [],
       about: values.bio,
-      interests: tags,
+      tags,
       country: countryLabel,
       timezone: values.timezone,
       availability: values.availability
@@ -442,10 +442,10 @@ export const OnboardingPage = ({
             <section className="grid gap-4 border-line border-t pt-6">
               <div>
                 <h2 className="font-figtree font-semibold text-foreground text-xl">
-                  {t('topicsSection')}
+                  {t('tagsSection')}
                 </h2>
                 <p className="mt-1 text-sm text-subtle">
-                  {t('topicsSectionDescription')}
+                  {t('tagsSectionDescription')}
                 </p>
               </div>
 

@@ -457,7 +457,7 @@ export const FilterSheet = ({
                     : undefined
                 }
               >
-                {t('filterSheetInterests')}
+                {t('filterSheetTags')}
               </SheetLabel>
               <div className="flex flex-wrap gap-2">
                 {tags.map(({ tag, count: tagCount }) => (

@@ -17,7 +17,7 @@ const profile: DiscoveryProfile = {
   ],
   about:
     'Software engineer in Tokyo preparing for the IELTS. Happy to help with Japanese grammar or kanji in exchange for English conversation.',
-  interests: ['Anime', 'Gaming', 'Coding'],
+  tags: ['Anime', 'Gaming', 'Coding'],
   country: 'JP',
   timezone: 'Asia/Tokyo',
   availability: { days: 'weekdays', from: '20:00', to: '23:00' },
@@ -92,7 +92,7 @@ export const LongContent: Story = {
         (language) => ({ language, level: Proficiency.INTERMEDIATE }),
       ),
       about: `${'Polyglot in progress with a very long introduction. '.repeat(9)}Supercalifragilisticexpialidociouslylongwordwithoutanybreaks.`,
-      interests: [
+      tags: [
         'Historical Linguistics',
         'Board Games',
         'Photography',

@@ -415,7 +415,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           level: row.level || undefined,
         })),
       about: bio,
-      interests: tags,
+      tags,
       country: getLabel(localizedCountryOptions, country),
       timezone: displayTimezone ? timezone : '',
       allowAnonymousCopy,

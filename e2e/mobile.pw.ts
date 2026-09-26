@@ -522,10 +522,8 @@ test('your card edits every profile part through sheets on phones', async ({
     });
     await done();
 
-    await main.getByRole('button', { name: 'Edit Interests & Topics' }).click();
-    await sheet
-      .getByRole('textbox', { name: 'Interests & Topics' })
-      .fill('Hiking');
+    await main.getByRole('button', { name: 'Edit Tags' }).click();
+    await sheet.getByRole('textbox', { name: 'Tags' }).fill('Hiking');
     await sheet.getByRole('button', { name: 'Add Tag' }).click();
     await done();
 
