@@ -35,6 +35,7 @@ import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
+import { copyText } from '@/lib/clipboard';
 import { AvailabilityRow } from './AvailabilityRow';
 import {
   type CardTheme,
@@ -180,12 +181,7 @@ export const ProfileCard = ({
 
     setIsCopying(true);
     setCopyFailed(false);
-    const copiedToClipboard = await navigator.clipboard
-      .writeText(profile.discordUsername)
-      .then(
-        () => true,
-        () => false,
-      );
+    const copiedToClipboard = await copyText(profile.discordUsername);
     trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy);
     onCopyUsername?.(
       profile.discordUsername,
