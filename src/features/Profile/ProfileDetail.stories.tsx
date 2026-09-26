@@ -28,6 +28,7 @@ const profile: DiscoveryProfile = {
 const meta: Meta<typeof ProfileDetail> = {
   title: 'Features/Profile/ProfileDetail',
   component: ProfileDetail,
+  parameters: { layout: 'fullscreen' },
   args: {
     profile,
     isLoggedIn: true,
