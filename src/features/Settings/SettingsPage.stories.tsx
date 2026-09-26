@@ -4,6 +4,7 @@ import {
   fireEvent,
   fn,
   screen,
+  userEvent,
   waitFor,
   within,
 } from '@storybook/test';
@@ -450,7 +451,7 @@ export const MobileSavePending: Story = {
       name: 'Allow anonymous copying',
     });
     await waitFor(() => expect(other).toBeDisabled());
-    fireEvent.click(other);
+    await userEvent.click(other);
     await expect(args.onSubmit).toHaveBeenCalledTimes(1);
   },
 };
