@@ -372,7 +372,13 @@ export const MobileCardEditor = ({
         {mode === 'preview' ? (
           // biome-ignore lint/a11y/useKeyWithClickEvents: View public profile in the profile menu is the keyboard path
           // biome-ignore lint/a11y/noStaticElementInteractions: the whole preview card is the tap target
-          <div onClick={() => setPublicOpen(true)} className="cursor-pointer">
+          <div
+            onClick={(event) => {
+              if (!(event.target as Element).closest('button, a, audio'))
+                setPublicOpen(true);
+            }}
+            className="cursor-pointer"
+          >
             <ProfileCard
               profile={previewProfile}
               variant="preview"
