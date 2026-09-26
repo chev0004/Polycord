@@ -17,14 +17,28 @@ export type SelectProps = SelectPrimitive.SelectProps & {
 
 export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
   (
-    { placeholder, options, className, onBlur, error, ariaLabel, ...props },
+    {
+      placeholder,
+      options,
+      className,
+      onBlur,
+      onValueChange,
+      error,
+      ariaLabel,
+      ...props
+    },
     forwardedRef,
   ) => {
     const hasWidthClass = className?.match(/\bw-|min-w-|max-w-/);
     const widthClass = hasWidthClass ? '' : 'w-full';
 
     return (
-      <SelectPrimitive.Root {...props}>
+      <SelectPrimitive.Root
+        {...props}
+        onValueChange={(value) => {
+          if (value) onValueChange?.(value);
+        }}
+      >
         <SelectPrimitive.Trigger
           ref={forwardedRef}
           className={`group flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-left text-[15px] text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none focus-visible:border-line-strong data-[placeholder]:text-subtle ${
