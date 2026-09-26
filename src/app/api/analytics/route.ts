@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getUserByDiscordId } from '@/db';
-import { isClientAnalyticsEvent } from '@/lib/analytics/events';
+import { getProfileByUserId, getUserByDiscordId } from '@/db';
+import {
+  ANALYTICS_EVENTS,
+  isClientAnalyticsEvent,
+} from '@/lib/analytics/events';
 import { localeFromPath } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
@@ -32,6 +35,18 @@ export const POST = async (request: Request) => {
   if (currentUser) {
     const user = await getUserByDiscordId(currentUser.id);
     userId = user?.id ?? null;
+  }
+
+  if (name === ANALYTICS_EVENTS.profileUsernameCopy) {
+    const profileId =
+      metadata && typeof metadata === 'object'
+        ? (metadata as Record<string, unknown>).profileId
+        : undefined;
+    const ownProfile = userId ? await getProfileByUserId(userId) : null;
+
+    if (typeof profileId !== 'string' || ownProfile?.profile.id === profileId) {
+      return noContent();
+    }
   }
 
   await trackEvent({
