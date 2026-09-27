@@ -122,8 +122,8 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
   const owner = await createUser(longName);
   const db = sql();
   try {
-    await db`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
-      values (${owner.accountId},true,'en','ja','intermediate',${'A long biography that keeps going to test wrapping on narrow screens. '.repeat(7)},array['Travel','Cooking','Photography','Music','Hiking'],'US','America/Chicago')`;
+    await db`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
+      values (now(),${owner.accountId},true,'en','ja','intermediate',${'A long biography that keeps going to test wrapping on narrow screens. '.repeat(7)},array['Travel','Cooking','Photography','Music','Hiking'],'US','America/Chicago')`;
     await db`insert into notifications (user_id, kind, actor_name) values (${viewer.accountId}, 'copy', 'Someone')`;
     await signIn(context, viewer);
     await page.setViewportSize({ width: 320, height: 480 });

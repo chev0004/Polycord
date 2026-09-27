@@ -7,7 +7,7 @@ assert.ok(['localhost', '127.0.0.1'].includes(url.hostname));
 process.env.DATABASE_URL = url.href;
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
-const { users, reports, moderationRestrictions } = await import(
+const { users, profiles, reports, moderationRestrictions } = await import(
   '../../src/db/schema'
 );
 const {
@@ -68,6 +68,10 @@ try {
   await setProfileHiddenByModeration(user.id, true);
   await deleteProfileForUser(user.id);
   const profile = await upsertProfileForUser(user.id, values);
+  await db
+    .update(profiles)
+    .set({ lastBumpedAt: new Date() })
+    .where(eq(profiles.id, profile.id));
   assert.equal(profile.hiddenByModeration, true);
   assert.equal(await getPublicProfileById(profile.id), null);
   assert.equal((await listDiscoveryPage(discoveryState, 'en', {})).total, 0);

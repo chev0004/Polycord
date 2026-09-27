@@ -127,7 +127,7 @@ test('every product route shares navigation and returns to discovery', async ({
     });
     expect(created.status()).toBe(200);
     const [{ id: profileId }] =
-      await sql`select id from profiles where user_id = ${accountId}`;
+      await sql`update profiles set last_bumped_at = now() - interval '1 day' where user_id = ${accountId} returning id`;
     const routes = [
       'profile',
       'settings',

@@ -75,6 +75,10 @@ const values = {
 const [viewerProfile, targetProfile] = await Promise.all(
   [viewer, target].map((user) => upsertProfileForUser(user.id, values)),
 );
+await db
+  .update(profiles)
+  .set({ lastBumpedAt: new Date() })
+  .where(inArray(profiles.id, [viewerProfile.id, targetProfile.id]));
 const request = (profileId) =>
   new Request('http://localhost/api', {
     method: 'POST',

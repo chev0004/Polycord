@@ -66,6 +66,7 @@ test('profile and settings persist through discovery and locale navigation', asy
     });
     expect(created.status()).toBe(200);
     const { profileId } = await created.json();
+    await sql`update profiles set last_bumped_at = now() where id = ${profileId}`;
     await page.goto('/en/profile');
     await expect(page.getByLabel('Bio', { exact: true })).toHaveValue(
       profile.bio,
