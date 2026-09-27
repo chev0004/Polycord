@@ -23,6 +23,7 @@ import {
   MdExpandMore,
   MdFilterAltOff,
   MdGavel,
+  MdGroup,
   MdHistory,
   MdInventory2,
   MdLockOpen,
@@ -66,11 +67,13 @@ import {
   useModFormat,
   useSuspendDays,
 } from './ModerationParts';
+import { StaffPanel } from './ModerationStaff';
 import type { ModAction, ModReport, ModUser } from './types';
-import { MODERATION_ACTIONS } from './types';
+import { LOG_ACTIONS } from './types';
 import {
   groupReports,
   hasStatusChips,
+  isReauthError,
   isSuspended,
   type ModerationStore,
   type ReportGroup,
@@ -324,7 +327,9 @@ const ReportsScreen = ({
                             <ReasonBadge key={reason} reason={reason} />
                           ),
                         )}
-                        {user.staff ? <StaffChip small /> : null}
+                        {user.role ? (
+                          <StaffChip role={user.role} small />
+                        ) : null}
                         <RestrictionChips user={user} small />
                       </span>
                     </span>
@@ -387,7 +392,7 @@ const UserRow = ({ user, onClick }: { user: ModUser; onClick: () => void }) => (
       </span>
       {hasStatusChips(user) ? (
         <span className="mt-[5px] flex flex-wrap gap-1">
-          {user.staff ? <StaffChip small /> : null}
+          {user.role ? <StaffChip role={user.role} small /> : null}
           <RestrictionChips user={user} small />
         </span>
       ) : null}
@@ -406,6 +411,7 @@ const UsersScreen = ({
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
+  const [staffOpen, setStaffOpen] = useState(false);
   const trimmed = users.query.trim();
   const list = (trimmed ? (users.results ?? []) : store.recentUserIds).flatMap(
     (id) => store.usersById.get(id) ?? [],
@@ -438,6 +444,17 @@ const UsersScreen = ({
         </div>
       </div>
       <div className="px-3">
+        {store.meRole === 'owner' && !trimmed ? (
+          <div className={`${group} mb-1.5`}>
+            <SheetRow
+              icon={MdGroup}
+              label={t('manageStaff')}
+              description={t('staffCount', { count: store.staff.length })}
+              chevron
+              onClick={() => setStaffOpen(true)}
+            />
+          </div>
+        ) : null}
         {users.searching ? (
           <MobileSkeleton />
         ) : users.failed ? (
@@ -469,6 +486,13 @@ const UsersScreen = ({
           </>
         )}
       </div>
+      <Sheet
+        open={staffOpen}
+        onOpenChange={setStaffOpen}
+        title={t('staffTitle')}
+      >
+        <StaffPanel store={store} mobile />
+      </Sheet>
     </>
   );
 };
@@ -625,7 +649,7 @@ const LogScreen = ({
             selected: !action,
             onSelect: () => setAction(''),
           },
-          ...MODERATION_ACTIONS.map((value) => ({
+          ...LOG_ACTIONS.map((value) => ({
             key: value,
             label: t(`action_${value}`),
             selected: action === value,
@@ -848,7 +872,7 @@ const Hero = ({ user }: { user: ModUser }) => {
           <span className="text-muted text-sm">@{user.username}</span>
         </div>
       </div>
-      {user.staff || hasStatusChips(user) || user.warnings > 0 ? (
+      {user.role || hasStatusChips(user) || user.warnings > 0 ? (
         <div className="flex flex-wrap gap-1.5 [&>span]:h-[26px] [&>span]:px-2.5 [&>span]:text-xs">
           <UserChips user={user} />
         </div>
@@ -971,6 +995,7 @@ const useRun = (
     action: ModAction;
     days?: number;
     note: string;
+    reauth: boolean;
   } | null>(null);
   const run = async (action: ModAction, note: string, days?: number) => {
     if (busy) return false;
@@ -980,8 +1005,8 @@ const useRun = (
       await store.act({ userId: user.id, action, reportIds, note, days });
       onDone(action, days);
       return true;
-    } catch {
-      setFailed({ action, days, note });
+    } catch (error) {
+      setFailed({ action, days, note, reauth: isReauthError(error) });
       return false;
     } finally {
       setBusy(null);
@@ -1005,7 +1030,7 @@ const CaseFooter = ({
   const { date } = useModFormat();
   const [sheet, setSheet] = useState<'act' | 'suspend' | 'ban' | null>(null);
   const [note, setNote] = useState('');
-  const protectedAccount = user.staff || user.id === store.meId;
+  const protectedAccount = user.role !== undefined || user.id === store.meId;
   const dismiss = useRun(store, user, reportIds, onDone);
   const actions = useRun(store, user, reportIds, onDone);
   const suspend = useSuspendDays(sheet === 'suspend');
@@ -1050,7 +1075,11 @@ const CaseFooter = ({
   return (
     <>
       {dismiss.failed ? (
-        <ActionError mobile onRetry={() => dismiss.run('dismiss', '')} />
+        <ActionError
+          mobile
+          reauth={dismiss.failed.reauth}
+          onRetry={() => dismiss.run('dismiss', '')}
+        />
       ) : null}
       <div className="flex gap-2.5">
         {reportIds.length ? (
@@ -1094,6 +1123,7 @@ const CaseFooter = ({
           {actions.failed ? (
             <ActionError
               mobile
+              reauth={actions.failed.reauth}
               onRetry={() =>
                 run(actions.failed?.action ?? 'warn', actions.failed?.days)
               }
@@ -1130,16 +1160,18 @@ const CaseFooter = ({
                   true,
                   () => open('suspend'),
                 )}
-            {user.bannedAt
-              ? row(
-                  'unban',
-                  MdSettingsBackupRestore,
-                  t('unban'),
-                  t('unbanDesc'),
-                )
-              : row('ban', MdBlock, t('ban'), t('banDesc'), true, () =>
-                  open('ban'),
-                )}
+            {store.meRole !== 'owner'
+              ? null
+              : user.bannedAt
+                ? row(
+                    'unban',
+                    MdSettingsBackupRestore,
+                    t('unban'),
+                    t('unbanDesc'),
+                  )
+                : row('ban', MdBlock, t('ban'), t('banDesc'), true, () =>
+                    open('ban'),
+                  )}
           </SheetGroup>
         </div>
       </Sheet>
@@ -1235,6 +1267,7 @@ const CaseFooter = ({
           {actions.failed ? (
             <ActionError
               mobile
+              reauth={actions.failed.reauth}
               onRetry={() => run('suspend', actions.failed?.days)}
             />
           ) : null}
@@ -1282,7 +1315,11 @@ const CaseFooter = ({
           </p>
           <Note value={note} onChange={setNote} />
           {actions.failed ? (
-            <ActionError mobile onRetry={() => run('ban')} />
+            <ActionError
+              mobile
+              reauth={actions.failed.reauth}
+              onRetry={() => run('ban')}
+            />
           ) : null}
         </div>
       </Sheet>
@@ -1318,7 +1355,7 @@ const CasePage = ({
   const reportIds =
     isCase && page.view === 'pending' ? reports.map((report) => report.id) : [];
   const history = store.userLog(user.id);
-  const protectedAccount = user.staff || user.id === store.meId;
+  const protectedAccount = user.role !== undefined || user.id === store.meId;
 
   const reportsSection = (
     <section key="reports" className="mx-4 mt-6 flex flex-col gap-2">

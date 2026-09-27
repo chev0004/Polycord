@@ -34,8 +34,20 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { getLanguageName, proficiencyOptions } from '@/constants/languages';
-import type { ModAction, ModLogEntry, ModReport, ModUser } from './types';
-import { isSuspended, type ModerationStore } from './useModeration';
+import { signInHref } from '@/features/Navigation/signIn';
+import type {
+  LogAction,
+  ModAction,
+  ModLogEntry,
+  ModReport,
+  ModUser,
+  StaffRole,
+} from './types';
+import {
+  isReauthError,
+  isSuspended,
+  type ModerationStore,
+} from './useModeration';
 
 const subscribeNothing = () => () => {};
 
@@ -87,7 +99,7 @@ export const useLanguageLabels = () => {
   };
 };
 
-export const ACTION_TONE: Record<ModAction, string> = {
+export const ACTION_TONE: Record<LogAction, string> = {
   dismiss: 'bg-primary-dark',
   warn: 'bg-discord-yellow',
   hide_profile: 'bg-red-400',
@@ -96,6 +108,8 @@ export const ACTION_TONE: Record<ModAction, string> = {
   unsuspend: 'bg-primary-dark',
   ban: 'bg-red-400',
   unban: 'bg-primary-dark',
+  grant: 'bg-primary-dark',
+  revoke: 'bg-primary-dark',
 };
 
 export const useLogLabel = () => {
@@ -118,7 +132,13 @@ export const ReasonBadge = ({ reason }: { reason: ModReport['reason'] }) => {
   );
 };
 
-export const StaffChip = ({ small = false }: { small?: boolean }) => {
+export const StaffChip = ({
+  role,
+  small = false,
+}: {
+  role: StaffRole;
+  small?: boolean;
+}) => {
   const t = useTranslations('Admin');
   return (
     <span
@@ -127,7 +147,9 @@ export const StaffChip = ({ small = false }: { small?: boolean }) => {
       {small ? null : (
         <MdAdminPanelSettings size={14} className="text-primary" />
       )}
-      {t(small ? 'chipStaff' : 'chipOwner')}
+      {t(
+        small ? 'chipStaff' : role === 'owner' ? 'chipOwner' : 'chipModerator',
+      )}
     </span>
   );
 };
@@ -189,7 +211,7 @@ export const RestrictionChips = ({
 
 export const UserChips = ({ user }: { user: ModUser }) => (
   <>
-    {user.staff ? <StaffChip /> : null}
+    {user.role ? <StaffChip role={user.role} /> : null}
     <RestrictionChips user={user} />
     {user.warnings > 0 ? <WarnChip count={user.warnings} /> : null}
   </>
@@ -300,24 +322,34 @@ export const NoteField = ({
 export const ActionError = ({
   onRetry,
   mobile = false,
+  reauth = false,
 }: {
   onRetry?: () => void;
   mobile?: boolean;
+  reauth?: boolean;
 }) => {
   const t = useTranslations('Admin');
+  const locale = useLocale();
+  const action =
+    'h-7 whitespace-nowrap rounded-md border border-red-800 px-2.5 font-semibold text-[12.5px] text-red-300 hover:bg-[rgba(153,27,27,0.35)]';
   return (
     <div
       role="alert"
       className={`flex items-center gap-2 border border-red-800 ${mobile ? 'rounded-[14px]' : 'rounded-lg'} bg-[rgba(69,10,10,0.5)] py-2 pr-2 pl-3 text-[13px] text-red-400`}
     >
       <MdErrorOutline size={18} />
-      <span className="flex-1">{t('actionFailed')}</span>
-      {onRetry ? (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="h-7 rounded-md border border-red-800 px-2.5 font-semibold text-[12.5px] text-red-300 hover:bg-[rgba(153,27,27,0.35)]"
+      <span className="flex-1">
+        {t(reauth ? 'reauthRequired' : 'actionFailed')}
+      </span>
+      {reauth ? (
+        <a
+          href={signInHref(locale)}
+          className={`${action} inline-flex items-center`}
         >
+          {t('signInAgain')}
+        </a>
+      ) : onRetry ? (
+        <button type="button" onClick={onRetry} className={action}>
           {t('retry')}
         </button>
       ) : null}
@@ -633,9 +665,10 @@ export const ActionBar = ({
     action: ModAction;
     days?: number;
     note: string;
+    reauth: boolean;
   } | null>(null);
   const [dialog, setDialog] = useState<'suspend' | 'ban' | null>(null);
-  const protectedAccount = user.staff || user.id === store.meId;
+  const protectedAccount = user.role !== undefined || user.id === store.meId;
   const suspended = isSuspended(user);
 
   const run = async (action: ModAction, days?: number, runNote = note) => {
@@ -653,8 +686,8 @@ export const ActionBar = ({
       });
       setNote('');
       onDone({ action, days });
-    } catch {
-      setFailed({ action, days, note: runNote });
+    } catch (error) {
+      setFailed({ action, days, note: runNote, reauth: isReauthError(error) });
     } finally {
       setBusy(null);
     }
@@ -745,11 +778,13 @@ export const ActionBar = ({
               : button('suspend', MdSchedule, t('suspend'), 'danger', 'S', () =>
                   setDialog('suspend'),
                 )}
-            {user.bannedAt
-              ? button('unban', MdSettingsBackupRestore, t('unban'))
-              : button('ban', MdBlock, t('ban'), 'danger', undefined, () =>
-                  setDialog('ban'),
-                )}
+            {store.meRole !== 'owner'
+              ? null
+              : user.bannedAt
+                ? button('unban', MdSettingsBackupRestore, t('unban'))
+                : button('ban', MdBlock, t('ban'), 'danger', undefined, () =>
+                    setDialog('ban'),
+                  )}
           </>
         )}
       </div>
@@ -758,6 +793,7 @@ export const ActionBar = ({
       ) : null}
       {failed ? (
         <ActionError
+          reauth={failed.reauth}
           onRetry={() => run(failed.action, failed.days, failed.note)}
         />
       ) : null}
