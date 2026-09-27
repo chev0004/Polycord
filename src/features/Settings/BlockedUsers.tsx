@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
+import { MdSearch } from 'react-icons/md';
 import { Button } from '@/components/Button';
 
 type BlockedUser = { id: string; displayName: string };
@@ -39,6 +40,7 @@ export const BlockedUsers = ({
   const [loadFailed, setLoadFailed] = useState(false);
   const [unblockFailed, setUnblockFailed] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
   const reload = useCallback(async () => {
     setLoadFailed(false);
     setUsers(null);
@@ -67,15 +69,32 @@ export const BlockedUsers = ({
     }
   };
 
+  const search = query.trim().toLocaleLowerCase();
+  const shown = (users ?? []).filter((user) =>
+    user.displayName.toLocaleLowerCase().includes(search),
+  );
+
   return (
     <section
-      className="flex flex-col gap-3 border-line border-t pt-5"
+      className="flex flex-col gap-3"
       aria-label={t('blockedUsersTitle')}
     >
-      <h3 className="font-semibold text-foreground">
-        {t('blockedUsersTitle')}
-      </h3>
-      <p className="text-muted text-sm">{t('blockedUsersDescription')}</p>
+      {users?.length ? (
+        <label className="flex h-11 items-center gap-2 rounded-full border border-line-strong bg-background-darker pr-2 pl-4 text-subtle focus-within:border-primary">
+          <MdSearch size={20} aria-hidden />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') event.preventDefault();
+            }}
+            placeholder={t('blockedUsersSearchPlaceholder')}
+            aria-label={t('blockedUsersSearchLabel')}
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle"
+          />
+        </label>
+      ) : null}
       {loadFailed ? (
         <div
           role="alert"
@@ -92,9 +111,13 @@ export const BlockedUsers = ({
         </output>
       ) : users.length === 0 ? (
         <output className="text-muted text-sm">{t('blockedUsersEmpty')}</output>
+      ) : shown.length === 0 ? (
+        <output className="text-muted text-sm">
+          {t('blockedUsersNoMatches')}
+        </output>
       ) : (
         <ul className="flex flex-col gap-2">
-          {users.map((user) => (
+          {shown.map((user) => (
             <li
               key={user.id}
               className="flex items-center justify-between gap-3 rounded-xl bg-background-darker p-3"

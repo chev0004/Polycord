@@ -10,6 +10,7 @@ import {
 } from '@storybook/test';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { SessionExpiredError } from '@/lib/formErrors';
+import { BlockedUsers } from './BlockedUsers';
 import { type SettingsFormValues, SettingsPage } from './SettingsPage';
 
 const defaultSettings: SettingsFormValues = {
@@ -158,6 +159,64 @@ export const PrivacyTab: Story = {
       canvas.getByText(
         'Help improve Polycord by sharing usage events linked to your account. Turning this off stops future product analytics while signed in.',
       ),
+    ).toBeInTheDocument();
+  },
+};
+
+const blockedUsers = (
+  <BlockedUsers
+    load={async () => [{ id: 'one', displayName: 'Haruka Tanaka' }]}
+    unblock={fn(async () => {})}
+  />
+);
+
+export const BlockedAccountsDrillIn: Story = {
+  args: { blockedUsers },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    await expect(canvas.queryByText('Haruka Tanaka')).not.toBeInTheDocument();
+    fireEvent.click(
+      await canvas.findByRole('button', { name: /^Blocked accounts/ }),
+    );
+    const view = (
+      await canvas.findByRole('heading', { name: 'Blocked accounts' })
+    ).closest('section') as HTMLElement;
+    await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('searchbox', {
+        name: 'Search blocked accounts by name',
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(within(view).getByRole('button', { name: 'Privacy' }));
+    await expect(
+      await canvas.findByText('Product analytics'),
+    ).toBeInTheDocument();
+    await expect(canvas.queryByText('Haruka Tanaka')).not.toBeInTheDocument();
+  },
+};
+
+export const MobileBlockedAccounts: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { blockedUsers },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Privacy/ }));
+    fireEvent.click(
+      await canvas.findByRole('button', { name: /^Blocked accounts/ }),
+    );
+    await expect(
+      await canvas.findByRole('heading', {
+        name: 'Blocked accounts',
+        level: 1,
+      }),
+    ).toBeInTheDocument();
+    await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    await expect(
+      await canvas.findByRole('heading', { name: 'Privacy', level: 1 }),
     ).toBeInTheDocument();
   },
 };

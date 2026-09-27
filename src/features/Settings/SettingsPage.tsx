@@ -6,6 +6,7 @@ import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaDiscord } from 'react-icons/fa';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import {
@@ -72,14 +73,17 @@ const sections: { id: SectionId; labelKey: string }[] = [
 const SectionCard = ({
   title,
   description,
+  back,
   children,
 }: {
   title: string;
   description?: string;
+  back?: React.ReactNode;
   children: React.ReactNode;
 }) => (
   <section className="flex flex-col gap-5 rounded-3xl bg-background-dark p-6 shadow-xl">
     <div className="flex flex-col gap-[3px] border-line border-b pb-3.5">
+      {back}
       <h2 className="font-figtree font-semibold text-[19px] text-primary leading-[1.2]">
         {title}
       </h2>
@@ -125,6 +129,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const t = useTranslations('Settings');
   const currentLocale = useLocale();
   const [activeSection, setActiveSection] = useState<SectionId>('account');
+  const [blockedOpen, setBlockedOpen] = useState(false);
   const [exportStatus, setExportStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
@@ -218,6 +223,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const jumpToSection = (id: SectionId) => {
     setActiveSection(id);
+    setBlockedOpen(false);
     window.history.replaceState(null, '', `#${id}`);
     window.scrollTo({ top: 0 });
   };
@@ -721,7 +727,26 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </SectionCard>
           )}
 
-          {activeSection === 'privacy' && (
+          {activeSection === 'privacy' && blockedOpen && (
+            <SectionCard
+              title={t('blockedUsersTitle')}
+              description={t('blockedUsersDescription')}
+              back={
+                <button
+                  type="button"
+                  onClick={() => setBlockedOpen(false)}
+                  className="-ml-1.5 mb-2 flex items-center self-start font-semibold text-[13px] text-primary hover:text-primary-light focus-visible:text-primary-light"
+                >
+                  <MdChevronLeft size={20} aria-hidden />
+                  {t('privacyTitle')}
+                </button>
+              }
+            >
+              {blockedUsers}
+            </SectionCard>
+          )}
+
+          {activeSection === 'privacy' && !blockedOpen && (
             <SectionCard
               title={t('privacyTitle')}
               description={t('privacyDescription')}
@@ -833,8 +858,27 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     )}
                   />
                 </SettingRow>
+
+                <button
+                  type="button"
+                  onClick={() => setBlockedOpen(true)}
+                  className="flex items-center justify-between gap-6 rounded-xl bg-background-darker px-4 py-3.5 text-left transition-colors hover:bg-background-main focus-visible:bg-background-main"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-[15px] text-foreground">
+                      {t('blockedUsersTitle')}
+                    </p>
+                    <p className="mt-0.5 text-[12px] text-subtle">
+                      {t('blockedUsersEntryDescription')}
+                    </p>
+                  </div>
+                  <MdChevronRight
+                    size={22}
+                    aria-hidden
+                    className="shrink-0 text-subtle"
+                  />
+                </button>
               </div>
-              {blockedUsers}
             </SectionCard>
           )}
 
