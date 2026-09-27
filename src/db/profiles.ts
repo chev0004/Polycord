@@ -163,7 +163,7 @@ const toDiscoveryProfile = (
   premium: isPremiumOwner(user, subscription),
   cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
   boosted:
-    isPremiumOwner(user, subscription) &&
+    (isPremiumOwner(user, subscription) || user.isSynthetic) &&
     profile.boostedUntil !== null &&
     profile.boostedUntil.getTime() > Date.now(),
   voiceIntroSeconds:
