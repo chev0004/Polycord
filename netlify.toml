@@ -1,5 +1,5 @@
 [build]
-  command = "bun run build"
+  command = "bun scripts/check-migrations.ts && bun run build"
   publish = ".next"
 
 [build.environment]
