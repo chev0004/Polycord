@@ -17,6 +17,8 @@ const createSqlClient = () => {
 
   return postgres(databaseUrl, {
     prepare: false,
+    max: 5,
+    idle_timeout: 20,
   });
 };
 

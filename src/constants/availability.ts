@@ -75,32 +75,20 @@ export const convertTime = (
   };
 };
 
-const hourFormatters = new Map<string, Intl.DateTimeFormat | null>();
+const hourFormatters = new Map<string, Intl.DateTimeFormat>();
 
 const hourFormatter = (timeFormat: TimeFormat, locale: string) => {
   const key = `${locale}:${timeFormat}`;
-  if (hourFormatters.has(key)) return hourFormatters.get(key) ?? null;
-  let formatter: Intl.DateTimeFormat | null;
-  try {
-    formatter = new Intl.DateTimeFormat(locale, {
-      hour: 'numeric',
-      minute: '2-digit',
-      hourCycle: timeFormat === '12hr' ? 'h12' : 'h23',
-      timeZone: 'UTC',
-    });
-  } catch {
-    formatter = null;
-  }
+  const cached = hourFormatters.get(key);
+  if (cached) return cached;
+  const formatter = new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hourCycle: timeFormat === '12hr' ? 'h12' : 'h23',
+    timeZone: 'UTC',
+  });
   hourFormatters.set(key, formatter);
   return formatter;
-};
-
-const fallbackFmtHour = (h: number, m: number, timeFormat: TimeFormat) => {
-  const minutes = String(m).padStart(2, '0');
-  if (timeFormat === '24hr') return `${String(h).padStart(2, '0')}:${minutes}`;
-  const period = h < 12 ? 'AM' : 'PM';
-  const twelveHour = h % 12 || 12;
-  return `${twelveHour}:${minutes} ${period}`;
 };
 
 export const fmtHour = (
@@ -108,15 +96,10 @@ export const fmtHour = (
   m: number,
   timeFormat: TimeFormat,
   locale: string,
-): string => {
-  const formatter = hourFormatter(timeFormat, locale);
-  if (!formatter) return fallbackFmtHour(h, m, timeFormat);
-  try {
-    return formatter.format(new Date(Date.UTC(2000, 0, 1, h, m)));
-  } catch {
-    return fallbackFmtHour(h, m, timeFormat);
-  }
-};
+): string =>
+  hourFormatter(timeFormat, locale).format(
+    new Date(Date.UTC(2000, 0, 1, h, m)),
+  );
 
 export const tzAbbr = (tz: string | undefined): string => {
   if (!tz) return '';
