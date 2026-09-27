@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { ToastStack } from '@/components/Toast';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   calculateMatchScore,
   type MatchCriteria,
@@ -153,6 +154,9 @@ export const ProfileGrid = ({
   }, [filteredProfiles, matchCriteria, sortByMatchScore]);
 
   const hasProfiles = displayedProfiles.length > 0;
+  const desktop = useMediaQuery('(min-width: 1024px)');
+  const tablet = useMediaQuery('(min-width: 768px)');
+  const columnCount = desktop === null ? null : desktop ? 3 : tablet ? 2 : 1;
   const displayedProfileItems = displayedProfiles.map((profile, index) => ({
     profile,
     index,
@@ -210,8 +214,18 @@ export const ProfileGrid = ({
     <>
       <section className="flex flex-col gap-6">
         {hasProfiles ? (
-          <div className="mx-auto w-full max-w-[1180px] columns-1 gap-6 md:columns-2 lg:columns-3 [&>article]:break-inside-avoid">
-            {displayedProfileItems.map(renderProfileCard)}
+          <div className="mx-auto grid w-full max-w-[1180px] grid-cols-1 items-start gap-x-6 md:grid-cols-2 lg:grid-cols-3">
+            {columnCount === null
+              ? displayedProfileItems.map(renderProfileCard)
+              : [0, 1, 2]
+                  .slice(0, columnCount)
+                  .map((column) => (
+                    <div key={column}>
+                      {displayedProfileItems
+                        .filter(({ index }) => index % columnCount === column)
+                        .map(renderProfileCard)}
+                    </div>
+                  ))}
           </div>
         ) : (
           <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">
