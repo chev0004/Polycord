@@ -3,6 +3,84 @@ import { writeFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import postgres from 'postgres';
 
+test('a first bump publishes the card at the front in one update', async ({
+  page,
+  context,
+}, testInfo) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const id = randomUUID().replaceAll('-', '');
+  const name = `First bump ${id.slice(0, 8)}`;
+  const [owner] =
+    await sql`insert into users (discord_user_id,discord_username,display_name) values (${id},${name},${name}) returning id`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id, accountId: owner.id, name, username: name },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  try {
+    const created = await context.request.post('/api/profile', {
+      data: {
+        isPublic: true,
+        allowAnonymousCopy: true,
+        displayTimezone: true,
+        displayAvailability: true,
+        primaryLanguage: 'en',
+        targetLanguages: [{ language: 'ja', level: 'beginner' }],
+        bio: 'A new profile waiting for its first discovery bump.',
+        tags: [],
+        timezone: 'UTC',
+        availability: null,
+      },
+    });
+    expect(created.status()).toBe(200);
+    await page.goto('/en');
+    await expect(page.getByRole('heading', { name, exact: true })).toHaveCount(
+      0,
+    );
+    await page.reload();
+    await expect(page.getByRole('heading', { name, exact: true })).toHaveCount(
+      0,
+    );
+    await page.getByRole('button', { name: 'Account menu' }).click();
+    await page
+      .getByRole('button', { name: 'Bump profile', exact: true })
+      .click();
+    const first = page.locator('article').first();
+    await expect(
+      first.getByRole('heading', { name, exact: true }),
+    ).toBeVisible();
+    await expect(first.getByText('just now', { exact: true })).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('first-bump.png') });
+    await page.reload();
+    await expect(
+      page
+        .locator('article')
+        .first()
+        .getByRole('heading', { name, exact: true }),
+    ).toBeVisible();
+  } finally {
+    await sql`delete from users where id=${owner.id}`;
+    await sql.end();
+  }
+});
+
 test('discovery keeps results through refresh, failure and return navigation', async ({
   page,
 }, testInfo) => {
@@ -12,8 +90,8 @@ test('discovery keeps results through refresh, failure and return navigation', a
     await sql`insert into users (discord_user_id, discord_username, display_name)
     select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Partner ' || lpad(n::text,2,'0') from generate_series(1,20) n returning id`;
   try {
-    await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
-      select id,true,'en','ja','intermediate',repeat('A browser navigation fixture. ',6),array[${prefix}],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
+      select now(),id,true,'en','ja','intermediate',repeat('A browser navigation fixture. ',6),array[${prefix}],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
     await page.goto(`/en?tag=${prefix}&sort=name-asc`);
     await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
     await expect(page.locator('article')).toHaveCount(9);
@@ -139,8 +217,8 @@ test('discovery responses stay private and slow delivery does not hold a profile
   };
   try {
     const [profile] =
-      await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags)
-      values (${owners[2].id},true,'en','ja','intermediate','An isolated delivery fixture.',array[${prefix}]) returning id`;
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags)
+      values (now(),${owners[2].id},true,'en','ja','intermediate','An isolated delivery fixture.',array[${prefix}]) returning id`;
     await sql`insert into saved_profiles (user_id,profile_id) values (${owners[0].id},${profile.id})`;
     await sql`insert into user_settings (user_id,profile_view_alert) values (${owners[2].id},true)`;
     const load = (index: number) =>
@@ -250,8 +328,8 @@ test('ten thousand profiles keep page and facet responses bounded', async ({
     await sql`insert into users (discord_user_id, discord_username, display_name)
     select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Partner ' || n from generate_series(1,10000) n returning id`;
   try {
-    await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
-      select id,true,'en','ja','intermediate',repeat('A large discovery fixture. ',10),array[${prefix},'Group ' || (row_number() over () % 100)],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
+      select now(),id,true,'en','ja','intermediate',repeat('A large discovery fixture. ',10),array[${prefix},'Group ' || (row_number() over () % 100)],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))}`;
     await sql`analyze profiles, users`;
     const measurements = [];
     for (const query of [
