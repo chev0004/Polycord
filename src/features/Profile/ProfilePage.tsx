@@ -61,6 +61,7 @@ import {
   createEmptyLanguageRow,
   TargetLanguagesEditor,
 } from './TargetLanguagesEditor';
+import { timezoneOptions } from './timezoneOptions';
 import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
@@ -378,6 +379,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const localizedLanguageOptions = languageOptions(locale);
   const localizedCountryOptions = countryOptions(locale);
+  const localizedTimezoneOptions = useMemo(
+    () => timezoneOptions(timezone),
+    [timezone],
+  );
   const displayName = userDisplayName ?? t('defaultDisplayName');
 
   const previewProfile = useMemo<DiscoveryProfile>(() => {
@@ -857,11 +862,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             <FormGroup>
               <Label htmlFor={timezoneId}>{t('timezoneLabel')}</Label>
-              <TextInput
-                id={timezoneId}
-                {...register('timezone')}
-                placeholder={t('displayTimezoneDescription')}
-                error={!!errors.timezone}
+              <Controller
+                name="timezone"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    {...field}
+                    id={timezoneId}
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={localizedTimezoneOptions}
+                    placeholder={t('timezonePlaceholder')}
+                    error={!!errors.timezone}
+                  />
+                )}
               />
               {errors.timezone && (
                 <FieldError id={`${timezoneId}-error`}>

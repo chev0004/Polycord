@@ -29,7 +29,7 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
-import { FieldError, TextInput, Toggle } from '@/components/Form';
+import { FieldError, Toggle } from '@/components/Form';
 import {
   ActionSheet,
   type ActionSheetItem,
@@ -74,6 +74,7 @@ import {
   type ProfileFormValues,
 } from './schema';
 import { createEmptyLanguageRow } from './TargetLanguagesEditor';
+import { timezoneOptions } from './timezoneOptions';
 
 type EditorSheet =
   | 'style'
@@ -87,6 +88,8 @@ type EditorSheet =
   | 'menu';
 
 type LanguagePick = { kind: 'primary' } | { kind: 'target'; index: number };
+
+type LocationPick = 'country' | 'timezone';
 
 type MobileCardEditorProps = {
   form: UseFormReturn<ProfileFormValues>;
@@ -316,7 +319,7 @@ export const MobileCardEditor = ({
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   const [sheet, setSheet] = useState<EditorSheet | null>(null);
   const [languagePick, setLanguagePick] = useState<LanguagePick | null>(null);
-  const [countryPicking, setCountryPicking] = useState(false);
+  const [locationPick, setLocationPick] = useState<LocationPick | null>(null);
   const [publicOpen, setPublicOpen] = useState(false);
   const [flash, setFlash] = useState<EditorSheet | null>(null);
   const bioRef = useRef<HTMLTextAreaElement | null>(null);
@@ -334,6 +337,13 @@ export const MobileCardEditor = ({
   const countries = useMemo(() => countryOptions(locale), [locale]);
   const countryLabel = countries.find(
     (option) => option.value === values.country,
+  )?.label;
+  const timezones = useMemo(
+    () => timezoneOptions(values.timezone),
+    [values.timezone],
+  );
+  const timezoneLabel = timezones.find(
+    (option) => option.value === values.timezone,
   )?.label;
   const cardStyle = deriveCardAccent(premiumLook ? theme.accent : FREE_ACCENT);
 
@@ -355,8 +365,15 @@ export const MobileCardEditor = ({
 
   const openSheet = (next: EditorSheet) => {
     setLanguagePick(null);
-    setCountryPicking(false);
+    setLocationPick(null);
     setSheet(next);
+  };
+
+  const setDisplayTimezone = (checked: boolean) => {
+    setValue('displayTimezone', checked, { shouldDirty: true });
+    if (!checked || values.timezone) return;
+    setSheet('location');
+    setLocationPick('timezone');
   };
 
   const setTargets = (rows: ProfileFormValues['targetLanguages']) =>
@@ -722,16 +739,10 @@ export const MobileCardEditor = ({
                     : t('localTimeHidden')
                 }
               >
-                <Controller
-                  name="displayTimezone"
-                  control={control}
-                  render={({ field }) => (
-                    <Toggle
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      aria-label={t('showLocalTime')}
-                    />
-                  )}
+                <Toggle
+                  checked={values.displayTimezone}
+                  onCheckedChange={setDisplayTimezone}
+                  aria-label={t('showLocalTime')}
                 />
               </SwitchRow>
             </EditGroup>
@@ -1053,35 +1064,41 @@ export const MobileCardEditor = ({
         onOpenChange={(open) => (open ? openSheet('location') : closeSheet())}
         full
         flush
-        title={countryPicking ? t('countryLabel') : t('locationTitle')}
+        title={
+          locationPick === 'country'
+            ? t('countryLabel')
+            : locationPick === 'timezone'
+              ? t('timezoneLabel')
+              : t('locationTitle')
+        }
         leading={
-          countryPicking ? (
+          locationPick ? (
             <SheetIconButton
               label={t('back')}
-              onClick={() => setCountryPicking(false)}
+              onClick={() => setLocationPick(null)}
             >
               <MdArrowBack size={24} />
             </SheetIconButton>
           ) : undefined
         }
         trailing={
-          countryPicking && values.country ? (
+          locationPick && values[locationPick] ? (
             <SheetTextButton
               onClick={() => {
-                setValue('country', '', { shouldDirty: true });
-                setCountryPicking(false);
+                setValue(locationPick, '', { shouldDirty: true });
+                setLocationPick(null);
               }}
             >
-              {t('clearCountry')}
+              {locationPick === 'country'
+                ? t('clearCountry')
+                : t('clearTimezone')}
             </SheetTextButton>
           ) : undefined
         }
-        footer={
-          countryPicking ? undefined : footerButton(t('done'), closeSheet)
-        }
+        footer={locationPick ? undefined : footerButton(t('done'), closeSheet)}
       >
         <SheetDrill
-          drilled={countryPicking}
+          drilled={Boolean(locationPick)}
           main={
             <>
               <SheetLabel>{t('countryLabel')}</SheetLabel>
@@ -1089,7 +1106,7 @@ export const MobileCardEditor = ({
                 <SheetRow
                   label={countryLabel ?? t('addCountry')}
                   chevron
-                  onClick={() => setCountryPicking(true)}
+                  onClick={() => setLocationPick('country')}
                 />
               </SheetGroup>
               {errors.country ? (
@@ -1099,12 +1116,13 @@ export const MobileCardEditor = ({
               ) : null}
               <SheetLabel>{t('timezoneLabel')}</SheetLabel>
               <div className="flex flex-col gap-2.5">
-                <TextInput
-                  id="mobile-timezone"
-                  aria-label={t('timezoneLabel')}
-                  error={Boolean(errors.timezone)}
-                  {...register('timezone')}
-                />
+                <SheetGroup>
+                  <SheetRow
+                    label={timezoneLabel ?? t('addTimezone')}
+                    chevron
+                    onClick={() => setLocationPick('timezone')}
+                  />
+                </SheetGroup>
                 {errors.timezone ? (
                   <FieldError id="mobile-timezone-error">
                     {errors.timezone.message}
@@ -1115,16 +1133,10 @@ export const MobileCardEditor = ({
                     label={t('displayTimezoneLabel')}
                     description={t('displayTimezoneDescription')}
                   >
-                    <Controller
-                      name="displayTimezone"
-                      control={control}
-                      render={({ field }) => (
-                        <Toggle
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          aria-label={t('displayTimezoneLabel')}
-                        />
-                      )}
+                    <Toggle
+                      checked={values.displayTimezone}
+                      onCheckedChange={setDisplayTimezone}
+                      aria-label={t('displayTimezoneLabel')}
                     />
                   </SettingsToggleRow>
                 </SheetGroup>
@@ -1132,17 +1144,22 @@ export const MobileCardEditor = ({
             </>
           }
           sub={
-            countryPicking ? (
+            locationPick ? (
               <SheetPickList
-                label={t('countryLabel')}
-                options={countries}
-                value={values.country ?? ''}
-                onSelect={(code) => {
-                  setValue('country', code, {
+                key={locationPick}
+                label={
+                  locationPick === 'country'
+                    ? t('countryLabel')
+                    : t('timezoneLabel')
+                }
+                options={locationPick === 'country' ? countries : timezones}
+                value={values[locationPick] ?? ''}
+                onSelect={(value) => {
+                  setValue(locationPick, value, {
                     shouldDirty: true,
                     shouldValidate: true,
                   });
-                  setCountryPicking(false);
+                  setLocationPick(null);
                 }}
               />
             ) : null
@@ -1175,7 +1192,11 @@ export const MobileCardEditor = ({
                 render={({ field }) => (
                   <Toggle
                     checked={field.value}
-                    onCheckedChange={field.onChange}
+                    onCheckedChange={
+                      name === 'displayTimezone'
+                        ? setDisplayTimezone
+                        : field.onChange
+                    }
                     aria-label={t(`${key}Label`)}
                   />
                 )}
