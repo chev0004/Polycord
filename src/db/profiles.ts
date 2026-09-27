@@ -13,6 +13,7 @@ import {
   CUSTOM_CARD_THEME_ID,
   findCardTheme,
   getCustomCardTheme,
+  getFreeCardTheme,
   PREMIUM_CARD_THEMES,
 } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
@@ -75,14 +76,7 @@ const isPremiumOwner = (
   isPremiumDiscordId(user.discordUserId) ||
   isSubscriptionActive(subscription ?? null);
 
-const toCardTheme = (
-  profile: Profile,
-  premium: boolean,
-): CardTheme | undefined => {
-  if (!profile.cardColor) {
-    return undefined;
-  }
-
+const toCardTheme = (profile: Profile, premium: boolean): CardTheme => {
   let theme: CardTheme | undefined;
 
   if (profile.cardColor === CUSTOM_CARD_THEME_ID) {
@@ -94,13 +88,18 @@ const toCardTheme = (
           })
         : undefined;
   } else if (
-    premium ||
-    !PREMIUM_CARD_THEMES.some((candidate) => candidate.id === profile.cardColor)
+    profile.cardColor &&
+    (premium ||
+      !PREMIUM_CARD_THEMES.some(
+        (candidate) => candidate.id === profile.cardColor,
+      ))
   ) {
     theme = findCardTheme(profile.cardColor);
   }
 
-  if (theme && premium && profile.accentOverride) {
+  theme ??= getFreeCardTheme(0);
+
+  if (premium && profile.accentOverride) {
     return { ...theme, accent: profile.accentOverride };
   }
 
