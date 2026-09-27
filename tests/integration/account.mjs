@@ -42,7 +42,6 @@ const other = await upsertDiscordUser({
 });
 const originalId = user.id;
 const settings = {
-  theme: 'light',
   applicationLanguage: 'ja',
   timeFormat: '12hr',
   hideProfileVisits: true,

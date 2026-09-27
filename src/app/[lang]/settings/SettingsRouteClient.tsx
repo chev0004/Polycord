@@ -23,7 +23,6 @@ type SettingsRouteClientProps = {
     | 'hideProfileVisits'
     | 'productAnalytics'
     | 'pushNotifications'
-    | 'theme'
     | 'timeFormat'
     | 'languageDisplay'
   >;
@@ -88,7 +87,6 @@ export const SettingsRouteClient = ({
     profileViewAlert: initialSettings?.profileViewAlert ?? false,
     hideProfileVisits: initialSettings?.hideProfileVisits ?? false,
     productAnalytics: initialSettings?.productAnalytics ?? true,
-    theme: initialSettings?.theme ?? 'dark',
     applicationLanguage: isLocale(locale) ? locale : 'en',
     timeFormat: initialSettings?.timeFormat ?? '24hr',
     languageDisplay: initialSettings?.languageDisplay ?? 'long',

@@ -1,6 +1,6 @@
 {
-  "id": "415cf6f3-a4f2-435b-bf4b-59b41594dc68",
-  "prevId": "6f9d63d3-7161-4424-8c32-76582be7137a",
+  "id": "28aa78ab-0628-4ff0-b349-f51bf2ae08cf",
+  "prevId": "415cf6f3-a4f2-435b-bf4b-59b41594dc68",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1392,6 +1392,65 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.staff_roles": {
+      "name": "staff_roles",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "staff_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'moderator'"
+        },
+        "granted_by": {
+          "name": "granted_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "granted_at": {
+          "name": "granted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "staff_roles_user_id_users_id_fk": {
+          "name": "staff_roles_user_id_users_id_fk",
+          "tableFrom": "staff_roles",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "staff_roles_granted_by_users_id_fk": {
+          "name": "staff_roles_granted_by_users_id_fk",
+          "tableFrom": "staff_roles",
+          "tableTo": "users",
+          "columnsFrom": ["granted_by"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.subscriptions": {
       "name": "subscriptions",
       "schema": "",
@@ -2087,7 +2146,9 @@
         "suspend",
         "unsuspend",
         "ban",
-        "unban"
+        "unban",
+        "grant",
+        "revoke"
       ]
     },
     "public.notification_kind": {
@@ -2115,6 +2176,11 @@
       "name": "report_status",
       "schema": "public",
       "values": ["pending", "reviewed", "dismissed"]
+    },
+    "public.staff_role": {
+      "name": "staff_role",
+      "schema": "public",
+      "values": ["moderator"]
     },
     "public.time_format": {
       "name": "time_format",

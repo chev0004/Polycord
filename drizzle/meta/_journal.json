@@ -166,8 +166,15 @@
     {
       "idx": 23,
       "version": "7",
-      "when": 1790525408411,
-      "tag": "0023_staff_roles",
+      "when": 1790527412068,
+      "tag": "0023_remove_app_theme",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790528168868,
+      "tag": "0024_staff_roles",
       "breakpoints": true
     }
   ]
