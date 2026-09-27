@@ -4,6 +4,7 @@ import postgres from 'postgres';
 
 const sky = 'rgb(193, 213, 233)';
 const pink = 'rgb(249, 168, 207)';
+const slate = 'rgb(70, 82, 95)';
 
 const background = (locator: Locator) =>
   locator.evaluate((element) => getComputedStyle(element).backgroundColor);
@@ -45,6 +46,81 @@ test('public profiles keep the card colour shown in discovery', async ({
       expect(await background(banner)).toBe(expected);
       await page.goto(new URL(page.url()).pathname);
       expect(await background(banner)).toBe(expected);
+    }
+  } finally {
+    await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql.end();
+  }
+});
+
+test('discovery cards keep their colour when filters and sorting reorder results', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const fixtures = [
+    {
+      colour: 'sky',
+      expected: sky,
+      country: 'US',
+      target: 'ja',
+      level: 'intermediate',
+    },
+    {
+      colour: null,
+      expected: sky,
+      country: 'PK',
+      target: 'ko',
+      level: 'beginner',
+    },
+    {
+      colour: 'slate',
+      expected: slate,
+      country: 'US',
+      target: 'ja',
+      level: 'beginner',
+    },
+    {
+      colour: 'pink',
+      expected: pink,
+      country: 'JP',
+      target: 'ja',
+      level: 'beginner',
+    },
+  ];
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Order ' || n from generate_series(1,${fixtures.length}) n returning id, display_name`;
+  try {
+    for (const [index, fixture] of fixtures.entries()) {
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,card_color,country)
+        values (now() - make_interval(mins => ${index}),${owners[index].id},true,'en',${fixture.target},${fixture.level},'A card order fixture.',array[${prefix}],${fixture.colour},${fixture.country})`;
+    }
+    const scenarios = [
+      ['', [0, 1, 2, 3]],
+      ['&country=PK', [1]],
+      ['&target=ja', [0, 2, 3]],
+      ['&target=ja&level=beginner', [2, 3]],
+      ['&sort=name-desc', [0, 1, 2, 3]],
+      ['&sort=bumped-asc', [0, 1, 2, 3]],
+    ] as const;
+    for (const [query, visible] of scenarios) {
+      await page.goto(`/en?tag=${prefix}${query}`);
+      for (const [index, { expected }] of fixtures.entries()) {
+        const card = page.locator('article').filter({
+          has: page.getByRole('heading', {
+            name: owners[index].display_name,
+            exact: true,
+          }),
+        });
+        if (!(visible as readonly number[]).includes(index)) {
+          await expect(card).toHaveCount(0);
+          continue;
+        }
+        expect(
+          await background(card.locator(':scope > div > div').first()),
+        ).toBe(expected);
+      }
     }
   } finally {
     await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
