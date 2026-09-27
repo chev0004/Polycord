@@ -586,6 +586,29 @@ export const MobilePreviewTap: Story = {
   },
 };
 
+export const MobilePickListSearchCover: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Country/ }));
+    const sheet = within(await screen.findByRole('dialog'));
+    fireEvent.click(sheet.getByRole('button', { name: 'Japan' }));
+    const search = await sheet.findByRole('textbox', { name: 'Country' });
+    const bar = search.closest('label')?.parentElement as HTMLElement;
+
+    await waitFor(
+      () => {
+        (bar.parentElement as HTMLElement).scrollTop = 600;
+        const { left, top } = bar.getBoundingClientRect();
+        expect(document.elementFromPoint(left + 40, top - 2)).toBe(bar);
+      },
+      { timeout: 5000 },
+    );
+  },
+};
+
 export const MobileFreeTimeSurvivesSheetClose: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   args: { initialValues: sampleProfile },
