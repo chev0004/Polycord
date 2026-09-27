@@ -11,10 +11,16 @@ import {
   type Notify,
 } from './ModerationDesktop';
 import { ModerationMobile } from './ModerationMobile';
-import type { ModSnapshot } from './types';
+import type { ModSnapshot, SeedStatus } from './types';
 import { useModeration } from './useModeration';
 
-export const ModerationPage = ({ initial }: { initial: ModSnapshot }) => {
+export const ModerationPage = ({
+  initial,
+  seed = null,
+}: {
+  initial: ModSnapshot;
+  seed?: SeedStatus | null;
+}) => {
   const t = useTranslations('Admin');
   const store = useModeration(initial);
   const mobile = useIsMobile();
@@ -93,6 +99,7 @@ export const ModerationPage = ({ initial }: { initial: ModSnapshot }) => {
           setTab={setTab}
           users={users}
           notify={notify}
+          seed={seed}
         />
       ) : (
         <div className={mobile === null ? 'max-md:invisible' : ''}>
@@ -103,6 +110,7 @@ export const ModerationPage = ({ initial }: { initial: ModSnapshot }) => {
             users={users}
             notify={notify}
             openUser={openUser}
+            seed={seed}
           />
         </div>
       )}

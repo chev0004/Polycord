@@ -10,6 +10,7 @@ Everything that must change between the current staging deployment and a public 
 - [ ] `POLYCORD_ADMIN_USER_IDS` lists only current administrators.
 - [ ] Analytics stays disabled until the privacy policy covers it. LEGAL-002 decides.
 - [ ] Stripe stays unset until BILLING-002 has test-mode lifecycle evidence.
+- [ ] `POLYCORD_SEED_ENABLED` and `POLYCORD_ENVIRONMENT` are unset, and the production database has no `seed_database` row. See [dummy profiles](dummy-profiles.md).
 
 ## Domain and indexing
 

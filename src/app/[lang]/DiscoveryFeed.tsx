@@ -58,7 +58,7 @@ export const DiscoveryFeed = async ({
   }
 
   const boostedCount = data.profiles.filter(
-    (profile) => profile.boosted,
+    (profile) => profile.boosted && !profile.synthetic,
   ).length;
 
   if (boostedCount > 0) {

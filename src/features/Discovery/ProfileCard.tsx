@@ -41,6 +41,7 @@ import {
   FREE_ACCENT,
   getFreeCardTheme,
 } from './cardTheme';
+import { DummyChip } from './DummyChip';
 import { MobileNameCopy, MobileProfileSheet } from './MobileProfileSheet';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
 import { VoiceChip } from './VoiceChip';
@@ -71,6 +72,7 @@ export type DiscoveryProfile = {
   cardTheme?: CardTheme;
   availability?: AvailabilityPattern;
   voiceIntroSeconds?: number;
+  synthetic?: boolean;
 };
 
 type ProfileCardProps = {
@@ -544,6 +546,7 @@ export const ProfileCard = ({
         </p>
       ) : null}
       <div className="flex flex-wrap items-center gap-2">
+        {profile.synthetic ? <DummyChip /> : null}
         {renderLanguagePill(
           profile.primaryLanguage,
           profile.primaryLanguageLevel,

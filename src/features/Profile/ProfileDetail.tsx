@@ -39,6 +39,7 @@ import {
   FREE_ACCENT,
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
+import { DummyChip } from '@/features/Discovery/DummyChip';
 import {
   type DiscoveryProfile,
   getBumpAge,
@@ -514,6 +515,7 @@ export const ProfileDetail = ({
             </button>
           </h1>
           {bumpPill('self-start min-[861px]:hidden')}
+          {profile.synthetic ? <DummyChip className="self-start" /> : null}
           {copyFailed && profile.discordUsername ? (
             <p role="alert" className="text-danger text-sm">
               {tDiscovery('copyFailed', { username: profile.discordUsername })}

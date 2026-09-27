@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProfileByUserId, getUserByDiscordId } from '@/db';
+import { getProfileById, getProfileByUserId, getUserByDiscordId } from '@/db';
 import {
   ANALYTICS_EVENTS,
   isClientAnalyticsEvent,
@@ -44,7 +44,11 @@ export const POST = async (request: Request) => {
         : undefined;
     const ownProfile = userId ? await getProfileByUserId(userId) : null;
 
-    if (typeof profileId !== 'string' || ownProfile?.profile.id === profileId) {
+    if (
+      typeof profileId !== 'string' ||
+      ownProfile?.profile.id === profileId ||
+      (await getProfileById(profileId))?.user.isSynthetic
+    ) {
       return noContent();
     }
   }
