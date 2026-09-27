@@ -3,36 +3,39 @@ import { z } from 'zod';
 import {
   createNotification,
   getReportById,
+  listModerationUsers,
   logModerationAction,
+  resolveReports,
   setProfileHiddenByModeration,
-  setReportStatus,
   setUserBanned,
   setUserSuspendedUntil,
 } from '@/db';
-import { isAdmin } from '@/lib/admin';
+import { MODERATION_ACTIONS } from '@/features/Admin/types';
+import { isAdmin, isSameOrigin } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
+import { toModLogEntry, toModReport, toModUser } from '@/lib/moderation';
 
-const moderationSchema = z.object({
-  reportId: z.string().uuid(),
-  action: z.enum([
-    'dismiss',
-    'warn',
-    'hide_profile',
-    'unhide_profile',
-    'suspend',
-    'unsuspend',
-    'ban',
-    'unban',
-  ]),
-  days: z.number().int().min(1).max(90).optional(),
-  note: z.string().max(500).optional(),
-});
+const moderationSchema = z
+  .object({
+    userId: z.string().uuid().optional(),
+    reportId: z.string().uuid().optional(),
+    reportIds: z.array(z.string().uuid()).max(1000).default([]),
+    action: z.enum(MODERATION_ACTIONS),
+    days: z.number().int().min(1).max(90).optional(),
+    note: z.string().max(500).optional(),
+  })
+  .refine((value) => value.userId || value.reportId)
+  .refine((value) => value.action !== 'suspend' || value.days !== undefined);
 
 export const POST = async (request: Request) => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || !isAdmin(currentUser)) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   let body: unknown;
@@ -49,60 +52,82 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
 
-  const { reportId, action, days, note } = payload.data;
-  const report = await getReportById(reportId);
+  const { userId, reportId, action, days, note } = payload.data;
+  const report = reportId ? await getReportById(reportId) : null;
+  const targetUserId = userId ?? report?.reportedUserId;
+  const [target] = targetUserId
+    ? await listModerationUsers([targetUserId])
+    : [];
 
-  if (!report) {
-    return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+  if (!target) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const targetUserId = report.reportedUserId;
+  if (
+    action !== 'dismiss' &&
+    (toModUser(target).staff || target.user.id === currentUser.accountId)
+  ) {
+    return NextResponse.json(
+      { error: 'Staff cannot be actioned' },
+      { status: 403 },
+    );
+  }
+
+  const reportIds = [
+    ...payload.data.reportIds,
+    ...(reportId ? [reportId] : []),
+  ];
+
+  if (action === 'dismiss' && !reportIds.length) {
+    return NextResponse.json({ error: 'No reports' }, { status: 400 });
+  }
 
   switch (action) {
-    case 'dismiss':
-      await setReportStatus(reportId, 'dismissed');
-      break;
     case 'warn':
       await createNotification({
-        userId: targetUserId,
+        userId: target.user.id,
         kind: 'warning',
         isGuest: false,
       });
-      await setReportStatus(reportId, 'reviewed');
       break;
     case 'hide_profile':
-      await setProfileHiddenByModeration(targetUserId, true);
-      await setReportStatus(reportId, 'reviewed');
-      break;
     case 'unhide_profile':
-      await setProfileHiddenByModeration(targetUserId, false);
+      await setProfileHiddenByModeration(
+        target.user.id,
+        action === 'hide_profile',
+      );
       break;
     case 'suspend':
-      await setUserSuspendedUntil(
-        targetUserId,
-        new Date(Date.now() + (days ?? 7) * 24 * 60 * 60 * 1000),
-      );
-      await setReportStatus(reportId, 'reviewed');
-      break;
     case 'unsuspend':
-      await setUserSuspendedUntil(targetUserId, null);
+      await setUserSuspendedUntil(
+        target.user.id,
+        days ? new Date(Date.now() + days * 24 * 60 * 60 * 1000) : null,
+      );
       break;
     case 'ban':
-      await setUserBanned(targetUserId, true);
-      await setReportStatus(reportId, 'reviewed');
-      break;
     case 'unban':
-      await setUserBanned(targetUserId, false);
+      await setUserBanned(target.user.id, action === 'ban');
       break;
   }
 
-  await logModerationAction({
+  const resolved = await resolveReports(
+    reportIds,
+    target.user.id,
+    action === 'dismiss' ? 'dismissed' : 'reviewed',
+  );
+  const entry = await logModerationAction({
     adminUserId: currentUser.accountId,
-    targetUserId,
-    reportId,
+    targetUserId: target.user.id,
+    reportId: reportIds[0],
     action,
     note,
+    days: action === 'suspend' ? days : undefined,
   });
+  const [updated] = await listModerationUsers([target.user.id]);
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    users: [toModUser(updated)],
+    reports: resolved.map(toModReport),
+    log: [toModLogEntry(entry)],
+  });
 };
