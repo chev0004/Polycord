@@ -120,6 +120,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     await signIn(context, identities[0], accounts[0].id);
     await page.goto('/en/settings');
     await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    await page.getByRole('button', { name: /^Blocked accounts/ }).click();
     await page
       .getByRole('button', {
         name: `Unblock ${identities[1].name}`,
@@ -129,6 +130,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     await expect(page.getByText('You have no blocked accounts.')).toBeVisible();
     await page.reload();
     await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    await page.getByRole('button', { name: /^Blocked accounts/ }).click();
     await expect(page.getByText('You have no blocked accounts.')).toBeVisible();
     await page.goto('/en/saved');
     await expect(

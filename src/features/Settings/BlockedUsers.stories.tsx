@@ -25,6 +25,18 @@ const meta: Meta<typeof BlockedUsers> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const search = async (canvas: ReturnType<typeof within>, value: string) => {
+  const field = await canvas.findByRole('searchbox', {
+    name: 'Search blocked accounts by name',
+  });
+  Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
+    'value',
+  )?.set?.call(field, value);
+  field.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(() => expect(field).toHaveValue(value));
+};
+
 export const Default: Story = {};
 export const Empty: Story = { args: { load: async () => [] } };
 export const Unblock: Story = {
@@ -74,5 +86,38 @@ export const UnblockFailure: Story = {
     expect(
       canvas.getByRole('button', { name: 'Unblock Kenji Ito' }),
     ).toBeEnabled();
+  },
+};
+export const SearchByName: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await search(canvas, 'TANAKA');
+    await waitFor(() =>
+      expect(canvas.queryByText('Kenji Ito')).not.toBeInTheDocument(),
+    );
+    expect(canvas.getByText('Haruka Tanaka')).toBeInTheDocument();
+    await search(canvas, 'two');
+    await expect(
+      await canvas.findByText('No blocked accounts match that name.'),
+    ).toBeInTheDocument();
+    await search(canvas, '');
+    await expect(await canvas.findByText('Kenji Ito')).toBeInTheDocument();
+    expect(canvas.getByText('Haruka Tanaka')).toBeInTheDocument();
+  },
+};
+export const UnblockFiltered: Story = {
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await search(canvas, 'kenji');
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Unblock Kenji Ito' }),
+    );
+    await expect(
+      await canvas.findByText('No blocked accounts match that name.'),
+    ).toBeInTheDocument();
+    expect(args.unblock).toHaveBeenCalledWith('one');
+    await search(canvas, '');
+    await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
+    expect(canvas.queryByText('Kenji Ito')).not.toBeInTheDocument();
   },
 };
