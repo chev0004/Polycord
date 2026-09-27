@@ -405,6 +405,7 @@ export const moderationActions = pgTable(
     }),
     action: moderationActionEnum('action').notNull(),
     note: text('note'),
+    days: integer('days'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -415,6 +416,10 @@ export const moderationActions = pgTable(
     check(
       'moderation_actions_note_length_check',
       sql`${table.note} is null or char_length(${table.note}) <= 500`,
+    ),
+    check(
+      'moderation_actions_days_range_check',
+      sql`${table.days} is null or ${table.days} between 1 and 90`,
     ),
   ],
 );

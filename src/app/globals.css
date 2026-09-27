@@ -440,6 +440,12 @@
   }
 }
 
+@keyframes pushOut {
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes rowFlash {
   from {
     background: var(--color-overlay);
