@@ -48,14 +48,16 @@ export const SeedPanel = ({
     setFailed(null);
     setTarget(String(goal));
     setRun({ start: status.dummies, target: goal });
-    let current = status;
+    let previous = status.dummies;
     try {
-      while (current.dummies !== goal) {
-        const next = await requestStep(goal);
-        if (next.dummies === current.dummies) throw new Error('No progress');
-        current = next;
+      let next: SeedStatus;
+      do {
+        next = await requestStep(goal);
         setStatus(next);
-      }
+        if (next.dummies !== goal && next.dummies === previous)
+          throw new Error('No progress');
+        previous = next.dummies;
+      } while (next.dummies !== goal);
     } catch {
       setFailed(goal);
     } finally {
