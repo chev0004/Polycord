@@ -56,11 +56,13 @@ export const POST = async (request: Request) => {
 
   await saveProfile(currentUser.accountId, profileId);
 
-  await trackEvent({
-    name: ANALYTICS_EVENTS.profileSaveFavorite,
-    userId: currentUser.accountId,
-    locale: localeFromRequest(request),
-  });
+  if (!target.user.isSynthetic) {
+    await trackEvent({
+      name: ANALYTICS_EVENTS.profileSaveFavorite,
+      userId: currentUser.accountId,
+      locale: localeFromRequest(request),
+    });
+  }
 
   return NextResponse.json({ saved: true });
 };
