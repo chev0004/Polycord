@@ -188,6 +188,7 @@ const toDiscoveryProfile = (
     : undefined,
   allowAnonymousCopy: profile.allowAnonymousCopy,
   lastBumpedAt: profile.lastBumpedAt?.toISOString(),
+  synthetic: user.isSynthetic || undefined,
   bumpedMinutesAgo: profile.lastBumpedAt
     ? Math.max(
         0,

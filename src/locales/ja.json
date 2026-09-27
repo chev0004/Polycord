@@ -657,6 +657,7 @@
     "tagsLabel": "タグ",
     "locationValue": "{location}",
     "currentlyTime": "現在 {time}",
+    "dummyChip": "ダミー",
     "descriptionLabel": "自己紹介",
     "availabilityDayAny": "毎日",
     "availabilityDayWeekdays": "平日",

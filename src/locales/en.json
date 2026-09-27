@@ -657,6 +657,7 @@
     "tagsLabel": "Tags",
     "locationValue": "{location}",
     "currentlyTime": "Currently {time}",
+    "dummyChip": "Dummy",
     "descriptionLabel": "Description",
     "availabilityDayAny": "Any day",
     "availabilityDayWeekdays": "Weekdays",
