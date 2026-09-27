@@ -52,6 +52,31 @@ type ProfileGridItem = {
   index: number;
 };
 
+const layOutMasonry = (grid: HTMLDivElement | null) => {
+  if (!grid) return;
+  const layOut = () => {
+    const cards = Array.from(grid.children) as HTMLElement[];
+    const heights = cards.map((card) => card.getBoundingClientRect().height);
+    cards.forEach((card, index) => {
+      card.style.gridRowEnd = `span ${Math.ceil(heights[index])}`;
+    });
+    grid.style.gridAutoRows = '1px';
+  };
+  const sizes = new ResizeObserver(() => requestAnimationFrame(layOut));
+  const observeCards = () => {
+    layOut();
+    sizes.disconnect();
+    for (const card of grid.children) sizes.observe(card);
+  };
+  const cards = new MutationObserver(observeCards);
+  observeCards();
+  cards.observe(grid, { childList: true });
+  return () => {
+    sizes.disconnect();
+    cards.disconnect();
+  };
+};
+
 export const ProfileGrid = ({
   profiles,
   emptyState,
@@ -185,7 +210,6 @@ export const ProfileGrid = ({
 
     return (
       <ProfileCard
-        key={profile.id}
         profile={{
           ...profile,
           cardTheme: profile.cardTheme ?? getFreeCardTheme(index),
@@ -210,8 +234,13 @@ export const ProfileGrid = ({
     <>
       <section className="flex flex-col gap-6">
         {hasProfiles ? (
-          <div className="mx-auto w-full max-w-[1180px] columns-1 gap-6 md:columns-2 lg:columns-3 [&>article]:break-inside-avoid">
-            {displayedProfileItems.map(renderProfileCard)}
+          <div
+            ref={layOutMasonry}
+            className="mx-auto grid w-full max-w-[1180px] grid-flow-row-dense grid-cols-1 items-start gap-x-6 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {displayedProfileItems.map((item) => (
+              <div key={item.profile.id}>{renderProfileCard(item)}</div>
+            ))}
           </div>
         ) : (
           <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">

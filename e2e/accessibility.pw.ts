@@ -71,6 +71,7 @@ test('core pages expose named controls and support keyboard navigation', async (
       },
     });
     expect(profile.status()).toBe(200);
+    await sql`update profiles set last_bumped_at = now() where user_id = ${accountId}`;
     const violations = [];
     for (const route of ['/en', '/en/profile', '/en/inbox', '/en/settings']) {
       await page.goto(route);

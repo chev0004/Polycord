@@ -59,6 +59,7 @@ try {
       owners.map((owner, index) => ({
         userId: owner.id,
         isPublic: true,
+        lastBumpedAt: new Date(),
         primaryLanguage: index % 2 ? 'en' : 'ja',
         targetLanguage: 'fr',
         proficiencyLevel: 'beginner',
@@ -76,6 +77,34 @@ try {
   assert.equal(first.total, 30);
   assert.equal(first.profiles.length, 9);
   assert.equal(first.profiles[0].id, items[0].id);
+  await db
+    .update(profiles)
+    .set({ lastBumpedAt: null })
+    .where(eq(profiles.id, items[29].id));
+  assert.equal((await load()).total, 29);
+  assert.equal((await load('q=Fixture')).total, 29);
+  assert.equal(
+    await countDiscovery(
+      parseDiscoveryState(new URLSearchParams(`tag=${prefix}`)),
+      'en',
+      viewer,
+    ),
+    29,
+  );
+  assert.equal((await listPublicProfilesByIds([items[29].id])).length, 1);
+  const bumpedAt = new Date(Date.now() + 1000);
+  await db
+    .update(profiles)
+    .set({ lastBumpedAt: bumpedAt })
+    .where(eq(profiles.id, items[29].id));
+  const bumped = await load();
+  assert.equal(bumped.total, 30);
+  assert.equal(bumped.profiles[0].id, items[29].id);
+  assert.equal(bumped.profiles[0].lastBumpedAt, bumpedAt.toISOString());
+  await db
+    .update(profiles)
+    .set({ lastBumpedAt: items[29].lastBumpedAt })
+    .where(eq(profiles.id, items[29].id));
   assert.equal((await load('page=999')).page, 4);
   assert.equal((await load('page=4')).profiles.length, 3);
   assert.equal((await load('primary=ja')).total, 15);

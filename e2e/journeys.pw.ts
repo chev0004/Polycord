@@ -45,8 +45,8 @@ test('a populated saved list supports every card action and return path', async 
   const [viewer, ...owners] = accounts;
   try {
     const profiles =
-      await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
-      select id,true,'en','ja','intermediate','A saved-list journey fixture.',array[${prefix}],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))} returning id, user_id`;
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
+      select now(),id,true,'en','ja','intermediate','A saved-list journey fixture.',array[${prefix}],'US','America/Chicago' from users where id in ${sql(owners.map((owner) => owner.id))} returning id, user_id`;
     await signIn(context, viewer);
     for (const profile of profiles) {
       const saved = await context.request.post('/api/saved', {
@@ -120,8 +120,8 @@ test('suspended and banned accounts keep reading but cannot write', async ({
   const [member, owner] = accounts;
   try {
     const [target] =
-      await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio)
-      values (${owner.id},true,'en','ja','intermediate','A restricted journey fixture.') returning id`;
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio)
+      values (now(),${owner.id},true,'en','ja','intermediate','A restricted journey fixture.') returning id`;
     await signIn(context, member);
     expect(
       (
@@ -186,8 +186,8 @@ test('admins moderate a report while members cannot reach admin tools', async ({
   });
   try {
     const [profile] =
-      await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio)
-      values (${reported.id},true,'en','ja','intermediate','A moderation journey fixture.') returning id`;
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio)
+      values (now(),${reported.id},true,'en','ja','intermediate','A moderation journey fixture.') returning id`;
     await sql`insert into reports (reporter_user_id, reported_user_id, reported_profile_id, reason, details)
       values (${reporter.id}, ${reported.id}, ${profile.id}, 'spam', 'Posting links')`;
 

@@ -347,31 +347,29 @@ export const DiscoveryPage = ({
 
   const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
 
-  const refreshDiscovery = useCallback(() => {
+  const refreshDiscovery = useCallback(async () => {
     if (!discoveryData) return;
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
     setIsRefreshing(true);
     setRefreshFailed(false);
-    fetch(requestUrl, {
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error('Discovery refresh failed');
-        const data: DiscoveryData = await response.json();
-        if (controller.signal.aborted) return;
-        setRemoteData(data);
-        setProfileItems(data.profiles);
-        setPage(data.page);
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setRefreshFailed(true);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsRefreshing(false);
+    try {
+      const response = await fetch(requestUrl, {
+        cache: 'no-store',
+        signal: controller.signal,
       });
+      if (!response.ok) throw new Error('Discovery refresh failed');
+      const data: DiscoveryData = await response.json();
+      if (controller.signal.aborted) return;
+      setRemoteData(data);
+      setProfileItems(data.profiles);
+      setPage(data.page);
+    } catch {
+      if (!controller.signal.aborted) setRefreshFailed(true);
+    } finally {
+      if (!controller.signal.aborted) setIsRefreshing(false);
+    }
   }, [discoveryData, requestUrl]);
 
   const countResults = useCallback(
@@ -754,19 +752,20 @@ export const DiscoveryPage = ({
 
     try {
       const result = await onBumpProfile();
-      refreshDiscovery();
-      setProfileItems((previous) =>
-        previous.map((profile) =>
-          profile.id === currentProfileId
-            ? {
-                ...profile,
-                bumpedMinutesAgo: 0,
-                lastBumpRelative: undefined,
-                lastBumpedAt: result.lastBumpedAt,
-              }
-            : profile,
-        ),
-      );
+      await refreshDiscovery();
+      if (!discoveryData)
+        setProfileItems((previous) =>
+          previous.map((profile) =>
+            profile.id === currentProfileId
+              ? {
+                  ...profile,
+                  bumpedMinutesAgo: 0,
+                  lastBumpRelative: undefined,
+                  lastBumpedAt: result.lastBumpedAt,
+                }
+              : profile,
+          ),
+        );
       setBumpReadyAt(result.nextBumpAt);
       addToast({
         title: t('bumpSuccessTitle'),

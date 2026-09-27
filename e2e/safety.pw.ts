@@ -43,7 +43,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
       const [account] =
         await sql`insert into users (discord_user_id, discord_username, display_name) values (${user.id}, ${user.username}, ${user.name}) returning id`;
       const [profile] =
-        await sql`insert into profiles (user_id, is_public, allow_anonymous_copy, primary_language, target_language, proficiency_level, bio, voice_intro_seconds) values (${account.id}, true, false, 'en', 'ja', 'beginner', 'Privacy test language partner profile.', 1) returning id`;
+        await sql`insert into profiles (last_bumped_at,user_id, is_public, allow_anonymous_copy, primary_language, target_language, proficiency_level, bio, voice_intro_seconds) values (now(),${account.id}, true, false, 'en', 'ja', 'beginner', 'Privacy test language partner profile.', 1) returning id`;
       accounts.push({ id: account.id, profileId: profile.id });
       await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${account.id}, ${`test-${randomUUID()}`}, 'active', now() + interval '1 day')`;
       await sql`insert into voice_intros (user_id, mime_type, duration_seconds, size_bytes, data) values (${account.id}, 'audio/webm', 1, 3, 'YWJj')`;

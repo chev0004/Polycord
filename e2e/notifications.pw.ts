@@ -12,9 +12,9 @@ const fixture = async (context: BrowserContext) => {
     returning id, discord_user_id, display_name`;
   const [owner, actor] = people;
   const profiles = await sql`
-    insert into profiles (user_id, is_public, primary_language, target_language, proficiency_level, bio)
-    values (${owner.id}, true, 'en', 'ja', 'beginner', 'An isolated inbox owner profile.'),
-           (${actor.id}, true, 'ja', 'en', 'beginner', 'An isolated inbox actor profile.')
+    insert into profiles (last_bumped_at,user_id, is_public, primary_language, target_language, proficiency_level, bio)
+    values (now(),${owner.id}, true, 'en', 'ja', 'beginner', 'An isolated inbox owner profile.'),
+           (now(),${actor.id}, true, 'ja', 'en', 'beginner', 'An isolated inbox actor profile.')
     returning id, user_id`;
   await sql`insert into user_settings (user_id, profile_view_alert) values (${owner.id}, true)`;
   await sql`insert into notifications (user_id, kind) values (${owner.id}, 'warning')`;
