@@ -11,7 +11,6 @@ const settings = {
   profileViewAlert: false,
   hideProfileVisits: false,
   productAnalytics: false,
-  theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
@@ -128,20 +127,18 @@ test('save and discard preferences, then restore them in a fresh browser', async
   try {
     await page.goto('/en/settings?from=saved&page=2#appearance');
     await expect(
-      page.getByRole('combobox', { name: 'Theme', exact: true }),
+      page.getByRole('combobox', { name: 'Application Language' }),
     ).toBeVisible();
-    await choose(page, 'Theme', 'Light Mode');
+    await expect(page.getByRole('combobox', { name: 'Theme' })).toHaveCount(0);
     await choose(page, 'Application Language', 'Japanese (JA)');
     await choose(page, 'Time Format', '12-hour');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await page.getByRole('button', { name: 'Discard', exact: true }).click();
-    await expect(
-      page.getByRole('combobox', { name: 'Theme', exact: true }),
-    ).toHaveText('Dark Mode');
     await expect(
       page.getByRole('combobox', { name: 'Application Language' }),
     ).toHaveText('English (EN)');
-    await choose(page, 'Theme', 'Light Mode');
+    await expect(
+      page.getByRole('combobox', { name: 'Time Format' }),
+    ).toHaveText('24-hour');
     await choose(page, 'Application Language', 'Japanese (JA)');
     await choose(page, 'Time Format', '12-hour');
     await choose(page, 'Language Names', 'Short codes');
@@ -149,18 +146,17 @@ test('save and discard preferences, then restore them in a fresh browser', async
       .getByRole('button', { name: 'Save Settings', exact: true })
       .click();
     await expect(page).toHaveURL('/ja/settings?from=saved&page=2#appearance');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(
       page.getByRole('button', { name: '設定を保存', exact: true }),
     ).toBeDisabled();
     await page.screenshot({
-      path: testInfo.outputPath('settings-light-ja.png'),
+      path: testInfo.outputPath('settings-ja.png'),
       fullPage: true,
     });
     const [stored] =
       await sql`select s.* from user_settings s join users u on u.id=s.user_id where u.discord_user_id=${account.id}`;
+    expect(stored).not.toHaveProperty('theme');
     expect(stored).toMatchObject({
-      theme: 'light',
       application_language: 'ja',
       time_format: '12hr',
       language_display: 'short',
@@ -175,11 +171,10 @@ test('save and discard preferences, then restore them in a fresh browser', async
     );
     const phone = await fresh.newPage();
     await phone.goto(`/ja/u/${account.profileId}`);
-    await expect(phone.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(phone.locator('article')).toContainText(/午後6:00/);
     await expect(phone.locator('article')).toContainText('JA');
     await phone.screenshot({
-      path: testInfo.outputPath('profile-light-ja-mobile.png'),
+      path: testInfo.outputPath('profile-ja-mobile.png'),
       fullPage: true,
     });
     await page.goto(`/ja?q=${encodeURIComponent(account.name)}&page=2#results`);
@@ -192,18 +187,12 @@ test('save and discard preferences, then restore them in a fresh browser', async
     const [changed] =
       await sql`select application_language from user_settings s join users u on u.id=s.user_id where u.discord_user_id=${account.id}`;
     expect(changed.application_language).toBe('en');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await page.goto('/en/settings#appearance');
     await expect(
       page.getByRole('combobox', { name: 'Application Language' }),
     ).toHaveText('English (EN)');
-    await choose(page, 'Theme', 'Dark Mode');
-    await page
-      .getByRole('button', { name: 'Save Settings', exact: true })
-      .click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(
-      page.getByRole('combobox', { name: 'Theme', exact: true }),
+      page.getByRole('combobox', { name: 'Application Language' }),
     ).toHaveCSS('background-color', 'rgb(17, 17, 17)');
     await page.screenshot({
       path: testInfo.outputPath('settings-dark-en.png'),
@@ -216,7 +205,7 @@ test('save and discard preferences, then restore them in a fresh browser', async
   }
 });
 
-test('light appearance reaches core pages and exposes only supported settings', async ({
+test('core pages stay dark and settings expose only supported options', async ({
   page,
   context,
 }, testInfo) => {
@@ -257,16 +246,19 @@ test('light appearance reaches core pages and exposes only supported settings', 
       '',
     ]) {
       await page.goto(`/en/${route}`);
-      await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-      await expect(page.locator('body')).toHaveCSS('color', 'rgb(24, 35, 47)');
+      await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+      await expect(page.locator('body')).toHaveCSS(
+        'color',
+        'rgb(255, 255, 255)',
+      );
       await expect(page.locator('body')).toHaveCSS(
         'background-color',
-        'rgb(244, 246, 249)',
+        'rgb(26, 27, 28)',
       );
       await expect(page.getByText('Application error')).toHaveCount(0);
       if (['profile', ''].includes(route))
         await page.screenshot({
-          path: testInfo.outputPath(`${route || 'discovery'}-light-en.png`),
+          path: testInfo.outputPath(`${route || 'discovery'}-en.png`),
           fullPage: true,
         });
     }
@@ -291,7 +283,7 @@ test('light appearance reaches core pages and exposes only supported settings', 
     await page.getByRole('combobox', { name: 'Application Language' }).click();
     await expect(page.getByRole('option')).toHaveCount(2);
     await page.screenshot({
-      path: testInfo.outputPath('locale-menu-light-en.png'),
+      path: testInfo.outputPath('locale-menu-en.png'),
       fullPage: true,
     });
     await page.keyboard.press('Escape');

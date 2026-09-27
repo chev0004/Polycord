@@ -13,7 +13,6 @@ import {
 
 export type UserSettingsValues = Pick<
   NewUserSettings,
-  | 'theme'
   | 'applicationLanguage'
   | 'timeFormat'
   | 'languageDisplay'

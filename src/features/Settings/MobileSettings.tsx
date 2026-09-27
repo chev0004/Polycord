@@ -9,7 +9,6 @@ import {
 } from 'react-hook-form';
 import {
   MdChevronLeft,
-  MdDarkMode,
   MdDeleteOutline,
   MdDownload,
   MdLockOutline,
@@ -104,11 +103,7 @@ const mobilePages: string[] = [
   'premium',
 ];
 
-type ChoiceField =
-  | 'applicationLanguage'
-  | 'theme'
-  | 'timeFormat'
-  | 'languageDisplay';
+type ChoiceField = 'applicationLanguage' | 'timeFormat' | 'languageDisplay';
 
 type SaveField = ChoiceField | ToggleField | 'email';
 
@@ -278,7 +273,6 @@ export const MobileSettings = ({
       icon: MdTranslate,
       options: options.applicationLanguage,
     },
-    theme: { label: t('themeLabel'), icon: MdDarkMode, options: options.theme },
     timeFormat: {
       label: t('timeFormatLabel'),
       icon: MdOutlineSchedule,
@@ -619,7 +613,6 @@ export const MobileSettings = ({
             <SheetLabel>{t('appearanceTitle')}</SheetLabel>
             <SettingsGroup>
               {choiceRow('applicationLanguage')}
-              {choiceRow('theme')}
               {choiceRow('timeFormat')}
               {choiceRow('languageDisplay')}
             </SettingsGroup>

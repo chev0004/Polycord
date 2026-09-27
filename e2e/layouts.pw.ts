@@ -10,12 +10,12 @@ import postgres from 'postgres';
 
 const sql = () => postgres(process.env.TEST_DATABASE_URL as string);
 
-const createUser = async (name: string, premium = false, theme = 'dark') => {
+const createUser = async (name: string, premium = false) => {
   const db = sql();
   const discordId = randomUUID().replaceAll('-', '');
   const [account] =
     await db`insert into users (discord_user_id, discord_username, display_name) values (${discordId}, ${discordId}, ${name}) returning id`;
-  await db`insert into user_settings (user_id, theme) values (${account.id}, ${theme})`;
+  await db`insert into user_settings (user_id) values (${account.id})`;
   if (premium)
     await db`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${account.id}, ${`cus_${discordId}`}, 'active', now() + interval '30 days')`;
   await db.end();
@@ -73,12 +73,12 @@ const overlaps = async (a: Locator, b: Locator) => {
   );
 };
 
-test('plan comparison stays readable across widths, locales, themes and plans', async ({
+test('plan comparison stays readable across widths, locales and plans', async ({
   page,
   context,
 }, testInfo) => {
   const free = await createUser('Layout Free');
-  const premium = await createUser('Layout Premium', true, 'light');
+  const premium = await createUser('Layout Premium', true);
   try {
     for (const [user, locale] of [
       [free, 'en'],
