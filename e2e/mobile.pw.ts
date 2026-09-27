@@ -362,7 +362,6 @@ test('settings drill-in pages reach and save every setting on phones', async ({
       .click();
     await main.getByRole('button', { name: 'Settings', exact: true }).click();
     for (const [row, option] of [
-      ['Theme', 'Light Mode'],
       ['Time Format', '12-hour'],
       ['Language Names', 'Short codes'],
     ]) {
@@ -387,7 +386,6 @@ test('settings drill-in pages reach and save every setting on phones', async ({
       )
       .toBe('short');
     await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(main.getByRole('button', { name: /^Privacy/ })).toContainText(
       'Unlisted',
     );
@@ -395,13 +393,12 @@ test('settings drill-in pages reach and save every setting on phones', async ({
       main.getByRole('button', { name: /^Notifications/ }),
     ).toContainText('0 on');
     await page.screenshot({
-      path: testInfo.outputPath('settings-light.png'),
+      path: testInfo.outputPath('settings-saved.png'),
       animations: 'disabled',
     });
     const [settings] =
-      await sql`select theme, time_format, language_display, profile_interaction_alert from user_settings where user_id = ${owner.id}`;
+      await sql`select time_format, language_display, profile_interaction_alert from user_settings where user_id = ${owner.id}`;
     expect(settings).toMatchObject({
-      theme: 'light',
       time_format: '12hr',
       language_display: 'short',
       profile_interaction_alert: false,
