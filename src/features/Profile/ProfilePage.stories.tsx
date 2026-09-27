@@ -585,3 +585,39 @@ export const MobilePreviewTap: Story = {
     await expect(await screen.findByRole('dialog')).toBeInTheDocument();
   },
 };
+
+export const MobileFreeTimeSurvivesSheetClose: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const openFreeTime = async () => {
+      fireEvent.click(
+        await canvas.findByRole('button', { name: /^Free Time/ }),
+      );
+      return within(await screen.findByRole('dialog'));
+    };
+
+    let sheet = await openFreeTime();
+    fireEvent.click(sheet.getByRole('switch', { name: 'Free Time' }));
+    await waitFor(() =>
+      expect(
+        sheet.getByRole('switch', { name: 'Free Time' }),
+      ).not.toBeChecked(),
+    );
+    fireEvent.click(sheet.getByRole('button', { name: 'Close' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+
+    sheet = await openFreeTime();
+    fireEvent.click(sheet.getByRole('switch', { name: 'Free Time' }));
+    await waitFor(() =>
+      expect(sheet.getByRole('switch', { name: 'Free Time' })).toBeChecked(),
+    );
+    await expect(
+      sheet.getByRole('button', { name: 'Weekdays' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(sheet.getByLabelText('From')).toHaveValue('06:00');
+  },
+};
