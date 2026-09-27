@@ -23,10 +23,16 @@ test('missing routes and malformed profile identifiers recover in both locales',
         'href',
         `/${locale}`,
       );
+      await expect(page.getByRole('navigation').first()).toBeVisible();
+      await expect(page.getByRole('contentinfo')).toBeVisible();
     }
   }
   expect((await page.goto('/fr/profile'))?.status()).toBe(404);
-  await expect(page.getByRole('link')).toHaveAttribute('href', '/en');
+  await expect(page.getByRole('main').getByRole('link')).toHaveAttribute(
+    'href',
+    '/en',
+  );
+  await expect(page.getByRole('contentinfo')).toBeVisible();
   expect((await request.get('/api/voice/not-a-uuid')).status()).toBe(404);
 });
 
