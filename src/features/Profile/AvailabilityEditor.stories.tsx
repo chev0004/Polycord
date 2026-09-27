@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fireEvent, userEvent, waitFor, within } from '@storybook/test';
 import { useState } from 'react';
-import type { AvailabilityPattern } from '@/constants/availability';
+import {
+  type AvailabilityPattern,
+  DEFAULT_AVAILABILITY_PATTERN,
+} from '@/constants/availability';
 import { AvailabilityEditor } from './AvailabilityEditor';
 
 const EditorHarness = ({
@@ -12,11 +15,14 @@ const EditorHarness = ({
   disabled?: boolean;
 }) => {
   const [value, setValue] = useState<AvailabilityPattern | null>(initialValue);
+  const [lastPattern, setLastPattern] = useState(DEFAULT_AVAILABILITY_PATTERN);
   return (
     <div className="w-[420px] rounded-3xl bg-background-dark p-6">
       <AvailabilityEditor
         value={value}
         onChange={setValue}
+        lastPattern={lastPattern}
+        onLastPatternChange={setLastPattern}
         disabled={disabled}
       />
     </div>

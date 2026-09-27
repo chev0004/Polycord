@@ -1,13 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import { MdCheckCircle, MdRadioButtonUnchecked } from 'react-icons/md';
 import { FormGroup, Label, Toggle } from '@/components/Form';
-import {
-  type AvailabilityDays,
-  type AvailabilityPattern,
-  DEFAULT_AVAILABILITY_PATTERN,
+import type {
+  AvailabilityDays,
+  AvailabilityPattern,
 } from '@/constants/availability';
 
 const DAY_KEYS: { id: AvailabilityDays; labelKey: string }[] = [
@@ -19,21 +18,22 @@ const DAY_KEYS: { id: AvailabilityDays; labelKey: string }[] = [
 type AvailabilityEditorProps = {
   value: AvailabilityPattern | null | undefined;
   onChange: (value: AvailabilityPattern | null) => void;
+  lastPattern: AvailabilityPattern;
+  onLastPatternChange: (value: AvailabilityPattern) => void;
   disabled?: boolean;
 };
 
 export const AvailabilityEditor = ({
   value,
   onChange,
+  lastPattern,
+  onLastPatternChange,
   disabled = false,
 }: AvailabilityEditorProps) => {
   const t = useTranslations('Profile');
   const fromId = useId();
   const toId = useId();
 
-  const [lastPattern, setLastPattern] = useState(
-    value ?? DEFAULT_AVAILABILITY_PATTERN,
-  );
   const enabled = Boolean(value);
   const pattern = value ?? lastPattern;
   const patch = (next: Partial<AvailabilityPattern>) =>
@@ -47,7 +47,7 @@ export const AvailabilityEditor = ({
           checked={enabled}
           disabled={disabled}
           onCheckedChange={(checked) => {
-            if (!checked) setLastPattern(pattern);
+            if (!checked) onLastPatternChange(pattern);
             onChange(checked ? { ...lastPattern } : null);
           }}
           aria-label={t('freeTimeLabel')}
