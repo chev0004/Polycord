@@ -1,11 +1,12 @@
 import type { useTranslations } from 'next-intl';
 import { Proficiency } from '@/constants';
+import { getFreeCardTheme } from './cardTheme';
 import type { DiscoveryProfile } from './ProfileCard';
 
 // Sample discovery profiles shared by the ProfileGrid and DiscoveryPage
 // stories. Language codes, proficiency levels, and IANA timezones line up with
 // the filter option values so story play functions can exercise filtering.
-export const createSampleProfiles = (
+const sampleProfiles = (
   t: ReturnType<typeof useTranslations>,
 ): DiscoveryProfile[] => [
   {
@@ -305,3 +306,9 @@ export const createSampleProfiles = (
     bumpedMinutesAgo: 10260,
   },
 ];
+
+export const createSampleProfiles = (t: ReturnType<typeof useTranslations>) =>
+  sampleProfiles(t).map((profile, index) => ({
+    ...profile,
+    cardTheme: getFreeCardTheme(index),
+  }));
