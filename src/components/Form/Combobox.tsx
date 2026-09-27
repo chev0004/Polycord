@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useId, useMemo, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
+import { normalizeSearch } from '@/lib/normalizeSearch';
 
 export type ComboboxProps = {
   id?: string;
@@ -79,9 +80,9 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       if (!searchTerm || searchTerm === selectedLabel) {
         return options;
       }
-      const lowerSearch = searchTerm.toLowerCase();
+      const normalizedSearch = normalizeSearch(searchTerm);
       return options.filter((option) =>
-        option.label.toLowerCase().includes(lowerSearch),
+        normalizeSearch(option.label).includes(normalizedSearch),
       );
     }, [searchTerm, selectedLabel, options]);
 

@@ -11,6 +11,7 @@ import {
 } from 'react';
 import type { IconType } from 'react-icons';
 import { MdCheck, MdChevronRight, MdClose, MdSearch } from 'react-icons/md';
+import { normalizeSearch } from '@/lib/normalizeSearch';
 
 const DISMISS_DISTANCE = 80;
 
@@ -386,9 +387,9 @@ export const SheetPickList = ({
 }) => {
   const t = useTranslations('Sheet');
   const [search, setSearch] = useState('');
-  const query = search.trim().toLowerCase();
+  const query = normalizeSearch(search.trim());
   const shown = options.filter((option) =>
-    option.label.toLowerCase().includes(query),
+    normalizeSearch(option.label).includes(query),
   );
 
   return (
