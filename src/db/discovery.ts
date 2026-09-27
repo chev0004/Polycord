@@ -1,6 +1,15 @@
 import 'server-only';
 
-import { and, count, eq, inArray, or, type SQL, sql } from 'drizzle-orm';
+import {
+  and,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  or,
+  type SQL,
+  sql,
+} from 'drizzle-orm';
 import type { DiscoveryTagCount } from '@/features/Discovery/discoveryTags';
 import {
   type DiscoveryUrlState,
@@ -21,6 +30,9 @@ export const DISCOVERY_PAGE_SIZE = 9;
 const TOP_TAGS = 32;
 const TAG_CACHE_SIZE = 64;
 const TAG_CACHE_MS = 60000;
+
+const discoverable = () =>
+  and(publiclyVisible(), isNotNull(profiles.lastBumpedAt));
 
 let postgresTimezones: Promise<string[]> | undefined;
 
@@ -51,7 +63,7 @@ const tagCounts = (where: SQL | undefined, limit?: number) =>
 
 const loadTopTags = () => {
   if (!tagCache || tagCache.expires < Date.now()) {
-    const tags = tagCounts(publiclyVisible(), TAG_CACHE_SIZE);
+    const tags = tagCounts(discoverable(), TAG_CACHE_SIZE);
     tagCache = { expires: Date.now() + TAG_CACHE_MS, tags };
     const forget = () => {
       if (tagCache?.tags === tags) tagCache = undefined;
@@ -73,7 +85,7 @@ const listTopTags = async (viewerUserId?: string) => {
     viewerUserId
       ? tagCounts(
           and(
-            publiclyVisible(),
+            discoverable(),
             sql`${profiles.userId} in ${blockedUserIds(viewerUserId)}`,
           ),
         )
@@ -98,7 +110,7 @@ const discoveryWhere = async (
   viewerUserId?: string,
 ) => {
   const conditions: (SQL | undefined)[] = [
-    publiclyVisible(),
+    discoverable(),
     viewerUserId
       ? sql`not exists (select 1 from user_blocks where blocker_user_id = ${viewerUserId}::uuid and blocked_user_id = ${profiles.userId})
         and not exists (select 1 from user_blocks where blocked_user_id = ${viewerUserId}::uuid and blocker_user_id = ${profiles.userId})`
