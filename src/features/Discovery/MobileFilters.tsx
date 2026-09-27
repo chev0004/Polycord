@@ -329,13 +329,15 @@ export const FilterSheet = ({
           activeSubFilter ? (
             selection(activeSubFilter.id).length > 0 ? (
               <SheetTextButton
+                danger
                 onClick={() => setSelection(activeSubFilter, [])}
               >
-                {t('filterSheetClear')}
+                {t('filterClear')}
               </SheetTextButton>
             ) : null
           ) : hasDraftFilters ? (
             <SheetTextButton
+              danger
               onClick={() =>
                 setDraft((previous) => ({
                   ...previous,
@@ -344,7 +346,7 @@ export const FilterSheet = ({
                 }))
               }
             >
-              {t('filterSheetReset')}
+              {t('filterClear')}
             </SheetTextButton>
           ) : null
         }

@@ -160,14 +160,12 @@ export const Default: Story = {
       expect(canvas.getByText('Primary Language')).toBeInTheDocument(),
     );
 
-    await userEvent.click(
-      canvas.getByRole('button', { name: 'Clear filters' }),
-    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
 
     await expect(args.onClearFilters).toHaveBeenCalled();
     await waitFor(() =>
       expect(
-        canvas.queryByRole('button', { name: 'Clear filters' }),
+        canvas.queryByRole('button', { name: 'Clear' }),
       ).not.toBeInTheDocument(),
     );
   },
@@ -196,7 +194,7 @@ export const WithSortSlot: Story = {
       canvas.getByRole('button', { name: 'Sort' }),
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole('button', { name: 'Clear filters' }),
+      canvas.getByRole('button', { name: 'Clear' }),
     ).toBeInTheDocument();
     await expect(canvas.getByText('Advanced')).toBeInTheDocument();
     await expect(canvas.getByText('Country')).toBeInTheDocument();

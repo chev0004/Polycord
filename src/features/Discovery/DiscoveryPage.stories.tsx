@@ -122,7 +122,7 @@ const filterAndClearPlay = async ({
   );
   expect(canvas.queryAllByText('Carlos')).toHaveLength(0);
 
-  await userEvent.click(canvas.getByRole('button', { name: 'Clear filters' }));
+  await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
 
   await waitFor(() =>
     expect(canvas.getByText('9 partners')).toBeInTheDocument(),

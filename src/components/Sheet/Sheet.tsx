@@ -153,14 +153,20 @@ export const SheetIconButton = ({
 export const SheetTextButton = ({
   children,
   onClick,
+  danger = false,
 }: {
   children: ReactNode;
   onClick: () => void;
+  danger?: boolean;
 }) => (
   <button
     type="button"
     onClick={onClick}
-    className="h-11 flex-shrink-0 px-2 font-semibold text-primary text-sm hover:text-primary-light focus-visible:text-primary-light"
+    className={`h-11 flex-shrink-0 px-2 font-semibold text-sm ${
+      danger
+        ? 'text-red-300 hover:text-red-200 focus-visible:text-red-200'
+        : 'text-primary hover:text-primary-light focus-visible:text-primary-light'
+    }`}
   >
     {children}
   </button>
