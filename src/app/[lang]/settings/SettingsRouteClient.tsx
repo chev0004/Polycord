@@ -122,13 +122,14 @@ export const SettingsRouteClient = ({
       onExportData={downloadAccountData}
       onSubmit={async (data) => {
         await saveSettings(data);
-        router.replace(
-          localizePath(
-            `${window.location.pathname}${window.location.search}${window.location.hash}`,
-            data.applicationLanguage,
-          ),
-        );
-        router.refresh();
+        const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        const nextPath = localizePath(currentPath, data.applicationLanguage);
+
+        if (nextPath === currentPath) {
+          router.refresh();
+        } else {
+          router.replace(nextPath);
+        }
       }}
       onUpdateDiscordConnection={() =>
         window.location.assign(`/api/auth/discord?locale=${locale}`)

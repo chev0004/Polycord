@@ -77,6 +77,43 @@ const choose = async (page: Page, label: string, option: string) => {
   await page.getByRole('option', { name: option, exact: true }).click();
 };
 
+test('saving settings keeps navigation in view and usable', async ({
+  page,
+  context,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const account = await signIn(context);
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  try {
+    await page.goto('/en/settings#appearance');
+    await choose(page, 'Language Names', 'Short codes');
+    const home = page.getByRole('button', { name: 'Polycord', exact: true });
+    await expect(home).toBeInViewport();
+    await page
+      .getByRole('button', { name: 'Save Settings', exact: true })
+      .click();
+    await expect(
+      page.getByRole('button', { name: 'Save Settings', exact: true }),
+    ).toBeDisabled();
+    await expect(home).toBeInViewport();
+    await expect
+      .poll(async () => {
+        const [stored] =
+          await sql`select language_display from user_settings where user_id=(select id from users where discord_user_id=${account.id})`;
+        return stored?.language_display;
+      })
+      .toBe('short');
+    await page.screenshot({
+      path: testInfo.outputPath('settings-after-save.png'),
+    });
+    await home.click();
+    await expect(page).toHaveURL('/en');
+  } finally {
+    await sql`delete from users where discord_user_id=${account.id}`;
+    await sql.end();
+  }
+});
+
 test('save and discard preferences, then restore them in a fresh browser', async ({
   page,
   context,
