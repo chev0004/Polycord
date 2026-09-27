@@ -20,6 +20,7 @@ import {
   MdPersonSearch,
   MdPolicy,
   MdSearch,
+  MdStorage,
   MdTaskAlt,
   MdTune,
 } from 'react-icons/md';
@@ -42,7 +43,8 @@ import {
   useShortcut,
 } from './ModerationParts';
 import { StaffPanel } from './ModerationStaff';
-import type { ModAction, ModUser } from './types';
+import { SeedPanel } from './SeedPanel';
+import type { ModAction, ModUser, SeedStatus } from './types';
 import { LOG_ACTIONS } from './types';
 import {
   groupReports,
@@ -50,7 +52,7 @@ import {
   type ModerationStore,
 } from './useModeration';
 
-export type ModTab = 'reports' | 'users' | 'log' | 'suspicious';
+export type ModTab = 'reports' | 'users' | 'log' | 'suspicious' | 'dummy';
 
 export type Notify = (
   user: ModUser,
@@ -990,6 +992,7 @@ export const ModerationDesktop = ({
   users,
   notify,
   openUser,
+  seed,
 }: {
   store: ModerationStore;
   tab: ModTab;
@@ -997,6 +1000,7 @@ export const ModerationDesktop = ({
   users: UsersQuery;
   notify: Notify;
   openUser: (userId: string) => void;
+  seed: SeedStatus | null;
 }) => {
   const t = useTranslations('Admin');
   const me = store.usersById.get(store.meId);
@@ -1016,6 +1020,9 @@ export const ModerationDesktop = ({
         label: t('tabSuspicious'),
         badge: store.suspicious.length,
       },
+      ...(seed
+        ? [{ id: 'dummy' as const, icon: MdStorage, label: t('tabDummy') }]
+        : []),
     ];
 
   return (
@@ -1111,6 +1118,7 @@ export const ModerationDesktop = ({
       {tab === 'suspicious' ? (
         <SuspiciousTab store={store} openUser={openUser} />
       ) : null}
+      {tab === 'dummy' && seed ? <SeedPanel initial={seed} /> : null}
     </main>
   );
 };

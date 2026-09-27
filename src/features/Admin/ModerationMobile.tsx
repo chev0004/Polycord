@@ -34,6 +34,7 @@ import {
   MdSchedule,
   MdSearch,
   MdSettingsBackupRestore,
+  MdStorage,
   MdSwipeLeft,
   MdTaskAlt,
   MdTune,
@@ -68,7 +69,8 @@ import {
   useSuspendDays,
 } from './ModerationParts';
 import { StaffPanel } from './ModerationStaff';
-import type { ModAction, ModReport, ModUser } from './types';
+import { SeedPanel } from './SeedPanel';
+import type { ModAction, ModReport, ModUser, SeedStatus } from './types';
 import { LOG_ACTIONS } from './types';
 import {
   groupReports,
@@ -751,10 +753,12 @@ const Dock = ({
   tab,
   setTab,
   pending,
+  seeding,
 }: {
   tab: ModTab;
   setTab: (tab: ModTab) => void;
   pending: number;
+  seeding: boolean;
 }) => {
   const t = useTranslations('Admin');
   const items = useRef<Partial<Record<ModTab, HTMLElement | null>>>({});
@@ -770,6 +774,7 @@ const Dock = ({
     users: t('tabUsers'),
     log: t('tabLog'),
     suspicious: t('tabSuspicious'),
+    dummy: t('tabDummy'),
   };
 
   useLayoutEffect(() => {
@@ -853,6 +858,7 @@ const Dock = ({
         {button('users', MdPersonSearch)}
         {button('log', MdHistory)}
         {button('suspicious', MdPolicy)}
+        {seeding ? button('dummy', MdStorage) : null}
       </div>
     </nav>
   );
@@ -1468,12 +1474,14 @@ export const ModerationMobile = ({
   setTab,
   users,
   notify,
+  seed,
 }: {
   store: ModerationStore;
   tab: ModTab;
   setTab: (tab: ModTab) => void;
   users: UsersQuery;
   notify: Notify;
+  seed: SeedStatus | null;
 }) => {
   const [view, setView] = useState<'pending' | 'resolved'>('pending');
   const [page, setPage] = useState<Page | null>(null);
@@ -1531,6 +1539,11 @@ export const ModerationMobile = ({
       {tab === 'suspicious' ? (
         <FlagsScreen store={store} openUser={openUser} />
       ) : null}
+      {tab === 'dummy' && seed ? (
+        <div className="pt-[calc(env(safe-area-inset-top)+16px)]">
+          <SeedPanel initial={seed} mobile />
+        </div>
+      ) : null}
       <Dock
         tab={tab}
         setTab={(next) => {
@@ -1538,6 +1551,7 @@ export const ModerationMobile = ({
           setPage(null);
         }}
         pending={store.pendingGroups.length}
+        seeding={Boolean(seed)}
       />
       {page ? (
         <CasePage
