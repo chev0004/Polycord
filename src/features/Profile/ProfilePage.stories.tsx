@@ -230,11 +230,11 @@ export const TimezoneRequiredForFreeTime: Story = {
     await expect(toggle).toBeDisabled();
     setFieldValue(timezone, 'Asia/Tokyo');
     await waitFor(() => expect(toggle).toBeEnabled());
-    await expect(canvas.getByLabelText('From')).toBeInTheDocument();
+    await expect(canvas.getByLabelText('From')).toBeEnabled();
     setFieldValue(timezone, '');
     await waitFor(() => expect(toggle).toBeDisabled());
     await expect(timezone).toHaveValue('');
-    await expect(canvas.queryByLabelText('From')).not.toBeInTheDocument();
+    await expect(canvas.getByLabelText('From')).toBeDisabled();
   },
 };
 
@@ -606,5 +606,41 @@ export const MobilePickListSearchCover: Story = {
       },
       { timeout: 5000 },
     );
+  },
+};
+
+export const MobileFreeTimeSurvivesSheetClose: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const openFreeTime = async () => {
+      fireEvent.click(
+        await canvas.findByRole('button', { name: /^Free Time/ }),
+      );
+      return within(await screen.findByRole('dialog'));
+    };
+
+    let sheet = await openFreeTime();
+    fireEvent.click(sheet.getByRole('switch', { name: 'Free Time' }));
+    await waitFor(() =>
+      expect(
+        sheet.getByRole('switch', { name: 'Free Time' }),
+      ).not.toBeChecked(),
+    );
+    fireEvent.click(sheet.getByRole('button', { name: 'Close' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+
+    sheet = await openFreeTime();
+    fireEvent.click(sheet.getByRole('switch', { name: 'Free Time' }));
+    await waitFor(() =>
+      expect(sheet.getByRole('switch', { name: 'Free Time' })).toBeChecked(),
+    );
+    await expect(
+      sheet.getByRole('button', { name: 'Weekdays' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(sheet.getByLabelText('From')).toHaveValue('06:00');
   },
 };

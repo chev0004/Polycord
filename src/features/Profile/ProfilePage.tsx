@@ -31,7 +31,10 @@ import {
 import { DraftNotice } from '@/components/Form/DraftNotice';
 import type { ActionSheetItem } from '@/components/Sheet';
 import { countryOptions, languageOptions } from '@/constants';
-import { availabilityPresetToPattern } from '@/constants/availability';
+import {
+  availabilityPresetToPattern,
+  DEFAULT_AVAILABILITY_PATTERN,
+} from '@/constants/availability';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { BumpProfileError } from '@/features/Discovery/bumpProfileRequest';
 import {
@@ -213,6 +216,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
   const [boostFailed, setBoostFailed] = useState(false);
+  const [lastAvailability, setLastAvailability] = useState(
+    DEFAULT_AVAILABILITY_PATTERN,
+  );
   const [tease, setTease] = useState<string | null>(null);
   const [bumpStatus, setBumpStatus] = useState<
     'idle' | 'bumping' | 'success' | 'cooldown' | 'error'
@@ -578,6 +584,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         <AvailabilityEditor
           value={field.value}
           onChange={field.onChange}
+          lastPattern={lastAvailability}
+          onLastPatternChange={setLastAvailability}
           disabled={!timezone}
         />
       )}
