@@ -56,14 +56,16 @@ test('admins seed, browse and remove dummy profiles on an approved database', as
     await page.reload();
     await page.getByRole('tab', { name: 'Dummy data' }).click();
     const panel = page.getByRole('region', { name: 'Dummy data' });
-    const dummies = panel.getByText('Dummy profiles').locator('..');
+    const dummies = panel
+      .getByText('Dummy profiles', { exact: true })
+      .locator('..');
     await expect(
       panel.getByText('Affected database: Local Test Database'),
     ).toBeVisible();
-    await expect(panel.getByText('Real accounts').locator('..')).toContainText(
-      String(real),
-    );
-    await panel.getByRole('button', { name: '5,000' }).click();
+    await expect(
+      panel.getByText('Real accounts', { exact: true }).locator('..'),
+    ).toContainText(String(real));
+    await panel.getByRole('button', { name: '5,000', exact: true }).click();
     await panel.getByRole('button', { name: 'Apply' }).click();
     await expect(panel.getByRole('status')).toContainText('of 5,000');
     await page.screenshot({ path: testInfo.outputPath('seed-progress.png') });
