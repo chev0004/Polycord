@@ -394,7 +394,7 @@ export const SheetPickList = ({
 
   return (
     <>
-      <div className="sticky top-0 z-[2] bg-background-dark pb-2.5">
+      <div className="sticky top-0 z-[2] bg-background-dark pb-2.5 before:absolute before:inset-x-0 before:bottom-full before:h-1 before:bg-background-dark">
         <label className="flex h-11 items-center gap-2 rounded-full border border-line-strong bg-background-darker pr-2 pl-4 text-subtle focus-within:border-primary">
           <MdSearch size={20} aria-hidden />
           <input

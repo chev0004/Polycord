@@ -63,7 +63,7 @@ export const Default: Story = {
     await expect(
       canvas.getByRole('heading', { level: 1, name: 'Yuki Tanaka' }),
     ).toBeInTheDocument();
-    await expect(canvas.getByText('From Yuki')).toBeInTheDocument();
+    await expect(canvas.getByText('Description')).toBeInTheDocument();
     await expect(await canvas.findByText(/overlap$/)).toBeInTheDocument();
     await userEvent.click(canvas.getByRole('button', { name: 'Korean' }));
     await expect(args.onLanguageClick).toHaveBeenCalledWith('ko', false);
@@ -142,6 +142,23 @@ export const NoAvailability: Story = {
 
     await waitFor(() => expect(canvas.getAllByText('Not set')).toHaveLength(2));
     await expect(canvas.queryByText(/overlap$/)).not.toBeInTheDocument();
+    await expect(canvas.queryByText('·')).not.toBeInTheDocument();
+  },
+};
+
+export const NoViewerTimezoneNoAvailability: Story = {
+  args: {
+    profile: { ...profile, availability: undefined },
+    viewerTimezone: undefined,
+    viewerAvailability: undefined,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const status = await canvas.findByText('Not set');
+    const separator = status.nextElementSibling;
+
+    await expect(separator).toHaveTextContent(/^·$/);
+    await expect(separator?.nextElementSibling).toHaveTextContent(/^now \S+/);
   },
 };
 
@@ -154,7 +171,7 @@ export const NoViewerTimezone: Story = {
     const canvas = within(canvasElement);
 
     await waitFor(() =>
-      expect(canvas.getByText('From Yuki')).toBeInTheDocument(),
+      expect(canvas.getByText('Description')).toBeInTheDocument(),
     );
     await expect(
       canvas.queryByText('Same time as you'),

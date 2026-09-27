@@ -105,17 +105,20 @@ const LegendRow = ({
   name,
   range,
   now,
+  separated = false,
 }: {
   swatch: string;
   name: string;
   range: string;
   now: string;
+  separated?: boolean;
 }) => (
   <div className="grid grid-cols-[14px_52px_minmax(0,1fr)] items-start gap-2">
     <span className={`mt-1.5 h-1.5 rounded-full ${swatch}`} />
     <span className="truncate font-semibold text-foreground">{name}</span>
     <span className="flex flex-wrap gap-x-1.5 gap-y-0.5">
       <span>{range}</span>
+      {separated ? <span aria-hidden>·</span> : null}
       <span className="whitespace-nowrap text-subtle">{now}</span>
     </span>
   </div>
@@ -257,6 +260,7 @@ const TheirTime = ({
           now={t('nowTime', {
             time: formatCurrentTime(timezone, timeFormat, locale),
           })}
+          separated={!comparison}
         />
         {comparison ? (
           <LegendRow
@@ -547,7 +551,7 @@ export const ProfileDetail = ({
       <div className="mt-1 grid items-start gap-9 px-5 pt-6 pb-7 min-[861px]:grid-cols-[minmax(0,1fr)_340px] min-[861px]:gap-[72px] min-[861px]:px-7 min-[861px]:pt-7 min-[861px]:pb-9">
         <section className="flex min-w-0 flex-col">
           <p className="mb-2.5 font-semibold text-[13px] text-[var(--ct-chip-dot,var(--color-primary))]">
-            {t('fromName', { name: firstName })}
+            {tDiscovery('descriptionLabel')}
           </p>
           <p className="whitespace-pre-wrap break-words text-[17px] text-soft leading-[1.65]">
             {profile.about}
