@@ -4,7 +4,7 @@ import postgres from 'postgres';
 
 type Account = { id: string; discordUserId: string };
 
-const cookieFor = (user: Account) => {
+const cookieFor = (user: Account, ageHours = 0) => {
   const payload = Buffer.from(
     JSON.stringify({
       user: {
@@ -13,6 +13,7 @@ const cookieFor = (user: Account) => {
         name: user.discordUserId,
         username: user.discordUserId,
       },
+      issuedAt: Date.now() - ageHours * 3600000,
       expiresAt: Date.now() + 3600000,
     }),
   ).toString('base64url');
@@ -22,11 +23,11 @@ const cookieFor = (user: Account) => {
   return `${payload}.${signature}`;
 };
 
-const signIn = (context: BrowserContext, user: Account) =>
+const signIn = (context: BrowserContext, user: Account, ageHours = 0) =>
   context.addCookies([
     {
       name: 'polycord_session',
-      value: cookieFor(user),
+      value: cookieFor(user, ageHours),
       domain: 'localhost',
       path: '/',
     },
@@ -290,6 +291,110 @@ test('admins moderate a report while members cannot reach admin tools', async ({
   } finally {
     await member.close();
     await moderator.close();
+    await sql`delete from users where id in ${sql(accounts.map((account) => account.id))}`;
+    await sql.end();
+  }
+});
+
+test('owners grant and revoke moderators with owner-only actions guarded', async ({
+  browser,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  await sql`delete from users where discord_user_id = 'e2e-admin'`;
+  const accounts = await sql<
+    Account[]
+  >`insert into users (discord_user_id, discord_username, display_name)
+    values ('e2e-admin', 'e2e-admin', 'E2E Owner'), (${`${prefix}-mod`}, ${`${prefix}-mod`}, ${`${prefix} Moderator`}), (${`${prefix}-target`}, ${`${prefix}-target`}, ${`${prefix} Target`})
+    returning id, discord_user_id as "discordUserId"`;
+  const [owner, moderator, target] = accounts;
+  const ownerContext = await browser.newContext({
+    baseURL: 'http://localhost:3119',
+  });
+  const modContext = await browser.newContext({
+    baseURL: 'http://localhost:3119',
+  });
+  const headers = { Origin: 'http://localhost:3119' };
+  const post = (context: BrowserContext, url: string, data: object) =>
+    context.request.post(url, { headers, data });
+  try {
+    await signIn(ownerContext, owner);
+    await signIn(modContext, moderator);
+    const modPage = await modContext.newPage();
+    await modPage.goto('/en/admin');
+    await expect(modPage).toHaveURL('/en');
+
+    expect(
+      (
+        await post(ownerContext, '/api/admin/staff', { userId: moderator.id })
+      ).status(),
+    ).toBe(200);
+    expect(
+      await sql`select action from moderation_actions where target_user_id = ${moderator.id}`,
+    ).toEqual([{ action: 'grant' }]);
+
+    await modPage.goto('/en/admin');
+    await expect(modPage.getByText('Moderator', { exact: true })).toBeVisible();
+    await expect(
+      modPage.getByRole('button', { name: 'Manage staff' }),
+    ).toHaveCount(0);
+    for (const action of ['ban', 'unban']) {
+      expect(
+        (
+          await post(modContext, '/api/admin/moderation', {
+            userId: target.id,
+            action,
+          })
+        ).status(),
+      ).toBe(403);
+    }
+    expect(
+      (
+        await post(modContext, '/api/admin/staff', { userId: target.id })
+      ).status(),
+    ).toBe(403);
+    expect(
+      (
+        await post(modContext, '/api/admin/moderation', {
+          userId: target.id,
+          action: 'warn',
+        })
+      ).status(),
+    ).toBe(200);
+    await modPage.goto('/en/analytics');
+    await expect(modPage).toHaveURL('/en');
+
+    const staleContext = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+    });
+    await signIn(staleContext, owner, 13);
+    expect(
+      (
+        await post(staleContext, '/api/admin/moderation', {
+          userId: target.id,
+          action: 'ban',
+        })
+      ).status(),
+    ).toBe(401);
+    await staleContext.close();
+    expect(
+      (await sql`select banned_at from users where id = ${target.id}`)[0]
+        .banned_at,
+    ).toBeNull();
+
+    expect(
+      (
+        await ownerContext.request.delete('/api/admin/staff', {
+          headers,
+          data: { userId: moderator.id },
+        })
+      ).status(),
+    ).toBe(200);
+    await modPage.goto('/en/admin');
+    await expect(modPage).toHaveURL('/en');
+  } finally {
+    await ownerContext.close();
+    await modContext.close();
     await sql`delete from users where id in ${sql(accounts.map((account) => account.id))}`;
     await sql.end();
   }

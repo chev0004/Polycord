@@ -44,7 +44,11 @@ export const moderationActionEnum = pgEnum('moderation_action', [
   'unsuspend',
   'ban',
   'unban',
+  'grant',
+  'revoke',
 ]);
+
+export const staffRoleEnum = pgEnum('staff_role', ['moderator']);
 
 export const reportReasonEnum = pgEnum('report_reason', [
   'spam',
@@ -420,6 +424,19 @@ export const moderationActions = pgTable(
     ),
   ],
 );
+
+export const staffRoles = pgTable('staff_roles', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  role: staffRoleEnum('role').default('moderator').notNull(),
+  grantedBy: uuid('granted_by').references(() => users.id, {
+    onDelete: 'set null',
+  }),
+  grantedAt: timestamp('granted_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
 
 export const subscriptions = pgTable(
   'subscriptions',

@@ -5,6 +5,7 @@ import {
   listModerationReports,
   listModerationUsers,
   listReportsAgainstUsers,
+  listStaffUserIds,
   listSuspiciousActivity,
   type ModerationAction,
   type Report,
@@ -16,38 +17,44 @@ import type {
   ModReport,
   ModSnapshot,
   ModUser,
+  StaffRole,
 } from '@/features/Admin/types';
-import { isAdminDiscordId } from './admin';
+import { isOwnerDiscordId, ownerDiscordIds } from './admin';
 
 type ModerationUserRow = Awaited<
   ReturnType<typeof listModerationUsers>
 >[number];
 
-export const toModUser = ({
+export const staffRoleOf = ({
   user,
-  profile,
-  warnings,
-}: ModerationUserRow): ModUser => ({
-  id: user.id,
-  displayName: user.displayName,
-  username: user.discordUsername,
-  discordId: user.discordUserId,
-  avatarUrl: user.avatarUrl ?? undefined,
-  joinedAt: user.createdAt.toISOString(),
-  staff: isAdminDiscordId(user.discordUserId),
-  bannedAt: user.bannedAt?.toISOString(),
-  suspendedUntil: user.suspendedUntil?.toISOString(),
-  hidden: profile?.hiddenByModeration ?? false,
-  warnings,
-  profile: profile
-    ? {
-        bio: profile.bio,
-        isPublic: profile.isPublic,
-        primaryLanguage: profile.primaryLanguage,
-        targetLanguages: profile.targetLanguages,
-      }
-    : undefined,
-});
+  staffRole,
+}: ModerationUserRow): StaffRole | undefined =>
+  isOwnerDiscordId(user.discordUserId) ? 'owner' : (staffRole ?? undefined);
+
+export const toModUser = (row: ModerationUserRow): ModUser => {
+  const { user, profile, warnings } = row;
+  return {
+    id: user.id,
+    displayName: user.displayName,
+    username: user.discordUsername,
+    discordId: user.discordUserId,
+    avatarUrl: user.avatarUrl ?? undefined,
+    joinedAt: user.createdAt.toISOString(),
+    role: staffRoleOf(row),
+    bannedAt: user.bannedAt?.toISOString(),
+    suspendedUntil: user.suspendedUntil?.toISOString(),
+    hidden: profile?.hiddenByModeration ?? false,
+    warnings,
+    profile: profile
+      ? {
+          bio: profile.bio,
+          isPublic: profile.isPublic,
+          primaryLanguage: profile.primaryLanguage,
+          targetLanguages: profile.targetLanguages,
+        }
+      : undefined,
+  };
+};
 
 export const toModReport = (report: Report): ModReport => ({
   id: report.id,
@@ -94,19 +101,22 @@ const withUsers = async (
 
 export const loadModerationSnapshot = async (
   meId: string,
+  meRole: StaffRole,
 ): Promise<ModSnapshot> => {
-  const [reports, log, suspicious] = await Promise.all([
+  const [reports, log, suspicious, staff] = await Promise.all([
     listModerationReports(),
     listModerationActions(),
     listSuspiciousActivity(),
+    listStaffUserIds(ownerDiscordIds()),
   ]);
 
   return {
-    ...(await withUsers(
-      reports,
-      log,
-      suspicious.flatMap((row) => (row.userId ? [row.userId] : [])),
-    )),
+    ...(await withUsers(reports, log, [
+      ...staff,
+      ...suspicious.flatMap((row) => (row.userId ? [row.userId] : [])),
+    ])),
+    staff,
+    meRole,
     suspicious: suspicious.map((row) => ({
       id: row.id,
       action: row.action,

@@ -14,7 +14,6 @@ const user = (
   username,
   discordId: `10${id.padStart(16, '0')}`,
   joinedAt: ago(200 * 1440),
-  staff: false,
   hidden: false,
   warnings: 0,
   profile: {
@@ -28,9 +27,11 @@ const user = (
 
 export const moderationSnapshot: ModSnapshot = {
   meId: 'kenji',
+  meRole: 'owner',
+  staff: ['kenji', 'tomas'],
   users: [
-    user('kenji', 'Kenji Ito', 'kenji.ito', { staff: true }),
-    user('tomas', 'Tomás Ruiz', 'tomas.r', { staff: true }),
+    user('kenji', 'Kenji Ito', 'kenji.ito', { role: 'owner' }),
+    user('tomas', 'Tomás Ruiz', 'tomas.r', { role: 'moderator' }),
     user('ryan', 'Ryan Mercer', 'ryanmercer.fx'),
     user('dmitri', 'Dmitri Volkov', 'dvolkov', {
       hidden: true,
@@ -112,4 +113,10 @@ export const emptyModerationSnapshot: ModSnapshot = {
   reports: moderationSnapshot.reports.filter(
     (report) => report.status !== 'pending',
   ),
+};
+
+export const moderatorSnapshot: ModSnapshot = {
+  ...moderationSnapshot,
+  meId: 'tomas',
+  meRole: 'moderator',
 };

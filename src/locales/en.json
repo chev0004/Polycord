@@ -237,7 +237,20 @@
     "suspendDesc": "Blocks sign-in for 1 to 90 days.",
     "unbanDesc": "Lets them sign in again.",
     "banDesc": "Permanently blocks this account.",
-    "dockLabel": "Moderation"
+    "dockLabel": "Moderation",
+    "action_grant": "Granted moderator",
+    "action_revoke": "Removed moderator",
+    "chipModerator": "Moderator",
+    "manageStaff": "Manage staff",
+    "staffTitle": "Staff",
+    "staffCount": "{count, plural, one {# member} other {# members}} · owners only",
+    "addModerator": "Add moderator",
+    "addModeratorPlaceholder": "Username, name or Discord ID",
+    "noStaffMatches": "No matching accounts.",
+    "removeModerator": "Remove {name} as moderator",
+    "grantModerator": "Make {name} a moderator",
+    "reauthRequired": "Owner actions need a sign-in from the last 12 hours.",
+    "signInAgain": "Sign in again"
   },
   "UserMenu": {
     "accountMenu": "Account menu",

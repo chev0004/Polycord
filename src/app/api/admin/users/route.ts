@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/admin';
+import { getStaffRole } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { searchModeration } from '@/lib/moderation';
 
 export const GET = async (request: Request) => {
   const currentUser = await getCurrentUser();
 
-  if (!currentUser || !isAdmin(currentUser)) {
+  if (!currentUser || !(await getStaffRole(currentUser))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 

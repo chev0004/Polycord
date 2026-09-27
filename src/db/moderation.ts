@@ -24,6 +24,7 @@ import {
   profiles,
   type Report,
   reports,
+  staffRoles,
   users,
 } from './schema';
 
@@ -187,9 +188,10 @@ export const listModerationUsers = async (userIds: string[]) => {
 
   const [rows, warnings] = await Promise.all([
     db
-      .select({ user: users, profile: profiles })
+      .select({ user: users, profile: profiles, staffRole: staffRoles.role })
       .from(users)
       .leftJoin(profiles, eq(profiles.userId, users.id))
+      .leftJoin(staffRoles, eq(staffRoles.userId, users.id))
       .where(inArray(users.id, userIds)),
     db
       .select({ userId: moderationActions.targetUserId, count: count() })
@@ -206,8 +208,9 @@ export const listModerationUsers = async (userIds: string[]) => {
     rows.flatMap(({ profile }) => (profile ? [profile.id] : [])),
   );
 
-  return rows.map(({ user, profile }) => ({
+  return rows.map(({ user, profile, staffRole }) => ({
     user,
+    staffRole,
     profile: profile && {
       ...profile,
       targetLanguages: targetLanguagesForProfile(
@@ -237,6 +240,41 @@ export const searchModerationUserIds = async (query: string) => {
 
   return rows.map(({ id }) => id);
 };
+
+export const hasStaffRole = async (userId: string) =>
+  (
+    await db
+      .select({ userId: staffRoles.userId })
+      .from(staffRoles)
+      .where(eq(staffRoles.userId, userId))
+  ).length > 0;
+
+export const listStaffUserIds = async (ownerDiscordIds: string[]) => {
+  const [moderators, owners] = await Promise.all([
+    db.select({ id: staffRoles.userId }).from(staffRoles),
+    ownerDiscordIds.length
+      ? db
+          .select({ id: users.id })
+          .from(users)
+          .where(inArray(users.discordUserId, ownerDiscordIds))
+      : [],
+  ]);
+
+  return [...owners, ...moderators].map(({ id }) => id);
+};
+
+export const grantModerator = async (userId: string, grantedBy: string) =>
+  (
+    await db
+      .insert(staffRoles)
+      .values({ userId, grantedBy })
+      .onConflictDoNothing()
+      .returning()
+  ).length > 0;
+
+export const revokeModerator = async (userId: string) =>
+  (await db.delete(staffRoles).where(eq(staffRoles.userId, userId)).returning())
+    .length > 0;
 
 export const isUserRestricted = (user: {
   suspendedUntil: Date | null;

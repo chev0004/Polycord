@@ -5,6 +5,7 @@ import { ModerationPage } from './ModerationPage';
 import {
   emptyModerationSnapshot,
   moderationSnapshot,
+  moderatorSnapshot,
 } from './moderationFixtures';
 
 const meta: Meta<typeof ModerationPage> = {
@@ -110,4 +111,35 @@ export const MobileQueueClear: Story = {
 
 export const Loading: Story = {
   render: () => <ModerationSkeleton />,
+};
+
+export const ManageStaff: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: 'Manage staff' }));
+    await expect(await screen.findByText('Tomás Ruiz')).toBeInTheDocument();
+    await expect(
+      screen.getByRole('button', { name: 'Remove Tomás Ruiz as moderator' }),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByRole('button', { name: 'Add moderator' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const ModeratorView: Story = {
+  args: { initial: moderatorSnapshot },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Moderator')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: /^Warn/ }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('button', { name: /^Ban/ }),
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('button', { name: 'Manage staff' }),
+    ).not.toBeInTheDocument();
+  },
 };

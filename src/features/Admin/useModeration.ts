@@ -25,7 +25,10 @@ export const isSuspended = (user: ModUser) =>
   new Date(user.suspendedUntil).getTime() > Date.now();
 
 export const hasStatusChips = (user: ModUser) =>
-  user.staff || user.hidden || user.bannedAt !== undefined || isSuspended(user);
+  user.role !== undefined ||
+  user.hidden ||
+  user.bannedAt !== undefined ||
+  isSuspended(user);
 
 export const groupReports = (
   reports: ModReport[],
@@ -41,8 +44,24 @@ export const groupReports = (
     .sort((a, b) => byNewest(a.reports[0], b.reports[0]));
 };
 
+export const isReauthError = (error: unknown) =>
+  error instanceof Error && error.message === 'reauth';
+
+const send = async (url: string, method: string, body: object) => {
+  const response = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(response.status === 401 ? 'reauth' : 'failed');
+  }
+  return response.json();
+};
+
 export const useModeration = (initial: ModSnapshot) => {
   const [data, setData] = useState<ModData>(initial);
+  const [staff, setStaff] = useState(initial.staff);
 
   const merge = useCallback(
     (next: ModData) =>
@@ -55,17 +74,25 @@ export const useModeration = (initial: ModSnapshot) => {
   );
 
   const act = useCallback(
-    async (request: ModRequest) => {
-      const response = await fetch('/api/admin/moderation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    async (request: ModRequest) =>
+      merge(
+        await send('/api/admin/moderation', 'POST', {
           ...request,
           note: request.note.trim() || undefined,
         }),
-      });
-      if (!response.ok) throw new Error('Moderation action failed');
-      merge(await response.json());
+      ),
+    [merge],
+  );
+
+  const changeStaff = useCallback(
+    async (method: 'POST' | 'DELETE', target: object) => {
+      const result: ModData & { staff: string[] } = await send(
+        '/api/admin/staff',
+        method,
+        target,
+      );
+      merge(result);
+      setStaff(result.staff);
     },
     [merge],
   );
@@ -109,6 +136,11 @@ export const useModeration = (initial: ModSnapshot) => {
     pendingGroups,
     suspicious: initial.suspicious,
     meId: initial.meId,
+    meRole: initial.meRole,
+    staff,
+    grant: (target: { userId: string } | { discordId: string }) =>
+      changeStaff('POST', target),
+    revoke: (userId: string) => changeStaff('DELETE', { userId }),
     act,
     search,
     userLog,

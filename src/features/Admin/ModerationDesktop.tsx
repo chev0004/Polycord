@@ -11,6 +11,7 @@ import {
   MdClose,
   MdExpandMore,
   MdFilterAltOff,
+  MdGroup,
   MdHistory,
   MdInventory2,
   MdManageSearch,
@@ -40,8 +41,9 @@ import {
   useModFormat,
   useShortcut,
 } from './ModerationParts';
+import { StaffPanel } from './ModerationStaff';
 import type { ModAction, ModUser } from './types';
-import { MODERATION_ACTIONS } from './types';
+import { LOG_ACTIONS } from './types';
 import {
   groupReports,
   hasStatusChips,
@@ -452,7 +454,9 @@ const ReportsTab = ({
                           <ReasonBadge key={reason} reason={reason} />
                         ),
                       )}
-                      {reported.staff ? <StaffChip small /> : null}
+                      {reported.role ? (
+                        <StaffChip role={reported.role} small />
+                      ) : null}
                       <RestrictionChips user={reported} small />
                     </span>
                   </QueueRow>
@@ -620,7 +624,9 @@ const UsersTab = ({
                     </span>
                     {hasStatusChips(entry) ? (
                       <span className="mt-[3px] flex flex-wrap gap-1">
-                        {entry.staff ? <StaffChip small /> : null}
+                        {entry.role ? (
+                          <StaffChip role={entry.role} small />
+                        ) : null}
                         <RestrictionChips user={entry} small />
                       </span>
                     ) : null}
@@ -799,7 +805,7 @@ const LogTab = ({
           label={t('allActions')}
           value={action}
           onChange={setAction}
-          options={MODERATION_ACTIONS.map((value) => ({
+          options={LOG_ACTIONS.map((value) => ({
             value,
             label: t(`action_${value}`),
           }))}
@@ -993,6 +999,7 @@ export const ModerationDesktop = ({
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
+  const me = store.usersById.get(store.meId);
   const tabs: { id: ModTab; icon: IconType; label: string; badge?: number }[] =
     [
       {
@@ -1013,11 +1020,48 @@ export const ModerationDesktop = ({
 
   return (
     <main className="mx-auto w-full max-w-[1360px] px-6 pt-[22px] pb-8 font-figtree">
-      <div className="mb-[18px]">
-        <h1 className="font-bold text-[26px] text-foreground leading-tight">
-          {t('title')}
-        </h1>
-        <p className="mt-1 text-muted text-sm">{t('subtitle')}</p>
+      <div className="mb-[18px] flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-bold text-[26px] text-foreground leading-tight">
+            {t('title')}
+          </h1>
+          <p className="mt-1 text-muted text-sm">{t('subtitle')}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {store.meRole === 'owner' ? (
+            <Popover.Root>
+              <Popover.Trigger asChild>
+                <button type="button" className={modButton()}>
+                  <MdGroup size={17} />
+                  {t('manageStaff')}
+                </button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  side="bottom"
+                  align="end"
+                  sideOffset={8}
+                  className="PopoverContent z-50 w-[300px] rounded-[18px] border border-gray-500/50 bg-background-dark p-2 font-figtree shadow-lg"
+                >
+                  <StaffPanel store={store} />
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          ) : null}
+          {me ? (
+            <div className="flex items-center gap-2.5">
+              <div className="flex flex-col items-end leading-tight">
+                <span className="font-semibold text-[13px] text-foreground">
+                  {me.displayName}
+                </span>
+                <span className="text-[11px] text-muted">
+                  {t(store.meRole === 'owner' ? 'chipOwner' : 'chipModerator')}
+                </span>
+              </div>
+              <Avatar avatarUrl={me.avatarUrl} size="sm" />
+            </div>
+          ) : null}
+        </div>
       </div>
       <div
         role="tablist"
