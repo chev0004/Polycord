@@ -61,7 +61,7 @@ import {
   createEmptyLanguageRow,
   TargetLanguagesEditor,
 } from './TargetLanguagesEditor';
-import { timezoneOptions } from './timezoneOptions';
+import { detectTimezone, timezoneOptions } from './timezoneOptions';
 import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
@@ -304,6 +304,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       : basePreviewTheme;
   const autoAccent = basePreviewTheme.accent;
   const previewIsPremiumLook = premium || Boolean(tease);
+
+  const initialTimezone = initialValues?.timezone;
+  useEffect(() => {
+    if (isCreate && !initialTimezone)
+      resetField('timezone', { defaultValue: detectTimezone() });
+  }, [isCreate, initialTimezone, resetField]);
 
   useEffect(() => {
     if (initialValues && initialValues !== previousInitialValues.current) {
