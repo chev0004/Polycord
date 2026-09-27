@@ -109,6 +109,7 @@ export default async function PublicProfileRoute({
   }
 
   after(async () => {
+    if (row.user.isSynthetic) return;
     await trackEvent({
       name: ANALYTICS_EVENTS.profileView,
       userId: viewerUserId ?? null,

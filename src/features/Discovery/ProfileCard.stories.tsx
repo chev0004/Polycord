@@ -159,6 +159,15 @@ const CardStory = ({ modify, ...args }: CardStoryProps) => {
 const premiumTheme = (id: string) =>
   PREMIUM_CARD_THEMES.find((theme) => theme.id === id);
 
+export const Dummy: Story = {
+  render: (args) => (
+    <CardStory {...args} modify={(p) => ({ ...p, synthetic: true })} />
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText('Dummy')).toBeInTheDocument();
+  },
+};
+
 export const FreeSky: Story = {
   render: (args) => (
     <CardStory

@@ -75,6 +75,7 @@ export const users = pgTable(
     email: text('email'),
     suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
     bannedAt: timestamp('banned_at', { withTimezone: true }),
+    isSynthetic: boolean('is_synthetic').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -84,6 +85,7 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex('users_discord_user_id_idx').on(table.discordUserId),
+    index('users_is_synthetic_idx').on(table.isSynthetic),
     index('users_display_name_idx').on(table.displayName),
     index('users_display_name_trgm_idx').using(
       'gin',
@@ -95,6 +97,14 @@ export const users = pgTable(
     ),
   ],
 );
+
+export const seedDatabase = pgTable('seed_database', {
+  label: text('label').primaryKey(),
+  shared: boolean('shared').default(false).notNull(),
+  approvedAt: timestamp('approved_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
 
 export const moderationRestrictions = pgTable('moderation_restrictions', {
   discordUserId: varchar('discord_user_id', { length: 32 }).primaryKey(),

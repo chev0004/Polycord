@@ -218,7 +218,7 @@ export const listDiscoveryPage = async (
     'name-desc': sql`${users.displayName} desc, ${profiles.id} asc`,
     'overlap-desc': sql`${overlap} desc, ${bumped}`,
   }[state.sortValue];
-  const boosted = sql`${profiles.boostedUntil} > now() and (${premium})`;
+  const boosted = sql`${profiles.boostedUntil} > now() and (${premium} or ${users.isSynthetic})`;
 
   const selectRows = (condition: SQL | undefined, limit: number, offset = 0) =>
     db

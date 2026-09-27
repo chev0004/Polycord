@@ -4,7 +4,9 @@ import { expect, type Page, test } from '@playwright/test';
 import postgres from 'postgres';
 
 const settle = async (page: Page) => {
-  await expect(page.locator('fieldset:disabled')).toHaveCount(0);
+  await expect(
+    page.locator('fieldset:disabled:not(fieldset fieldset)'),
+  ).toHaveCount(0);
   await page.evaluate(() =>
     Promise.all(
       document

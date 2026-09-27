@@ -107,6 +107,10 @@ export const POST = async (request: Request) => {
     return rateLimitedResponse(limit.retryAfterMs);
   }
 
+  if (target.user.isSynthetic) {
+    return NextResponse.json({ created: false });
+  }
+
   await trackEvent({
     name: ANALYTICS_EVENTS.profileCopyReceived,
     userId: currentUser.accountId,

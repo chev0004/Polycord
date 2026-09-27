@@ -3,6 +3,7 @@ import { ModerationPage } from '@/features/Admin/ModerationPage';
 import { getStaffRole } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { loadModerationSnapshot } from '@/lib/moderation';
+import { getSeedStatus } from '@/lib/seed/access';
 
 export default async function AdminRoute({
   params,
@@ -20,6 +21,7 @@ export default async function AdminRoute({
   return (
     <ModerationPage
       initial={await loadModerationSnapshot(user.accountId, role)}
+      seed={await getSeedStatus(user)}
     />
   );
 }

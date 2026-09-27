@@ -31,6 +31,7 @@ import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { AvailabilityRow } from './AvailabilityRow';
 import { deriveCardAccent, FREE_ACCENT, getFreeCardTheme } from './cardTheme';
+import { DummyChip } from './DummyChip';
 import { type DiscoveryProfile, getBumpAge } from './ProfileCard';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
 import { VoiceChip } from './VoiceChip';
@@ -193,6 +194,7 @@ export const MobileProfileSheet = ({
             <p className="mt-0.5 text-muted text-xs">
               {canCopy ? t('tapToCopyHint') : t('signInToViewUsername')}
             </p>
+            {profile.synthetic ? <DummyChip className="mt-2" /> : null}
             {copyFailed && profile.discordUsername ? (
               <p role="alert" className="mt-1.5 text-danger text-sm">
                 {t('copyFailed', { username: profile.discordUsername })}
