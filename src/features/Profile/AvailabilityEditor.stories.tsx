@@ -6,13 +6,19 @@ import { AvailabilityEditor } from './AvailabilityEditor';
 
 const EditorHarness = ({
   initialValue,
+  disabled,
 }: {
   initialValue: AvailabilityPattern | null;
+  disabled?: boolean;
 }) => {
   const [value, setValue] = useState<AvailabilityPattern | null>(initialValue);
   return (
     <div className="w-[420px] rounded-3xl bg-background-dark p-6">
-      <AvailabilityEditor value={value} onChange={setValue} />
+      <AvailabilityEditor
+        value={value}
+        onChange={setValue}
+        disabled={disabled}
+      />
     </div>
   );
 };
@@ -42,6 +48,26 @@ export const Disabled: Story = {
     await expect(
       canvas.getByRole('button', { name: 'Any day' }),
     ).toBeInTheDocument();
+  },
+};
+
+export const RequiresTimezone: Story = {
+  args: { initialValue: null, disabled: true },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const toggle = canvas.getByRole('switch', { name: 'Free Time' });
+    await expect(toggle).toBeDisabled();
+    await expect(
+      canvas.getByText('Add a timezone to set your free time.'),
+    ).toBeInTheDocument();
+
+    await userEvent.click(toggle);
+
+    await expect(toggle).not.toBeChecked();
+    await expect(
+      canvas.queryByRole('button', { name: 'Any day' }),
+    ).not.toBeInTheDocument();
   },
 };
 

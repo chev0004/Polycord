@@ -148,18 +148,6 @@ const TheirTime = ({
 
   if (!now) return <span className="h-8" />;
 
-  const viewerZone =
-    viewerTimezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const theirOffset = tzOffsetMinutes(timezone);
-  const offset = (theirOffset - tzOffsetMinutes(viewerZone)) / 60;
-  const theirMinutes =
-    now.getUTCHours() * 60 + now.getUTCMinutes() + theirOffset;
-  const day = buildDualDay({
-    theirs: profile.availability,
-    yours: viewerAvailability,
-    offset,
-    theirHour: (((theirMinutes % 1440) + 1440) % 1440) / 60,
-  });
   const labels = {
     days: {
       any: tDiscovery('availabilityDayAny'),
@@ -173,67 +161,94 @@ const TheirTime = ({
   const range = (pattern: AvailabilityPattern | undefined, zone: string) =>
     formatAvailability(pattern, zone, undefined, labels, timeFormat, locale)
       ?.ownerStr ?? t('notSet');
-  const hours = Math.floor(day.overlapMinutes / 60);
-  const minutes = day.overlapMinutes % 60;
-  const duration =
-    hours && minutes
-      ? t('durationHoursMinutes', { hours, minutes })
-      : hours
-        ? t('durationHours', { hours })
-        : t('durationMinutes', { minutes });
+
+  const theirOffset = tzOffsetMinutes(timezone);
+  const theirMinutes =
+    now.getUTCHours() * 60 + now.getUTCMinutes() + theirOffset;
+  const theirHour = (((theirMinutes % 1440) + 1440) % 1440) / 60;
+
+  const comparison = viewerTimezone
+    ? (() => {
+        const zone = viewerTimezone;
+        const offset = (theirOffset - tzOffsetMinutes(zone)) / 60;
+        const day = buildDualDay({
+          theirs: profile.availability,
+          yours: viewerAvailability,
+          offset,
+          theirHour,
+        });
+        const hours = Math.floor(day.overlapMinutes / 60);
+        const minutes = day.overlapMinutes % 60;
+        const duration =
+          hours && minutes
+            ? t('durationHoursMinutes', { hours, minutes })
+            : hours
+              ? t('durationHours', { hours })
+              : t('durationMinutes', { minutes });
+        return { zone, offset, day, duration };
+      })()
+    : null;
 
   return (
     <>
       <span className="font-bold text-[32px] text-foreground tabular-nums leading-none tracking-[-0.02em]">
         {formatCurrentTime(timezone, timeFormat, locale)}
       </span>
-      <span className="text-[13px] text-muted leading-normal">
-        {offset === 0
-          ? t('sameTime')
-          : t(offset > 0 ? 'hoursAhead' : 'hoursBehind', {
-              hours: Math.abs(offset),
-            })}
-      </span>
-      <div
-        aria-hidden
-        className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1.5 gap-y-1 text-[11px] text-subtle tabular-nums"
-      >
-        <span className="col-start-2 row-start-1 flex justify-between">
-          {day.ticks.map((tick) => (
-            <span key={tick.hour}>{tick.top}</span>
-          ))}
+      {comparison ? (
+        <span className="text-[13px] text-muted leading-normal">
+          {comparison.offset === 0
+            ? t('sameTime')
+            : t(comparison.offset > 0 ? 'hoursAhead' : 'hoursBehind', {
+                hours: Math.abs(comparison.offset),
+              })}
         </span>
-        <span className="col-start-1 row-start-2 whitespace-nowrap font-semibold">
-          {tzAbbr(timezone)}
-        </span>
-        <span className="relative col-start-2 row-span-2 row-start-2 h-[30px]">
-          {day.overlap.map((run) => (
-            <span
-              key={run.left}
-              className={`-inset-y-[3px] absolute rounded-md ${overlapFill}`}
-              style={runStyle(run)}
+      ) : null}
+      {comparison ? (
+        <div
+          aria-hidden
+          className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1.5 gap-y-1 text-[11px] text-subtle tabular-nums"
+        >
+          <span className="col-start-2 row-start-1 flex justify-between">
+            {comparison.day.ticks.map((tick) => (
+              <span key={tick.hour}>{tick.top}</span>
+            ))}
+          </span>
+          <span className="col-start-1 row-start-2 whitespace-nowrap font-semibold">
+            {tzAbbr(timezone)}
+          </span>
+          <span className="relative col-start-2 row-span-2 row-start-2 h-[30px]">
+            {comparison.day.overlap.map((run) => (
+              <span
+                key={run.left}
+                className={`-inset-y-[3px] absolute rounded-md ${overlapFill}`}
+                style={runStyle(run)}
+              />
+            ))}
+            <Lane
+              runs={comparison.day.theirs}
+              className="top-[3px]"
+              fill={bannerFill}
             />
-          ))}
-          <Lane runs={day.theirs} className="top-[3px]" fill={bannerFill} />
-          <Lane
-            runs={day.yours}
-            className="bottom-[3px]"
-            fill="bg-foreground"
-          />
-          <span
-            className="-inset-y-0.5 -ml-px absolute z-[2] w-0.5 rounded-sm bg-foreground"
-            style={{ left: `${day.now}%` }}
-          />
-        </span>
-        <span className="col-start-1 row-start-3 whitespace-nowrap font-semibold">
-          {tzAbbr(viewerZone)}
-        </span>
-        <span className="col-start-2 row-start-4 flex justify-between">
-          {day.ticks.map((tick) => (
-            <span key={tick.hour}>{tick.bottom}</span>
-          ))}
-        </span>
-      </div>
+            <Lane
+              runs={comparison.day.yours}
+              className="bottom-[3px]"
+              fill="bg-foreground"
+            />
+            <span
+              className="-inset-y-0.5 -ml-px absolute z-[2] w-0.5 rounded-sm bg-foreground"
+              style={{ left: `${comparison.day.now}%` }}
+            />
+          </span>
+          <span className="col-start-1 row-start-3 whitespace-nowrap font-semibold">
+            {tzAbbr(comparison.zone)}
+          </span>
+          <span className="col-start-2 row-start-4 flex justify-between">
+            {comparison.day.ticks.map((tick) => (
+              <span key={tick.hour}>{tick.bottom}</span>
+            ))}
+          </span>
+        </div>
+      ) : null}
       <div className="mt-3 flex flex-col gap-[5px] text-[13px] text-muted tabular-nums">
         <LegendRow
           swatch={bannerFill}
@@ -243,18 +258,20 @@ const TheirTime = ({
             time: formatCurrentTime(timezone, timeFormat, locale),
           })}
         />
-        <LegendRow
-          swatch="bg-foreground"
-          name={t('you')}
-          range={range(viewerAvailability, viewerZone)}
-          now={t('nowTime', {
-            time: formatCurrentTime(viewerZone, timeFormat, locale),
-          })}
-        />
-        {day.overlapMinutes > 0 ? (
+        {comparison ? (
+          <LegendRow
+            swatch="bg-foreground"
+            name={t('you')}
+            range={range(viewerAvailability, comparison.zone)}
+            now={t('nowTime', {
+              time: formatCurrentTime(comparison.zone, timeFormat, locale),
+            })}
+          />
+        ) : null}
+        {comparison && comparison.day.overlapMinutes > 0 ? (
           <div className="mt-0.5 grid grid-cols-[14px_minmax(0,1fr)] items-center gap-2 text-subtle text-xs">
             <span className={`h-2.5 rounded-[3px] ${overlapFill}`} />
-            <span>{t('overlap', { duration })}</span>
+            <span>{t('overlap', { duration: comparison.duration })}</span>
           </div>
         ) : null}
       </div>
@@ -608,10 +625,10 @@ export const ProfileDetail = ({
               </dd>
             </div>
           ) : null}
-          {profile.timezone ? (
-            <div>
-              <dt>{t('theirTime')}</dt>
-              <dd className="flex min-w-0 flex-col gap-1.5">
+          <div>
+            <dt>{t('theirTime')}</dt>
+            <dd className="flex min-w-0 flex-col gap-1.5">
+              {profile.timezone ? (
                 <TheirTime
                   profile={profile}
                   timezone={profile.timezone}
@@ -619,9 +636,11 @@ export const ProfileDetail = ({
                   viewerAvailability={viewerAvailability}
                   firstName={firstName}
                 />
-              </dd>
-            </div>
-          ) : null}
+              ) : (
+                t('notSet')
+              )}
+            </dd>
+          </div>
         </dl>
       </div>
     </article>

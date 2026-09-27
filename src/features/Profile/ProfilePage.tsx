@@ -317,13 +317,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     profileDraftSchema,
   );
 
-  useEffect(() => {
-    if (!initialValues?.timezone && !timezone && displayTimezone) {
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      setValue('timezone', userTimezone, { shouldValidate: true });
-    }
-  }, [setValue, displayTimezone, timezone, initialValues?.timezone]);
-
   const onSubmit = async (data: ProfileFormValues) => {
     setSessionExpired(false);
     setTagError(null);
@@ -582,7 +575,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       name="availability"
       control={control}
       render={({ field }) => (
-        <AvailabilityEditor value={field.value} onChange={field.onChange} />
+        <AvailabilityEditor
+          value={field.value}
+          onChange={field.onChange}
+          disabled={!timezone}
+        />
       )}
     />
   );
