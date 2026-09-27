@@ -1,0 +1,2 @@
+ALTER TABLE "moderation_actions" ADD COLUMN "days" integer;--> statement-breakpoint
+ALTER TABLE "moderation_actions" ADD CONSTRAINT "moderation_actions_days_range_check" CHECK ("moderation_actions"."days" is null or "moderation_actions"."days" between 1 and 90);

@@ -297,11 +297,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     [currentLocale],
   );
 
-  const themeOptions = [
-    { label: t('themeDark'), value: 'dark' },
-    { label: t('themeLight'), value: 'light' },
-  ];
-
   const timeFormatOptions = [
     { label: t('timeFormat24hr'), value: '24hr' },
     { label: t('timeFormat12hr'), value: '12hr' },
@@ -328,7 +323,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
         options={{
           applicationLanguage: localizedLanguageOptions,
-          theme: themeOptions,
           timeFormat: timeFormatOptions,
           languageDisplay: languageDisplayOptions,
         }}
@@ -686,25 +680,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   )}
                 />
               </FormGroup>
-
-              <SettingRow
-                label={t('themeLabel')}
-                description={t('themeDescription')}
-              >
-                <Controller
-                  name="theme"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      options={themeOptions}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      ariaLabel={t('themeLabel')}
-                      className="w-[170px]"
-                    />
-                  )}
-                />
-              </SettingRow>
 
               <SettingRow
                 label={t('timeFormatLabel')}

@@ -8,6 +8,7 @@ export type CurrentUser = {
 
 export type SessionPayload = {
   user: CurrentUser & { accountId: string };
+  issuedAt?: number;
   expiresAt: number;
 };
 
@@ -175,9 +176,11 @@ export const createSessionCookieValue = async (
     return null;
   }
 
+  const issuedAt = Date.now();
   const session: SessionPayload = {
     user: { ...user, accountId },
-    expiresAt: Date.now() + SESSION_DURATION_SECONDS * 1000,
+    issuedAt,
+    expiresAt: issuedAt + SESSION_DURATION_SECONDS * 1000,
   };
 
   return signPayload(session, secret);
@@ -200,5 +203,9 @@ export const readSessionFromCookieValue = async (value: string) => {
     return null;
   }
 
-  return session.user;
+  return {
+    ...session.user,
+    issuedAt:
+      session.issuedAt ?? session.expiresAt - SESSION_DURATION_SECONDS * 1000,
+  };
 };
