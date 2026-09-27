@@ -55,39 +55,6 @@
   --font-DM: "DM Sans", sans-serif;
 }
 
-[data-theme="light"] {
-  color-scheme: light;
-  --color-foreground: #18232f;
-  --color-soft: #344354;
-  --color-muted: #506071;
-  --color-subtle: #59697a;
-  --color-on-primary: #ffffff;
-  --color-line: rgba(24, 35, 47, 0.14);
-  --color-line-strong: rgba(24, 35, 47, 0.24);
-  --color-overlay: rgba(24, 35, 47, 0.06);
-  --color-chip: rgba(89, 105, 122, 0.12);
-  --color-chip-active: rgba(53, 78, 101, 0.16);
-  --color-chip-ring: rgba(53, 78, 101, 0.4);
-  --color-danger: #b42318;
-  --color-danger-surface: #fff0f1;
-  --color-success: #166534;
-  --color-primary: #354e65;
-  --color-primary-light: #2e4357;
-  --color-primary-lighter: #21364a;
-  --color-primary-dark: #b9c9d9;
-  --color-primary-darker: #e3ebf3;
-  --color-background-dark: #ffffff;
-  --color-background-light: #657385;
-  --color-background-darker: #edf1f6;
-  --color-background-main: #f4f6f9;
-  --color-background-lighter: #506071;
-  --color-background-darkest: #e1e7ef;
-  --color-discord-blue-light: #4f59dc;
-  --color-discord-yellow: #996a00;
-  --color-discord-yellow-light: #855b00;
-  --color-discord-yellow-dark: #704d00;
-}
-
 @keyframes slideDown {
   from {
     transform: translateY(-10px);

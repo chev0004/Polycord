@@ -110,16 +110,13 @@ test('core pages expose named controls and support keyboard navigation', async (
         })),
       ).toEqual([]);
     }
-    for (const [lang, theme, button] of [
-      ['en', 'dark', 'Update Connection'],
-      ['en', 'light', 'Update Connection'],
-      ['ja', 'dark', '連携を更新'],
-      ['ja', 'light', '連携を更新'],
+    for (const [lang, button] of [
+      ['en', 'Update Connection'],
+      ['ja', '連携を更新'],
     ]) {
       await sql`delete from user_settings where user_id = ${accountId}`;
-      await sql`insert into user_settings (user_id, theme, application_language) values (${accountId}, ${theme}, ${lang})`;
+      await sql`insert into user_settings (user_id, application_language) values (${accountId}, ${lang})`;
       await page.goto(`/${lang}/settings`);
-      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       await page.getByRole('button', { name: button, exact: true }).hover();
       await settle(page);
       const scan = await new AxeBuilder({ page })
@@ -128,7 +125,6 @@ test('core pages expose named controls and support keyboard navigation', async (
       expect(
         scan.violations.map((v) => ({
           lang,
-          theme,
           rule: v.id,
           nodes: v.nodes.map((n) => n.target),
         })),
