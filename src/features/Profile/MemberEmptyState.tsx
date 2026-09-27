@@ -13,9 +13,6 @@ export const MemberEmptyState = ({
 
   return (
     <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">
-      <span className="rounded-full bg-primary-darker px-3 py-1 font-semibold text-primary text-xs uppercase tracking-wide">
-        {t(`${kind}Badge`)}
-      </span>
       <h1 className="font-figtree font-semibold text-2xl text-foreground">
         {t(`${kind}Title`)}
       </h1>
