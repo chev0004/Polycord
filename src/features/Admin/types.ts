@@ -87,3 +87,12 @@ export type ModRequest = {
   note: string;
   days?: number;
 };
+
+export type SeedStatus = {
+  real: number;
+  dummies: number;
+  cap: number;
+  label: string;
+  shared: boolean;
+  environment: string;
+};

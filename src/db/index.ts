@@ -12,5 +12,6 @@ export * from './rateLimits';
 export * from './safety';
 export * from './saved';
 export * from './schema';
+export * from './seed';
 export * from './settings';
 export * from './voiceIntros';
