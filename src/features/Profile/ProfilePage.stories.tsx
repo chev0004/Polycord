@@ -230,11 +230,11 @@ export const TimezoneRequiredForFreeTime: Story = {
     await expect(toggle).toBeDisabled();
     setFieldValue(timezone, 'Asia/Tokyo');
     await waitFor(() => expect(toggle).toBeEnabled());
-    await expect(canvas.getByLabelText('From')).toBeInTheDocument();
+    await expect(canvas.getByLabelText('From')).toBeEnabled();
     setFieldValue(timezone, '');
     await waitFor(() => expect(toggle).toBeDisabled());
     await expect(timezone).toHaveValue('');
-    await expect(canvas.queryByLabelText('From')).not.toBeInTheDocument();
+    await expect(canvas.getByLabelText('From')).toBeDisabled();
   },
 };
 

@@ -37,17 +37,33 @@ export const Disabled: Story = {
     const canvas = within(canvasElement);
 
     const toggle = canvas.getByRole('switch', { name: 'Free Time' });
+    const weekdays = canvas.getByRole('button', { name: 'Weekdays' });
     await expect(toggle).not.toBeChecked();
+    await expect(weekdays).toBeDisabled();
+    await expect(canvas.getByLabelText('From')).toBeDisabled();
     await expect(
-      canvas.queryByRole('button', { name: 'Weekdays' }),
-    ).not.toBeInTheDocument();
+      canvas.getByRole('button', { name: 'Any time' }),
+    ).toBeDisabled();
+    await expect(
+      canvas.getByText(
+        'Shown in your local time. Visitors see it converted to their timezone.',
+      ),
+    ).toBeInTheDocument();
+    await expect(getComputedStyle(weekdays).cursor).toBe('not-allowed');
+    await expect(
+      getComputedStyle(weekdays.closest('fieldset') as HTMLElement).opacity,
+    ).toBe('0.5');
+
+    await userEvent.click(weekdays);
+    await expect(weekdays).toHaveAttribute('aria-pressed', 'false');
 
     await userEvent.click(toggle);
 
     await waitFor(() => expect(toggle).toBeChecked());
+    await expect(weekdays).toBeEnabled();
     await expect(
-      canvas.getByRole('button', { name: 'Any day' }),
-    ).toBeInTheDocument();
+      getComputedStyle(weekdays.closest('fieldset') as HTMLElement).opacity,
+    ).toBe('1');
   },
 };
 
@@ -66,8 +82,34 @@ export const RequiresTimezone: Story = {
 
     await expect(toggle).not.toBeChecked();
     await expect(
-      canvas.queryByRole('button', { name: 'Any day' }),
-    ).not.toBeInTheDocument();
+      canvas.getByRole('button', { name: 'Any day' }),
+    ).toBeDisabled();
+  },
+};
+
+export const KeepsValuesWhileOff: Story = {
+  args: { initialValue: { days: 'weekends', from: '07:30', to: '10:00' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const toggle = canvas.getByRole('switch', { name: 'Free Time' });
+    const weekends = canvas.getByRole('button', { name: 'Weekends' });
+    const from = canvas.getByLabelText('From') as HTMLInputElement;
+
+    await userEvent.click(toggle);
+
+    await waitFor(() => expect(toggle).not.toBeChecked());
+    await expect(weekends).toBeDisabled();
+    await expect(weekends).toHaveAttribute('aria-pressed', 'true');
+    await expect(from).toHaveValue('07:30');
+
+    await userEvent.click(toggle);
+
+    await waitFor(() => expect(toggle).toBeChecked());
+    await expect(weekends).toBeEnabled();
+    await expect(weekends).toHaveAttribute('aria-pressed', 'true');
+    await expect(from).toHaveValue('07:30');
+    await expect(canvas.getByLabelText('To')).toHaveValue('10:00');
   },
 };
 
