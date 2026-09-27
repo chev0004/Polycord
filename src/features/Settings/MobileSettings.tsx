@@ -95,9 +95,14 @@ export const SettingsPushPage = ({
   </div>
 );
 
-type MobilePage = 'privacy' | 'notifications' | 'premium';
+type MobilePage = 'privacy' | 'blocked' | 'notifications' | 'premium';
 
-const mobilePages: string[] = ['privacy', 'notifications', 'premium'];
+const mobilePages: string[] = [
+  'privacy',
+  'blocked',
+  'notifications',
+  'premium',
+];
 
 type ChoiceField =
   | 'applicationLanguage'
@@ -182,7 +187,7 @@ export const MobileSettings = ({
   const [emailDraft, setEmailDraft] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const pagePushed = useRef(false);
+  const pagesPushed = useRef(0);
   const [animatePage, setAnimatePage] = useState(false);
 
   useEffect(() => {
@@ -198,24 +203,25 @@ export const MobileSettings = ({
 
   const openPage = (page: MobilePage) => {
     window.history.pushState(null, '', `#${page}`);
-    pagePushed.current = true;
+    pagesPushed.current += 1;
     setMobilePage(page);
     setAnimatePage(true);
     window.scrollTo({ top: 0 });
   };
 
   const closePage = () => {
-    if (pagePushed.current) {
-      pagePushed.current = false;
+    if (pagesPushed.current > 0) {
+      pagesPushed.current -= 1;
       window.history.back();
       return;
     }
+    const parent = mobilePage === 'blocked' ? 'privacy' : null;
     window.history.replaceState(
       null,
       '',
-      `${window.location.pathname}${window.location.search}`,
+      `${window.location.pathname}${window.location.search}${parent ? `#${parent}` : ''}`,
     );
-    setMobilePage(null);
+    setMobilePage(parent);
   };
 
   const openEmailSheet = () => {
@@ -405,6 +411,25 @@ export const MobileSettings = ({
                 t('productAnalyticsDescription'),
               )}
             </SettingsGroup>
+            <SettingsGroup>
+              <SheetRow
+                label={t('blockedUsersTitle')}
+                description={t('blockedUsersEntryDescription')}
+                chevron
+                onClick={() => openPage('blocked')}
+              />
+            </SettingsGroup>
+          </SettingsPushPage>
+        ) : mobilePage === 'blocked' ? (
+          <SettingsPushPage
+            title={t('blockedUsersTitle')}
+            backLabel={t('privacyTitle')}
+            animate={animatePage}
+            onBack={closePage}
+          >
+            <p className="px-1 text-[13px] text-subtle leading-snug">
+              {t('blockedUsersDescription')}
+            </p>
             {blockedUsers}
           </SettingsPushPage>
         ) : mobilePage === 'notifications' ? (
