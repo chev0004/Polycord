@@ -87,3 +87,26 @@ export const EmptyState: Story = {
     return <ProfileGrid {...args} profiles={[]} />;
   },
 };
+
+export const FourCards: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return (
+      <ProfileGrid {...args} profiles={createSampleProfiles(t).slice(0, 4)} />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    await waitFor(() => {
+      const cards = Array.from(canvasElement.querySelectorAll('article'));
+      expect(cards).toHaveLength(4);
+      const rects = cards.map((card) => card.getBoundingClientRect());
+      expect(new Set(rects.map((rect) => Math.round(rect.left))).size).toBe(3);
+      expect(
+        rects.filter((rect) => Math.abs(rect.top - rects[0].top) < 1),
+      ).toHaveLength(3);
+      expect(
+        canvasElement.ownerDocument.documentElement.scrollWidth,
+      ).toBeLessThanOrEqual(window.innerWidth);
+    });
+  },
+};
