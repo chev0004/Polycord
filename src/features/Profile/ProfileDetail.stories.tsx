@@ -63,7 +63,7 @@ export const Default: Story = {
     await expect(
       canvas.getByRole('heading', { level: 1, name: 'Yuki Tanaka' }),
     ).toBeInTheDocument();
-    await expect(canvas.getByText('From Yuki')).toBeInTheDocument();
+    await expect(canvas.getByText('Description')).toBeInTheDocument();
     await expect(await canvas.findByText(/overlap$/)).toBeInTheDocument();
     await userEvent.click(canvas.getByRole('button', { name: 'Korean' }));
     await expect(args.onLanguageClick).toHaveBeenCalledWith('ko', false);
@@ -154,7 +154,7 @@ export const NoViewerTimezone: Story = {
     const canvas = within(canvasElement);
 
     await waitFor(() =>
-      expect(canvas.getByText('From Yuki')).toBeInTheDocument(),
+      expect(canvas.getByText('Description')).toBeInTheDocument(),
     );
     await expect(
       canvas.queryByText('Same time as you'),
