@@ -17,7 +17,6 @@ import {
 import { type ToastData, useToastStack } from '@/hooks/useToast';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
-import { getFreeCardTheme } from './cardTheme';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
@@ -45,11 +44,6 @@ type ProfileGridProps = {
   onBlock?: (profileId: string) => void;
   onShare?: (profileId: string) => void;
   addToast?: (toast: Omit<ToastData, 'id'>) => void;
-};
-
-type ProfileGridItem = {
-  profile: DiscoveryProfile;
-  index: number;
 };
 
 const layOutMasonry = (grid: HTMLDivElement | null) => {
@@ -178,10 +172,6 @@ export const ProfileGrid = ({
   }, [filteredProfiles, matchCriteria, sortByMatchScore]);
 
   const hasProfiles = displayedProfiles.length > 0;
-  const displayedProfileItems = displayedProfiles.map((profile, index) => ({
-    profile,
-    index,
-  }));
 
   const handleCopyUsername = (
     username: string,
@@ -204,16 +194,13 @@ export const ProfileGrid = ({
     onCopyUsername?.(username, profileId);
   };
 
-  const renderProfileCard = ({ profile, index }: ProfileGridItem) => {
+  const renderProfileCard = (profile: DiscoveryProfile) => {
     const isOwnProfile = profile.id === currentProfileId;
     const canSaveProfile = saveEnabled && !isOwnProfile;
 
     return (
       <ProfileCard
-        profile={{
-          ...profile,
-          cardTheme: profile.cardTheme ?? getFreeCardTheme(index),
-        }}
+        profile={profile}
         isLoggedIn={isLoggedIn}
         isSaved={savedIds.has(profile.id)}
         viewerTimezone={viewerTimezone}
@@ -238,8 +225,8 @@ export const ProfileGrid = ({
             ref={layOutMasonry}
             className="mx-auto grid w-full max-w-[1180px] grid-flow-row-dense grid-cols-1 items-start gap-x-6 md:grid-cols-2 lg:grid-cols-3"
           >
-            {displayedProfileItems.map((item) => (
-              <div key={item.profile.id}>{renderProfileCard(item)}</div>
+            {displayedProfiles.map((profile) => (
+              <div key={profile.id}>{renderProfileCard(profile)}</div>
             ))}
           </div>
         ) : (
