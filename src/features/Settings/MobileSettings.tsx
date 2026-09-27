@@ -80,18 +80,16 @@ export const SettingsPushPage = ({
         : undefined
     }
   >
-    <div className="relative flex min-h-12 items-center px-2">
+    <div className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-2">
       <button
         type="button"
         onClick={onBack}
-        className="flex h-11 items-center pr-2.5 font-semibold text-[15px] text-primary hover:text-primary-light focus-visible:text-primary-light"
+        className="flex h-11 max-w-full items-center justify-self-start pr-2.5 font-semibold text-[15px] text-primary hover:text-primary-light focus-visible:text-primary-light"
       >
-        <MdChevronLeft size={26} aria-hidden />
-        {backLabel}
+        <MdChevronLeft size={26} aria-hidden className="shrink-0" />
+        <span className="truncate">{backLabel}</span>
       </button>
-      <h1 className="-translate-x-1/2 pointer-events-none absolute left-1/2 font-bold text-base">
-        {title}
-      </h1>
+      <h1 className="font-bold text-base">{title}</h1>
     </div>
     <div className="flex flex-col gap-3 px-4 pt-2 pb-8">{children}</div>
   </div>
