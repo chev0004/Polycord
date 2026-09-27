@@ -31,7 +31,7 @@ const getProtectedRouteLocale = (pathname: string) => {
 export default async function middleware(request: NextRequest) {
   const locale = request.nextUrl.pathname.split('/')[1];
   if (locale && !locales.includes(locale as (typeof locales)[number])) {
-    return NextResponse.rewrite(new URL('/_not-found', request.url), {
+    return NextResponse.rewrite(new URL('/en/missing', request.url), {
       status: 404,
     });
   }
