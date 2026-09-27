@@ -99,11 +99,14 @@ export const FourCards: Story = {
     await waitFor(() => {
       const cards = Array.from(canvasElement.querySelectorAll('article'));
       expect(cards).toHaveLength(4);
-      const rects = cards.map((card) => card.getBoundingClientRect());
-      expect(new Set(rects.map((rect) => Math.round(rect.left))).size).toBe(3);
-      expect(
-        rects.filter((rect) => Math.abs(rect.top - rects[0].top) < 1),
-      ).toHaveLength(3);
+      const [first, second, third, fourth] = cards.map((card) =>
+        card.getBoundingClientRect(),
+      );
+      expect(first.left).toBeLessThan(second.left);
+      expect(second.left).toBeLessThan(third.left);
+      expect(Math.round(second.top)).toBe(Math.round(first.top));
+      expect(Math.round(third.top)).toBe(Math.round(first.top));
+      expect(fourth.top).toBeGreaterThan(first.top);
       expect(
         canvasElement.ownerDocument.documentElement.scrollWidth,
       ).toBeLessThanOrEqual(window.innerWidth);
