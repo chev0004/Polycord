@@ -19,11 +19,13 @@ const DAY_KEYS: { id: AvailabilityDays; labelKey: string }[] = [
 type AvailabilityEditorProps = {
   value: AvailabilityPattern | null | undefined;
   onChange: (value: AvailabilityPattern | null) => void;
+  disabled?: boolean;
 };
 
 export const AvailabilityEditor = ({
   value,
   onChange,
+  disabled = false,
 }: AvailabilityEditorProps) => {
   const t = useTranslations('Profile');
   const fromId = useId();
@@ -40,6 +42,7 @@ export const AvailabilityEditor = ({
         <Label>{t('freeTimeLabel')}</Label>
         <Toggle
           checked={enabled}
+          disabled={disabled}
           onCheckedChange={(checked) =>
             onChange(checked ? { ...DEFAULT_AVAILABILITY_PATTERN } : null)
           }
@@ -47,7 +50,13 @@ export const AvailabilityEditor = ({
         />
       </div>
 
-      {enabled && (
+      {disabled && (
+        <p className="text-[12px] text-subtle">
+          {t('freeTimeRequiresTimezone')}
+        </p>
+      )}
+
+      {!disabled && enabled && (
         <div className="mt-2.5 flex flex-col gap-2.5">
           <div className="flex gap-1.5">
             {DAY_KEYS.map((day) => {

@@ -220,6 +220,24 @@ export const EmptyPreview: Story = {
   },
 };
 
+export const TimezoneRequiredForFreeTime: Story = {
+  args: { initialValues: { ...sampleProfile, timezone: '' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const timezone = canvas.getByLabelText('Timezone') as HTMLInputElement;
+    const toggle = canvas.getByRole('switch', { name: 'Free Time' });
+    await expect(timezone).toHaveValue('');
+    await expect(toggle).toBeDisabled();
+    setFieldValue(timezone, 'Asia/Tokyo');
+    await waitFor(() => expect(toggle).toBeEnabled());
+    await expect(canvas.getByLabelText('From')).toBeInTheDocument();
+    setFieldValue(timezone, '');
+    await waitFor(() => expect(toggle).toBeDisabled());
+    await expect(timezone).toHaveValue('');
+    await expect(canvas.queryByLabelText('From')).not.toBeInTheDocument();
+  },
+};
+
 export const AddLanguage: Story = {
   args: {
     premium: false,

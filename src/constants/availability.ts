@@ -15,8 +15,6 @@ export const DEFAULT_AVAILABILITY_PATTERN: AvailabilityPattern = {
   to: '22:00',
 };
 
-// Canonical structured shape for each legacy preset. Used to seed the editor
-// from the stored enum until structured availability is persisted (DISC-007).
 const PRESET_PATTERNS: Record<Availability, AvailabilityPattern> = {
   weeknights: { days: 'weekdays', from: '18:00', to: '22:00' },
   weekday_mornings: { days: 'weekdays', from: '06:00', to: '09:00' },
@@ -30,8 +28,6 @@ export const availabilityPresetToPattern = (
   ...PRESET_PATTERNS[preset],
 });
 
-// Collapse the structured shape back to the persisted enum (lossy). Custom time
-// ranges fall into the nearest preset bucket; weekday mornings split at noon.
 export const availabilityPatternToPreset = (
   pattern: AvailabilityPattern | null | undefined,
 ): Availability => {
@@ -136,7 +132,7 @@ export const formatAvailability = (
   timeFormat: TimeFormat = '24hr',
   locale = 'en',
 ): FormattedAvailability | null => {
-  if (!pattern) return null;
+  if (!pattern || !ownerTimezone) return null;
 
   const daysLabel = labels.days[pattern.days] ?? labels.days.any;
 
@@ -151,7 +147,7 @@ export const formatAvailability = (
   const abbr = tzAbbr(ownerTimezone);
   const ownerStr = `${daysLabel} · ${fmtHour(fromHour, fromMin, timeFormat, locale)} ${labels.to} ${fmtHour(toHour, toMin, timeFormat, locale)}${abbr ? ` ${abbr}` : ''}`;
 
-  if (!ownerTimezone || !viewerTimezone || viewerTimezone === ownerTimezone) {
+  if (!viewerTimezone || viewerTimezone === ownerTimezone) {
     return { ownerStr, viewerStr: null };
   }
 

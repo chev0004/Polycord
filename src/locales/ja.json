@@ -206,6 +206,7 @@
     "aboutMe": "自己紹介",
     "aboutMeDescription": "相手がメッセージを送りやすいように、具体的に書きましょう。",
     "freeTimeLabel": "空き時間",
+    "freeTimeRequiresTimezone": "空き時間を設定するにはタイムゾーンを追加してください。",
     "availabilityDayAny": "毎日",
     "availabilityDayWeekdays": "平日",
     "availabilityDayWeekends": "週末",

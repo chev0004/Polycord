@@ -691,7 +691,7 @@ export const MobileCardEditor = ({
                 flash={flash === 'availability'}
                 onClick={() => openSheet('availability')}
               >
-                {values.availability ? (
+                {values.availability && values.timezone ? (
                   <AvailabilityRow
                     availability={values.availability}
                     ownerTimezone={values.timezone}

@@ -206,6 +206,7 @@
     "aboutMe": "About Me",
     "aboutMeDescription": "Keep this specific enough that someone knows why to message you.",
     "freeTimeLabel": "Free Time",
+    "freeTimeRequiresTimezone": "Add a timezone to set your free time.",
     "availabilityDayAny": "Any day",
     "availabilityDayWeekdays": "Weekdays",
     "availabilityDayWeekends": "Weekends",
