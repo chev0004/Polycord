@@ -54,14 +54,17 @@ type ProfileGridItem = {
 
 const layOutMasonry = (grid: HTMLDivElement | null) => {
   if (!grid) return;
-  const sizes = new ResizeObserver((entries) => {
-    for (const { target, borderBoxSize } of entries) {
-      (target as HTMLElement).style.gridRowEnd =
-        `span ${Math.ceil(borderBoxSize[0].blockSize)}`;
-    }
+  const layOut = () => {
+    const cards = Array.from(grid.children) as HTMLElement[];
+    const heights = cards.map((card) => card.getBoundingClientRect().height);
+    cards.forEach((card, index) => {
+      card.style.gridRowEnd = `span ${Math.ceil(heights[index])}`;
+    });
     grid.style.gridAutoRows = '1px';
-  });
+  };
+  const sizes = new ResizeObserver(() => requestAnimationFrame(layOut));
   const observeCards = () => {
+    layOut();
     sizes.disconnect();
     for (const card of grid.children) sizes.observe(card);
   };
