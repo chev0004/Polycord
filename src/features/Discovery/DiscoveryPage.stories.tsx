@@ -559,3 +559,30 @@ export const BumpProfileCooldown: Story = {
     await expect(cooldownItem.closest('button')).toBeDisabled();
   },
 };
+
+export const MobileFilterSearchCover: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: Mobile.render,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Filters' }));
+    const sheet = within(await screen.findByRole('dialog'));
+    await userEvent.click(
+      sheet.getByRole('button', { name: /^Primary Language/ }),
+    );
+    const search = await sheet.findByRole('textbox', {
+      name: 'Primary Language',
+    });
+    const bar = search.closest('label')?.parentElement as HTMLElement;
+
+    await waitFor(
+      () => {
+        (bar.parentElement as HTMLElement).scrollTop = 600;
+        const { left, top } = bar.getBoundingClientRect();
+        expect(document.elementFromPoint(left + 40, top - 2)).toBe(bar);
+      },
+      { timeout: 5000 },
+    );
+  },
+};
