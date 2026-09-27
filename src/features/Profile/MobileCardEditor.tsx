@@ -796,7 +796,7 @@ export const MobileCardEditor = ({
               weight="semibold"
               onClick={onDiscard}
               disabled={isSubmitting}
-              className="h-10 rounded-full"
+              className="!rounded-full h-10"
             >
               {t('discard')}
             </Button>
@@ -804,7 +804,7 @@ export const MobileCardEditor = ({
               type="submit"
               weight="semibold"
               disabled={isSubmitting}
-              className="h-10 rounded-full"
+              className="!rounded-full h-10"
             >
               {isSubmitting ? submittingLabel : submitLabel}
             </Button>
