@@ -1,6 +1,6 @@
 {
-  "id": "6f9d63d3-7161-4424-8c32-76582be7137a",
-  "prevId": "f686099b-91e1-488a-a9aa-f53e8bd9b8a4",
+  "id": "415cf6f3-a4f2-435b-bf4b-59b41594dc68",
+  "prevId": "6f9d63d3-7161-4424-8c32-76582be7137a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1723,14 +1723,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "theme": {
-          "name": "theme",
-          "type": "theme",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'dark'"
-        },
         "application_language": {
           "name": "application_language",
           "type": "varchar(16)",
@@ -2123,11 +2115,6 @@
       "name": "report_status",
       "schema": "public",
       "values": ["pending", "reviewed", "dismissed"]
-    },
-    "public.theme": {
-      "name": "theme",
-      "schema": "public",
-      "values": ["dark", "light"]
     },
     "public.time_format": {
       "name": "time_format",

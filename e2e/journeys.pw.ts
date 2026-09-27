@@ -189,7 +189,8 @@ test('admins moderate a report while members cannot reach admin tools', async ({
       await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio)
       values (now(),${reported.id},true,'en','ja','intermediate','A moderation journey fixture.') returning id`;
     await sql`insert into reports (reporter_user_id, reported_user_id, reported_profile_id, reason, details)
-      values (${reporter.id}, ${reported.id}, ${profile.id}, 'spam', 'Posting links')`;
+      values (${reporter.id}, ${reported.id}, ${profile.id}, 'spam', 'Posting links'),
+      (${reporter.id}, ${reported.id}, ${profile.id}, 'harassment', 'Rude replies')`;
 
     await signIn(member, reporter);
     const memberPage = await member.newPage();
@@ -206,13 +207,31 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     ).toBe(404);
 
     await signIn(moderator, admin);
+    for (const [origin, userId] of [
+      ['https://evil.example', reported.id],
+      ['http://localhost:3119', admin.id],
+    ]) {
+      expect(
+        (
+          await moderator.request.post('/api/admin/moderation', {
+            headers: { Origin: origin },
+            data: { userId, action: 'warn' },
+          })
+        ).status(),
+      ).toBe(403);
+    }
     const page = await moderator.newPage();
     await page.goto('/en/admin');
-    const entry = page
-      .getByRole('listitem')
-      .filter({ hasText: `${prefix} Reported` });
-    await expect(entry).toContainText('Posting links');
-    await entry.getByRole('button', { name: 'Warn', exact: true }).click();
+    const queue = page.getByRole('region', { name: 'Reports' });
+    const entry = queue.getByRole('button', {
+      name: new RegExp(`${prefix} Reported`),
+    });
+    await expect(entry).toHaveCount(1);
+    await expect(entry).toContainText('2 reports');
+    await entry.click();
+    await expect(page.getByText('Posting links')).toBeVisible();
+    await expect(page.getByText('Rude replies')).toBeVisible();
+    await page.getByRole('button', { name: /^Warn/ }).click();
     await expect
       .poll(
         async () =>
@@ -221,6 +240,49 @@ test('admins moderate a report while members cannot reach admin tools', async ({
           ).length,
       )
       .toBe(1);
+    await expect
+      .poll(async () =>
+        (
+          await sql`select status from reports where reported_user_id = ${reported.id}`
+        ).map((row) => row.status),
+      )
+      .toEqual(['reviewed', 'reviewed']);
+    await expect(entry).toHaveCount(0);
+
+    await page.getByRole('tab', { name: 'Users' }).click();
+    await page
+      .getByRole('searchbox', { name: 'Search users' })
+      .fill(`${prefix} Reported`);
+    await page.getByRole('button', { name: /^Suspend…/ }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: '30 days' }).click();
+    await dialog.getByRole('textbox', { name: 'Note' }).fill('Repeated spam');
+    await dialog.getByRole('button', { name: 'Suspend for 30 days' }).click();
+    await expect
+      .poll(
+        async () =>
+          (
+            await sql`select days, note from moderation_actions where target_user_id = ${reported.id} and action = 'suspend'`
+          )[0],
+      )
+      .toEqual({ days: 30, note: 'Repeated spam' });
+    expect(
+      (
+        await moderator.request.post('/api/admin/moderation', {
+          headers: { Origin: 'http://localhost:3119' },
+          data: { userId: reported.id, action: 'unsuspend', days: 5 },
+        })
+      ).status(),
+    ).toBe(200);
+    expect(
+      (
+        await sql`select suspended_until from users where id = ${reported.id}`
+      )[0].suspended_until,
+    ).toBeNull();
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await expect(
+      page.getByText('Suspended user · 30 days').first(),
+    ).toBeVisible();
     await page.goto('/en/analytics');
     await expect(
       page.getByRole('heading', { name: 'Product analytics' }),

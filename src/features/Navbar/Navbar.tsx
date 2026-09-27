@@ -12,6 +12,7 @@ type NavbarProps = {
   iconUrl?: string;
   isLoggedIn: boolean;
   dockable?: boolean;
+  badge?: React.ReactNode;
   notifications: Notifications;
   persistNotifications?: boolean;
   premium?: boolean;
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   iconUrl,
   isLoggedIn,
   dockable = false,
+  badge,
   onHomeClick,
   onLoginClick,
   notifications,
@@ -66,6 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {t('disspeak')}
           </span>
         </button>
+        {badge}
       </div>
 
       <div className="flex items-center gap-[18px]">

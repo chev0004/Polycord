@@ -26,7 +26,7 @@ const {
   setUserSuspendedUntil,
   setProfileHiddenByModeration,
   isUserRestricted,
-  listReportsWithContext,
+  listModerationReports,
 } = await import('../../src/db/moderation');
 const { deleteAccountByUserId } = await import('../../src/db/account');
 const { eq } = await import('drizzle-orm');
@@ -94,25 +94,25 @@ try {
       })),
     )
     .returning();
-  const first = await listReportsWithContext(100, 1);
-  const second = await listReportsWithContext(100, 2);
+  const createdIds = new Set(created.map((report) => report.id));
   assert.equal(
-    new Set([...first, ...second].map((row) => row.report.id)).size,
+    (await listModerationReports()).filter((report) =>
+      createdIds.has(report.id),
+    ).length,
     105,
   );
   await db
     .update(reports)
     .set({ status: 'dismissed' })
     .where(eq(reports.id, created[104].id));
-  assert.ok(
-    (await listReportsWithContext(100, 1)).some(
-      (row) => row.report.id === created[0].id,
-    ),
+  const listed = await listModerationReports();
+  assert.equal(
+    listed.find((report) => report.id === created[0].id)?.status,
+    'pending',
   );
-  assert.ok(
-    (await listReportsWithContext(100, 1, true)).some(
-      (row) => row.report.id === created[104].id,
-    ),
+  assert.equal(
+    listed.find((report) => report.id === created[104].id)?.status,
+    'dismissed',
   );
   console.log('moderation lifecycle passed');
 } finally {
