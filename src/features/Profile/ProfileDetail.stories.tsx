@@ -193,6 +193,18 @@ export const OnlyViewerTimezone: Story = {
   },
 };
 
+export const DummyProfile: Story = {
+  args: { profile: { ...profile, synthetic: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('Dummy')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Yuki Tanaka' }),
+    ).toBeInTheDocument();
+  },
+};
+
 export const LongContent: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   args: {
