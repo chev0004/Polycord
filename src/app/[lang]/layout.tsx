@@ -41,11 +41,7 @@ export default async function RootLayout({
   const settings = user ? await getUserSettingsByDiscordUserId(user.id) : null;
 
   return (
-    <html
-      lang={lang}
-      data-theme={settings?.theme ?? 'dark'}
-      suppressHydrationWarning
-    >
+    <html lang={lang} suppressHydrationWarning>
       <body
         className={`${fontVariables} bg-background-main text-foreground`}
         suppressHydrationWarning

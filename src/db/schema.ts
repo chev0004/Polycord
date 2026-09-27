@@ -22,8 +22,6 @@ export const proficiencyLevelEnum = pgEnum('proficiency_level', [
   'native-level',
 ]);
 
-export const themeEnum = pgEnum('theme', ['dark', 'light']);
-
 export const timeFormatEnum = pgEnum('time_format', ['12hr', '24hr']);
 
 export const languageDisplayEnum = pgEnum('language_display', [
@@ -46,7 +44,11 @@ export const moderationActionEnum = pgEnum('moderation_action', [
   'unsuspend',
   'ban',
   'unban',
+  'grant',
+  'revoke',
 ]);
+
+export const staffRoleEnum = pgEnum('staff_role', ['moderator']);
 
 export const reportReasonEnum = pgEnum('report_reason', [
   'spam',
@@ -249,7 +251,6 @@ export const userSettings = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    theme: themeEnum('theme').default('dark').notNull(),
     applicationLanguage: varchar('application_language', { length: 16 })
       .default('en')
       .notNull(),
@@ -405,6 +406,7 @@ export const moderationActions = pgTable(
     }),
     action: moderationActionEnum('action').notNull(),
     note: text('note'),
+    days: integer('days'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -416,8 +418,25 @@ export const moderationActions = pgTable(
       'moderation_actions_note_length_check',
       sql`${table.note} is null or char_length(${table.note}) <= 500`,
     ),
+    check(
+      'moderation_actions_days_range_check',
+      sql`${table.days} is null or ${table.days} between 1 and 90`,
+    ),
   ],
 );
+
+export const staffRoles = pgTable('staff_roles', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  role: staffRoleEnum('role').default('moderator').notNull(),
+  grantedBy: uuid('granted_by').references(() => users.id, {
+    onDelete: 'set null',
+  }),
+  grantedAt: timestamp('granted_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
 
 export const subscriptions = pgTable(
   'subscriptions',

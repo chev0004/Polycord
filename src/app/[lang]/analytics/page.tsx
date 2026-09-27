@@ -6,7 +6,7 @@ import {
   getRecentAnalyticsEvents,
 } from '@/db';
 import { AnalyticsDashboard } from '@/features/Analytics/AnalyticsDashboard';
-import { isAdmin } from '@/lib/admin';
+import { isOwner } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 
 const RANGE_DAYS = 30;
@@ -20,7 +20,7 @@ export default async function AnalyticsRoute({
   const { lang } = await params;
   const user = await getCurrentUser();
 
-  if (!user || !isAdmin(user)) {
+  if (!user || !isOwner(user)) {
     redirect(`/${lang}`);
   }
 

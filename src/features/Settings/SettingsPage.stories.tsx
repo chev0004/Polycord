@@ -21,7 +21,6 @@ const defaultSettings: SettingsFormValues = {
   profileViewAlert: true,
   hideProfileVisits: false,
   productAnalytics: true,
-  theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
@@ -68,50 +67,6 @@ type Story = StoryObj<typeof SettingsPage>;
 
 export const Default: Story = {
   args: {},
-};
-
-export const LightAppearance: Story = {
-  parameters: { theme: 'light' },
-  args: { defaultValues: { ...defaultSettings, theme: 'light' } },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    fireEvent.click(canvas.getByRole('button', { name: 'Appearance' }));
-    await waitFor(() =>
-      expect(canvas.getByRole('combobox', { name: 'Theme' })).toHaveTextContent(
-        'Light Mode',
-      ),
-    );
-    expect(
-      canvas.getByRole('button', { name: 'Save Settings' }),
-    ).toBeDisabled();
-  },
-};
-
-export const LightSaveError: Story = {
-  parameters: { theme: 'light' },
-  args: {
-    onSubmit: fn(async () => {
-      throw new Error('save failed');
-    }),
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    setFieldValue(
-      canvas.getByLabelText('Email Address') as HTMLInputElement,
-      'changed@example.com',
-    );
-    await waitFor(() =>
-      expect(
-        canvas.getByRole('button', { name: 'Save Settings' }),
-      ).not.toBeDisabled(),
-    );
-    fireEvent.click(canvas.getByRole('button', { name: 'Save Settings' }));
-    await waitFor(() =>
-      expect(
-        canvas.getByText('Could not save your settings. Please try again.'),
-      ).toBeInTheDocument(),
-    );
-  },
 };
 
 export const RestoredDraft: Story = {
@@ -387,20 +342,22 @@ export const Mobile: Story = {
       await canvas.findByRole('heading', { name: 'Privacy', level: 1 }),
     ).toBeInTheDocument();
     fireEvent.click(canvas.getByRole('button', { name: 'Settings' }));
-    fireEvent.click(await canvas.findByRole('button', { name: /^Theme/ }));
+    fireEvent.click(
+      await canvas.findByRole('button', { name: /^Time Format/ }),
+    );
     fireEvent.click(
       await within(await screen.findByRole('dialog')).findByRole('button', {
-        name: 'Light Mode',
+        name: '12-hour',
       }),
     );
     await waitFor(() =>
-      expect(canvas.getByRole('button', { name: /^Theme/ })).toHaveTextContent(
-        'Light Mode',
-      ),
+      expect(
+        canvas.getByRole('button', { name: /^Time Format/ }),
+      ).toHaveTextContent('12-hour'),
     );
     await waitFor(() =>
       expect(args.onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({ theme: 'light' }),
+        expect.objectContaining({ timeFormat: '12hr' }),
       ),
     );
     await expect(await canvas.findByText('Saved')).toBeInTheDocument();

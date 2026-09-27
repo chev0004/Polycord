@@ -10,7 +10,6 @@ export const settingsSchema = z.object({
   profileViewAlert: z.boolean(),
   hideProfileVisits: z.boolean(),
   productAnalytics: z.boolean(),
-  theme: z.enum(['dark', 'light']),
   applicationLanguage: z.enum(locales),
   timeFormat: z.enum(['12hr', '24hr']),
   languageDisplay: z.enum(['long', 'short']),
