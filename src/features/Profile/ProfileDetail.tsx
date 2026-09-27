@@ -105,17 +105,20 @@ const LegendRow = ({
   name,
   range,
   now,
+  separated = false,
 }: {
   swatch: string;
   name: string;
   range: string;
   now: string;
+  separated?: boolean;
 }) => (
   <div className="grid grid-cols-[14px_52px_minmax(0,1fr)] items-start gap-2">
     <span className={`mt-1.5 h-1.5 rounded-full ${swatch}`} />
     <span className="truncate font-semibold text-foreground">{name}</span>
     <span className="flex flex-wrap gap-x-1.5 gap-y-0.5">
       <span>{range}</span>
+      {separated ? <span aria-hidden>·</span> : null}
       <span className="whitespace-nowrap text-subtle">{now}</span>
     </span>
   </div>
@@ -257,6 +260,7 @@ const TheirTime = ({
           now={t('nowTime', {
             time: formatCurrentTime(timezone, timeFormat, locale),
           })}
+          separated={!comparison}
         />
         {comparison ? (
           <LegendRow

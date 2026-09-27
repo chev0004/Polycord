@@ -142,6 +142,23 @@ export const NoAvailability: Story = {
 
     await waitFor(() => expect(canvas.getAllByText('Not set')).toHaveLength(2));
     await expect(canvas.queryByText(/overlap$/)).not.toBeInTheDocument();
+    await expect(canvas.queryByText('·')).not.toBeInTheDocument();
+  },
+};
+
+export const NoViewerTimezoneNoAvailability: Story = {
+  args: {
+    profile: { ...profile, availability: undefined },
+    viewerTimezone: undefined,
+    viewerAvailability: undefined,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const status = await canvas.findByText('Not set');
+    const separator = status.nextElementSibling;
+
+    await expect(separator).toHaveTextContent(/^·$/);
+    await expect(separator?.nextElementSibling).toHaveTextContent(/^now \S+/);
   },
 };
 
