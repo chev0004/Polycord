@@ -51,7 +51,7 @@ A new database already has an empty `public` schema. Dropping it first stops `pg
 
 ## Migrations
 
-The hosting build does not run migrations, so order them against the deploy:
+The hosting build does not run migrations. It runs `scripts/check-migrations.ts` first and fails when the database is missing a migration from `drizzle/`, so the previous deploy keeps serving. Order migrations against the deploy:
 
 1. Generate with `bun run db:generate` and review the SQL in `drizzle/`.
 2. Run `bun run test:e2e` and the integration tests against a disposable database.
