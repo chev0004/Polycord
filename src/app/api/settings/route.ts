@@ -65,7 +65,6 @@ export const POST = async (request: Request) => {
     displayTimezone: values.displayTimezone,
   });
   await upsertUserSettings(currentUser.accountId, {
-    theme: values.theme,
     applicationLanguage: values.applicationLanguage,
     timeFormat: values.timeFormat,
     languageDisplay: values.languageDisplay,

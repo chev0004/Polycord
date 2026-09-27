@@ -54,7 +54,6 @@ export default async function SettingsRoute({
                 hideProfileVisits: settings.hideProfileVisits,
                 productAnalytics: settings.productAnalytics,
                 pushNotifications: settings.pushNotifications,
-                theme: settings.theme,
                 timeFormat: settings.timeFormat,
                 languageDisplay: settings.languageDisplay,
               }

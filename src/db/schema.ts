@@ -22,8 +22,6 @@ export const proficiencyLevelEnum = pgEnum('proficiency_level', [
   'native-level',
 ]);
 
-export const themeEnum = pgEnum('theme', ['dark', 'light']);
-
 export const timeFormatEnum = pgEnum('time_format', ['12hr', '24hr']);
 
 export const languageDisplayEnum = pgEnum('language_display', [
@@ -249,7 +247,6 @@ export const userSettings = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    theme: themeEnum('theme').default('dark').notNull(),
     applicationLanguage: varchar('application_language', { length: 16 })
       .default('en')
       .notNull(),

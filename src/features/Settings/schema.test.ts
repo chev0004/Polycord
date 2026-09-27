@@ -11,7 +11,6 @@ const validSettings: SettingsFormValues = {
   profileViewAlert: false,
   hideProfileVisits: false,
   productAnalytics: true,
-  theme: 'dark',
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
@@ -38,10 +37,13 @@ describe('settingsSchema', () => {
     }
   });
 
-  it('rejects unknown theme and time format values', () => {
+  it('drops a submitted application theme', () => {
     expect(
-      settingsSchema.safeParse({ ...validSettings, theme: 'sepia' }).success,
-    ).toBe(false);
+      settingsSchema.parse({ ...validSettings, theme: 'light' }),
+    ).not.toHaveProperty('theme');
+  });
+
+  it('rejects unknown time format values', () => {
     expect(
       settingsSchema.safeParse({ ...validSettings, timeFormat: '48hr' })
         .success,
