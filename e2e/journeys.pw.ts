@@ -267,6 +267,19 @@ test('admins moderate a report while members cannot reach admin tools', async ({
           )[0],
       )
       .toEqual({ days: 30, note: 'Repeated spam' });
+    expect(
+      (
+        await moderator.request.post('/api/admin/moderation', {
+          headers: { Origin: 'http://localhost:3119' },
+          data: { userId: reported.id, action: 'unsuspend', days: 5 },
+        })
+      ).status(),
+    ).toBe(200);
+    expect(
+      (
+        await sql`select suspended_until from users where id = ${reported.id}`
+      )[0].suspended_until,
+    ).toBeNull();
     await page.getByRole('tab', { name: 'Activity log' }).click();
     await expect(
       page.getByText('Suspended user · 30 days').first(),
