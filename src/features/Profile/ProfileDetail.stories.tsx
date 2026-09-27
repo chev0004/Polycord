@@ -145,6 +145,54 @@ export const NoAvailability: Story = {
   },
 };
 
+export const NoViewerTimezone: Story = {
+  args: {
+    viewerTimezone: undefined,
+    viewerAvailability: undefined,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await waitFor(() =>
+      expect(canvas.getByText('From Yuki')).toBeInTheDocument(),
+    );
+    await expect(
+      canvas.queryByText('Same time as you'),
+    ).not.toBeInTheDocument();
+    await expect(canvas.queryByText(/ahead of you$/)).not.toBeInTheDocument();
+    await expect(canvas.queryByText(/behind you$/)).not.toBeInTheDocument();
+    await expect(canvas.queryByText(/overlap$/)).not.toBeInTheDocument();
+    await expect(canvas.queryByText('You')).not.toBeInTheDocument();
+    await expect(canvas.getByText('Yuki')).toBeInTheDocument();
+  },
+};
+
+export const NoTimezones: Story = {
+  args: {
+    profile: { ...profile, timezone: undefined },
+    viewerTimezone: undefined,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByText('Their time').nextElementSibling,
+    ).toHaveTextContent('Not set');
+    await expect(
+      canvas.queryByText('Same time as you'),
+    ).not.toBeInTheDocument();
+    await expect(canvas.queryByText(/now \d/)).not.toBeInTheDocument();
+    await expect(canvas.queryByText(/overlap$/)).not.toBeInTheDocument();
+  },
+};
+
+export const OnlyViewerTimezone: Story = {
+  ...NoTimezones,
+  args: {
+    profile: { ...profile, timezone: undefined },
+    viewerTimezone: 'Europe/London',
+  },
+};
+
 export const LongContent: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   args: {
