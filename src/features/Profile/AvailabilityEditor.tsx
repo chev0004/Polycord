@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { MdCheckCircle, MdRadioButtonUnchecked } from 'react-icons/md';
 import { FormGroup, Label, Toggle } from '@/components/Form';
 import {
@@ -31,8 +31,11 @@ export const AvailabilityEditor = ({
   const fromId = useId();
   const toId = useId();
 
+  const [lastPattern, setLastPattern] = useState(
+    value ?? DEFAULT_AVAILABILITY_PATTERN,
+  );
   const enabled = Boolean(value);
-  const pattern = value ?? DEFAULT_AVAILABILITY_PATTERN;
+  const pattern = value ?? lastPattern;
   const patch = (next: Partial<AvailabilityPattern>) =>
     onChange({ ...pattern, ...next });
 
@@ -43,9 +46,10 @@ export const AvailabilityEditor = ({
         <Toggle
           checked={enabled}
           disabled={disabled}
-          onCheckedChange={(checked) =>
-            onChange(checked ? { ...DEFAULT_AVAILABILITY_PATTERN } : null)
-          }
+          onCheckedChange={(checked) => {
+            if (!checked) setLastPattern(pattern);
+            onChange(checked ? { ...lastPattern } : null);
+          }}
           aria-label={t('freeTimeLabel')}
         />
       </div>
@@ -56,92 +60,93 @@ export const AvailabilityEditor = ({
         </p>
       )}
 
-      {!disabled && enabled && (
-        <div className="mt-2.5 flex flex-col gap-2.5">
-          <div className="flex gap-1.5">
-            {DAY_KEYS.map((day) => {
-              const active = pattern.days === day.id;
-              return (
-                <button
-                  key={day.id}
-                  type="button"
-                  onClick={() => patch({ days: day.id })}
-                  aria-pressed={active}
-                  className={`flex-1 whitespace-nowrap rounded-lg border px-1 py-[9px] font-medium text-[13px] transition-colors focus:outline-none ${
-                    active
-                      ? 'border-primary-dark bg-primary-darker text-primary-light'
-                      : 'border-line bg-background-darker text-soft hover:bg-background-main hover:text-foreground'
-                  }`}
-                >
-                  {t(day.labelKey)}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="flex items-end gap-2">
-            <div className="flex flex-1 flex-col gap-1">
-              <label
-                htmlFor={fromId}
-                className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
+      <fieldset
+        disabled={disabled || !enabled}
+        className="mt-2.5 flex min-w-0 flex-col gap-2.5 disabled:cursor-not-allowed disabled:opacity-50 [&_:disabled]:cursor-not-allowed"
+      >
+        <div className="flex gap-1.5">
+          {DAY_KEYS.map((day) => {
+            const active = pattern.days === day.id;
+            return (
+              <button
+                key={day.id}
+                type="button"
+                onClick={() => patch({ days: day.id })}
+                aria-pressed={active}
+                className={`flex-1 whitespace-nowrap rounded-lg border px-1 py-[9px] font-medium text-[13px] transition-colors focus:outline-none ${
+                  active
+                    ? 'border-primary-dark bg-primary-darker text-primary-light'
+                    : 'border-line bg-background-darker text-soft enabled:hover:bg-background-main enabled:hover:text-foreground'
+                }`}
               >
-                {t('availabilityFromLabel')}
-              </label>
-              <input
-                id={fromId}
-                type="time"
-                value={pattern.anyTime ? '' : pattern.from}
-                disabled={pattern.anyTime}
-                onChange={(event) =>
-                  patch({ from: event.target.value, anyTime: false })
-                }
-                className="w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
-              />
-            </div>
-            <span className="pb-[10px] text-[13px] text-subtle">
-              {t('availabilityTimeSeparator')}
-            </span>
-            <div className="flex flex-1 flex-col gap-1">
-              <label
-                htmlFor={toId}
-                className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
-              >
-                {t('availabilityToLabel')}
-              </label>
-              <input
-                id={toId}
-                type="time"
-                value={pattern.anyTime ? '' : pattern.to}
-                disabled={pattern.anyTime}
-                onChange={(event) =>
-                  patch({ to: event.target.value, anyTime: false })
-                }
-                className="w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-35"
-              />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => patch({ anyTime: !pattern.anyTime })}
-            aria-pressed={Boolean(pattern.anyTime)}
-            className={`inline-flex w-fit items-center gap-[5px] text-[12px] transition-colors focus:outline-none focus-visible:text-soft ${
-              pattern.anyTime
-                ? 'text-primary-light'
-                : 'text-subtle hover:text-soft'
-            }`}
-          >
-            {pattern.anyTime ? (
-              <MdCheckCircle size={14} />
-            ) : (
-              <MdRadioButtonUnchecked size={14} />
-            )}
-            {t('availabilityAnyTime')}
-          </button>
-
-          <p className="text-[12px] text-subtle">{t('availabilityHint')}</p>
+                {t(day.labelKey)}
+              </button>
+            );
+          })}
         </div>
-      )}
+
+        <div className="flex items-end gap-2">
+          <div className="flex flex-1 flex-col gap-1">
+            <label
+              htmlFor={fromId}
+              className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
+            >
+              {t('availabilityFromLabel')}
+            </label>
+            <input
+              id={fromId}
+              type="time"
+              value={pattern.anyTime ? '' : pattern.from}
+              disabled={pattern.anyTime}
+              onChange={(event) =>
+                patch({ from: event.target.value, anyTime: false })
+              }
+              className={`w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none ${pattern.anyTime ? 'opacity-35' : ''}`}
+            />
+          </div>
+          <span className="pb-[10px] text-[13px] text-subtle">
+            {t('availabilityTimeSeparator')}
+          </span>
+          <div className="flex flex-1 flex-col gap-1">
+            <label
+              htmlFor={toId}
+              className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
+            >
+              {t('availabilityToLabel')}
+            </label>
+            <input
+              id={toId}
+              type="time"
+              value={pattern.anyTime ? '' : pattern.to}
+              disabled={pattern.anyTime}
+              onChange={(event) =>
+                patch({ to: event.target.value, anyTime: false })
+              }
+              className={`w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none ${pattern.anyTime ? 'opacity-35' : ''}`}
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => patch({ anyTime: !pattern.anyTime })}
+          aria-pressed={Boolean(pattern.anyTime)}
+          className={`inline-flex w-fit items-center gap-[5px] text-[12px] transition-colors focus:outline-none focus-visible:text-soft ${
+            pattern.anyTime
+              ? 'text-primary-light'
+              : 'text-subtle enabled:hover:text-soft'
+          }`}
+        >
+          {pattern.anyTime ? (
+            <MdCheckCircle size={14} />
+          ) : (
+            <MdRadioButtonUnchecked size={14} />
+          )}
+          {t('availabilityAnyTime')}
+        </button>
+
+        <p className="text-[12px] text-subtle">{t('availabilityHint')}</p>
+      </fieldset>
     </FormGroup>
   );
 };
