@@ -26,7 +26,11 @@ describe('session cookies', () => {
 
     const restored = await readSessionFromCookieValue(value as string);
 
-    expect(restored).toEqual({ ...user, accountId: 'account-1' });
+    expect(restored).toEqual({
+      ...user,
+      accountId: 'account-1',
+      issuedAt: expect.any(Number),
+    });
   });
 
   it('rejects a tampered payload', async () => {

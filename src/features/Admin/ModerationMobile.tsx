@@ -1,0 +1,1555 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+import {
+  type PointerEvent,
+  type ReactNode,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import type { IconType } from 'react-icons';
+import {
+  MdAdd,
+  MdAdminPanelSettings,
+  MdBlock,
+  MdCampaign,
+  MdCheck,
+  MdChevronLeft,
+  MdChevronRight,
+  MdClose,
+  MdContentCopy,
+  MdDone,
+  MdExpandMore,
+  MdFilterAltOff,
+  MdGavel,
+  MdGroup,
+  MdHistory,
+  MdInventory2,
+  MdLockOpen,
+  MdOutlinedFlag,
+  MdPersonSearch,
+  MdPolicy,
+  MdRemove,
+  MdSchedule,
+  MdSearch,
+  MdSettingsBackupRestore,
+  MdSwipeLeft,
+  MdTaskAlt,
+  MdTune,
+  MdVisibility,
+  MdVisibilityOff,
+} from 'react-icons/md';
+import { Avatar } from '@/components/Avatar';
+import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
+import {
+  type ModTab,
+  type Notify,
+  type UsersQuery,
+  useEventLabel,
+} from './ModerationDesktop';
+import {
+  ACTION_TONE,
+  ActionError,
+  DURATION_PRESETS,
+  EmptyState,
+  HistoryList,
+  ProtectedNotice,
+  ReasonBadge,
+  ReportStack,
+  RestrictionChips,
+  Spinner,
+  StaffChip,
+  SuspendEnds,
+  UserChips,
+  useLanguageLabels,
+  useLogLabel,
+  useModFormat,
+  useSuspendDays,
+} from './ModerationParts';
+import { StaffPanel } from './ModerationStaff';
+import type { ModAction, ModReport, ModUser } from './types';
+import { LOG_ACTIONS } from './types';
+import {
+  groupReports,
+  hasStatusChips,
+  isReauthError,
+  isSuspended,
+  type ModerationStore,
+  type ReportGroup,
+} from './useModeration';
+
+type Page = {
+  kind: 'case' | 'user';
+  userId: string;
+  view: 'pending' | 'resolved';
+};
+
+const title = 'font-bold text-[28px] leading-[1.15] tracking-[-0.01em]';
+const group = 'overflow-hidden rounded-[20px] bg-background-dark';
+const divider =
+  'relative before:absolute before:top-0 before:right-0 before:h-px before:bg-[rgba(107,114,128,0.22)] first:before:hidden';
+const caption =
+  'flex items-baseline justify-between px-1 font-semibold text-subtle text-xs uppercase tracking-[0.06em]';
+const mobileButton = (tone: 'primary' | 'outline' | 'danger') =>
+  `inline-flex h-[50px] min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-[18px] font-semibold text-[15px] transition-transform active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${
+    {
+      primary: 'bg-primary text-black',
+      outline: 'border border-primary-dark text-primary-light',
+      danger: 'bg-red-800 text-white',
+    }[tone]
+  }`;
+
+const MobileSkeleton = () => (
+  <div className={group} aria-hidden>
+    {[50, 67, 84, 59].map((width) => (
+      <div key={width} className="grid grid-cols-[40px_1fr_44px] gap-3 p-4">
+        <div className="h-10 w-10 animate-pulse rounded-full bg-[#222325]" />
+        <div className="flex flex-col gap-2">
+          <div
+            className="h-[13px] animate-pulse rounded-md bg-[#222325]"
+            style={{ width: `${width}%` }}
+          />
+          <div className="h-[11px] w-[38%] animate-pulse rounded-md bg-[#222325]" />
+        </div>
+        <div className="h-[11px] animate-pulse rounded-md bg-[#222325]" />
+      </div>
+    ))}
+  </div>
+);
+
+const MobileEmpty = (props: Parameters<typeof EmptyState>[0]) => (
+  <EmptyState
+    {...props}
+    className="mx-1 my-6 rounded-3xl bg-background-dark px-5 py-8"
+  />
+);
+
+const Header = ({ heading, sub }: { heading: string; sub?: string }) => (
+  <div className="flex flex-col gap-1 px-4 pt-1.5 pb-3.5">
+    <h1 className={title}>{heading}</h1>
+    {sub ? <p className="text-muted text-sm">{sub}</p> : null}
+  </div>
+);
+
+const SwipeRow = ({
+  enabled,
+  label,
+  onDismiss,
+  onOpen,
+  children,
+}: {
+  enabled: boolean;
+  label: string;
+  onDismiss: () => void;
+  onOpen: () => void;
+  children: ReactNode;
+}) => {
+  const t = useTranslations('Admin');
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const start = useRef<{
+    x: number;
+    y: number;
+    base: number;
+    lock: 'x' | 'y' | null;
+  } | null>(null);
+  const moved = useRef(false);
+  const width = 104;
+
+  const down = (event: PointerEvent) => {
+    if (!enabled) return;
+    start.current = {
+      x: event.clientX,
+      y: event.clientY,
+      base: offset,
+      lock: null,
+    };
+    moved.current = false;
+  };
+  const move = (event: PointerEvent<HTMLButtonElement>) => {
+    const origin = start.current;
+    if (!origin) return;
+    const dx = event.clientX - origin.x;
+    const dy = event.clientY - origin.y;
+    if (origin.lock === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+      origin.lock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      if (origin.lock === 'x')
+        event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    if (origin.lock !== 'x') return;
+    moved.current = true;
+    setDragging(true);
+    setOffset(Math.max(-width - 24, Math.min(0, origin.base + dx)));
+  };
+  const up = () => {
+    const origin = start.current;
+    start.current = null;
+    setDragging(false);
+    if (origin?.lock === 'x')
+      setOffset((value) => (value < -width / 2 ? -width : 0));
+  };
+
+  return (
+    <div
+      className={`relative overflow-hidden ${divider} before:left-[68px] before:z-[2]`}
+    >
+      {enabled ? (
+        <button
+          type="button"
+          tabIndex={offset ? 0 : -1}
+          aria-label={t('dismissSwipe', { name: label })}
+          onClick={() => {
+            setOffset(0);
+            onDismiss();
+          }}
+          className={`absolute inset-y-0 right-0 flex w-[104px] flex-col items-center justify-center gap-[3px] bg-primary font-bold text-black text-xs ${offset || dragging ? 'visible' : 'invisible'}`}
+        >
+          <MdDone size={22} />
+          {t('dismiss')}
+        </button>
+      ) : null}
+      <button
+        type="button"
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+        onClick={() => {
+          if (moved.current) {
+            moved.current = false;
+            return;
+          }
+          if (offset) {
+            setOffset(0);
+            return;
+          }
+          onOpen();
+        }}
+        style={{ transform: `translateX(${offset}px)` }}
+        className={`relative z-[1] grid w-full touch-pan-y select-none grid-cols-[40px_minmax(0,1fr)_auto] items-start gap-3 bg-background-dark py-3.5 pr-3.5 pl-4 text-left text-foreground active:bg-[#19191a] ${dragging ? '' : 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'}`}
+      >
+        {children}
+      </button>
+    </div>
+  );
+};
+
+const avatar40 = '[&>*]:!h-10 [&>*]:!w-10';
+
+const ReportsScreen = ({
+  store,
+  view,
+  setView,
+  openCase,
+  quickDismiss,
+  busyId,
+}: {
+  store: ModerationStore;
+  view: 'pending' | 'resolved';
+  setView: (view: 'pending' | 'resolved') => void;
+  openCase: (userId: string) => void;
+  quickDismiss: (group: ReportGroup) => void;
+  busyId: string | null;
+}) => {
+  const t = useTranslations('Admin');
+  const { relative } = useModFormat();
+  const pending = store.pendingGroups;
+  const resolved = groupReports(store.reports, 'resolved');
+  const groups = view === 'pending' ? pending : resolved;
+  const segment = (value: 'pending' | 'resolved', label: string) => (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={view === value}
+      onClick={() => setView(value)}
+      className={`h-9 truncate rounded-full px-1.5 font-semibold text-[13px] transition-colors ${view === value ? 'bg-primary-dark text-foreground' : 'text-muted'}`}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <>
+      <Header
+        heading={t('tabReports')}
+        sub={
+          view === 'pending'
+            ? pending.length
+              ? t('casesNeedReview', { count: pending.length })
+              : t('nothingWaiting')
+            : t('resolvedCases', { count: resolved.length })
+        }
+      />
+      <div className="px-4 pb-3.5">
+        <div
+          role="tablist"
+          className="grid auto-cols-[minmax(0,1fr)] grid-flow-col gap-[3px] rounded-full bg-background-darker p-[3px]"
+        >
+          {segment('pending', t('pendingCount', { count: pending.length }))}
+          {segment('resolved', t('resolved'))}
+        </div>
+      </div>
+      <div className="px-3">
+        {groups.length ? (
+          <>
+            <div className={group}>
+              {groups.map((entry) => {
+                const user = store.usersById.get(entry.userId);
+                if (!user) return null;
+                const snippet = entry.reports.find((report) => report.details);
+                return (
+                  <SwipeRow
+                    key={entry.userId}
+                    label={user.displayName}
+                    enabled={view === 'pending' && busyId !== entry.userId}
+                    onOpen={() => openCase(entry.userId)}
+                    onDismiss={() => quickDismiss(entry)}
+                  >
+                    <span className={avatar40}>
+                      <Avatar avatarUrl={user.avatarUrl} size="sm" />
+                    </span>
+                    <span className="flex min-w-0 flex-col gap-[3px]">
+                      <span className="truncate font-semibold text-base">
+                        {user.displayName}
+                      </span>
+                      <span className="truncate text-[13px] text-muted">
+                        @{user.username}
+                      </span>
+                      {snippet ? (
+                        <span className="mt-[3px] line-clamp-2 font-light text-[13.5px] text-soft leading-[1.4]">
+                          “{snippet.details}”
+                        </span>
+                      ) : null}
+                      <span className="mt-[5px] flex flex-wrap gap-1">
+                        {[...new Set(entry.reports.map((r) => r.reason))].map(
+                          (reason) => (
+                            <ReasonBadge key={reason} reason={reason} />
+                          ),
+                        )}
+                        {user.role ? (
+                          <StaffChip role={user.role} small />
+                        ) : null}
+                        <RestrictionChips user={user} small />
+                      </span>
+                    </span>
+                    <span className="flex flex-col items-end gap-2 pt-0.5">
+                      <span className="whitespace-nowrap text-subtle text-xs">
+                        {busyId === entry.userId ? (
+                          <Spinner />
+                        ) : (
+                          relative(entry.reports[0].createdAt)
+                        )}
+                      </span>
+                      <span
+                        className={`whitespace-nowrap rounded-full px-2 py-0.5 font-bold text-[11px] ${entry.reports.length > 1 ? 'bg-discord-blue text-white' : 'bg-background-darker text-primary-light'}`}
+                      >
+                        {t('reportCount', { count: entry.reports.length })}
+                      </span>
+                    </span>
+                  </SwipeRow>
+                );
+              })}
+            </div>
+            {view === 'pending' ? (
+              <p className="flex items-center justify-center gap-1.5 px-4 pt-3.5 text-[12.5px] text-subtle">
+                <MdSwipeLeft size={16} />
+                {t('swipeHint')}
+              </p>
+            ) : null}
+          </>
+        ) : (
+          <MobileEmpty
+            icon={view === 'pending' ? MdTaskAlt : MdInventory2}
+            title={t(
+              view === 'pending' ? 'queueClearTitle' : 'resolvedEmptyTitle',
+            )}
+            body={t(
+              view === 'pending' ? 'queueClearBody' : 'resolvedEmptyBody',
+            )}
+          />
+        )}
+      </div>
+    </>
+  );
+};
+
+const UserRow = ({ user, onClick }: { user: ModUser; onClick: () => void }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-[13px] text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[68px]`}
+  >
+    <span className={avatar40}>
+      <Avatar avatarUrl={user.avatarUrl} size="sm" />
+    </span>
+    <span className="min-w-0">
+      <span className="block truncate font-semibold text-base">
+        {user.displayName}
+      </span>
+      <span className="block truncate text-[13px] text-muted">
+        @{user.username}
+      </span>
+      {hasStatusChips(user) ? (
+        <span className="mt-[5px] flex flex-wrap gap-1">
+          {user.role ? <StaffChip role={user.role} small /> : null}
+          <RestrictionChips user={user} small />
+        </span>
+      ) : null}
+    </span>
+    <MdChevronRight size={20} className="text-subtle" />
+  </button>
+);
+
+const UsersScreen = ({
+  store,
+  users,
+  openUser,
+}: {
+  store: ModerationStore;
+  users: UsersQuery;
+  openUser: (userId: string) => void;
+}) => {
+  const t = useTranslations('Admin');
+  const [staffOpen, setStaffOpen] = useState(false);
+  const trimmed = users.query.trim();
+  const list = (trimmed ? (users.results ?? []) : store.recentUserIds).flatMap(
+    (id) => store.usersById.get(id) ?? [],
+  );
+
+  return (
+    <>
+      <Header heading={t('tabUsers')} />
+      <div className="sticky top-0 z-[5] bg-background-main px-4 pb-2.5">
+        <div className="flex h-12 items-center gap-2 rounded-full border border-[rgba(107,114,128,0.45)] bg-background-darker pr-2 pl-4 text-subtle focus-within:border-primary">
+          <MdSearch size={20} aria-hidden />
+          <input
+            type="search"
+            value={users.query}
+            onChange={(event) => users.setQuery(event.target.value)}
+            placeholder={t('searchPlaceholderShort')}
+            aria-label={t('searchLabel')}
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
+          />
+          {users.query ? (
+            <button
+              type="button"
+              onClick={() => users.setQuery('')}
+              aria-label={t('clearSearch')}
+              className="flex h-8 w-8 items-center justify-center text-muted"
+            >
+              <MdClose size={18} />
+            </button>
+          ) : null}
+        </div>
+      </div>
+      <div className="px-3">
+        {store.meRole === 'owner' && !trimmed ? (
+          <div className={`${group} mb-1.5`}>
+            <SheetRow
+              icon={MdGroup}
+              label={t('manageStaff')}
+              description={t('staffCount', { count: store.staff.length })}
+              chevron
+              onClick={() => setStaffOpen(true)}
+            />
+          </div>
+        ) : null}
+        {users.searching ? (
+          <MobileSkeleton />
+        ) : users.failed ? (
+          <p role="alert" className="px-1 py-4 text-red-400 text-sm">
+            {t('searchFailed')}
+          </p>
+        ) : trimmed && users.results && !users.results.length ? (
+          <MobileEmpty
+            icon={MdPersonSearch}
+            title={t('noUsersTitle')}
+            body={t('noUsersBody', { query: trimmed })}
+          />
+        ) : (
+          <>
+            <p className="px-1 pt-2 pb-2 font-semibold text-subtle text-xs uppercase tracking-[0.06em]">
+              {trimmed
+                ? t('resultsCount', { count: list.length })
+                : t('recentlyActioned')}
+            </p>
+            <div className={group}>
+              {list.map((user) => (
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  onClick={() => openUser(user.id)}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+      <Sheet
+        open={staffOpen}
+        onOpenChange={setStaffOpen}
+        title={t('staffTitle')}
+      >
+        <StaffPanel store={store} mobile />
+      </Sheet>
+    </>
+  );
+};
+
+const chipButton = (on: boolean) =>
+  `inline-flex h-[34px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-[13px] font-medium text-[13px] active:scale-[0.97] ${
+    on
+      ? 'border-primary-dark bg-primary-darker text-primary-light'
+      : 'border-[rgba(107,114,128,0.5)] text-gray-200'
+  }`;
+
+const LogScreen = ({
+  store,
+  openUser,
+}: {
+  store: ModerationStore;
+  openUser: (userId: string) => void;
+}) => {
+  const t = useTranslations('Admin');
+  const { date, time } = useModFormat();
+  const label = useLogLabel();
+  const [action, setAction] = useState('');
+  const [staff, setStaff] = useState('');
+  const [sheet, setSheet] = useState<'action' | 'staff' | null>(null);
+  const rows = store.log.filter(
+    (entry) =>
+      (!action || entry.action === action) &&
+      (!staff || entry.staffId === staff),
+  );
+  const staffIds = [...new Set(store.log.flatMap((e) => e.staffId ?? []))];
+  const dayLabel = (iso: string) => {
+    const day = new Date(iso).toDateString();
+    if (day === new Date().toDateString()) return t('today');
+    if (day === new Date(Date.now() - 86400000).toDateString())
+      return t('yesterday');
+    return date(iso);
+  };
+  const days = rows.reduce<{ label: string; items: typeof rows }[]>(
+    (all, entry) => {
+      const key = dayLabel(entry.createdAt);
+      const last = all.at(-1);
+      if (last?.label === key) last.items.push(entry);
+      else all.push({ label: key, items: [entry] });
+      return all;
+    },
+    [],
+  );
+  const clear = () => {
+    setAction('');
+    setStaff('');
+  };
+  const staffName = (id?: string) =>
+    store.usersById.get(id ?? '')?.displayName ?? t('unknownUser');
+
+  return (
+    <>
+      <Header
+        heading={t('tabLog')}
+        sub={t('actionsCount', { count: rows.length })}
+      />
+      <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
+        <button
+          type="button"
+          onClick={() => setSheet('action')}
+          className={chipButton(Boolean(action))}
+        >
+          <MdTune size={18} />
+          {action ? t(`action_${action}`) : t('allActions')}
+          <MdExpandMore size={18} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setSheet('staff')}
+          className={chipButton(Boolean(staff))}
+        >
+          <MdAdminPanelSettings size={18} />
+          {staff ? staffName(staff) : t('allStaff')}
+          <MdExpandMore size={18} />
+        </button>
+        {action || staff ? (
+          <button type="button" onClick={clear} className={chipButton(false)}>
+            <MdClose size={16} />
+            {t('clear')}
+          </button>
+        ) : null}
+      </div>
+      <div className="px-3">
+        {rows.length ? (
+          days.map((day, index) => (
+            <div key={day.label}>
+              <p
+                className={`px-4 pb-2 font-semibold text-subtle text-xs uppercase tracking-[0.06em] ${index ? 'pt-[18px]' : ''}`}
+              >
+                {day.label}
+              </p>
+              <div className={group}>
+                {day.items.map((entry) => (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    onClick={() => entry.userId && openUser(entry.userId)}
+                    className={`grid w-full grid-cols-[10px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-[13px] text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[38px]`}
+                  >
+                    <span
+                      className={`mt-1.5 h-2 w-2 rounded-full ${ACTION_TONE[entry.action]}`}
+                    />
+                    <span className="min-w-0">
+                      <span className="block font-semibold text-[15px]">
+                        {label(entry)}
+                      </span>
+                      <span className="mt-0.5 block text-[13px] text-muted">
+                        {staffName(entry.userId)} ·{' '}
+                        {t('byStaff', { name: staffName(entry.staffId) })}
+                      </span>
+                      {entry.note ? (
+                        <span className="mt-1.5 block font-light text-[13.5px] text-soft leading-[1.4]">
+                          {entry.note}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="whitespace-nowrap pt-0.5 text-[12.5px] text-subtle">
+                      {time(new Date(entry.createdAt))}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <MobileEmpty
+            icon={MdFilterAltOff}
+            title={t('noMatchTitle')}
+            body={t('noMatchBody')}
+          >
+            <button
+              type="button"
+              onClick={clear}
+              className="h-10 rounded-full border border-primary-dark px-3.5 font-semibold text-primary-light text-sm"
+            >
+              {t('clearFilters')}
+            </button>
+          </MobileEmpty>
+        )}
+      </div>
+      <ActionSheet
+        open={sheet === 'action'}
+        onOpenChange={(open) => setSheet(open ? 'action' : null)}
+        title={t('actionType')}
+        radio
+        items={[
+          {
+            key: 'all',
+            label: t('allActions'),
+            selected: !action,
+            onSelect: () => setAction(''),
+          },
+          ...LOG_ACTIONS.map((value) => ({
+            key: value,
+            label: t(`action_${value}`),
+            selected: action === value,
+            onSelect: () => setAction(value),
+          })),
+        ]}
+      />
+      <ActionSheet
+        open={sheet === 'staff'}
+        onOpenChange={(open) => setSheet(open ? 'staff' : null)}
+        title={t('staffMember')}
+        radio
+        items={[
+          {
+            key: 'all',
+            label: t('allStaff'),
+            selected: !staff,
+            onSelect: () => setStaff(''),
+          },
+          ...staffIds.map((id) => ({
+            key: id,
+            label: staffName(id),
+            selected: staff === id,
+            onSelect: () => setStaff(id),
+          })),
+        ]}
+      />
+    </>
+  );
+};
+
+const FlagsScreen = ({
+  store,
+  openUser,
+}: {
+  store: ModerationStore;
+  openUser: (userId: string) => void;
+}) => {
+  const t = useTranslations('Admin');
+  const { relative } = useModFormat();
+  const eventLabel = useEventLabel();
+
+  return (
+    <>
+      <Header heading={t('tabSuspicious')} sub={t('suspiciousIntro')} />
+      <div className="px-3">
+        {store.suspicious.length ? (
+          <div className={group}>
+            {store.suspicious.map((row) => {
+              const user = store.usersById.get(row.userId ?? '');
+              return (
+                <button
+                  key={row.id}
+                  type="button"
+                  disabled={!user}
+                  onClick={() => user && openUser(user.id)}
+                  className={`grid w-full grid-cols-[22px_minmax(0,1fr)_auto] items-start gap-3 py-3.5 pr-3 pl-4 text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[50px]`}
+                >
+                  <MdOutlinedFlag
+                    size={20}
+                    className="mt-px text-discord-yellow"
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-medium text-[15px]">
+                      {eventLabel(row.action)}
+                    </span>
+                    <span className="mt-0.5 block text-[13px] text-muted">
+                      {t('eventReason')}
+                    </span>
+                    {user ? (
+                      <span className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] text-gray-200">
+                        <Avatar avatarUrl={user.avatarUrl} size="sm" />
+                        {user.displayName}
+                        <RestrictionChips user={user} small />
+                      </span>
+                    ) : null}
+                    <span className="mt-1.5 block font-mono text-[13px] text-muted">
+                      {row.ip ?? '-'} · {relative(row.createdAt)}
+                    </span>
+                  </span>
+                  <MdChevronRight size={20} className="mt-0.5 text-subtle" />
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <MobileEmpty
+            icon={MdPolicy}
+            title={t('suspiciousEmptyTitle')}
+            body={t('suspiciousEmptyBody')}
+          />
+        )}
+      </div>
+    </>
+  );
+};
+
+const Dock = ({
+  tab,
+  setTab,
+  pending,
+}: {
+  tab: ModTab;
+  setTab: (tab: ModTab) => void;
+  pending: number;
+}) => {
+  const t = useTranslations('Admin');
+  const items = useRef<Partial<Record<ModTab, HTMLElement | null>>>({});
+  const previous = useRef<{ left: number; width: number } | null>(null);
+  const [indicator, setIndicator] = useState<{
+    left: number;
+    width: number;
+    stretch: boolean;
+  } | null>(null);
+  const [tip, setTip] = useState<ModTab | null>(null);
+  const labels: Record<ModTab, string> = {
+    reports: t('tabReports'),
+    users: t('tabUsers'),
+    log: t('tabLog'),
+    suspicious: t('tabSuspicious'),
+  };
+
+  useLayoutEffect(() => {
+    const element = items.current[tab];
+    if (!element) return;
+    const to = { left: element.offsetLeft, width: element.offsetWidth };
+    const from = previous.current;
+    previous.current = to;
+    if (!from || from.left === to.left) {
+      setIndicator({ ...to, stretch: false });
+      return;
+    }
+    setIndicator({
+      left: Math.min(from.left, to.left),
+      width:
+        Math.max(from.left + from.width, to.left + to.width) -
+        Math.min(from.left, to.left),
+      stretch: true,
+    });
+    setTip(tab);
+    const settle = setTimeout(
+      () => setIndicator({ ...to, stretch: false }),
+      170,
+    );
+    const hide = setTimeout(
+      () => setTip((current) => (current === tab ? null : current)),
+      1300,
+    );
+    return () => {
+      clearTimeout(settle);
+      clearTimeout(hide);
+    };
+  }, [tab]);
+
+  const button = (id: ModTab, Icon: IconType, badge?: number) => (
+    <button
+      ref={(element) => {
+        items.current[id] = element;
+      }}
+      type="button"
+      onClick={() => setTab(id)}
+      aria-label={labels[id]}
+      aria-current={tab === id ? 'page' : undefined}
+      className={`relative z-[2] flex h-12 w-12 items-center justify-center rounded-full transition-[color,transform] duration-300 active:scale-[0.92] ${tab === id ? 'text-on-primary' : 'text-muted'}`}
+    >
+      <Icon size={24} />
+      {badge ? (
+        <span
+          className={`absolute top-1.5 right-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-discord-blue px-[5px] font-bold text-[10px] text-white ring-2 ${tab === id ? 'ring-primary' : 'ring-background-darker'}`}
+        >
+          {badge}
+        </span>
+      ) : null}
+      <span
+        aria-hidden
+        className={`-translate-x-1/2 pointer-events-none absolute bottom-[calc(100%+12px)] left-1/2 whitespace-nowrap rounded-full bg-primary px-2.5 py-[5px] font-bold text-on-primary text-xs transition-[opacity,transform] duration-300 ${tip === id ? 'translate-y-0 opacity-100' : 'translate-y-1.5 opacity-0'}`}
+      >
+        {labels[id]}
+      </span>
+    </button>
+  );
+  const surface =
+    'flex items-center gap-1 rounded-full bg-background-darker p-[5px] shadow-[0_0_0_1px_var(--color-line-strong),0_14px_30px_-6px_rgba(0,0,0,0.7)]';
+
+  return (
+    <nav
+      aria-label={t('dockLabel')}
+      className="-translate-x-1/2 fixed bottom-[calc(env(safe-area-inset-bottom)+14px)] left-1/2 z-40 flex items-center gap-3 font-figtree"
+    >
+      {indicator ? (
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute top-[5px] z-[1] h-12 rounded-full bg-primary ease-[cubic-bezier(0.16,1,0.3,1)] ${indicator.stretch ? 'scale-y-[0.82] transition-[left,width,transform] duration-[170ms]' : 'transition-[left,width,transform] duration-[340ms]'}`}
+          style={{ left: indicator.left, width: indicator.width }}
+        />
+      ) : null}
+      <div className={surface}>
+        {button('reports', MdOutlinedFlag, pending)}
+      </div>
+      <div className={surface}>
+        {button('users', MdPersonSearch)}
+        {button('log', MdHistory)}
+        {button('suspicious', MdPolicy)}
+      </div>
+    </nav>
+  );
+};
+
+const Hero = ({ user }: { user: ModUser }) => {
+  const t = useTranslations('Admin');
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="mx-4 mt-0.5 flex flex-col gap-3.5 rounded-3xl bg-background-dark p-[18px]">
+      <div className="flex min-w-0 items-center gap-3.5">
+        <Avatar avatarUrl={user.avatarUrl} size="md" />
+        <div className="flex min-w-0 flex-col gap-[3px]">
+          <h2 className="font-bold text-[21px] leading-tight">
+            {user.displayName}
+          </h2>
+          <span className="text-muted text-sm">@{user.username}</span>
+        </div>
+      </div>
+      {user.role || hasStatusChips(user) || user.warnings > 0 ? (
+        <div className="flex flex-wrap gap-1.5 [&>span]:h-[26px] [&>span]:px-2.5 [&>span]:text-xs">
+          <UserChips user={user} />
+        </div>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard?.writeText(user.discordId).catch(() => {});
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1200);
+        }}
+        className="flex h-11 w-full items-center justify-between gap-2.5 rounded-xl bg-background-darker pr-1.5 pl-3.5 text-muted"
+      >
+        <span className="font-semibold text-subtle text-xs">
+          {t('discordId')}
+        </span>
+        <span className="flex items-center gap-1.5 text-gray-200">
+          <span className="font-mono text-xs">{user.discordId}</span>
+          <span
+            className={`flex w-8 justify-center ${copied ? 'text-discord-blue-light' : ''}`}
+          >
+            {copied ? <MdCheck size={18} /> : <MdContentCopy size={18} />}
+          </span>
+        </span>
+      </button>
+    </div>
+  );
+};
+
+const ProfileFacts = ({ user }: { user: ModUser }) => {
+  const t = useTranslations('Admin');
+  const { date } = useModFormat();
+  const labels = useLanguageLabels();
+  const fact = (key: string, value: ReactNode) => (
+    <div className="relative flex items-baseline justify-between gap-4 px-4 py-[13px] text-[15px] before:absolute before:top-0 before:right-0 before:left-4 before:h-px before:bg-[rgba(107,114,128,0.22)]">
+      <span className="shrink-0 text-muted">{t(key)}</span>
+      <span className="min-w-0 text-right text-foreground">{value}</span>
+    </div>
+  );
+  return (
+    <div className={group}>
+      <p className="break-words px-4 py-3.5 font-light text-[15px] text-soft leading-normal">
+        {user.profile ? (
+          user.profile.bio || (
+            <span className="text-[13px] text-subtle">{t('noBio')}</span>
+          )
+        ) : (
+          <span className="text-[13px] text-subtle">{t('noProfile')}</span>
+        )}
+      </p>
+      {user.profile ? (
+        <>
+          {fact(
+            'factVisibility',
+            <>
+              {t(
+                user.profile.isPublic
+                  ? 'visibilityPublic'
+                  : 'visibilityUnlisted',
+              )}
+              {user.hidden ? (
+                <span className="text-red-300"> · {t('hiddenByStaff')}</span>
+              ) : null}
+            </>,
+          )}
+          {fact('factSpeaks', labels.language(user.profile.primaryLanguage))}
+          {fact(
+            'factLearning',
+            user.profile.targetLanguages.length ? (
+              user.profile.targetLanguages
+                .map(
+                  (target) =>
+                    `${labels.language(target.language)} (${labels.level(target.level)})`,
+                )
+                .join(', ')
+            ) : (
+              <span className="text-muted text-xs">{t('noneListed')}</span>
+            ),
+          )}
+        </>
+      ) : null}
+      {fact('factJoined', date(user.joinedAt))}
+    </div>
+  );
+};
+
+const Note = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) => {
+  const t = useTranslations('Admin');
+  return (
+    <div className="relative">
+      <textarea
+        maxLength={500}
+        value={value}
+        placeholder={t('notePlaceholder')}
+        aria-label={t('note')}
+        onChange={(event) => onChange(event.target.value)}
+        className="block min-h-20 w-full resize-none rounded-[14px] border border-white/[0.07] bg-background-darker px-3.5 pt-3 pb-[26px] font-light text-[15px] text-foreground leading-[1.45] outline-none transition-colors placeholder:text-subtle focus:border-primary"
+      />
+      <span className="pointer-events-none absolute right-3 bottom-2 text-subtle text-xs">
+        {value.length}/500
+      </span>
+    </div>
+  );
+};
+
+const useRun = (
+  store: ModerationStore,
+  user: ModUser,
+  reportIds: string[],
+  onDone: (action: ModAction, days?: number) => void,
+) => {
+  const [busy, setBusy] = useState<ModAction | null>(null);
+  const [failed, setFailed] = useState<{
+    action: ModAction;
+    days?: number;
+    note: string;
+    reauth: boolean;
+  } | null>(null);
+  const run = async (action: ModAction, note: string, days?: number) => {
+    if (busy) return false;
+    setBusy(action);
+    setFailed(null);
+    try {
+      await store.act({ userId: user.id, action, reportIds, note, days });
+      onDone(action, days);
+      return true;
+    } catch (error) {
+      setFailed({ action, days, note, reauth: isReauthError(error) });
+      return false;
+    } finally {
+      setBusy(null);
+    }
+  };
+  return { busy, failed, run, reset: () => setFailed(null) };
+};
+
+const CaseFooter = ({
+  store,
+  user,
+  reportIds,
+  onDone,
+}: {
+  store: ModerationStore;
+  user: ModUser;
+  reportIds: string[];
+  onDone: (action: ModAction, days?: number) => void;
+}) => {
+  const t = useTranslations('Admin');
+  const { date } = useModFormat();
+  const [sheet, setSheet] = useState<'act' | 'suspend' | 'ban' | null>(null);
+  const [note, setNote] = useState('');
+  const protectedAccount = user.role !== undefined || user.id === store.meId;
+  const dismiss = useRun(store, user, reportIds, onDone);
+  const actions = useRun(store, user, reportIds, onDone);
+  const suspend = useSuspendDays(sheet === 'suspend');
+  const suspended = isSuspended(user);
+
+  const open = (next: typeof sheet) => {
+    actions.reset();
+    setSheet(next);
+  };
+  const run = async (action: ModAction, days?: number) => {
+    if (await actions.run(action, note, days)) {
+      setNote('');
+      setSheet(null);
+    }
+  };
+  const row = (
+    action: ModAction,
+    icon: IconType,
+    label: string,
+    description: string,
+    danger = false,
+    onClick: () => void = () => run(action),
+  ) => (
+    <SheetRow
+      key={action}
+      icon={icon}
+      label={label}
+      description={description}
+      danger={danger}
+      disabled={actions.busy !== null && actions.busy !== action}
+      chevron={action === 'suspend' || action === 'ban'}
+      onClick={onClick}
+    >
+      {actions.busy === action ? (
+        <span className="ml-auto text-muted">
+          <Spinner className="h-4 w-4" />
+        </span>
+      ) : null}
+    </SheetRow>
+  );
+
+  return (
+    <>
+      {dismiss.failed ? (
+        <ActionError
+          mobile
+          reauth={dismiss.failed.reauth}
+          onRetry={() => dismiss.run('dismiss', '')}
+        />
+      ) : null}
+      <div className="flex gap-2.5">
+        {reportIds.length ? (
+          <button
+            type="button"
+            disabled={dismiss.busy !== null}
+            onClick={() => dismiss.run('dismiss', '')}
+            className={mobileButton(protectedAccount ? 'primary' : 'outline')}
+          >
+            {dismiss.busy ? (
+              <Spinner className="h-4 w-4" />
+            ) : (
+              <MdDone size={20} />
+            )}
+            {dismiss.busy
+              ? t('working')
+              : reportIds.length > 1
+                ? t('dismissCount', { count: reportIds.length })
+                : t('dismiss')}
+          </button>
+        ) : null}
+        {protectedAccount ? null : (
+          <button
+            type="button"
+            disabled={dismiss.busy !== null}
+            onClick={() => open('act')}
+            className={mobileButton('primary')}
+          >
+            <MdGavel size={20} />
+            {t('takeAction')}
+          </button>
+        )}
+      </div>
+      <Sheet
+        open={sheet === 'act'}
+        onOpenChange={(next) => setSheet(next ? 'act' : null)}
+        title={user.displayName}
+      >
+        <div className="flex flex-col gap-3.5">
+          <Note value={note} onChange={setNote} />
+          {actions.failed ? (
+            <ActionError
+              mobile
+              reauth={actions.failed.reauth}
+              onRetry={() =>
+                run(actions.failed?.action ?? 'warn', actions.failed?.days)
+              }
+            />
+          ) : null}
+          <SheetGroup>
+            {row('warn', MdCampaign, t('warn'), t('warnDesc'))}
+            {user.hidden
+              ? row(
+                  'unhide_profile',
+                  MdVisibility,
+                  t('unhideProfile'),
+                  t('unhideDesc'),
+                )
+              : row(
+                  'hide_profile',
+                  MdVisibilityOff,
+                  t('hideProfile'),
+                  t('hideDesc'),
+                  true,
+                )}
+            {suspended && user.suspendedUntil
+              ? row(
+                  'unsuspend',
+                  MdLockOpen,
+                  t('liftSuspension'),
+                  t('liftDesc', { date: date(user.suspendedUntil) }),
+                )
+              : row(
+                  'suspend',
+                  MdSchedule,
+                  t('suspend'),
+                  t('suspendDesc'),
+                  true,
+                  () => open('suspend'),
+                )}
+            {store.meRole !== 'owner'
+              ? null
+              : user.bannedAt
+                ? row(
+                    'unban',
+                    MdSettingsBackupRestore,
+                    t('unban'),
+                    t('unbanDesc'),
+                  )
+                : row('ban', MdBlock, t('ban'), t('banDesc'), true, () =>
+                    open('ban'),
+                  )}
+          </SheetGroup>
+        </div>
+      </Sheet>
+      <Sheet
+        open={sheet === 'suspend'}
+        onOpenChange={(next) => setSheet(next ? 'suspend' : null)}
+        title={t('suspendTitle', { name: user.displayName })}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setSheet(null)}
+              className={mobileButton('outline')}
+            >
+              {t('cancel')}
+            </button>
+            <button
+              type="button"
+              disabled={!suspend.valid || actions.busy !== null}
+              onClick={() => run('suspend', suspend.days)}
+              className={mobileButton('danger')}
+            >
+              {actions.busy ? <Spinner className="h-4 w-4" /> : null}
+              {actions.busy
+                ? t('working')
+                : suspend.valid
+                  ? t('suspendConfirmShort', { count: suspend.days })
+                  : t('suspendConfirmInvalid')}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-3.5">
+          <p className="text-[15px] text-muted leading-normal">
+            {t('suspendBody', { username: user.username })}
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {[...DURATION_PRESETS, 'custom' as const].map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                aria-pressed={suspend.preset === preset}
+                onClick={() => suspend.setPreset(preset)}
+                className={`flex h-12 items-center justify-center rounded-xl border font-medium text-sm ${suspend.preset === preset ? 'border-primary bg-primary-darker font-semibold text-primary-light' : 'border-[rgba(107,114,128,0.5)] text-gray-200'}`}
+              >
+                {preset === 'custom'
+                  ? t('custom')
+                  : t('days', { count: preset })}
+              </button>
+            ))}
+          </div>
+          {suspend.preset === 'custom' ? (
+            <div className="flex items-center gap-2.5 rounded-[14px] bg-background-darker p-1.5">
+              <button
+                type="button"
+                onClick={() => suspend.step(-1)}
+                disabled={suspend.valid && suspend.days <= 1}
+                aria-label={t('fewerDays')}
+                className="grid h-11 w-11 place-items-center rounded-full bg-background-dark text-foreground disabled:opacity-35"
+              >
+                <MdRemove size={22} />
+              </button>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={90}
+                value={suspend.custom}
+                onChange={(event) => suspend.setCustom(event.target.value)}
+                aria-label={t('daysUnit')}
+                className="min-w-0 flex-1 bg-transparent text-center font-bold text-[22px] text-foreground tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="pr-2.5 text-muted text-sm">{t('daysUnit')}</span>
+              <button
+                type="button"
+                onClick={() => suspend.step(1)}
+                disabled={suspend.valid && suspend.days >= 90}
+                aria-label={t('moreDays')}
+                className="grid h-11 w-11 place-items-center rounded-full bg-background-dark text-foreground disabled:opacity-35"
+              >
+                <MdAdd size={22} />
+              </button>
+            </div>
+          ) : null}
+          {suspend.until ? (
+            <span className="text-[13.5px] text-muted">
+              <SuspendEnds until={suspend.until} />
+            </span>
+          ) : (
+            <span className="text-[13px] text-red-400">{t('daysInvalid')}</span>
+          )}
+          <Note value={note} onChange={setNote} />
+          {actions.failed ? (
+            <ActionError
+              mobile
+              reauth={actions.failed.reauth}
+              onRetry={() => run('suspend', actions.failed?.days)}
+            />
+          ) : null}
+        </div>
+      </Sheet>
+      <Sheet
+        open={sheet === 'ban'}
+        onOpenChange={(next) => setSheet(next ? 'ban' : null)}
+        title={t('banTitle', { name: user.displayName })}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setSheet(null)}
+              className={mobileButton('outline')}
+            >
+              {t('cancel')}
+            </button>
+            <button
+              type="button"
+              disabled={actions.busy !== null}
+              onClick={() => run('ban')}
+              className={mobileButton('danger')}
+            >
+              {actions.busy ? (
+                <Spinner className="h-4 w-4" />
+              ) : (
+                <MdBlock size={20} />
+              )}
+              {actions.busy
+                ? t('working')
+                : t('banConfirm', { name: user.displayName })}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-3.5">
+          <p className="text-[15px] text-muted leading-normal">
+            {t.rich('banBody', {
+              username: user.username,
+              b: (chunks) => (
+                <b className="font-semibold text-foreground">{chunks}</b>
+              ),
+            })}
+          </p>
+          <Note value={note} onChange={setNote} />
+          {actions.failed ? (
+            <ActionError
+              mobile
+              reauth={actions.failed.reauth}
+              onRetry={() => run('ban')}
+            />
+          ) : null}
+        </div>
+      </Sheet>
+    </>
+  );
+};
+
+const CasePage = ({
+  store,
+  page,
+  closing,
+  onBack,
+  onOpenUser,
+  notify,
+}: {
+  store: ModerationStore;
+  page: Page;
+  closing: boolean;
+  onBack: () => void;
+  onOpenUser: (userId: string) => void;
+  notify: Notify;
+}) => {
+  const t = useTranslations('Admin');
+  const user = store.usersById.get(page.userId);
+  if (!user) return null;
+  const isCase = page.kind === 'case';
+  const all = store.userReports(user.id);
+  const reports: ModReport[] = isCase
+    ? all.filter(
+        (report) => (report.status === 'pending') === (page.view === 'pending'),
+      )
+    : all;
+  const reportIds =
+    isCase && page.view === 'pending' ? reports.map((report) => report.id) : [];
+  const history = store.userLog(user.id);
+  const protectedAccount = user.role !== undefined || user.id === store.meId;
+
+  const reportsSection = (
+    <section key="reports" className="mx-4 mt-6 flex flex-col gap-2">
+      <h3 className={caption}>
+        <span>
+          {t(isCase ? 'sectionReports' : 'sectionReportsAgainst')}{' '}
+          <span className="text-muted">{reports.length}</span>
+        </span>
+      </h3>
+      {reports.length ? (
+        <ReportStack
+          store={store}
+          reports={reports}
+          onOpenUser={onOpenUser}
+          mobile
+        />
+      ) : (
+        <p className="rounded-[20px] bg-background-dark px-4 py-3.5 text-[13px] text-subtle">
+          {t('noReports')}
+        </p>
+      )}
+      {all.length > reports.length ? (
+        <button
+          type="button"
+          onClick={() => onOpenUser(user.id)}
+          className="flex min-h-12 w-full items-center justify-between rounded-[20px] bg-background-dark pr-3 pl-4 font-semibold text-primary-light text-sm"
+        >
+          {t('otherReports', { count: all.length - reports.length })}
+          <MdChevronRight size={20} className="text-subtle" />
+        </button>
+      ) : null}
+    </section>
+  );
+  const profileSection = (
+    <section key="profile" className="mx-4 mt-6 flex flex-col gap-2">
+      <h3 className={caption}>{t('sectionProfile')}</h3>
+      <ProfileFacts user={user} />
+    </section>
+  );
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 flex flex-col bg-background-main font-figtree text-foreground ${closing ? 'motion-safe:animate-[pushOut_0.3s_cubic-bezier(0.16,1,0.3,1)_forwards]' : 'motion-safe:animate-[pushIn_0.38s_cubic-bezier(0.16,1,0.3,1)]'}`}
+    >
+      <div className="h-[env(safe-area-inset-top)] shrink-0" />
+      <div className="relative flex min-h-12 items-center px-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex h-11 items-center pr-2.5 pl-1 font-semibold text-[15px] text-primary"
+        >
+          <MdChevronLeft size={26} aria-hidden />
+          {t('back')}
+        </button>
+        <h1 className="-translate-x-1/2 pointer-events-none absolute left-1/2 font-bold text-base">
+          {t(
+            isCase
+              ? page.view === 'pending'
+                ? 'casePage'
+                : 'resolvedCasePage'
+              : 'userPage',
+          )}
+        </h1>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 [scrollbar-width:none]">
+        <Hero user={user} />
+        {protectedAccount ? (
+          <div className="mx-4 mt-3">
+            <ProtectedNotice self={user.id === store.meId} large />
+          </div>
+        ) : null}
+        {isCase
+          ? [reportsSection, profileSection]
+          : [profileSection, reportsSection]}
+        <section className="mx-4 mt-6 flex flex-col gap-2">
+          <h3 className={caption}>
+            <span>
+              {t('sectionHistory')}{' '}
+              <span className="text-muted">{history.length}</span>
+            </span>
+          </h3>
+          <HistoryList store={store} entries={history} mobile />
+        </section>
+      </div>
+      {protectedAccount && !reportIds.length ? null : (
+        <div className="flex shrink-0 flex-col gap-2.5 border-[rgba(107,114,128,0.22)] border-t bg-background-main px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
+          <CaseFooter
+            key={user.id + page.kind}
+            store={store}
+            user={user}
+            reportIds={reportIds}
+            onDone={(action, days) => {
+              notify(user, action, {
+                days,
+                reports: reportIds.length,
+                resolved: reportIds.length > 0,
+              });
+              if (isCase && page.view === 'pending') onBack();
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const ModerationMobile = ({
+  store,
+  tab,
+  setTab,
+  users,
+  notify,
+}: {
+  store: ModerationStore;
+  tab: ModTab;
+  setTab: (tab: ModTab) => void;
+  users: UsersQuery;
+  notify: Notify;
+}) => {
+  const [view, setView] = useState<'pending' | 'resolved'>('pending');
+  const [page, setPage] = useState<Page | null>(null);
+  const [closing, setClosing] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const back = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setPage(null);
+      setClosing(false);
+    }, 280);
+  };
+  const openUser = (userId: string) => setPage({ kind: 'user', userId, view });
+  const quickDismiss = async (entry: ReportGroup) => {
+    const user = store.usersById.get(entry.userId);
+    if (!user) return;
+    setBusyId(entry.userId);
+    const reportIds = entry.reports.map((report) => report.id);
+    try {
+      await store.act({
+        userId: entry.userId,
+        action: 'dismiss',
+        reportIds,
+        note: '',
+      });
+      notify(user, 'dismiss', { reports: reportIds.length, resolved: true });
+    } catch {
+      notify(user, 'dismiss', {
+        reports: reportIds.length,
+        resolved: false,
+        failed: true,
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <div className="pb-[calc(env(safe-area-inset-bottom)+96px)] font-figtree text-foreground">
+      {tab === 'reports' ? (
+        <ReportsScreen
+          store={store}
+          view={view}
+          setView={setView}
+          openCase={(userId) => setPage({ kind: 'case', userId, view })}
+          quickDismiss={quickDismiss}
+          busyId={busyId}
+        />
+      ) : null}
+      {tab === 'users' ? (
+        <UsersScreen store={store} users={users} openUser={openUser} />
+      ) : null}
+      {tab === 'log' ? <LogScreen store={store} openUser={openUser} /> : null}
+      {tab === 'suspicious' ? (
+        <FlagsScreen store={store} openUser={openUser} />
+      ) : null}
+      <Dock
+        tab={tab}
+        setTab={(next) => {
+          setTab(next);
+          setPage(null);
+        }}
+        pending={store.pendingGroups.length}
+      />
+      {page ? (
+        <CasePage
+          key={page.kind + page.userId}
+          store={store}
+          page={page}
+          closing={closing}
+          onBack={back}
+          onOpenUser={openUser}
+          notify={notify}
+        />
+      ) : null}
+    </div>
+  );
+};

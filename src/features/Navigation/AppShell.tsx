@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { StaffPill } from '@/features/Admin/StaffPill';
 import { Footer } from '@/features/Footer';
 import { Navbar } from '@/features/Navbar';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -53,7 +54,9 @@ export const AppShell = ({
   const [bump, setBump] = useState<BumpAction | null>(null);
   const pathname = usePathname();
   const mobile = useIsMobile();
-  const dockable = isLoggedIn && !pathname.endsWith('/onboarding');
+  const staffArea = pathname.split('/')[2] === 'admin';
+  const dockable =
+    isLoggedIn && !pathname.endsWith('/onboarding') && !staffArea;
   const docked = dockable && mobile === true;
 
   return (
@@ -72,6 +75,7 @@ export const AppShell = ({
           iconUrl={userAvatarUrl}
           isLoggedIn={isLoggedIn}
           dockable={dockable}
+          badge={staffArea ? <StaffPill /> : undefined}
           notifications={[]}
           onHomeClick={() => router.push(`/${locale}`)}
           onLoginClick={() => window.location.assign(signInHref(locale))}

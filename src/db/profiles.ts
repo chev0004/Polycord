@@ -208,7 +208,7 @@ export const toViewerAvailabilityContext = (
   availability: toAvailabilityPattern(profile),
 });
 
-const targetLanguagesForProfile = (
+export const targetLanguagesForProfile = (
   profile: Profile,
   targetLanguages: ProfileTargetLanguageValue[] | undefined,
 ) =>
@@ -221,7 +221,7 @@ const targetLanguagesForProfile = (
         },
       ];
 
-const listTargetLanguagesByProfileIds = async (profileIds: string[]) => {
+export const listTargetLanguagesByProfileIds = async (profileIds: string[]) => {
   const byProfile = new Map<string, ProfileTargetLanguageValue[]>();
 
   if (!profileIds.length) {

@@ -1,0 +1,175 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { type ReactNode, useEffect, useState } from 'react';
+import { MdClose, MdPersonAdd, MdSearch } from 'react-icons/md';
+import { Avatar } from '@/components/Avatar';
+import { ActionError, Spinner } from './ModerationParts';
+import type { ModUser } from './types';
+import { isReauthError, type ModerationStore } from './useModeration';
+
+const StaffRow = ({
+  user,
+  mobile,
+  children,
+}: {
+  user: ModUser;
+  mobile: boolean;
+  children: ReactNode;
+}) => (
+  <div
+    className={`flex items-center gap-2.5 ${mobile ? 'min-h-14 px-4 py-2.5' : 'rounded-xl p-2'}`}
+  >
+    <Avatar avatarUrl={user.avatarUrl} size="sm" />
+    <div className="min-w-0 flex-1">
+      <p className="truncate font-semibold text-[13px] text-foreground">
+        {user.displayName}
+      </p>
+      <p className="truncate text-[11.5px] text-subtle">@{user.username}</p>
+    </div>
+    {children}
+  </div>
+);
+
+export const StaffPanel = ({
+  store,
+  mobile = false,
+}: {
+  store: ModerationStore;
+  mobile?: boolean;
+}) => {
+  const t = useTranslations('Admin');
+  const [adding, setAdding] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<string[]>([]);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<'failed' | 'reauth' | null>(null);
+  const { search } = store;
+  const members = store.staff.flatMap((id) => store.usersById.get(id) ?? []);
+  const candidates = results.flatMap((id) => {
+    const user = store.usersById.get(id);
+    return user && !user.role ? [user] : [];
+  });
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setResults([]);
+      return;
+    }
+    let current = true;
+    const timer = setTimeout(() => {
+      search(trimmed)
+        .then((ids) => current && setResults(ids))
+        .catch(() => current && setResults([]));
+    }, 300);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [query, search]);
+
+  const run = async (userId: string, change: () => Promise<void>) => {
+    setBusy(userId);
+    setError(null);
+    try {
+      await change();
+      setQuery('');
+      setAdding(false);
+    } catch (caught) {
+      setError(isReauthError(caught) ? 'reauth' : 'failed');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const roleLabel = (user: ModUser) => (
+    <span
+      className={`font-bold text-[11px] uppercase tracking-[0.05em] ${user.role === 'owner' ? 'text-discord-yellow-light' : 'text-muted'}`}
+    >
+      {t(user.role === 'owner' ? 'chipOwner' : 'chipModerator')}
+    </span>
+  );
+
+  return (
+    <div className="flex flex-col gap-1">
+      {error ? (
+        <div className="mb-1">
+          <ActionError mobile={mobile} reauth={error === 'reauth'} />
+        </div>
+      ) : null}
+      <div
+        className={
+          mobile ? 'overflow-hidden rounded-3xl bg-background-darker' : ''
+        }
+      >
+        {members.map((user) => (
+          <StaffRow key={user.id} user={user} mobile={mobile}>
+            {roleLabel(user)}
+            {user.role === 'moderator' ? (
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={() => run(user.id, () => store.revoke(user.id))}
+                aria-label={t('removeModerator', { name: user.displayName })}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-background-main hover:text-foreground disabled:opacity-40"
+              >
+                {busy === user.id ? <Spinner /> : <MdClose size={18} />}
+              </button>
+            ) : null}
+          </StaffRow>
+        ))}
+      </div>
+      <div className="my-1 h-px bg-line" />
+      {adding ? (
+        <div className="flex flex-col gap-1">
+          <label className="flex h-10 items-center gap-2 rounded-full border border-white/[0.07] bg-background-darker pr-3 pl-3.5 text-subtle focus-within:border-white/[0.14]">
+            <MdSearch size={18} aria-hidden />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={t('addModeratorPlaceholder')}
+              aria-label={t('addModerator')}
+              className="min-w-0 flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-subtle"
+            />
+          </label>
+          {query.trim() && !candidates.length ? (
+            <p className="px-2 py-2 text-[13px] text-subtle">
+              {t('noStaffMatches')}
+            </p>
+          ) : null}
+          {candidates.map((user) => (
+            <button
+              key={user.id}
+              type="button"
+              disabled={busy !== null}
+              onClick={() =>
+                run(user.id, () => store.grant({ userId: user.id }))
+              }
+              aria-label={t('grantModerator', { name: user.displayName })}
+              className="rounded-xl text-left hover:bg-background-main disabled:opacity-40"
+            >
+              <StaffRow user={user} mobile={false}>
+                {busy === user.id ? (
+                  <Spinner />
+                ) : (
+                  <MdPersonAdd size={18} className="text-primary" />
+                )}
+              </StaffRow>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className="flex h-[38px] items-center gap-2.5 rounded-full px-3 text-left text-primary-light text-sm hover:bg-background-main"
+        >
+          <MdPersonAdd size={18} className="text-primary" />
+          {t('addModerator')}
+        </button>
+      )}
+    </div>
+  );
+};
