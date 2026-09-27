@@ -94,5 +94,4 @@ export type SeedStatus = {
   cap: number;
   label: string;
   shared: boolean;
-  environment: string;
 };

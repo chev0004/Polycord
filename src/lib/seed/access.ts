@@ -19,8 +19,7 @@ export const seedEnvironment = () => {
 export const getSeedStatus = async (
   user: Awaited<ReturnType<typeof getCurrentUser>>,
 ): Promise<SeedStatus | null> => {
-  const environment = seedEnvironment();
-  if (!environment || !user || !(await getStaffRole(user))) return null;
+  if (!seedEnvironment() || !user || !(await getStaffRole(user))) return null;
   const database = await getSeedDatabase();
   if (!database) return null;
   return {
@@ -28,6 +27,5 @@ export const getSeedStatus = async (
     cap: SEED_CAP,
     label: database.label,
     shared: database.shared,
-    environment,
   };
 };

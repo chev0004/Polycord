@@ -22,7 +22,6 @@ const seed: SeedStatus = {
   cap: 50000,
   label: 'Staging/Test Database',
   shared: true,
-  environment: 'staging',
 };
 
 const seedFetch = fn();
