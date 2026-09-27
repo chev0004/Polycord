@@ -101,7 +101,9 @@ export const POST = async (request: Request) => {
     case 'unsuspend':
       await setUserSuspendedUntil(
         target.user.id,
-        days ? new Date(Date.now() + days * 24 * 60 * 60 * 1000) : null,
+        action === 'suspend' && days
+          ? new Date(Date.now() + days * 24 * 60 * 60 * 1000)
+          : null,
       );
       break;
     case 'ban':
