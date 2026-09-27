@@ -64,6 +64,7 @@ import {
   createEmptyLanguageRow,
   TargetLanguagesEditor,
 } from './TargetLanguagesEditor';
+import { detectTimezone, timezoneOptions } from './timezoneOptions';
 import { VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
@@ -310,6 +311,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const autoAccent = basePreviewTheme.accent;
   const previewIsPremiumLook = premium || Boolean(tease);
 
+  const initialTimezone = initialValues?.timezone;
+  useEffect(() => {
+    if (isCreate && !initialTimezone)
+      resetField('timezone', { defaultValue: detectTimezone() });
+  }, [isCreate, initialTimezone, resetField]);
+
   useEffect(() => {
     if (initialValues && initialValues !== previousInitialValues.current) {
       previousInitialValues.current = initialValues;
@@ -384,6 +391,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const localizedLanguageOptions = languageOptions(locale);
   const localizedCountryOptions = countryOptions(locale);
+  const localizedTimezoneOptions = useMemo(
+    () => timezoneOptions(timezone),
+    [timezone],
+  );
   const displayName = userDisplayName ?? t('defaultDisplayName');
 
   const previewProfile = useMemo<DiscoveryProfile>(() => {
@@ -865,11 +876,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             <FormGroup>
               <Label htmlFor={timezoneId}>{t('timezoneLabel')}</Label>
-              <TextInput
-                id={timezoneId}
-                {...register('timezone')}
-                placeholder={t('displayTimezoneDescription')}
-                error={!!errors.timezone}
+              <Controller
+                name="timezone"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    {...field}
+                    id={timezoneId}
+                    value={field.value || ''}
+                    onValueChange={field.onChange}
+                    options={localizedTimezoneOptions}
+                    placeholder={t('timezonePlaceholder')}
+                    error={!!errors.timezone}
+                  />
+                )}
               />
               {errors.timezone && (
                 <FieldError id={`${timezoneId}-error`}>

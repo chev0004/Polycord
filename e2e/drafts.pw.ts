@@ -175,7 +175,7 @@ test('profile drafts recover after navigation and expiry without crossing accoun
       .getByRole('switch', { name: 'Display timezone', exact: true })
       .click();
     await expect(page.getByLabel('Timezone', { exact: true })).toHaveValue(
-      'Asia/Tokyo',
+      /Asia\/Tokyo$/,
     );
     await page.getByRole('button', { name: 'Polycord', exact: true }).click();
     await expect(page).toHaveURL(/\/en$/);
@@ -244,7 +244,7 @@ test('profile drafts recover after navigation and expiry without crossing accoun
     expect((await saved).status()).toBe(200);
     await page.reload();
     await expect(page.getByLabel('Timezone', { exact: true })).toHaveValue(
-      'Asia/Tokyo',
+      /Asia\/Tokyo$/,
     );
     await expect(
       page.getByRole('switch', { name: 'Display timezone', exact: true }),
@@ -253,7 +253,7 @@ test('profile drafts recover after navigation and expiry without crossing accoun
       .getByRole('switch', { name: 'Display timezone', exact: true })
       .click();
     await expect(page.getByLabel('Timezone', { exact: true })).toHaveValue(
-      'Asia/Tokyo',
+      /Asia\/Tokyo$/,
     );
     await bio.fill('This edit should be discarded, including after reload.');
     await page.getByRole('button', { name: 'Discard', exact: true }).click();

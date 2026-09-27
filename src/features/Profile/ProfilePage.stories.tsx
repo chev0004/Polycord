@@ -80,6 +80,15 @@ const setFieldValue = (
   field.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
+const selectTimezone = async (
+  input: HTMLInputElement,
+  query: string,
+  option: RegExp,
+) => {
+  setFieldValue(input, query);
+  fireEvent.mouseDown(await screen.findByRole('option', { name: option }));
+};
+
 const addTag = async (canvas: ReturnType<typeof within>, value: string) => {
   const input = canvas.getByPlaceholderText(
     'Type a tag and press Enter',
@@ -162,7 +171,9 @@ export const HiddenTimezone: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(() =>
-      expect(canvas.getByLabelText('Timezone')).toHaveValue('Asia/Tokyo'),
+      expect(
+        (canvas.getByLabelText('Timezone') as HTMLInputElement).value,
+      ).toMatch(/Asia\/Tokyo$/),
     );
   },
 };
@@ -228,13 +239,62 @@ export const TimezoneRequiredForFreeTime: Story = {
     const toggle = canvas.getByRole('switch', { name: 'Free Time' });
     await expect(timezone).toHaveValue('');
     await expect(toggle).toBeDisabled();
-    setFieldValue(timezone, 'Asia/Tokyo');
+    await selectTimezone(timezone, 'Tokyo', /Asia\/Tokyo$/);
     await waitFor(() => expect(toggle).toBeEnabled());
     await expect(canvas.getByLabelText('From')).toBeEnabled();
     setFieldValue(timezone, '');
     await waitFor(() => expect(toggle).toBeDisabled());
     await expect(timezone).toHaveValue('');
     await expect(canvas.getByLabelText('From')).toBeDisabled();
+  },
+};
+
+export const TimezoneSearch: Story = {
+  args: { initialValues: { ...sampleProfile, timezone: '' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const timezone = canvas.getByLabelText('Timezone') as HTMLInputElement;
+
+    setFieldValue(timezone, 'Not a timezone');
+    await expect(
+      await screen.findByText(/^No results found/),
+    ).toBeInTheDocument();
+    fireEvent.focusOut(timezone);
+    await waitFor(() => expect(timezone).toHaveValue(''));
+
+    await selectTimezone(timezone, 'new york', /America\/New_York$/);
+    await waitFor(() => expect(timezone.value).toMatch(/America\/New_York$/));
+    await selectTimezone(timezone, 'Asia/Tokyo', /Asia\/Tokyo$/);
+    await waitFor(() => expect(timezone.value).toMatch(/Asia\/Tokyo$/));
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Profile' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ timezone: 'Asia/Tokyo' }),
+      ),
+    );
+  },
+};
+
+export const CreateModeDetectedTimezone: Story = {
+  args: { mode: 'create', userId: 'create-mode-timezone-story' },
+  beforeEach: () => {
+    const { resolvedOptions } = Intl.DateTimeFormat.prototype;
+    Intl.DateTimeFormat.prototype.resolvedOptions = function () {
+      return { ...resolvedOptions.call(this), timeZone: 'Asia/Tokyo' };
+    };
+    return () => {
+      Intl.DateTimeFormat.prototype.resolvedOptions = resolvedOptions;
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const timezone = canvas.getByLabelText('Timezone') as HTMLInputElement;
+
+    await waitFor(() => expect(timezone.value).toMatch(/Asia\/Tokyo$/));
+    await expect(
+      canvas.getByRole('button', { name: 'Publish profile' }),
+    ).toBeDisabled();
   },
 };
 
@@ -642,5 +702,58 @@ export const MobileFreeTimeSurvivesSheetClose: Story = {
       sheet.getByRole('button', { name: 'Weekdays' }),
     ).toHaveAttribute('aria-pressed', 'true');
     await expect(sheet.getByLabelText('From')).toHaveValue('06:00');
+  },
+};
+
+export const MobileTimezonePicker: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    initialValues: {
+      ...sampleProfile,
+      timezone: '',
+      displayTimezone: false,
+      availability: null,
+    },
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Show my local time' }),
+    );
+    const sheet = within(await screen.findByRole('dialog'));
+    setFieldValue(
+      await sheet.findByRole('textbox', { name: 'Timezone' }),
+      'Tokyo',
+    );
+    fireEvent.click(await sheet.findByRole('button', { name: /Asia\/Tokyo$/ }));
+    await waitFor(() =>
+      expect(
+        sheet.queryByRole('textbox', { name: 'Timezone' }),
+      ).not.toBeInTheDocument(),
+    );
+    await expect(
+      sheet.getByRole('switch', { name: 'Display timezone' }),
+    ).toBeChecked();
+    const row = sheet.getByRole('button', { name: /Asia\/Tokyo$/ });
+
+    fireEvent.click(row);
+    setFieldValue(
+      await sheet.findByRole('textbox', { name: 'Timezone' }),
+      'London',
+    );
+    fireEvent.click(
+      await sheet.findByRole('button', { name: /Europe\/London$/ }),
+    );
+    fireEvent.click(await sheet.findByRole('button', { name: 'Done' }));
+    fireEvent.click(await canvas.findByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timezone: 'Europe/London',
+          displayTimezone: true,
+        }),
+      ),
+    );
   },
 };
