@@ -10,8 +10,8 @@ import {
   setUserBanned,
   setUserSuspendedUntil,
 } from '@/db';
-import { MODERATION_ACTIONS } from '@/features/Admin/types';
-import { isAdmin, isSameOrigin } from '@/lib/admin';
+import { MODERATION_ACTIONS, OWNER_ACTIONS } from '@/features/Admin/types';
+import { getStaffRole, isSameOrigin, needsReauth } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { toModLogEntry, toModReport, toModUser } from '@/lib/moderation';
 
@@ -29,8 +29,9 @@ const moderationSchema = z
 
 export const POST = async (request: Request) => {
   const currentUser = await getCurrentUser();
+  const role = currentUser ? await getStaffRole(currentUser) : null;
 
-  if (!currentUser || !isAdmin(currentUser)) {
+  if (!currentUser || !role) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
@@ -53,6 +54,16 @@ export const POST = async (request: Request) => {
   }
 
   const { userId, reportId, action, days, note } = payload.data;
+  const ownerOnly = (OWNER_ACTIONS as readonly string[]).includes(action);
+
+  if (ownerOnly && role !== 'owner') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (ownerOnly && needsReauth(currentUser)) {
+    return NextResponse.json({ error: 'Reauthenticate' }, { status: 401 });
+  }
+
   const report = reportId ? await getReportById(reportId) : null;
   const targetUserId = userId ?? report?.reportedUserId;
   const [target] = targetUserId
@@ -65,7 +76,7 @@ export const POST = async (request: Request) => {
 
   if (
     action !== 'dismiss' &&
-    (toModUser(target).staff || target.user.id === currentUser.accountId)
+    (toModUser(target).role || target.user.id === currentUser.accountId)
   ) {
     return NextResponse.json(
       { error: 'Staff cannot be actioned' },

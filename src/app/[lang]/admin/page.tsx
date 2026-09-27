@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { ModerationPage } from '@/features/Admin/ModerationPage';
-import { isAdmin } from '@/lib/admin';
+import { getStaffRole } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { loadModerationSnapshot } from '@/lib/moderation';
 
@@ -11,12 +11,15 @@ export default async function AdminRoute({
 }) {
   const { lang } = await params;
   const user = await getCurrentUser();
+  const role = user ? await getStaffRole(user) : null;
 
-  if (!user || !isAdmin(user)) {
+  if (!user || !role) {
     redirect(`/${lang}`);
   }
 
   return (
-    <ModerationPage initial={await loadModerationSnapshot(user.accountId)} />
+    <ModerationPage
+      initial={await loadModerationSnapshot(user.accountId, role)}
+    />
   );
 }

@@ -9,7 +9,15 @@ export const MODERATION_ACTIONS = [
   'unban',
 ] as const;
 
+export const LOG_ACTIONS = [...MODERATION_ACTIONS, 'grant', 'revoke'] as const;
+
+export const OWNER_ACTIONS = ['ban', 'unban'] as const;
+
 export type ModAction = (typeof MODERATION_ACTIONS)[number];
+
+export type LogAction = (typeof LOG_ACTIONS)[number];
+
+export type StaffRole = 'owner' | 'moderator';
 
 export type ModUser = {
   id: string;
@@ -18,7 +26,7 @@ export type ModUser = {
   discordId: string;
   avatarUrl?: string;
   joinedAt: string;
-  staff: boolean;
+  role?: StaffRole;
   bannedAt?: string;
   suspendedUntil?: string;
   hidden: boolean;
@@ -43,7 +51,7 @@ export type ModReport = {
 
 export type ModLogEntry = {
   id: string;
-  action: ModAction;
+  action: LogAction;
   userId?: string;
   staffId?: string;
   note?: string;
@@ -67,7 +75,9 @@ export type ModData = {
 
 export type ModSnapshot = ModData & {
   suspicious: ModSuspicious[];
+  staff: string[];
   meId: string;
+  meRole: StaffRole;
 };
 
 export type ModRequest = {
