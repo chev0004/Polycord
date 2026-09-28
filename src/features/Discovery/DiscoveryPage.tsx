@@ -15,7 +15,6 @@ import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
-import { useNavbarBump } from '@/features/Navigation/AppShell';
 import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
 import {
   useRouteProgress,
@@ -26,11 +25,7 @@ import { profileDraftSchema } from '@/features/Profile/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import { copyText } from '@/lib/clipboard';
-import {
-  BumpProfileError,
-  type BumpProfileResponse,
-  bumpProfileRequest,
-} from './bumpProfileRequest';
+import type { BumpProfileResponse } from './bumpProfileRequest';
 import type { DiscoveryData } from './discoveryData';
 import {
   applyDiscoveryFilters,
@@ -72,6 +67,7 @@ import {
 import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl } from './shareProfile';
 import { type AppliedFilter, TagCloud } from './TagCloud';
+import { useProfileBump } from './useProfileBump';
 
 const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
@@ -162,11 +158,11 @@ export const DiscoveryPage = ({
   discoveryData,
   savedProfileIds,
   currentProfileId,
-  bumpReadyAt: initialBumpReadyAt,
+  bumpReadyAt,
   viewerTimezone,
   viewerAvailability,
   userAvatarUrl,
-  onBumpProfile = bumpProfileRequest,
+  onBumpProfile,
 }: DiscoveryPageProps) => {
   const router = useRouteProgressRouter();
   const { navigate } = useRouteProgress();
@@ -213,8 +209,6 @@ export const DiscoveryPage = ({
   const [profileItems, setProfileItems] = useState(() =>
     withoutBlocked(profiles),
   );
-  const [isBumping, setIsBumping] = useState(false);
-  const [bumpReadyAt, setBumpReadyAt] = useState(initialBumpReadyAt);
   const [reportTarget, setReportTarget] = useState<{
     id: string;
     name?: string;
@@ -233,10 +227,6 @@ export const DiscoveryPage = ({
     setSortValue(state.sortValue);
     setPage(state.page);
   }, [urlQuery]);
-
-  useEffect(() => {
-    setBumpReadyAt(initialBumpReadyAt);
-  }, [initialBumpReadyAt]);
 
   useEffect(() => {
     if (!needsOnboarding || !userId) {
@@ -752,38 +742,13 @@ export const DiscoveryPage = ({
 
   useEffect(() => () => settlePageChange.current?.(), []);
 
-  const formatRemaining = (ms: number) => {
-    const minutes = Math.max(1, Math.ceil(ms / 60000));
-    const hours = Math.floor(minutes / 60);
-    const rest = minutes % 60;
-
-    if (hours && rest) {
-      return t('bumpCooldownHoursMinutes', { hours, minutes: rest });
-    }
-
-    return hours
-      ? t('bumpCooldownHours', { count: hours })
-      : t('bumpCooldownMinutes', { count: minutes });
-  };
-
-  const handleBumpProfile = async () => {
-    if (isBumping) {
-      return;
-    }
-
-    if (!currentProfileId) {
-      addToast({
-        title: t('bumpNeedsProfileTitle'),
-        description: t('bumpNeedsProfileDescription'),
-        duration: BUMP_TOAST_DURATION,
-      });
-      return;
-    }
-
-    setIsBumping(true);
-
-    try {
-      const result = await onBumpProfile();
+  useProfileBump({
+    profileId: currentProfileId,
+    readyAt: bumpReadyAt,
+    avatarUrl: userAvatarUrl,
+    addToast,
+    request: onBumpProfile,
+    onBumped: async (result) => {
       await refreshDiscovery();
       if (!discoveryData)
         setProfileItems((previous) =>
@@ -798,36 +763,8 @@ export const DiscoveryPage = ({
               : profile,
           ),
         );
-      setBumpReadyAt(result.nextBumpAt);
-      addToast({
-        title: t('bumpSuccessTitle'),
-        description: t('bumpSuccessDescription'),
-        iconUrl: userAvatarUrl,
-        duration: BUMP_TOAST_DURATION,
-      });
-    } catch (error) {
-      const cooldown =
-        error instanceof BumpProfileError && error.status === 429
-          ? error.remainingMs
-          : undefined;
-
-      if (cooldown) {
-        setBumpReadyAt(new Date(Date.now() + cooldown).toISOString());
-      }
-
-      addToast({
-        title: cooldown ? t('bumpCooldownTitle') : t('bumpErrorTitle'),
-        description: cooldown
-          ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
-          : t('bumpErrorDescription'),
-        duration: BUMP_TOAST_DURATION,
-      });
-    } finally {
-      setIsBumping(false);
-    }
-  };
-
-  useNavbarBump(handleBumpProfile, bumpReadyAt);
+    },
+  });
 
   return (
     <>
