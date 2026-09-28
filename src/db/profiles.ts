@@ -22,7 +22,7 @@ import { isPremiumDiscordId } from '@/lib/entitlements';
 import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
-import { isBlockedEitherWay } from './safety';
+import { hasBlocked, isBlockedEitherWay } from './safety';
 import {
   moderationRestrictions,
   type NewProfile,
@@ -381,6 +381,23 @@ export const getPublicProfileById = async (
     return null;
 
   return row;
+};
+
+export const getBlockedProfilePreview = async (
+  viewerUserId: string,
+  blockedUserId: string,
+) => {
+  const [viewerBlocked, blockedViewer, row] = await Promise.all([
+    hasBlocked(viewerUserId, blockedUserId),
+    hasBlocked(blockedUserId, viewerUserId),
+    getProfileByUserId(blockedUserId),
+  ]);
+
+  if (!viewerBlocked || blockedViewer || !row || !isVisibleProfile(row)) {
+    return null;
+  }
+
+  return { ...toDiscoveryProfile(row, true), lastBumpedAt: undefined };
 };
 
 export const mapDiscoveryProfiles = async (
