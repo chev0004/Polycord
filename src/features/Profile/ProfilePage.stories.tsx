@@ -168,6 +168,27 @@ export const RestoredDraft: Story = {
   },
 };
 
+export const UnsavedEditsWithoutTopWarning: Story = {
+  args: { initialValues: sampleProfile, userId: 'profile-unsaved-story' },
+  loaders: [
+    async () => {
+      sessionStorage.removeItem('polycord:profile:profile-unsaved-story');
+      return {};
+    },
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const bio = (await canvas.findByLabelText('Bio')) as HTMLTextAreaElement;
+
+    setFieldValue(bio, 'Fresh edits that are not saved yet.');
+
+    await canvas.findByText('You have unsaved changes');
+    await expect(
+      canvas.queryByText(/Unsaved edits are kept for this account/),
+    ).not.toBeInTheDocument();
+  },
+};
+
 export const HiddenTimezone: Story = {
   args: { initialValues: { ...sampleProfile, displayTimezone: false } },
   play: async ({ canvasElement }) => {
