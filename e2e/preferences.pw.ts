@@ -93,7 +93,7 @@ test('saving settings keeps navigation in view and usable', async ({
       .click();
     await expect(
       page.getByRole('button', { name: 'Save Settings', exact: true }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     await expect(home).toBeInViewport();
     await expect
       .poll(async () => {
@@ -147,8 +147,11 @@ test('save and discard preferences, then restore them in a fresh browser', async
       .click();
     await expect(page).toHaveURL('/ja/settings?from=saved&page=2#appearance');
     await expect(
+      page.getByRole('heading', { name: '設定', exact: true }),
+    ).toBeVisible();
+    await expect(
       page.getByRole('button', { name: '設定を保存', exact: true }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     await page.screenshot({
       path: testInfo.outputPath('settings-ja.png'),
       fullPage: true,
@@ -296,7 +299,7 @@ test('core pages stay dark and settings expose only supported options', async ({
       .click();
     await expect(
       page.getByRole('button', { name: 'Save Settings', exact: true }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     await page.reload();
     await expect(page.getByLabel('Email Address')).toHaveValue(
       'saved.preferences@example.com',
