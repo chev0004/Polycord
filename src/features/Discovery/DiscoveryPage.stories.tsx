@@ -228,10 +228,15 @@ export const MobileYourCard: Story = {
     await userEvent.click(
       await canvas.findByRole('button', { name: 'Your Card' }),
     );
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'My profile' }),
+    );
     await waitFor(() =>
       expect(getRouter().push).toHaveBeenCalledWith('/en/profile'),
     );
-    await expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
   },
 };
 

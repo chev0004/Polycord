@@ -4,15 +4,20 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import {
+  MdArrowUpward,
+  MdBookmarkBorder,
   MdExplore,
   MdInbox,
   MdOutlineExplore,
   MdOutlineInbox,
   MdOutlineSettings,
+  MdPersonOutline,
   MdSettings,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { ActionSheet } from '@/components/Sheet';
 import { useInbox } from '@/features/Inbox';
+import { useBumpCountdown } from '@/features/Navbar/UserMenu';
 
 type DockTab = 'discover' | 'inbox' | 'settings' | 'profile';
 
@@ -20,6 +25,8 @@ type MobileDockProps = {
   locale: string;
   userAvatarUrl?: string;
   onNavigate: (href: string) => void;
+  onBump?: () => void;
+  bumpReadyAt?: string;
 };
 
 const routeTab = (route: string): DockTab | null => {
@@ -43,10 +50,14 @@ export const MobileDock = ({
   locale,
   userAvatarUrl,
   onNavigate,
+  onBump,
+  bumpReadyAt,
 }: MobileDockProps) => {
   const t = useTranslations('Navigation');
   const pathname = usePathname();
   const { unreadCount } = useInbox({ notifications: [] });
+  const bumpCountdown = useBumpCountdown(bumpReadyAt);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [indicator, setIndicator] = useState<{
     left: number;
     width: number;
@@ -117,6 +128,7 @@ export const MobileDock = ({
     onClick: () => void,
     icon: ReactNode,
     label = labels[id],
+    menu = false,
   ) => (
     <button
       ref={(element) => {
@@ -126,6 +138,8 @@ export const MobileDock = ({
       onClick={onClick}
       aria-label={label}
       aria-current={tab === id ? 'page' : undefined}
+      aria-haspopup={menu ? 'dialog' : undefined}
+      aria-expanded={menu ? menuOpen : undefined}
       className={`z-[2] ${dockButtonClassName(tab === id)}`}
     >
       {icon}
@@ -195,7 +209,7 @@ export const MobileDock = ({
         )}
         {dockButton(
           'profile',
-          () => onNavigate(`/${locale}/profile`),
+          () => setMenuOpen(true),
           <span
             className={`rounded-full transition-shadow duration-300 ${
               tab === 'profile' ? 'ring-2 ring-primary' : ''
@@ -203,8 +217,42 @@ export const MobileDock = ({
           >
             <Avatar avatarUrl={userAvatarUrl} size="sm" />
           </span>,
+          labels.profile,
+          true,
         )}
       </div>
+      <ActionSheet
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        title={labels.profile}
+        items={[
+          {
+            key: 'profile',
+            icon: MdPersonOutline,
+            label: t('dockMyProfile'),
+            onSelect: () => onNavigate(`/${locale}/profile`),
+          },
+          {
+            key: 'saved',
+            icon: MdBookmarkBorder,
+            label: t('dockSavedProfiles'),
+            onSelect: () => onNavigate(`/${locale}/saved`),
+          },
+          ...(onBump
+            ? [
+                {
+                  key: 'bump',
+                  icon: MdArrowUpward,
+                  label: bumpCountdown
+                    ? t('dockBumpCooldown', { time: bumpCountdown })
+                    : t('dockBump'),
+                  disabled: bumpCountdown !== null,
+                  onSelect: onBump,
+                },
+              ]
+            : []),
+        ]}
+      />
     </nav>
   );
 };

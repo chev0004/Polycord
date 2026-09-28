@@ -925,7 +925,11 @@
     "dockInbox": "Inbox",
     "dockInboxUnread": "Inbox, {count} unread",
     "dockSettings": "Settings",
-    "dockYourCard": "Your Card"
+    "dockYourCard": "Your Card",
+    "dockMyProfile": "My profile",
+    "dockSavedProfiles": "Saved profiles",
+    "dockBump": "Bump profile",
+    "dockBumpCooldown": "Bump in {time}"
   },
   "Recovery": {
     "missingTitle": "Page not found",

@@ -231,6 +231,11 @@ test('account pages open behind the progress bar without a skeleton', async ({
         await page.getByRole('button', { name, exact: true }).click();
       } else {
         await page.getByRole('button', { name, exact: true }).last().click();
+        if (name === 'Your Card')
+          await page
+            .getByRole('dialog', { name })
+            .getByRole('button', { name: 'My profile' })
+            .click();
       }
       await expect(page).toHaveURL(`/en/${path}`);
       await expect(

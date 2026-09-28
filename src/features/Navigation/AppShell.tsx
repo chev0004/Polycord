@@ -95,6 +95,8 @@ export const AppShell = ({
             locale={locale}
             userAvatarUrl={userAvatarUrl}
             onNavigate={(href) => router.push(href)}
+            onBump={bump?.onClick}
+            bumpReadyAt={bump?.readyAt}
           />
         ) : null}
       </div>
