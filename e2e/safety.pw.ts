@@ -218,7 +218,10 @@ test('blocked accounts show usernames and a restricted current preview', async (
     await page.getByRole('button', { name: /^Blocked accounts/ }).click();
     await expect(page.getByText(`@${identities[1].username}`)).toBeVisible();
     const requests: string[] = [];
-    page.on('request', (request) => requests.push(request.url()));
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname.startsWith('/api/'))
+        requests.push(request.url());
+    });
     await page
       .getByRole('button', {
         name: `Show ${identities[1].name}'s profile`,
