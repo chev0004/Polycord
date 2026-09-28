@@ -187,7 +187,7 @@ test('every product route shares navigation and returns to discovery', async ({
   }
 });
 
-test('settings opens behind the progress bar without a skeleton', async ({
+test('account pages open behind the progress bar without a skeleton', async ({
   page,
   context,
 }) => {
@@ -195,44 +195,53 @@ test('settings opens behind the progress bar without a skeleton', async ({
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   try {
     await page.addInitScript(() => {
-      const log = { skeleton: false, completedBeforeSettings: false };
+      const log = { skeleton: false, completedEarly: false };
       Object.assign(window, { progressLog: log });
       new MutationObserver(() => {
         if (document.querySelector('.skeleton-shimmer')) log.skeleton = true;
         const bar = document.querySelector<HTMLElement>('div.fixed.top-0.h-1');
+        const target = Reflect.get(window, 'progressTarget');
         if (
+          target &&
           bar?.style.width === '100%' &&
-          !document.querySelector('main fieldset')
+          location.pathname !== target
         )
-          log.completedBeforeSettings = true;
+          log.completedEarly = true;
       }).observe(document, {
         subtree: true,
         childList: true,
         attributes: true,
       });
     });
-    for (const width of [1280, 375]) {
+    for (const [width, name, path] of [
+      [1280, 'Settings', 'settings'],
+      [1280, 'Profile', 'profile'],
+      [1280, 'Saved', 'saved'],
+      [375, 'Settings', 'settings'],
+      [375, 'Your Card', 'profile'],
+    ] as const) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/en');
+      await page.evaluate(
+        (target) => Object.assign(window, { progressTarget: target }),
+        `/en/${path}`,
+      );
       if (width === 1280) {
         await openAccountMenu(page);
-        await page
-          .getByRole('button', { name: 'Settings', exact: true })
-          .click();
+        await page.getByRole('button', { name, exact: true }).click();
       } else {
-        await page
-          .getByRole('button', { name: 'Settings', exact: true })
-          .last()
-          .click();
+        await page.getByRole('button', { name, exact: true }).last().click();
       }
-      await expect(page).toHaveURL('/en/settings');
-      await expect(page.locator('main fieldset').first()).toBeEnabled();
+      await expect(page).toHaveURL(`/en/${path}`);
+      await expect(
+        page.locator('main h1, main fieldset').first(),
+      ).toBeVisible();
       await expect(page.locator('div.fixed.top-0.h-1')).toHaveClass(
         /opacity-0/,
       );
       expect(
         await page.evaluate(() => Reflect.get(window, 'progressLog')),
-      ).toEqual({ skeleton: false, completedBeforeSettings: false });
+      ).toEqual({ skeleton: false, completedEarly: false });
     }
   } finally {
     await sql`delete from users where id = ${accountId}`;

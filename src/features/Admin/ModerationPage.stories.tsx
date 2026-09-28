@@ -7,7 +7,6 @@ import {
   waitFor,
   within,
 } from '@storybook/test';
-import { ModerationSkeleton } from './ModerationDesktop';
 import { ModerationPage } from './ModerationPage';
 import {
   emptyModerationSnapshot,
@@ -218,10 +217,6 @@ export const MobileQueueClear: Story = {
     const canvas = within(canvasElement);
     await expect(await canvas.findByText('Queue clear')).toBeInTheDocument();
   },
-};
-
-export const Loading: Story = {
-  render: () => <ModerationSkeleton />,
 };
 
 export const ManageStaff: Story = {

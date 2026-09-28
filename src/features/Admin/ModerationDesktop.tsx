@@ -91,7 +91,6 @@ const rowClass = (on: boolean) =>
 
 const workspace =
   'grid h-[calc(100vh-214px)] min-h-[560px] grid-cols-[300px_minmax(0,1fr)] gap-4 lg:grid-cols-[360px_minmax(0,1fr)]';
-const bar = 'animate-pulse rounded-md bg-[#222325]';
 
 const SkeletonRows = () => (
   <div className="flex flex-col gap-0.5 p-1.5" aria-hidden>
@@ -109,37 +108,6 @@ const SkeletonRows = () => (
       </div>
     ))}
   </div>
-);
-
-export const ModerationSkeleton = () => (
-  <main
-    aria-busy
-    className="mx-auto w-full max-w-[1360px] px-4 pt-[22px] pb-8 md:px-6"
-  >
-    <div className={`mb-[18px] h-8 w-48 ${bar}`} />
-    <div className={`mb-4 h-[38px] w-full max-w-md ${bar}`} />
-    <div className={`${workspace} max-md:h-auto max-md:grid-cols-1`}>
-      <div className={pane}>
-        <SkeletonRows />
-      </div>
-      <div className={`${pane} gap-[18px] p-5 max-md:hidden`}>
-        <div className="flex items-center gap-3.5">
-          <div className={`h-14 w-14 rounded-full ${bar}`} />
-          <div className="flex flex-1 flex-col gap-2">
-            <div className={`h-4 w-[35%] ${bar}`} />
-            <div className={`h-[11px] w-1/2 ${bar}`} />
-          </div>
-        </div>
-        <div className="flex gap-1.5">
-          {[80, 70, 110, 90].map((width) => (
-            <div key={width} className={`h-[34px] ${bar}`} style={{ width }} />
-          ))}
-        </div>
-        <div className={`h-[92px] rounded-[14px] ${bar}`} />
-        <div className={`h-[92px] rounded-[14px] ${bar}`} />
-      </div>
-    </div>
-  </main>
 );
 
 const Section = ({
