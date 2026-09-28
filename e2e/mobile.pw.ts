@@ -249,18 +249,52 @@ test('dock and filter sheets drive discovery on phones', async ({
 
     await dock.getByRole('button', { name: 'Settings', exact: true }).click();
     await expect(page).toHaveURL('/en/settings');
-    await dock.getByRole('button', { name: 'Your Card', exact: true }).click();
+    const yourCard = dock.getByRole('button', {
+      name: 'Your Card',
+      exact: true,
+    });
+    const cardMenu = page.getByRole('dialog', { name: 'Your Card' });
+    await yourCard.click();
+    await expect(cardMenu).toBeVisible();
+    await expect(page).toHaveURL('/en/settings');
+    await expect(cardMenu.getByRole('button', { name: /bump/i })).toHaveCount(
+      0,
+    );
+    await cardMenu.getByRole('button', { name: 'Close' }).click();
+    await expect(cardMenu).toHaveCount(0);
+    await expect(page).toHaveURL('/en/settings');
+    await yourCard.click();
+    await cardMenu.getByRole('button', { name: 'My profile' }).click();
     await expect(page).toHaveURL('/en/profile');
-    await page.getByRole('button', { name: 'Profile options' }).click();
-    await page
-      .getByRole('button', { name: 'Saved profiles', exact: true })
-      .click();
+    await yourCard.click();
+    await cardMenu.getByRole('button', { name: 'Saved profiles' }).click();
     await expect(page).toHaveURL('/en/saved');
     await dock.getByRole('button', { name: 'Discover', exact: true }).click();
     await expect(page).toHaveURL('/en');
     await expect(
       dock.getByRole('button', { name: 'Discover' }),
     ).toHaveAttribute('aria-current', 'page');
+
+    await yourCard.click();
+    await cardMenu.getByRole('button', { name: 'Bump profile' }).click();
+    await expect(page.getByText('Create a public profile first')).toBeVisible();
+    await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio) values (now() - interval '2 days',${viewer.id},true,'en','ja','beginner','A mobile dock bump fixture.')`;
+    await page.reload();
+    await yourCard.click();
+    const bumped = page.waitForResponse(
+      (r) => r.url().endsWith('/api/profile/bump') && r.ok(),
+    );
+    await cardMenu.getByRole('button', { name: 'Bump profile' }).click();
+    await bumped;
+    await expect(page.getByText('Profile bumped')).toBeVisible();
+    await yourCard.click();
+    await expect(
+      cardMenu.getByRole('button', { name: /^Bump in / }),
+    ).toBeDisabled();
+    await page.screenshot({
+      path: testInfo.outputPath('dock-card-menu.png'),
+      animations: 'disabled',
+    });
   } finally {
     await sql`delete from users where id in ${sql([viewer.id, ...owners.map((owner) => owner.id)])}`;
     await sql.end();
