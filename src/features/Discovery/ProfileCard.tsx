@@ -168,6 +168,9 @@ export const ProfileCard = ({
   const accent = profile.premium ? theme.accent : FREE_ACCENT;
   const themeStyle = {
     ...deriveCardAccent(accent),
+    '--card-banner-fill': theme.banner.startsWith('#')
+      ? `linear-gradient(${theme.banner},${theme.banner})`
+      : theme.banner,
     ...(profile.premium && theme.tint
       ? { '--card-tint': theme.tint, background: tintedSurface }
       : {}),
@@ -493,7 +496,7 @@ export const ProfileCard = ({
                 <button
                   type="button"
                   onClick={() => onViewProfile?.(profile.id)}
-                  className="max-w-full truncate text-left transition-colors focus:outline-none focus-visible:text-primary-light group-hover/card:text-primary-light"
+                  className="max-w-full truncate text-left transition-colors focus:outline-none focus-visible:bg-clip-text focus-visible:text-transparent group-hover/card:bg-clip-text group-hover/card:text-transparent focus-visible:[background-image:var(--card-banner-fill)] group-hover/card:[background-image:var(--card-banner-fill)]"
                 >
                   {profile.displayName}
                 </button>
