@@ -252,6 +252,39 @@ test('desktop pages load behind the progress bar and open at the top', async ({
       "We couldn't load profiles",
     );
     await expect(bar).toHaveClass(/opacity-0/);
+
+    await page.unroute('**/api/discovery?*');
+    await page.goto(`/en?q=Page&tag=${prefix}&country=US&sort=name-desc`);
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    await page.route('**/api/discovery?*', (route) =>
+      route.fulfill({ status: 503, body: '{}' }),
+    );
+    await next.click();
+    await expect(page.getByRole('main').getByRole('alert')).toContainText(
+      "We couldn't load profiles",
+    );
+    await page.unroute('**/api/discovery?*');
+    let releaseRetry: () => void = () => {};
+    const retryGate = new Promise<void>((resolve) => {
+      releaseRetry = resolve;
+    });
+    await page.route('**/api/discovery?*', async (route) => {
+      await retryGate;
+      await route.continue();
+    });
+    await next.scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+
+    await next.click();
+    await expect(bar).toHaveClass(/opacity-100/);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+    releaseRetry();
+    await expect(
+      page.getByRole('heading', { name: `${prefix} Page 02`, exact: true }),
+    ).toBeAttached();
+    await expect(bar).toHaveClass(/opacity-0/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
   } finally {
     await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
     await sql.end();
