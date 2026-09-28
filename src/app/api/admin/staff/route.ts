@@ -8,13 +8,7 @@ import {
   logModerationAction,
   revokeModerator,
 } from '@/db';
-import {
-  getStaffRole,
-  isSameOrigin,
-  needsReauth,
-  ownerDiscordIds,
-} from '@/lib/admin';
-import { getCurrentUser } from '@/lib/auth';
+import { authorizeOwner, ownerDiscordIds, readBody } from '@/lib/admin';
 import { staffRoleOf, toModLogEntry, toModUser } from '@/lib/moderation';
 
 const grantSchema = z
@@ -25,37 +19,6 @@ const grantSchema = z
   .refine((value) => value.userId || value.discordId);
 
 const revokeSchema = z.object({ userId: z.string().uuid() });
-
-const authorize = async (request: Request) => {
-  const currentUser = await getCurrentUser();
-  const role = currentUser ? await getStaffRole(currentUser) : null;
-
-  if (!currentUser || !role) {
-    return {
-      error: NextResponse.json({ error: 'Not found' }, { status: 404 }),
-    };
-  }
-  if (!isSameOrigin(request) || role !== 'owner') {
-    return {
-      error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
-    };
-  }
-  if (needsReauth(currentUser)) {
-    return {
-      error: NextResponse.json({ error: 'Reauthenticate' }, { status: 401 }),
-    };
-  }
-  return { currentUser };
-};
-
-const readBody = async <T>(request: Request, schema: z.ZodType<T>) => {
-  try {
-    const parsed = schema.safeParse(await request.json());
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
-  }
-};
 
 const respond = async (
   targetUserId: string,
@@ -71,7 +34,7 @@ const respond = async (
 };
 
 export const POST = async (request: Request) => {
-  const { currentUser, error } = await authorize(request);
+  const { currentUser, error } = await authorizeOwner(request);
   if (error) return error;
 
   const body = await readBody(request, grantSchema);
@@ -105,7 +68,7 @@ export const POST = async (request: Request) => {
 };
 
 export const DELETE = async (request: Request) => {
-  const { currentUser, error } = await authorize(request);
+  const { currentUser, error } = await authorizeOwner(request);
   if (error) return error;
 
   const body = await readBody(request, revokeSchema);

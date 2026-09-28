@@ -1,8 +1,8 @@
 import 'server-only';
 
 import { and, count, eq, gte } from 'drizzle-orm';
-import { entitlementLimit, isPremiumDiscordId } from '@/lib/entitlements';
-import { isSubscriptionActive } from './billing';
+import { entitlementLimit } from '@/lib/entitlements';
+import { isPremiumAccount } from './billing';
 import { db } from './client';
 import { profileBoosts, profiles, subscriptions, users } from './schema';
 
@@ -65,9 +65,7 @@ export const boostProfileForUser = async (userId: string) => {
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.userId, userId));
-    const premium =
-      isPremiumDiscordId(user.discordUserId) ||
-      isSubscriptionActive(subscription ?? null);
+    const premium = isPremiumAccount(user, subscription ?? null);
     if (!premium) return { error: 'Premium required', status: 403 };
     const [profile] = await tx
       .select()

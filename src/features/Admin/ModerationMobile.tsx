@@ -68,6 +68,7 @@ import {
   useModFormat,
   useSuspendDays,
 } from './ModerationParts';
+import { PremiumPanel } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { SeedPanel } from './SeedPanel';
 import type { ModAction, ModReport, ModUser, SeedStatus } from './types';
@@ -1436,6 +1437,12 @@ const CasePage = ({
         {isCase
           ? [reportsSection, profileSection]
           : [profileSection, reportsSection]}
+        {store.meRole === 'owner' ? (
+          <section className="mx-4 mt-6 flex flex-col gap-2">
+            <h3 className={caption}>{t('sectionPremium')}</h3>
+            <PremiumPanel store={store} user={user} mobile />
+          </section>
+        ) : null}
         <section className="mx-4 mt-6 flex flex-col gap-2">
           <h3 className={caption}>
             <span>

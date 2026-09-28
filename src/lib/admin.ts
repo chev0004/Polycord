@@ -1,8 +1,10 @@
 import 'server-only';
 
+import { NextResponse } from 'next/server';
+import type { z } from 'zod';
 import { hasStaffRole } from '@/db';
 import type { StaffRole } from '@/features/Admin/types';
-import type { CurrentUser } from './auth';
+import { type CurrentUser, getCurrentUser } from './auth';
 
 const REAUTH_WINDOW_MS = 12 * 60 * 60 * 1000;
 
@@ -34,4 +36,35 @@ export const isSameOrigin = (request: Request) => {
     URL.canParse(origin) &&
     new URL(origin).host === request.headers.get('host')
   );
+};
+
+export const authorizeOwner = async (request: Request) => {
+  const currentUser = await getCurrentUser();
+  const role = currentUser ? await getStaffRole(currentUser) : null;
+
+  if (!currentUser || !role) {
+    return {
+      error: NextResponse.json({ error: 'Not found' }, { status: 404 }),
+    };
+  }
+  if (!isSameOrigin(request) || role !== 'owner') {
+    return {
+      error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
+    };
+  }
+  if (needsReauth(currentUser)) {
+    return {
+      error: NextResponse.json({ error: 'Reauthenticate' }, { status: 401 }),
+    };
+  }
+  return { currentUser };
+};
+
+export const readBody = async <T>(request: Request, schema: z.ZodType<T>) => {
+  try {
+    const parsed = schema.safeParse(await request.json());
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
 };

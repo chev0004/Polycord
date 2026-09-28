@@ -25,6 +25,7 @@ import {
   type Report,
   reports,
   staffRoles,
+  subscriptions,
   users,
 } from './schema';
 
@@ -155,6 +156,7 @@ export const logModerationAction = async (values: {
   action: ModerationActionKind;
   note?: string | null;
   days?: number;
+  expiresAt?: Date;
 }) => {
   const [action] = await db
     .insert(moderationActions)
@@ -165,6 +167,7 @@ export const logModerationAction = async (values: {
       action: values.action,
       note: values.note?.trim() ? values.note.trim() : null,
       days: values.days ?? null,
+      expiresAt: values.expiresAt ?? null,
     })
     .returning();
 
@@ -188,10 +191,16 @@ export const listModerationUsers = async (userIds: string[]) => {
 
   const [rows, warnings] = await Promise.all([
     db
-      .select({ user: users, profile: profiles, staffRole: staffRoles.role })
+      .select({
+        user: users,
+        profile: profiles,
+        staffRole: staffRoles.role,
+        subscription: subscriptions,
+      })
       .from(users)
       .leftJoin(profiles, eq(profiles.userId, users.id))
       .leftJoin(staffRoles, eq(staffRoles.userId, users.id))
+      .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
       .where(inArray(users.id, userIds)),
     db
       .select({ userId: moderationActions.targetUserId, count: count() })
@@ -208,9 +217,10 @@ export const listModerationUsers = async (userIds: string[]) => {
     rows.flatMap(({ profile }) => (profile ? [profile.id] : [])),
   );
 
-  return rows.map(({ user, profile, staffRole }) => ({
+  return rows.map(({ user, profile, staffRole, subscription }) => ({
     user,
     staffRole,
+    subscription,
     profile: profile && {
       ...profile,
       targetLanguages: targetLanguagesForProfile(

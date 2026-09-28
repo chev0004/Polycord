@@ -13,7 +13,7 @@ import {
   moderationSnapshot,
   moderatorSnapshot,
 } from './moderationFixtures';
-import type { SeedStatus } from './types';
+import type { ModUser, SeedStatus } from './types';
 
 const seed: SeedStatus = {
   real: 17,
@@ -39,6 +39,52 @@ const mockSeedApi = (start: number) => () => {
           ? Math.min(target, dummies + 2000)
           : Math.max(target, dummies - 2000);
       return new Response(JSON.stringify({ ...seed, dummies }));
+    },
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+  };
+};
+
+const premiumFetch = fn();
+
+const mockPremiumApi = () => {
+  const original = globalThis.fetch;
+  const ryan = moderationSnapshot.users.find(
+    (user) => user.id === 'ryan',
+  ) as ModUser;
+  premiumFetch.mockReset();
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) => {
+      if (String(args[0]) !== '/api/admin/premium') return original(...args);
+      const method = args[1]?.method;
+      premiumFetch(method, JSON.parse(String(args[1]?.body)));
+      const expiresAt = '2027-03-28T10:15:00.000Z';
+      return new Response(
+        JSON.stringify({
+          users: [
+            {
+              ...ryan,
+              premium: {
+                configured: false,
+                grantedUntil: method === 'POST' ? expiresAt : undefined,
+              },
+            },
+          ],
+          reports: [],
+          log: [
+            {
+              id: `premium-${premiumFetch.mock.calls.length}`,
+              action: method === 'POST' ? 'premium_grant' : 'premium_revoke',
+              userId: 'ryan',
+              staffId: 'kenji',
+              expiresAt,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        }),
+      );
     },
     { preconnect: original.preconnect },
   );
@@ -247,5 +293,121 @@ export const ModeratorView: Story = {
     await expect(
       canvas.queryByRole('button', { name: 'Manage staff' }),
     ).not.toBeInTheDocument();
+    await expect(canvas.queryByText('Premium')).not.toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('button', { name: 'Grant premium' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const PremiumGrant: Story = {
+  beforeEach: mockPremiumApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      await canvas.findByText('No complimentary premium.'),
+    ).toBeInTheDocument();
+    fireEvent.change(canvas.getByRole('spinbutton', { name: 'Grant length' }), {
+      target: { value: '0' },
+    });
+    await expect(
+      canvas.getByText('Enter a whole number from 1 to 120.'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Grant premium' }),
+    ).toBeDisabled();
+    fireEvent.change(canvas.getByRole('spinbutton', { name: 'Grant length' }), {
+      target: { value: '2' },
+    });
+    fireEvent.click(canvas.getByRole('button', { name: 'Years' }));
+    await expect(canvas.getByText(/^Ends/)).toBeInTheDocument();
+    fireEvent.click(canvas.getByRole('button', { name: 'Grant premium' }));
+    await expect(
+      await canvas.findByText(/^Complimentary premium until/),
+    ).toBeInTheDocument();
+    await expect(premiumFetch).toHaveBeenCalledWith('POST', {
+      userId: 'ryan',
+      amount: 2,
+      unit: 'years',
+    });
+    await expect(
+      canvas.getByText(/^Granted premium until/),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByText(/Replaces the current grant ending/),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Replace grant' }),
+    ).toBeInTheDocument();
+    fireEvent.click(canvas.getByRole('button', { name: 'Revoke grant' }));
+    await expect(
+      await canvas.findByText('No complimentary premium.'),
+    ).toBeInTheDocument();
+    await expect(premiumFetch).toHaveBeenCalledWith('DELETE', {
+      userId: 'ryan',
+    });
+    await expect(
+      canvas.getByText(/^Revoked premium grant ending/),
+    ).toBeInTheDocument();
+  },
+};
+
+export const PremiumOtherSources: Story = {
+  args: {
+    initial: {
+      ...moderationSnapshot,
+      users: moderationSnapshot.users.map((user) =>
+        user.id === 'ryan'
+          ? {
+              ...user,
+              premium: {
+                configured: true,
+                grantedUntil: new Date(
+                  Date.now() + 86400000 * 30,
+                ).toISOString(),
+                subscriptionUntil: new Date(
+                  Date.now() + 86400000 * 12,
+                ).toISOString(),
+              },
+            }
+          : user,
+      ),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      await canvas.findByText(/^Paid subscription active until/),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByText('Premium through the configured premium list.'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByText(/won't end premium while another source is active/),
+    ).toBeInTheDocument();
+  },
+};
+
+export const PremiumMobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  beforeEach: mockPremiumApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(await canvas.findByRole('button', { name: /Ryan Mercer/ }));
+    await expect(
+      await canvas.findByText('No complimentary premium.'),
+    ).toBeInTheDocument();
+    const weeks = canvas.getByRole('button', { name: 'Weeks' });
+    fireEvent.click(weeks);
+    await waitFor(() => expect(weeks).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(canvas.getByRole('button', { name: 'Grant premium' }));
+    await expect(
+      await canvas.findByText(/^Complimentary premium until/),
+    ).toBeInTheDocument();
+    await expect(premiumFetch).toHaveBeenCalledWith('POST', {
+      userId: 'ryan',
+      amount: 1,
+      unit: 'weeks',
+    });
   },
 };
