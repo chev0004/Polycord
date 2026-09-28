@@ -168,9 +168,16 @@ test('the progress bar follows the signed-in member profile colour', async ({
     await expect(bar).toHaveCSS('background-color', pink);
 
     await page.goto('/en/profile');
-    await page
-      .getByRole('button', { name: 'Slate banner colour', exact: true })
-      .click();
+    const slateSwatch = page.getByRole('button', {
+      name: 'Slate banner colour',
+      exact: true,
+    });
+    await expect(async () => {
+      await slateSwatch.click();
+      await expect(slateSwatch).toHaveAttribute('aria-pressed', 'true', {
+        timeout: 1000,
+      });
+    }).toPass();
     await page
       .getByRole('button', { name: 'Save Profile', exact: true })
       .click();
