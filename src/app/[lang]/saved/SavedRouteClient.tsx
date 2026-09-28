@@ -29,6 +29,7 @@ import { ProfileGrid } from '@/features/Discovery/ProfileGrid';
 import { SearchBar } from '@/features/Discovery/SearchBar';
 import { SortMenu } from '@/features/Discovery/SortMenu';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
+import { useProfileBump } from '@/features/Discovery/useProfileBump';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { BackButton } from '@/features/Navigation/BackButton';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
@@ -38,6 +39,8 @@ type SavedRouteClientProps = {
   locale: string;
   profiles: DiscoveryProfile[];
   currentProfileId?: string;
+  bumpReadyAt?: string;
+  userAvatarUrl?: string;
   loadError?: boolean;
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern;
@@ -47,6 +50,8 @@ export const SavedRouteClient = ({
   locale,
   profiles: initialProfiles,
   currentProfileId,
+  bumpReadyAt,
+  userAvatarUrl,
   loadError = false,
   viewerTimezone,
   viewerAvailability,
@@ -71,6 +76,12 @@ export const SavedRouteClient = ({
   const actions = useProfileActions(locale, true, (id) => {
     setRemovedIds((previous) => [...previous, id]);
     router.refresh();
+  });
+  useProfileBump({
+    profileId: currentProfileId,
+    readyAt: bumpReadyAt,
+    avatarUrl: userAvatarUrl,
+    addToast: actions.addToast,
   });
   const savedProfileIds = useMemo(
     () => initialProfiles.map((profile) => profile.id),

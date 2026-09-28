@@ -2,8 +2,10 @@ import { redirect } from 'next/navigation';
 import {
   getProfileByUserId,
   listSavedProfiles,
+  mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
 } from '@/db';
+import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import { getCurrentUser } from '@/lib/auth';
 import { SavedRouteClient } from './SavedRouteClient';
 
@@ -35,6 +37,15 @@ export default async function SavedRoute({
       locale={lang}
       profiles={savedProfiles ?? []}
       currentProfileId={profile?.profile.id}
+      bumpReadyAt={
+        profile?.profile.isPublic
+          ? getBumpCooldown(
+              profile.profile.lastBumpedAt,
+              Boolean(mapProfileToDiscoveryProfile(profile).premium),
+            ).nextBumpAt.toISOString()
+          : undefined
+      }
+      userAvatarUrl={user.avatarUrl}
       loadError={savedProfiles === null}
       viewerTimezone={viewer?.timezone}
       viewerAvailability={viewer?.availability}
