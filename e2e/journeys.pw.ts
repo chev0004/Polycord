@@ -109,6 +109,77 @@ test('a populated saved list supports every card action and return path', async 
   }
 });
 
+test('saved profile search, filters and sorting stay within the saved list', async ({
+  page,
+  context,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const accounts = await sql<
+    Account[]
+  >`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Search ' || n from generate_series(0,3) n returning id, discord_user_id as "discordUserId"`;
+  const [viewer, ...owners] = accounts;
+  try {
+    const profiles =
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags)
+      select now(),id,true,case when display_name like '% 2' then 'ja' else 'en' end,'ko','beginner',${`Saved search fixture ${prefix}.`},array['Travel'] from users where id in ${sql(owners.map((owner) => owner.id))} returning id, user_id`;
+    await signIn(context, viewer);
+    for (const profile of profiles.filter(
+      (profile) => profile.user_id !== owners[2].id,
+    )) {
+      const saved = await context.request.post('/api/saved', {
+        data: { profileId: profile.id },
+      });
+      expect(saved.status()).toBe(200);
+    }
+    const heading = (name: string) =>
+      page.getByRole('heading', { name, exact: true });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/en/saved');
+    await page
+      .getByRole('textbox', { name: 'Search profiles' })
+      .fill(`${prefix} Search`);
+    await expect(page.getByText('2 partners', { exact: true })).toBeVisible();
+    await expect(heading(`${prefix} Search 1`)).toBeVisible();
+    await expect(heading(`${prefix} Search 2`)).toBeVisible();
+    await expect(heading(`${prefix} Search 3`)).toHaveCount(0);
+    await expect(page.getByText('Popular tags')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Primary Language' }).click();
+    const popover = page.locator('.PopoverContent');
+    await popover.getByRole('button', { name: 'Japanese' }).click();
+    await popover.getByRole('button', { name: 'Apply' }).click();
+    await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
+    await expect(heading(`${prefix} Search 2`)).toBeVisible();
+    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await expect(page.getByText('2 partners', { exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Back to discovery' }).click();
+    await expect(page).toHaveURL('/en');
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/ja/saved');
+    const search = page.getByRole('textbox').first();
+    await search.fill(prefix);
+    await expect(page.locator('article')).toHaveCount(2);
+    await search.fill(`${prefix} Search 3`);
+    await expect(page.locator('article')).toHaveCount(0);
+    await expect(
+      page.getByText(
+        '検索またはフィルターに一致する保存済みプロフィールはありません。',
+        { exact: false },
+      ),
+    ).toBeVisible();
+    await search.fill('');
+    await expect(page.locator('article')).toHaveCount(2);
+  } finally {
+    await sql`delete from users where id in ${sql(accounts.map((account) => account.id))}`;
+    await sql.end();
+  }
+});
+
 test('suspended and banned accounts keep reading but cannot write', async ({
   context,
 }) => {

@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation';
 import {
-  getProfileByDiscordUserId,
+  getPrivacySettingsByDiscordUserId,
   getSubscriptionByDiscordUserId,
-  getUserByDiscordId,
   getUserSettingsByDiscordUserId,
   isSubscriptionActive,
 } from '@/db';
@@ -22,9 +21,8 @@ export default async function SettingsRoute({
     redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/settings`)}`);
   }
 
-  const [account, profile, settings, subscription] = await Promise.all([
-    getUserByDiscordId(user.id),
-    getProfileByDiscordUserId(user.id),
+  const [privacySettings, settings, subscription] = await Promise.all([
+    getPrivacySettingsByDiscordUserId(user.id),
     getUserSettingsByDiscordUserId(user.id),
     getSubscriptionByDiscordUserId(user.id),
   ]);
@@ -36,16 +34,8 @@ export default async function SettingsRoute({
     <main>
       <SettingsRouteClient
         userId={user.id}
-        defaultEmail={account?.email ?? user.email ?? ''}
-        initialPrivacySettings={
-          profile
-            ? {
-                allowAnonymousCopy: profile.profile.allowAnonymousCopy,
-                displayTimezone: profile.profile.displayTimezone,
-                isPublic: profile.profile.isPublic,
-              }
-            : undefined
-        }
+        defaultEmail={user.email ?? ''}
+        initialPrivacySettings={privacySettings}
         initialSettings={
           settings
             ? {

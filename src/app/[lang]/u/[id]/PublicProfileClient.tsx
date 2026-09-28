@@ -3,11 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { MdArrowBack } from 'react-icons/md';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
+import { BackButton } from '@/features/Navigation/BackButton';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { signInHref } from '@/features/Navigation/signIn';
 import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
@@ -80,14 +80,7 @@ export const PublicProfileClient = ({
   return (
     <>
       <main className="mx-auto w-full max-w-[1080px] px-4 py-8 sm:px-6">
-        <button
-          type="button"
-          onClick={() => router.push(back.href)}
-          className="mb-4 inline-flex h-9 items-center gap-1.5 rounded-full pr-3.5 pl-2.5 text-muted text-sm transition-colors hover:bg-background-dark hover:text-foreground focus:outline-none focus-visible:bg-background-dark focus-visible:text-foreground"
-        >
-          <MdArrowBack size={18} />
-          {tPublic(back.label)}
-        </button>
+        <BackButton href={back.href} label={tPublic(back.label)} />
         {blocked ? (
           <MemberEmptyState kind="blocked" />
         ) : (
@@ -100,7 +93,7 @@ export const PublicProfileClient = ({
             viewerAvailability={viewerAvailability}
             onToggleSave={isOwnProfile ? undefined : toggleSave}
             onCopyUsername={() => actions.copyUsername(profile, isOwnProfile)}
-            onShare={() => actions.share(profile.id)}
+            onShare={() => actions.share(profile)}
             onReport={isOwnProfile ? undefined : () => actions.report(profile)}
             onBlock={isOwnProfile ? undefined : () => actions.block(profile.id)}
             onEdit={

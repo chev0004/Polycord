@@ -17,7 +17,10 @@ import type { AvailabilityPattern } from '@/constants/availability';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { useNavbarBump } from '@/features/Navigation/AppShell';
 import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
-import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import {
+  useRouteProgress,
+  useRouteProgressRouter,
+} from '@/features/Navigation/RouteProgress';
 import { profileDraftSchema } from '@/features/Profile/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
@@ -161,6 +164,7 @@ export const DiscoveryPage = ({
   onBumpProfile = bumpProfileRequest,
 }: DiscoveryPageProps) => {
   const router = useRouteProgressRouter();
+  const { navigate } = useRouteProgress();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const urlQuery = searchParams.toString();
@@ -182,7 +186,7 @@ export const DiscoveryPage = ({
         : SORT_OPTIONS.filter((option) => option !== 'overlap-desc'),
     [viewerHasAvailability],
   );
-  const resultsHeadRef = useRef<HTMLDivElement>(null);
+  const settlePageChange = useRef<(() => void) | null>(null);
   const [initialState] = useState(() => parseDiscoveryState(searchParams));
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>(
     initialState.filterValues,
@@ -570,7 +574,12 @@ export const DiscoveryPage = ({
   };
 
   const handleShareProfile = async (profileId: string) => {
-    if (await copyText(buildPublicProfileUrl(locale, profileId))) {
+    const profile = profileItems.find((item) => item.id === profileId);
+    if (
+      await copyText(
+        buildPublicProfileUrl(locale, profile ?? { id: profileId }),
+      )
+    ) {
       addToast({
         title: t('shareCopiedTitle'),
         description: t('shareCopiedDescription'),
@@ -713,12 +722,26 @@ export const DiscoveryPage = ({
   };
 
   const handlePageChange = (nextPage: number) => {
+    settlePageChange.current?.();
+    setRefreshFailed(false);
     setPage(nextPage);
-    resultsHeadRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
+    navigate(
+      () =>
+        new Promise<void>((resolve) => {
+          settlePageChange.current = resolve;
+        }),
+    );
   };
+
+  useLayoutEffect(() => {
+    if (!settlePageChange.current || isRefreshing) return;
+    if (remoteData && remoteData.page !== page && !refreshFailed) return;
+    window.scrollTo(0, 0);
+    settlePageChange.current();
+    settlePageChange.current = null;
+  }, [isRefreshing, remoteData, page, refreshFailed]);
+
+  useEffect(() => () => settlePageChange.current?.(), []);
 
   const formatRemaining = (ms: number) => {
     const minutes = Math.max(1, Math.ceil(ms / 60000));
@@ -898,10 +921,7 @@ export const DiscoveryPage = ({
         ) : null}
         {(!refreshFailed || profileItems.length > 0) && (
           <>
-            <div
-              ref={resultsHeadRef}
-              className="mb-[18px] flex scroll-mt-8 flex-wrap items-center gap-2 max-md:scroll-mt-[76px]"
-            >
+            <div className="mb-[18px] flex flex-wrap items-center gap-2">
               <span
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
