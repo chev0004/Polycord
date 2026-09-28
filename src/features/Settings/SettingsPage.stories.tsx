@@ -165,7 +165,9 @@ export const PrivacyTab: Story = {
 
 const blockedUsers = (
   <BlockedUsers
-    load={async () => [{ id: 'one', displayName: 'Haruka Tanaka' }]}
+    load={async () => [
+      { id: 'one', displayName: 'Haruka Tanaka', profile: null },
+    ]}
     unblock={fn(async () => {})}
   />
 );

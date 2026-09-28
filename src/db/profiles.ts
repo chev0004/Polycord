@@ -1,6 +1,17 @@
 import 'server-only';
 
-import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  lt,
+  notInArray,
+  or,
+  sql,
+} from 'drizzle-orm';
 import { z } from 'zod';
 import {
   type AvailabilityPattern,
@@ -22,7 +33,7 @@ import { isPremiumDiscordId } from '@/lib/entitlements';
 import { isSubscriptionActive } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
-import { hasBlocked, isBlockedEitherWay } from './safety';
+import { isBlockedEitherWay } from './safety';
 import {
   moderationRestrictions,
   type NewProfile,
@@ -33,6 +44,7 @@ import {
   type Subscription,
   subscriptions,
   type User,
+  userBlocks,
   users,
   voiceIntros,
 } from './schema';
@@ -390,25 +402,47 @@ export const getPublicProfileById = async (
   return row;
 };
 
-export const getBlockedProfilePreview = async (
-  viewerUserId: string,
-  blockedUserId: string,
-) => {
-  const [viewerBlocked, blockedViewer, row] = await Promise.all([
-    hasBlocked(viewerUserId, blockedUserId),
-    hasBlocked(blockedUserId, viewerUserId),
-    getProfileByUserId(blockedUserId),
-  ]);
+export const listBlockedProfilePreviews = async (viewerUserId: string) => {
+  const rows = await db
+    .select({
+      profile: profiles,
+      user: users,
+      subscription: subscriptions,
+    })
+    .from(profiles)
+    .innerJoin(users, eq(profiles.userId, users.id))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
+    .where(
+      and(
+        inArray(
+          profiles.userId,
+          db
+            .select({ id: userBlocks.blockedUserId })
+            .from(userBlocks)
+            .where(eq(userBlocks.blockerUserId, viewerUserId)),
+        ),
+        notInArray(
+          profiles.userId,
+          db
+            .select({ id: userBlocks.blockerUserId })
+            .from(userBlocks)
+            .where(eq(userBlocks.blockedUserId, viewerUserId)),
+        ),
+        publiclyVisible(),
+      ),
+    );
+  const previews = await mapDiscoveryProfiles(rows, true);
 
-  if (!viewerBlocked || blockedViewer || !row || !isVisibleProfile(row)) {
-    return null;
-  }
-
-  return {
-    ...toDiscoveryProfile(row, true),
-    lastBumpedAt: undefined,
-    voiceIntroSeconds: undefined,
-  };
+  return new Map(
+    rows.map((row, index) => [
+      row.user.id,
+      {
+        ...previews[index],
+        lastBumpedAt: undefined,
+        voiceIntroSeconds: undefined,
+      },
+    ]),
+  );
 };
 
 export const getPublicProfileIdByUsername = async (

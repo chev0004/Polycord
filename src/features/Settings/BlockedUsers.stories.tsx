@@ -11,10 +11,6 @@ import { findCardTheme } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { BlockedUsers } from './BlockedUsers';
 
-const accounts = [
-  { id: 'one', displayName: 'Kenji Ito', username: 'kenji.ito' },
-  { id: 'two', displayName: 'Haruka Tanaka', username: 'haruka_t' },
-];
 const kenjiProfile: DiscoveryProfile = {
   id: 'profile-kenji',
   displayName: 'Kenji Ito',
@@ -27,6 +23,20 @@ const kenjiProfile: DiscoveryProfile = {
   timezone: 'Asia/Tokyo',
   cardTheme: findCardTheme('pink'),
 };
+const accounts = [
+  {
+    id: 'one',
+    displayName: 'Kenji Ito',
+    username: 'kenji.ito',
+    profile: kenjiProfile,
+  },
+  {
+    id: 'two',
+    displayName: 'Haruka Tanaka',
+    username: 'haruka_t',
+    profile: null,
+  },
+];
 const meta: Meta<typeof BlockedUsers> = {
   title: 'Features/Settings/BlockedUsers',
   component: BlockedUsers,
@@ -40,7 +50,6 @@ const meta: Meta<typeof BlockedUsers> = {
   args: {
     load: async () => accounts,
     unblock: fn(async () => {}),
-    preview: fn(async () => kenjiProfile),
     onChange: fn(),
   },
 };
@@ -169,32 +178,24 @@ export const PreviewProfile: Story = {
         'Weekend hiker practising English before a move to Toronto.',
       ),
     ).toBeInTheDocument();
-    expect(args.preview).toHaveBeenCalledWith('one');
     expect(dialog.getByText('Hiking')).toBeInTheDocument();
     expect(dialog.queryByRole('button', { name: 'Card menu' })).toBeNull();
     expect(
       dialog.queryByRole('button', { name: /block|save|bookmark/i }),
     ).toBeNull();
     expect(dialog.queryByText(/ago|just now/i)).toBeNull();
-    await userEvent.click(
-      dialog.getByRole('button', { name: 'Close preview' }),
-    );
+    await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(canvas.getByText('Kenji Ito')).toBeInTheDocument();
     expect(args.unblock).not.toHaveBeenCalled();
   },
 };
-export const PreviewUnavailable: Story = {
-  args: { preview: async () => null },
+export const NoPreviewWithoutProfile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(
-      await canvas.findByRole('button', {
-        name: "Preview Haruka Tanaka's profile",
-      }),
-    );
-    await expect(
-      await within(await screen.findByRole('dialog')).findByRole('alert'),
-    ).toHaveTextContent("This profile isn't available.");
+    await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: "Preview Haruka Tanaka's profile" }),
+    ).toBeNull();
   },
 };

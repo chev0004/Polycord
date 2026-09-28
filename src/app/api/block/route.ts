@@ -5,6 +5,7 @@ import {
   blockUser,
   getProfileById,
   getPublicProfileById,
+  listBlockedProfilePreviews,
   listBlockedUsers,
   unblockUser,
 } from '@/db';
@@ -17,8 +18,17 @@ export const GET = async () => {
   const currentUser = await getActiveUser();
   if (!currentUser)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const [users, previews] = await Promise.all([
+    listBlockedUsers(currentUser.accountId),
+    listBlockedProfilePreviews(currentUser.accountId),
+  ]);
   return NextResponse.json(
-    { users: await listBlockedUsers(currentUser.accountId) },
+    {
+      users: users.map((user) => ({
+        ...user,
+        profile: previews.get(user.id) ?? null,
+      })),
+    },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
 };

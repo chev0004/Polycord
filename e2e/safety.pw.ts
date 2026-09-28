@@ -194,35 +194,31 @@ test('blocked accounts show usernames and a restricted current preview', async (
       await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio, tags, card_color) values (now(), ${account.id}, true, 'en', 'ja', 'beginner', 'The bio from when they were blocked.', array['Hiking'], 'pink')`;
       accounts.push(account.id);
     }
-    const [viewer, target, stranger] = accounts;
+    const [viewer, target] = accounts;
     await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${viewer}, ${target})`;
-    await signIn(context, identities[0], viewer);
-
-    expect(
-      (await (await context.request.get('/api/block')).json()).users,
-    ).toEqual([
-      {
-        id: target,
-        displayName: identities[1].name,
-        username: identities[1].username,
-      },
-    ]);
     await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${target}, ${`cus_${identities[1].id}`}, 'active', now() + interval '30 days')`;
+    await signIn(context, identities[0], viewer);
+    const listBlocked = async () =>
+      (await (await context.request.get('/api/block')).json()).users;
+
     await sql`update profiles set bio = 'The bio they have today.', voice_intro_seconds = 12 where user_id = ${target}`;
-    const preview = await context.request.get(`/api/block/${target}`);
-    expect(preview.status()).toBe(200);
-    const { profile } = await preview.json();
-    expect(profile.about).toBe('The bio they have today.');
-    expect(profile).not.toHaveProperty('lastBumpedAt');
-    expect(profile).not.toHaveProperty('voiceIntroSeconds');
-    expect((await context.request.get(`/api/block/${stranger}`)).status()).toBe(
-      404,
-    );
+    const blocked = await listBlocked();
+    expect(blocked).toHaveLength(1);
+    expect(blocked[0]).toMatchObject({
+      id: target,
+      displayName: identities[1].name,
+      username: identities[1].username,
+      profile: { about: 'The bio they have today.' },
+    });
+    expect(blocked[0].profile).not.toHaveProperty('lastBumpedAt');
+    expect(blocked[0].profile).not.toHaveProperty('voiceIntroSeconds');
 
     await page.goto('/en/settings');
     await page.getByRole('button', { name: 'Privacy', exact: true }).click();
     await page.getByRole('button', { name: /^Blocked accounts/ }).click();
     await expect(page.getByText(`@${identities[1].username}`)).toBeVisible();
+    const requests: string[] = [];
+    page.on('request', (request) => requests.push(request.url()));
     await page
       .getByRole('button', {
         name: `Preview ${identities[1].name}'s profile`,
@@ -231,11 +227,12 @@ test('blocked accounts show usernames and a restricted current preview', async (
       .click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('The bio they have today.')).toBeVisible();
+    expect(requests).toEqual([]);
     await expect(dialog.getByRole('button', { name: 'Card menu' })).toHaveCount(
       0,
     );
     await expect(dialog.getByText(/ago|just now/i)).toHaveCount(0);
-    await dialog.getByRole('button', { name: 'Close preview' }).click();
+    await page.mouse.click(8, 8);
     await expect(dialog).toHaveCount(0);
     await expect(page).toHaveURL(/\/en\/settings/);
     await expect(
@@ -246,14 +243,10 @@ test('blocked accounts show usernames and a restricted current preview', async (
     ).toBeVisible();
 
     await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${target}, ${viewer})`;
-    expect((await context.request.get(`/api/block/${target}`)).status()).toBe(
-      404,
-    );
+    expect((await listBlocked())[0].profile).toBeNull();
     await sql`delete from user_blocks where blocker_user_id = ${target}`;
     await sql`update profiles set is_public = false where user_id = ${target}`;
-    expect((await context.request.get(`/api/block/${target}`)).status()).toBe(
-      404,
-    );
+    expect((await listBlocked())[0].profile).toBeNull();
   } finally {
     await sql`delete from users where id in ${sql(accounts)}`;
     await sql.end();
