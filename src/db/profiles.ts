@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, asc, eq, inArray, isNull, lt, or } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   type AvailabilityPattern,
@@ -381,6 +381,31 @@ export const getPublicProfileById = async (
     return null;
 
   return row;
+};
+
+export const getPublicProfileIdByUsername = async (
+  username: string,
+  viewerUserId?: string,
+) => {
+  const [row] = await db
+    .select({ profile: profiles, user: users })
+    .from(users)
+    .leftJoin(profiles, eq(profiles.userId, users.id))
+    .where(sql`lower(${users.discordUsername}) = lower(${username})`)
+    .orderBy(desc(users.updatedAt))
+    .limit(1);
+
+  if (
+    !row?.profile ||
+    !isVisibleProfile({ profile: row.profile, user: row.user }) ||
+    (viewerUserId
+      ? await isBlockedEitherWay(viewerUserId, row.user.id)
+      : !row.profile.allowAnonymousCopy)
+  ) {
+    return null;
+  }
+
+  return row.profile.id;
 };
 
 export const mapDiscoveryProfiles = async (
