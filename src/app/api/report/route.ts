@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createReport, getPublicProfileById, type ReportReason } from '@/db';
+import {
+  createReport,
+  getPublicProfileById,
+  hasBlocked,
+  type ReportReason,
+} from '@/db';
 import { getActiveUser } from '@/lib/auth';
 import {
   enforceRateLimit,
@@ -73,12 +78,12 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid report' }, { status: 400 });
   }
 
-  const target = await getPublicProfileById(
-    body.profileId,
-    currentUser.accountId,
-  );
+  const target = await getPublicProfileById(body.profileId);
 
-  if (!target) {
+  if (
+    !target ||
+    (await hasBlocked(target.profile.userId, currentUser.accountId))
+  ) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 

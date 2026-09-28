@@ -58,6 +58,24 @@ export const unblockUser = async (
     );
 };
 
+export const hasBlocked = async (
+  blockerUserId: string,
+  blockedUserId: string,
+) => {
+  const [row] = await db
+    .select({ id: userBlocks.id })
+    .from(userBlocks)
+    .where(
+      and(
+        eq(userBlocks.blockerUserId, blockerUserId),
+        eq(userBlocks.blockedUserId, blockedUserId),
+      ),
+    )
+    .limit(1);
+
+  return Boolean(row);
+};
+
 export const isBlockedEitherWay = async (
   userId: string,
   otherUserId: string,

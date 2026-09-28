@@ -10,6 +10,7 @@ import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfileDetail } from '@/features/Profile/ProfileDetail';
+import { useProfileActions } from '@/features/Profile/useProfileActions';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { copyText } from '@/lib/clipboard';
 
@@ -42,6 +43,7 @@ const BlockedProfilePreview = ({
   const locale = useLocale();
   const router = useRouteProgressRouter();
   const mobile = useIsMobile();
+  const actions = useProfileActions(locale, true, () => {});
 
   if (mobile)
     return (
@@ -69,6 +71,8 @@ const BlockedProfilePreview = ({
               profile={profile}
               isLoggedIn
               onCopyUsername={() => copyText(profile.discordUsername ?? '')}
+              onShare={() => actions.share(profile)}
+              onReport={() => actions.report(profile)}
               onTagClick={(tag) =>
                 router.push(buildDiscoveryFilterHref(locale, 'tag', tag))
               }
@@ -87,6 +91,7 @@ const BlockedProfilePreview = ({
                 )
               }
             />
+            {actions.feedback}
           </Dialog.Content>
         </Dialog.Overlay>
       </Dialog.Portal>

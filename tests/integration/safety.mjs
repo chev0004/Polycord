@@ -84,7 +84,11 @@ const request = (profileId) =>
     method: 'POST',
     body: JSON.stringify({ profileId, reason: 'spam' }),
   });
-const absent = async (viewerId, profileId) => {
+const absent = async (
+  viewerId,
+  profileId,
+  routes = [copy, save, report, block],
+) => {
   assert.equal(await getPublicProfileById(profileId, viewerId), null);
   assert.equal(
     (await discover(viewerId)).some((row) => row.id === profileId),
@@ -98,7 +102,7 @@ const absent = async (viewerId, profileId) => {
     (await listSavedProfileIds(viewerId)).includes(profileId),
     false,
   );
-  for (const route of [copy, save, report, block])
+  for (const route of routes)
     assert.equal((await route.POST(request(profileId))).status, 404);
 };
 try {
@@ -149,7 +153,8 @@ try {
     1,
   );
   await blockUser(viewer.id, target.id);
-  await absent(viewer.id, targetProfile.id);
+  await absent(viewer.id, targetProfile.id, [copy, save, block]);
+  assert.equal((await report.POST(request(targetProfile.id))).status, 200);
   identity = identities[1];
   await absent(target.id, viewerProfile.id);
   assert.deepEqual(await listBlockedUsers(target.id), []);
@@ -213,7 +218,7 @@ try {
         .from(reports)
         .where(eq(reports.reportedUserId, target.id))
     ).length,
-    0,
+    1,
   );
   console.log('safety checks passed');
 } finally {

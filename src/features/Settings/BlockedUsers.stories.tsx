@@ -168,21 +168,77 @@ export const Usernames: Story = {
     expect(canvas.getByText('Haruka Tanaka')).toBeInTheDocument();
   },
 };
+const openPreview = async (canvasElement: HTMLElement) => {
+  await userEvent.click(
+    await within(canvasElement).findByRole('button', {
+      name: "Show Kenji Ito's profile",
+    }),
+  );
+  const dialog = within(await screen.findByRole('dialog'));
+  await expect(
+    await dialog.findByText(
+      'Weekend hiker practising English before a move to Toronto.',
+    ),
+  ).toBeInTheDocument();
+  expect(dialog.getByText('Hiking')).toBeInTheDocument();
+  expect(dialog.queryByText(/ago|just now/i)).toBeNull();
+  return dialog;
+};
+
+const closePreview = async (canvasElement: HTMLElement) => {
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  expect(within(canvasElement).getByText('Kenji Ito')).toBeInTheDocument();
+};
+
 export const PreviewProfile: Story = {
   play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(
-      await canvas.findByRole('button', {
-        name: "Show Kenji Ito's profile",
-      }),
-    );
-    const dialog = within(await screen.findByRole('dialog'));
-    await expect(
-      await dialog.findByText(
-        'Weekend hiker practising English before a move to Toronto.',
-      ),
+    const dialog = await openPreview(canvasElement);
+    expect(
+      dialog.getByRole('button', { name: 'Copy profile link' }),
     ).toBeInTheDocument();
-    expect(dialog.getByText('Hiking')).toBeInTheDocument();
+    await userEvent.click(dialog.getByRole('button', { name: 'More actions' }));
+    await expect(
+      await screen.findByRole('button', { name: 'Report profile' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /block|save|bookmark/i }),
+    ).toBeNull();
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Report profile' }),
+      ).toBeNull(),
+    );
+    await closePreview(canvasElement);
+    expect(args.unblock).not.toHaveBeenCalled();
+  },
+};
+export const ReportFromPreview: Story = {
+  play: async ({ canvasElement, args }) => {
+    const dialog = await openPreview(canvasElement);
+    await userEvent.click(dialog.getByRole('button', { name: 'More actions' }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Report profile' }),
+    );
+    await expect(
+      await screen.findByRole('dialog', { name: 'Report profile' }),
+    ).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Report profile' }),
+      ).toBeNull(),
+    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await closePreview(canvasElement);
+    expect(args.unblock).not.toHaveBeenCalled();
+  },
+};
+export const MobilePreviewProfile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement, args }) => {
+    const dialog = await openPreview(canvasElement);
     expect(dialog.queryByRole('button', { name: 'More actions' })).toBeNull();
     expect(
       dialog.queryByRole('button', { name: 'Copy profile link' }),
@@ -190,16 +246,9 @@ export const PreviewProfile: Story = {
     expect(
       dialog.queryByRole('button', { name: /block|save|bookmark/i }),
     ).toBeNull();
-    expect(dialog.queryByText(/ago|just now/i)).toBeNull();
-    await userEvent.keyboard('{Escape}');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(canvas.getByText('Kenji Ito')).toBeInTheDocument();
+    await closePreview(canvasElement);
     expect(args.unblock).not.toHaveBeenCalled();
   },
-};
-export const MobilePreviewProfile: Story = {
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
-  play: PreviewProfile.play,
 };
 export const NoPreviewWithoutProfile: Story = {
   play: async ({ canvasElement }) => {

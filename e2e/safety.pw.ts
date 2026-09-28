@@ -97,7 +97,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     expect(
       (await context.request.get(`/api/voice/${target.profileId}`)).status(),
     ).toBe(404);
-    for (const route of ['saved', 'report', 'notifications']) {
+    for (const route of ['saved', 'notifications']) {
       expect(
         (
           await context.request.post(`/api/${route}`, {
@@ -231,10 +231,23 @@ test('blocked accounts show usernames and a restricted current preview', async (
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('The bio they have today.')).toBeVisible();
     expect(requests).toEqual([]);
-    await expect(dialog.getByRole('button', { name: 'Card menu' })).toHaveCount(
-      0,
-    );
     await expect(dialog.getByText(/ago|just now/i)).toHaveCount(0);
+    await expect(
+      dialog.getByRole('button', { name: 'Copy profile link' }),
+    ).toBeVisible();
+    await dialog.getByRole('button', { name: 'More actions' }).click();
+    await expect(
+      page.getByRole('button', { name: /block|save|bookmark/i }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Report profile' }).click();
+    const report = page.getByRole('dialog', { name: 'Report profile' });
+    await report.getByText('Spam or scam').click();
+    await report.getByRole('button', { name: 'Submit report' }).click();
+    await expect(page.getByText('Report submitted')).toBeVisible();
+    await expect(report).toHaveCount(0);
+    const [filed] =
+      await sql`select reason from reports where reporter_user_id = ${viewer} and reported_user_id = ${target}`;
+    expect(filed.reason).toBe('spam');
     await page.mouse.click(8, 8);
     await expect(dialog).toHaveCount(0);
     await expect(page).toHaveURL(/\/en\/settings/);
@@ -247,6 +260,13 @@ test('blocked accounts show usernames and a restricted current preview', async (
 
     await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${target}, ${viewer})`;
     expect((await listBlocked())[0].profile).toBeNull();
+    expect(
+      (
+        await context.request.post('/api/report', {
+          data: { profileId: blocked[0].profile.id, reason: 'spam' },
+        })
+      ).status(),
+    ).toBe(404);
     await sql`delete from user_blocks where blocker_user_id = ${target}`;
     await sql`update profiles set is_public = false where user_id = ${target}`;
     expect((await listBlocked())[0].profile).toBeNull();
