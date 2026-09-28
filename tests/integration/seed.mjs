@@ -23,6 +23,8 @@ const {
   moderationRestrictions,
   notifications,
   seedDatabase,
+  subscriptions,
+  voiceIntros,
 } = await import('../../src/db/schema');
 const { eq, and, count, inArray, like } = await import('drizzle-orm');
 const { upsertDiscordUser, upsertProfileForUser } = await import(
@@ -34,6 +36,8 @@ const { parseDiscoveryState } = await import(
 );
 const { createSessionCookieValue } = await import('../../src/lib/auth-session');
 const { generateDummy } = await import('../../src/lib/seed/generate');
+const { readFile } = await import('node:fs/promises');
+const voiceRoute = await import('../../src/app/api/voice/[profileId]/route');
 const { SEED_CAP } = await import('../../src/lib/seed/limits');
 const seedRoute = await import('../../src/app/api/admin/seed/route');
 const { POST: copyUsername } = await import(
@@ -195,6 +199,9 @@ try {
 
   const state = parseDiscoveryState(new URLSearchParams());
   const baseline = await listDiscoveryPage(state, 'en', {});
+  const [{ total: voiceBaseline }] = await db
+    .select({ total: count() })
+    .from(voiceIntros);
   const added = await converge(5000);
   assert.equal(added.steps, 3);
   assert.equal(added.current.real, realBefore.length);
@@ -224,11 +231,75 @@ try {
     ).reduce((sum, length) => sum + length, 0),
   );
 
-  const visible = Array.from({ length: 5000 }, (_, index) =>
+  const generated = Array.from({ length: 5000 }, (_, index) =>
     generateDummy(index + 1, new Date()),
-  ).filter(
+  );
+  const visible = generated.filter(
     ({ profile }) => profile.isPublic && !profile.hiddenByModeration,
   ).length;
+  const syntheticRows = (table) =>
+    db
+      .select({ row: table, discordUserId: users.discordUserId })
+      .from(table)
+      .innerJoin(users, eq(users.id, table.userId))
+      .where(eq(users.isSynthetic, true));
+  const premiumRows = await syntheticRows(subscriptions);
+  assert.deepEqual(
+    premiumRows.map(({ discordUserId }) => discordUserId).sort(),
+    generated
+      .filter(({ premium }) => premium)
+      .map(({ user }) => user.discordUserId)
+      .sort(),
+  );
+  assert.ok(
+    premiumRows.every(
+      ({ row, discordUserId }) =>
+        row.stripeCustomerId === discordUserId &&
+        row.stripeSubscriptionId === null &&
+        row.status === 'active' &&
+        row.currentPeriodEnd > new Date(),
+    ),
+  );
+  const voiceRows = await syntheticRows(voiceIntros);
+  const voiced = generated.filter(({ voice }) => voice);
+  assert.equal(voiceRows.length, voiced.length);
+  const [spoken] = voiced.filter(
+    ({ profile }) => profile.isPublic && !profile.hiddenByModeration,
+  );
+  const [spokenProfile] = await db
+    .select({ id: profiles.id, seconds: profiles.voiceIntroSeconds })
+    .from(profiles)
+    .innerJoin(users, eq(users.id, profiles.userId))
+    .where(eq(users.discordUserId, spoken.user.discordUserId));
+  assert.equal(spokenProfile.seconds, spoken.voice.seconds);
+  cookie = undefined;
+  const played = await voiceRoute.GET(
+    new Request(`http://localhost/api/voice/${spokenProfile.id}`),
+    { params: Promise.resolve({ profileId: spokenProfile.id }) },
+  );
+  assert.equal(played.status, 200);
+  assert.equal(played.headers.get('content-type'), 'audio/webm');
+  assert.ok(
+    Buffer.from(await played.arrayBuffer()).equals(
+      await readFile(
+        new URL(
+          `../../src/lib/seed/voices/${spoken.voice.file}`,
+          import.meta.url,
+        ),
+      ),
+    ),
+  );
+  cookie = ownerCookie;
+  const premiumPage = await listDiscoveryPage(
+    parseDiscoveryState(new URLSearchParams('q=' + spoken.user.displayName)),
+    'en',
+    {},
+  );
+  const spokenCard = premiumPage.profiles.find(
+    ({ id }) => id === spokenProfile.id,
+  );
+  assert.equal(spokenCard.premium, true);
+  assert.equal(spokenCard.voiceIntroSeconds, spoken.voice.seconds);
   const discovered = await listDiscoveryPage(state, 'en', {});
   assert.equal(discovered.total, baseline.total + visible);
   assert.equal(discovered.profiles[0].boosted, true);
@@ -324,6 +395,19 @@ try {
 
   const cleared = await converge(0);
   assert.equal(cleared.current.dummies, 0);
+  assert.equal(
+    (
+      await db
+        .select({ total: count() })
+        .from(subscriptions)
+        .where(like(subscriptions.stripeCustomerId, 'seed-%'))
+    )[0].total,
+    0,
+  );
+  assert.equal(
+    (await db.select({ total: count() }).from(voiceIntros))[0].total,
+    voiceBaseline,
+  );
   assert.deepEqual(await snapshotReal(), realBefore);
   assert.equal(
     (
