@@ -1,8 +1,9 @@
 import 'server-only';
 
 import { eq } from 'drizzle-orm';
+import { isPremiumDiscordId } from '@/lib/entitlements';
 import { db } from './client';
-import { type Subscription, subscriptions, users } from './schema';
+import { type Subscription, subscriptions, type User, users } from './schema';
 
 export const getSubscriptionByUserId = async (
   userId: string,
@@ -76,3 +77,65 @@ export const isSubscriptionActive = (
   (subscription.status === 'active' || subscription.status === 'trialing') &&
   subscription.currentPeriodEnd !== null &&
   subscription.currentPeriodEnd.getTime() > Date.now();
+
+export const hasActivePremiumGrant = ({
+  premiumGrantedUntil,
+}: Pick<User, 'premiumGrantedUntil'>) =>
+  premiumGrantedUntil !== null && premiumGrantedUntil.getTime() > Date.now();
+
+export const isPremiumAccount = (
+  user: User,
+  subscription: Subscription | null,
+) =>
+  isPremiumDiscordId(user.discordUserId) ||
+  hasActivePremiumGrant(user) ||
+  isSubscriptionActive(subscription);
+
+export const getPremiumAccountByDiscordUserId = async (
+  discordUserId: string,
+) => {
+  const [row] = await db
+    .select({ user: users, subscription: subscriptions })
+    .from(users)
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
+    .where(eq(users.discordUserId, discordUserId))
+    .limit(1);
+
+  return row ?? null;
+};
+
+export const setPremiumGrant = async (
+  userId: string,
+  until: Date,
+  grantedBy: string,
+) =>
+  (
+    await db
+      .update(users)
+      .set({
+        premiumGrantedUntil: until,
+        premiumGrantedBy: grantedBy,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning({ id: users.id })
+  ).length > 0;
+
+export const revokePremiumGrant = async (userId: string) =>
+  db.transaction(async (tx) => {
+    const [user] = await tx
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .for('update');
+    if (!user || !hasActivePremiumGrant(user)) return null;
+    await tx
+      .update(users)
+      .set({
+        premiumGrantedUntil: null,
+        premiumGrantedBy: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+    return user.premiumGrantedUntil;
+  });

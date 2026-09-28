@@ -3,10 +3,9 @@ import {
   getPrivacySettingsByDiscordUserId,
   getSubscriptionByDiscordUserId,
   getUserSettingsByDiscordUserId,
-  isSubscriptionActive,
 } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
-import { hasPremiumEntitlement } from '@/lib/entitlements';
+import { isPremiumUser } from '@/lib/entitlements.server';
 import { SettingsRouteClient } from './SettingsRouteClient';
 
 export default async function SettingsRoute({
@@ -21,14 +20,12 @@ export default async function SettingsRoute({
     redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/settings`)}`);
   }
 
-  const [privacySettings, settings, subscription] = await Promise.all([
+  const [privacySettings, settings, subscription, premium] = await Promise.all([
     getPrivacySettingsByDiscordUserId(user.id),
     getUserSettingsByDiscordUserId(user.id),
     getSubscriptionByDiscordUserId(user.id),
+    isPremiumUser(user),
   ]);
-
-  const premium =
-    hasPremiumEntitlement(user) || isSubscriptionActive(subscription);
 
   return (
     <main>

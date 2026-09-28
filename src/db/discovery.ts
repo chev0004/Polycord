@@ -207,6 +207,7 @@ export const listDiscoveryPage = async (
     .filter(Boolean);
   const premium = or(
     premiumIds.length ? inArray(users.discordUserId, premiumIds) : undefined,
+    sql`${users.premiumGrantedUntil} > now()`,
     sql`(${subscriptions.status} in ('active', 'trialing') and ${subscriptions.currentPeriodEnd} > now())`,
   );
   const bumped = sql`${profiles.lastBumpedAt} desc nulls last, ${users.displayName} asc, ${profiles.id} asc`;

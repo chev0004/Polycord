@@ -1,5 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   boolean,
   check,
   index,
@@ -46,6 +47,8 @@ export const moderationActionEnum = pgEnum('moderation_action', [
   'unban',
   'grant',
   'revoke',
+  'premium_grant',
+  'premium_revoke',
 ]);
 
 export const staffRoleEnum = pgEnum('staff_role', ['moderator']);
@@ -76,6 +79,13 @@ export const users = pgTable(
     suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
     bannedAt: timestamp('banned_at', { withTimezone: true }),
     isSynthetic: boolean('is_synthetic').default(false).notNull(),
+    premiumGrantedUntil: timestamp('premium_granted_until', {
+      withTimezone: true,
+    }),
+    premiumGrantedBy: uuid('premium_granted_by').references(
+      (): AnyPgColumn => users.id,
+      { onDelete: 'set null' },
+    ),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -417,6 +427,7 @@ export const moderationActions = pgTable(
     action: moderationActionEnum('action').notNull(),
     note: text('note'),
     days: integer('days'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),

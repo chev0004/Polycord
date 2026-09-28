@@ -29,8 +29,7 @@ import {
 } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
-import { isPremiumDiscordId } from '@/lib/entitlements';
-import { isSubscriptionActive } from './billing';
+import { isPremiumAccount } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
 import { isBlockedEitherWay } from './safety';
@@ -84,9 +83,7 @@ type ProfileWithUser = {
 const isPremiumOwner = (
   user: User,
   subscription: Subscription | null | undefined,
-) =>
-  isPremiumDiscordId(user.discordUserId) ||
-  isSubscriptionActive(subscription ?? null);
+) => isPremiumAccount(user, subscription ?? null);
 
 const toCardTheme = (profile: Profile, premium: boolean): CardTheme => {
   let theme: CardTheme | undefined;

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { getSubscriptionByDiscordUserId, isSubscriptionActive } from '@/db';
+import { getPremiumAccountByDiscordUserId, isPremiumAccount } from '@/db';
 import type { CurrentUser } from './auth-session';
 import { hasPremiumEntitlement } from './entitlements';
 
@@ -9,5 +9,8 @@ export const isPremiumUser = async (user: CurrentUser): Promise<boolean> => {
     return true;
   }
 
-  return isSubscriptionActive(await getSubscriptionByDiscordUserId(user.id));
+  const account = await getPremiumAccountByDiscordUserId(user.id);
+  return (
+    account !== null && isPremiumAccount(account.user, account.subscription)
+  );
 };

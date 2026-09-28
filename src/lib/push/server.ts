@@ -2,12 +2,11 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 import webpush from 'web-push';
-import { getSubscriptionByUserId, isSubscriptionActive } from '@/db/billing';
+import { getSubscriptionByUserId, isPremiumAccount } from '@/db/billing';
 import { db } from '@/db/client';
 import { listPushSubscriptionsForUser } from '@/db/push';
 import { type NotificationRecord, pushSubscriptions, users } from '@/db/schema';
 import { getUserSettingsByUserId } from '@/db/settings';
-import { isPremiumDiscordId } from '@/lib/entitlements';
 import en from '@/locales/en.json';
 import ja from '@/locales/ja.json';
 
@@ -46,11 +45,7 @@ export const sendPushForNotification = async (
       .select()
       .from(users)
       .where(eq(users.id, notification.userId));
-    if (
-      !isPremiumDiscordId(user.discordUserId) &&
-      !isSubscriptionActive(await getSubscriptionByUserId(user.id))
-    )
-      return;
+    if (!isPremiumAccount(user, await getSubscriptionByUserId(user.id))) return;
   }
   const subscriptions = await listPushSubscriptionsForUser(notification.userId);
   const locale = settings.applicationLanguage === 'ja' ? 'ja' : 'en';
