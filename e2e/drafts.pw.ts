@@ -117,7 +117,7 @@ test('discarding profile edits does not restore an immediately deleted voice int
     await page.goto('/en/profile');
     await expect(
       page.getByRole('button', { name: 'Save Profile', exact: true }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     await page
       .getByLabel('Bio', { exact: true })
       .fill('I will discard this bio after deleting the voice intro.');
