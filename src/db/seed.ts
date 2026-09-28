@@ -1,15 +1,26 @@
 import 'server-only';
 
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { count, desc, eq, inArray, max } from 'drizzle-orm';
-import { generateDummy, SEED_BATCH_SIZE, seedIndex } from '@/lib/seed/generate';
+import {
+  generateDummy,
+  SEED_BATCH_SIZE,
+  SEED_VOICES,
+  seedIndex,
+} from '@/lib/seed/generate';
 import { db } from './client';
 import {
   moderationRestrictions,
   profiles,
   profileTargetLanguages,
   seedDatabase,
+  subscriptions,
   users,
+  voiceIntros,
 } from './schema';
+
+const SEED_PREMIUM_YEARS = 10;
 
 export const getSeedDatabase = async () => {
   const [row] = await db.select().from(seedDatabase).limit(1);
@@ -37,6 +48,21 @@ export const addDummies = async (amount: number) => {
   const dummies = Array.from(
     { length: Math.min(amount, SEED_BATCH_SIZE) },
     (_, offset) => generateDummy(start + offset, now),
+  );
+  const clips = new Map(
+    await Promise.all(
+      SEED_VOICES.map(
+        async ({ file }) =>
+          [
+            file,
+            await readFile(join(process.cwd(), 'src/lib/seed/voices', file)),
+          ] as const,
+      ),
+    ),
+  );
+  const premiumUntil = new Date(now);
+  premiumUntil.setUTCFullYear(
+    premiumUntil.getUTCFullYear() + SEED_PREMIUM_YEARS,
   );
 
   await db.transaction(async (tx) => {
@@ -78,6 +104,29 @@ export const addDummies = async (amount: number) => {
         })),
       ),
     );
+    const premium = kept.filter((dummy) => dummy.premium);
+    if (premium.length)
+      await tx.insert(subscriptions).values(
+        premium.map(({ user }) => ({
+          userId: userIds.get(user.discordUserId) as string,
+          stripeCustomerId: user.discordUserId,
+          status: 'active',
+          currentPeriodEnd: premiumUntil,
+        })),
+      );
+    const voiced = kept.flatMap(({ user, voice }) =>
+      voice ? [{ user, voice, clip: clips.get(voice.file) as Buffer }] : [],
+    );
+    if (voiced.length)
+      await tx.insert(voiceIntros).values(
+        voiced.map(({ user, voice, clip }) => ({
+          userId: userIds.get(user.discordUserId) as string,
+          mimeType: 'audio/webm',
+          durationSeconds: voice.seconds,
+          sizeBytes: clip.byteLength,
+          data: clip.toString('base64'),
+        })),
+      );
   });
 };
 

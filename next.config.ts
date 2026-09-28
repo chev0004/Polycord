@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
     '/api/profile/voice': [
       `node_modules/ffprobe-static/bin/${process.platform}/${process.arch}/*`,
     ],
+    '/api/admin/seed': ['src/lib/seed/voices/*.webm'],
   },
   outputFileTracingExcludes: {
     '*': [
