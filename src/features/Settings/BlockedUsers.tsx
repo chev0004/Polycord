@@ -226,6 +226,7 @@ export const BlockedUsers = ({
                   <Button
                     type="button"
                     variant="outline"
+                    className="[@media(hover:none)]:hover:bg-transparent"
                     onClick={() => {
                       setPreviewProfile(user.profile);
                       setPreviewOpen(true);
