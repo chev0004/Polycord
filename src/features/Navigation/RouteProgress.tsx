@@ -11,6 +11,7 @@ import {
   useState,
   useTransition,
 } from 'react';
+import { type CardTheme, isValidHex } from '@/features/Discovery/cardTheme';
 
 type RouteProgressContextValue = {
   start: (href?: string) => void;
@@ -47,8 +48,10 @@ const shouldStartProgress = (href: string) => {
 
 export const RouteProgressProvider = ({
   children,
+  theme,
 }: {
   children: React.ReactNode;
+  theme?: CardTheme;
 }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -133,10 +136,18 @@ export const RouteProgressProvider = ({
       {children}
       <div
         aria-hidden="true"
-        className={`pointer-events-none fixed top-0 left-0 z-[70] h-1 bg-primary shadow-[0_0_12px_rgba(193,213,233,0.65)] transition-[width,opacity] duration-200 ease-out ${
+        className={`pointer-events-none fixed top-0 left-0 z-[70] h-1 bg-primary shadow-[0_0_12px_var(--progress-glow,rgba(193,213,233,0.65))] transition-[width,opacity] duration-200 ease-out ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
-        style={{ width: `${progress}%` }}
+        style={
+          {
+            width: `${progress}%`,
+            background: theme?.banner,
+            '--progress-glow': theme
+              ? `${isValidHex(theme.banner) ? theme.banner : theme.accent}a6`
+              : undefined,
+          } as React.CSSProperties
+        }
       />
     </RouteProgressContext.Provider>
   );
