@@ -21,6 +21,7 @@ import {
   useRouteProgress,
   useRouteProgressRouter,
 } from '@/features/Navigation/RouteProgress';
+import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
 import { profileDraftSchema } from '@/features/Profile/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
@@ -430,6 +431,8 @@ export const DiscoveryPage = ({
       window.removeEventListener('polycord:profiles-changed', refresh);
     };
   }, [refreshDiscovery]);
+
+  useHistoryRefresh(refreshDiscovery);
 
   useEffect(() => {
     if (mobile === null || stackPending) return;
