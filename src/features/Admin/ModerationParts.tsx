@@ -110,14 +110,21 @@ export const ACTION_TONE: Record<LogAction, string> = {
   unban: 'bg-primary-dark',
   grant: 'bg-primary-dark',
   revoke: 'bg-primary-dark',
+  premium_grant: 'bg-discord-yellow',
+  premium_revoke: 'bg-primary-dark',
 };
 
 export const useLogLabel = () => {
   const t = useTranslations('Admin');
+  const { date } = useModFormat();
   return (entry: ModLogEntry) =>
     entry.action === 'suspend' && entry.days
       ? t('suspendedFor', { count: entry.days })
-      : t(`action_${entry.action}`);
+      : entry.action === 'premium_grant' && entry.expiresAt
+        ? t('premiumGrantedUntil', { date: date(entry.expiresAt) })
+        : entry.action === 'premium_revoke' && entry.expiresAt
+          ? t('premiumRevokedFrom', { date: date(entry.expiresAt) })
+          : t(`action_${entry.action}`);
 };
 
 const chipBase =

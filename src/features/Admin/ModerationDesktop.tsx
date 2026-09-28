@@ -42,6 +42,7 @@ import {
   useModFormat,
   useShortcut,
 } from './ModerationParts';
+import { PremiumPanel } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { SeedPanel } from './SeedPanel';
 import type { ModAction, ModUser, SeedStatus } from './types';
@@ -292,6 +293,11 @@ const UserDetail = ({
         {profileFirst
           ? [profileSection, reportSection]
           : [reportSection, profileSection]}
+        {store.meRole === 'owner' ? (
+          <Section title={t('sectionPremium')}>
+            <PremiumPanel store={store} user={user} />
+          </Section>
+        ) : null}
         <Section title={t('sectionHistory')} count={history.length}>
           <HistoryList store={store} entries={history} />
         </Section>

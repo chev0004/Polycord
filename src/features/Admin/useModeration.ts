@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import type { GrantUnit } from '@/lib/premiumGrant';
 import type {
   ModData,
   ModLogEntry,
@@ -97,6 +98,12 @@ export const useModeration = (initial: ModSnapshot) => {
     [merge],
   );
 
+  const changePremium = useCallback(
+    async (method: 'POST' | 'DELETE', body: object) =>
+      merge(await send('/api/admin/premium', method, body)),
+    [merge],
+  );
+
   const search = useCallback(
     async (query: string): Promise<string[]> => {
       const response = await fetch(
@@ -141,6 +148,9 @@ export const useModeration = (initial: ModSnapshot) => {
     grant: (target: { userId: string } | { discordId: string }) =>
       changeStaff('POST', target),
     revoke: (userId: string) => changeStaff('DELETE', { userId }),
+    grantPremium: (userId: string, amount: number, unit: GrantUnit) =>
+      changePremium('POST', { userId, amount, unit }),
+    revokePremium: (userId: string) => changePremium('DELETE', { userId }),
     act,
     search,
     userLog,
