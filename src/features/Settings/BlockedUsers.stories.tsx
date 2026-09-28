@@ -1,11 +1,32 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
+import {
+  expect,
+  fn,
+  screen,
+  userEvent,
+  waitFor,
+  within,
+} from '@storybook/test';
+import { findCardTheme } from '@/features/Discovery/cardTheme';
+import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { BlockedUsers } from './BlockedUsers';
 
 const accounts = [
-  { id: 'one', displayName: 'Kenji Ito' },
-  { id: 'two', displayName: 'Haruka Tanaka' },
+  { id: 'one', displayName: 'Kenji Ito', username: 'kenji.ito' },
+  { id: 'two', displayName: 'Haruka Tanaka', username: 'haruka_t' },
 ];
+const kenjiProfile: DiscoveryProfile = {
+  id: 'profile-kenji',
+  displayName: 'Kenji Ito',
+  discordUsername: 'kenji.ito',
+  primaryLanguage: 'ja',
+  targetLanguages: [{ language: 'en', level: 'intermediate' }],
+  about: 'Weekend hiker practising English before a move to Toronto.',
+  tags: ['Hiking', 'Coffee'],
+  country: 'JP',
+  timezone: 'Asia/Tokyo',
+  cardTheme: findCardTheme('pink'),
+};
 const meta: Meta<typeof BlockedUsers> = {
   title: 'Features/Settings/BlockedUsers',
   component: BlockedUsers,
@@ -19,6 +40,7 @@ const meta: Meta<typeof BlockedUsers> = {
   args: {
     load: async () => accounts,
     unblock: fn(async () => {}),
+    preview: fn(async () => kenjiProfile),
     onChange: fn(),
   },
 };
@@ -27,7 +49,7 @@ type Story = StoryObj<typeof meta>;
 
 const search = async (canvas: ReturnType<typeof within>, value: string) => {
   const field = await canvas.findByRole('searchbox', {
-    name: 'Search blocked accounts by name',
+    name: 'Search blocked accounts by name or username',
   });
   Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
@@ -98,7 +120,7 @@ export const SearchByName: Story = {
     expect(canvas.getByText('Haruka Tanaka')).toBeInTheDocument();
     await search(canvas, 'two');
     await expect(
-      await canvas.findByText('No blocked accounts match that name.'),
+      await canvas.findByText('No blocked accounts match that search.'),
     ).toBeInTheDocument();
     await search(canvas, '');
     await expect(await canvas.findByText('Kenji Ito')).toBeInTheDocument();
@@ -113,11 +135,66 @@ export const UnblockFiltered: Story = {
       await canvas.findByRole('button', { name: 'Unblock Kenji Ito' }),
     );
     await expect(
-      await canvas.findByText('No blocked accounts match that name.'),
+      await canvas.findByText('No blocked accounts match that search.'),
     ).toBeInTheDocument();
     expect(args.unblock).toHaveBeenCalledWith('one');
     await search(canvas, '');
     await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
     expect(canvas.queryByText('Kenji Ito')).not.toBeInTheDocument();
+  },
+};
+export const Usernames: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText('@kenji.ito')).toBeInTheDocument();
+    expect(canvas.getByText('@haruka_t')).toBeInTheDocument();
+    await search(canvas, 'HARUKA_');
+    await waitFor(() =>
+      expect(canvas.queryByText('Kenji Ito')).not.toBeInTheDocument(),
+    );
+    expect(canvas.getByText('Haruka Tanaka')).toBeInTheDocument();
+  },
+};
+export const PreviewProfile: Story = {
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      await canvas.findByRole('button', {
+        name: "Preview Kenji Ito's profile",
+      }),
+    );
+    const dialog = within(await screen.findByRole('dialog'));
+    await expect(
+      await dialog.findByText(
+        'Weekend hiker practising English before a move to Toronto.',
+      ),
+    ).toBeInTheDocument();
+    expect(args.preview).toHaveBeenCalledWith('one');
+    expect(dialog.getByText('Hiking')).toBeInTheDocument();
+    expect(dialog.queryByRole('button', { name: 'Card menu' })).toBeNull();
+    expect(
+      dialog.queryByRole('button', { name: /block|save|bookmark/i }),
+    ).toBeNull();
+    expect(dialog.queryByText(/ago|just now/i)).toBeNull();
+    await userEvent.click(
+      dialog.getByRole('button', { name: 'Close preview' }),
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(canvas.getByText('Kenji Ito')).toBeInTheDocument();
+    expect(args.unblock).not.toHaveBeenCalled();
+  },
+};
+export const PreviewUnavailable: Story = {
+  args: { preview: async () => null },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      await canvas.findByRole('button', {
+        name: "Preview Haruka Tanaka's profile",
+      }),
+    );
+    await expect(
+      await within(await screen.findByRole('dialog')).findByRole('alert'),
+    ).toHaveTextContent("This profile isn't available.");
   },
 };
