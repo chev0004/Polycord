@@ -207,12 +207,14 @@ test('blocked accounts show usernames and a restricted current preview', async (
         username: identities[1].username,
       },
     ]);
-    await sql`update profiles set bio = 'The bio they have today.' where user_id = ${target}`;
+    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${target}, ${`cus_${identities[1].id}`}, 'active', now() + interval '30 days')`;
+    await sql`update profiles set bio = 'The bio they have today.', voice_intro_seconds = 12 where user_id = ${target}`;
     const preview = await context.request.get(`/api/block/${target}`);
     expect(preview.status()).toBe(200);
     const { profile } = await preview.json();
     expect(profile.about).toBe('The bio they have today.');
     expect(profile).not.toHaveProperty('lastBumpedAt');
+    expect(profile).not.toHaveProperty('voiceIntroSeconds');
     expect((await context.request.get(`/api/block/${stranger}`)).status()).toBe(
       404,
     );
