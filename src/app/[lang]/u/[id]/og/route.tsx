@@ -192,22 +192,22 @@ export const GET = async (
               ) : null}
               <div
                 style={{
-                  fontSize: 58,
+                  fontSize: 52,
                   fontWeight: 700,
                   color: '#ffffff',
                   lineHeight: 1.1,
                 }}
               >
-                {clip(profile.displayName, 32)}
+                {clip(profile.displayName, 28)}
               </div>
               {profile.about ? (
                 <div
                   style={{
+                    display: 'block',
+                    lineClamp: 2,
                     fontSize: 26,
                     color: '#c9ced4',
                     lineHeight: 1.4,
-                    maxHeight: 110,
-                    overflow: 'hidden',
                   }}
                 >
                   {clip(profile.about.replace(/\s+/g, ' '), 150)}
@@ -273,8 +273,17 @@ export const GET = async (
             ) : null}
           </div>
 
-          {profile.tags.length > 0 ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              gap: 24,
+              marginTop: 'auto',
+            }}
+          >
+            <div
+              style={{ display: 'flex', flexWrap: 'wrap', flex: 1, gap: 10 }}
+            >
               {profile.tags.slice(0, MAX_TAGS).map((tag) => (
                 <div
                   key={tag}
@@ -307,27 +316,25 @@ export const GET = async (
                 </div>
               ) : null}
             </div>
-          ) : null}
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              marginTop: 'auto',
-              fontSize: 22,
-              color: '#8b919a',
-            }}
-          >
             <div
               style={{
-                width: 14,
-                height: 14,
-                borderRadius: 7,
-                backgroundColor: accent,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                fontSize: 22,
+                color: '#8b919a',
               }}
-            />
-            Polycord
+            >
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: accent,
+                }}
+              />
+              Polycord
+            </div>
           </div>
         </div>
       </div>
