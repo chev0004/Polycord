@@ -16,6 +16,7 @@ const user = (
   joinedAt: ago(200 * 1440),
   hidden: false,
   warnings: 0,
+  premium: { configured: false },
   profile: {
     bio: `${displayName} is here to practise languages.`,
     isPublic: true,

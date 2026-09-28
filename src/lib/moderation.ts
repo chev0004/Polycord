@@ -1,6 +1,8 @@
 import 'server-only';
 
 import {
+  hasActivePremiumGrant,
+  isSubscriptionActive,
   listModerationActions,
   listModerationReports,
   listModerationUsers,
@@ -20,6 +22,7 @@ import type {
   StaffRole,
 } from '@/features/Admin/types';
 import { isOwnerDiscordId, ownerDiscordIds } from './admin';
+import { isPremiumDiscordId } from './entitlements';
 
 type ModerationUserRow = Awaited<
   ReturnType<typeof listModerationUsers>
@@ -32,7 +35,7 @@ export const staffRoleOf = ({
   isOwnerDiscordId(user.discordUserId) ? 'owner' : (staffRole ?? undefined);
 
 export const toModUser = (row: ModerationUserRow): ModUser => {
-  const { user, profile, warnings } = row;
+  const { user, profile, warnings, subscription } = row;
   return {
     id: user.id,
     displayName: user.displayName,
@@ -45,6 +48,15 @@ export const toModUser = (row: ModerationUserRow): ModUser => {
     suspendedUntil: user.suspendedUntil?.toISOString(),
     hidden: profile?.hiddenByModeration ?? false,
     warnings,
+    premium: {
+      grantedUntil: hasActivePremiumGrant(user)
+        ? user.premiumGrantedUntil?.toISOString()
+        : undefined,
+      subscriptionUntil: isSubscriptionActive(subscription)
+        ? subscription?.currentPeriodEnd?.toISOString()
+        : undefined,
+      configured: isPremiumDiscordId(user.discordUserId),
+    },
     profile: profile
       ? {
           bio: profile.bio,
@@ -73,6 +85,7 @@ export const toModLogEntry = (entry: ModerationAction): ModLogEntry => ({
   staffId: entry.adminUserId ?? undefined,
   note: entry.note ?? undefined,
   days: entry.days ?? undefined,
+  expiresAt: entry.expiresAt?.toISOString(),
   createdAt: entry.createdAt.toISOString(),
 });
 

@@ -9,7 +9,13 @@ export const MODERATION_ACTIONS = [
   'unban',
 ] as const;
 
-export const LOG_ACTIONS = [...MODERATION_ACTIONS, 'grant', 'revoke'] as const;
+export const LOG_ACTIONS = [
+  ...MODERATION_ACTIONS,
+  'grant',
+  'revoke',
+  'premium_grant',
+  'premium_revoke',
+] as const;
 
 export const OWNER_ACTIONS = ['ban', 'unban'] as const;
 
@@ -31,6 +37,11 @@ export type ModUser = {
   suspendedUntil?: string;
   hidden: boolean;
   warnings: number;
+  premium: {
+    grantedUntil?: string;
+    subscriptionUntil?: string;
+    configured: boolean;
+  };
   profile?: {
     bio: string;
     isPublic: boolean;
@@ -56,6 +67,7 @@ export type ModLogEntry = {
   staffId?: string;
   note?: string;
   days?: number;
+  expiresAt?: string;
   createdAt: string;
 };
 
