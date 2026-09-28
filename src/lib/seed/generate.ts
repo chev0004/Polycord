@@ -20,7 +20,6 @@ export const SEED_SHARES = {
   premiumBoost: 12,
   premiumTheme: 40,
   premiumGradient: 20,
-  premiumAccent: 25,
 };
 
 export const SEED_VOICES = [
@@ -607,14 +606,8 @@ const cardFor = (index: number, premium: boolean) => {
   const freeColor = pick([null, ...FREE_CARD_COLORS], index, 90)?.id ?? null;
   if (!premium) return { cardColor: freeColor };
   const roll = hash(index, 91) % 100;
-  const accentOverride = percent(index, 92, SEED_SHARES.premiumAccent)
-    ? pick(PALETTE, index, 93)
-    : null;
   if (roll < SEED_SHARES.premiumTheme)
-    return {
-      cardColor: pick(PREMIUM_CARD_THEMES, index, 94).id,
-      accentOverride,
-    };
+    return { cardColor: pick(PREMIUM_CARD_THEMES, index, 94).id };
   if (roll < SEED_SHARES.premiumTheme + SEED_SHARES.premiumGradient) {
     const [from, to] = distinct(2, [], (salt) =>
       pick(PALETTE, index, 95 + salt),
@@ -623,10 +616,9 @@ const cardFor = (index: number, premium: boolean) => {
       cardColor: CUSTOM_CARD_THEME_ID,
       customGradientFrom: from,
       customGradientTo: to,
-      accentOverride,
     };
   }
-  return { cardColor: freeColor, accentOverride };
+  return { cardColor: freeColor };
 };
 
 export type GeneratedDummy = {

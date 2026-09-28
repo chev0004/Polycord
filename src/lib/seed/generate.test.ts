@@ -167,8 +167,7 @@ test('gives premium features only to premium accounts in varied combinations', (
       expect(isValidHex(profile.customGradientTo as string)).toBe(true);
       expect(profile.customGradientFrom).not.toBe(profile.customGradientTo);
     }
-    if (profile.accentOverride)
-      expect(isValidHex(profile.accentOverride)).toBe(true);
+    expect(profile.accentOverride ?? null).toBeNull();
     if (profile.boostedUntil) {
       const ahead = profile.boostedUntil.getTime() - now.getTime();
       expect(ahead).toBeGreaterThan(0);
@@ -182,7 +181,6 @@ test('gives premium features only to premium accounts in varied combinations', (
       0.5,
     ],
     [({ profile }) => profile.cardColor === CUSTOM_CARD_THEME_ID, 0.12, 0.28],
-    [({ profile }) => Boolean(profile.accentOverride), 0.15, 0.35],
     [({ profile }) => profile.boostedUntil !== null, 0.06, 0.18],
     [({ voice }) => voice !== null, 0.17, 0.33],
   ] as [(dummy: (typeof dummies)[number]) => boolean, number, number][]) {
@@ -191,12 +189,7 @@ test('gives premium features only to premium accounts in varied combinations', (
   }
   const combinations = new Set(
     premium.map(({ profile, voice }) =>
-      [
-        profile.cardColor,
-        Boolean(profile.accentOverride),
-        profile.boostedUntil !== null,
-        voice !== null,
-      ].join(),
+      [profile.cardColor, profile.boostedUntil !== null, voice !== null].join(),
     ),
   );
   expect(combinations.size).toBeGreaterThan(20);
