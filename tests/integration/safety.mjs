@@ -177,7 +177,11 @@ try {
   await db.delete(profiles).where(eq(profiles.id, targetProfile.id));
   await absent(viewer.id, targetProfile.id);
   assert.deepEqual(await listBlockedUsers(viewer.id), [
-    { id: target.id, displayName: target.displayName },
+    {
+      id: target.id,
+      displayName: target.displayName,
+      username: target.discordUsername,
+    },
   ]);
   assert.equal(
     (

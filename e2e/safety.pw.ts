@@ -171,3 +171,91 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     await sql.end();
   }
 });
+
+test('blocked accounts show usernames and a restricted current preview', async ({
+  page,
+  context,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const identities = [
+    'Preview viewer',
+    'Preview target',
+    'Preview stranger',
+  ].map((name) => ({
+    id: randomUUID().replaceAll('-', ''),
+    name: `${name} ${randomUUID().slice(0, 6)}`,
+    username: `preview.${randomUUID().slice(0, 8)}`,
+  }));
+  const accounts: string[] = [];
+  try {
+    for (const user of identities) {
+      const [account] =
+        await sql`insert into users (discord_user_id, discord_username, display_name) values (${user.id}, ${user.username}, ${user.name}) returning id`;
+      await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio, tags, card_color) values (now(), ${account.id}, true, 'en', 'ja', 'beginner', 'The bio from when they were blocked.', array['Hiking'], 'pink')`;
+      accounts.push(account.id);
+    }
+    const [viewer, target, stranger] = accounts;
+    await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${viewer}, ${target})`;
+    await signIn(context, identities[0], viewer);
+
+    expect(
+      (await (await context.request.get('/api/block')).json()).users,
+    ).toEqual([
+      {
+        id: target,
+        displayName: identities[1].name,
+        username: identities[1].username,
+      },
+    ]);
+    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${target}, ${`cus_${identities[1].id}`}, 'active', now() + interval '30 days')`;
+    await sql`update profiles set bio = 'The bio they have today.', voice_intro_seconds = 12 where user_id = ${target}`;
+    const preview = await context.request.get(`/api/block/${target}`);
+    expect(preview.status()).toBe(200);
+    const { profile } = await preview.json();
+    expect(profile.about).toBe('The bio they have today.');
+    expect(profile).not.toHaveProperty('lastBumpedAt');
+    expect(profile).not.toHaveProperty('voiceIntroSeconds');
+    expect((await context.request.get(`/api/block/${stranger}`)).status()).toBe(
+      404,
+    );
+
+    await page.goto('/en/settings');
+    await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    await page.getByRole('button', { name: /^Blocked accounts/ }).click();
+    await expect(page.getByText(`@${identities[1].username}`)).toBeVisible();
+    await page
+      .getByRole('button', {
+        name: `Preview ${identities[1].name}'s profile`,
+        exact: true,
+      })
+      .click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('The bio they have today.')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Card menu' })).toHaveCount(
+      0,
+    );
+    await expect(dialog.getByText(/ago|just now/i)).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Close preview' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page).toHaveURL(/\/en\/settings/);
+    await expect(
+      page.getByRole('button', {
+        name: `Unblock ${identities[1].name}`,
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${target}, ${viewer})`;
+    expect((await context.request.get(`/api/block/${target}`)).status()).toBe(
+      404,
+    );
+    await sql`delete from user_blocks where blocker_user_id = ${target}`;
+    await sql`update profiles set is_public = false where user_id = ${target}`;
+    expect((await context.request.get(`/api/block/${target}`)).status()).toBe(
+      404,
+    );
+  } finally {
+    await sql`delete from users where id in ${sql(accounts)}`;
+    await sql.end();
+  }
+});

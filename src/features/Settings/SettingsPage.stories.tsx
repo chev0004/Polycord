@@ -186,7 +186,7 @@ export const BlockedAccountsDrillIn: Story = {
     await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
     await expect(
       canvas.getByRole('searchbox', {
-        name: 'Search blocked accounts by name',
+        name: 'Search blocked accounts by name or username',
       }),
     ).toBeInTheDocument();
     fireEvent.click(within(view).getByRole('button', { name: 'Privacy' }));
