@@ -4,7 +4,7 @@ import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { MdColorize, MdPalette, MdRestartAlt } from 'react-icons/md';
+import { MdColorize, MdPalette } from 'react-icons/md';
 import { FormGroup, Label } from '@/components/Form';
 import {
   CUSTOM_CARD_THEME_ID,
@@ -399,79 +399,6 @@ export const GradientColorPicker = ({
   );
 };
 
-type AccentPickerProps = {
-  value: string | null;
-  autoColor: string;
-  onChange: (next: string | null) => void;
-};
-
-export const AccentPicker = ({
-  value,
-  autoColor,
-  onChange,
-}: AccentPickerProps) => {
-  const t = useTranslations('Profile');
-  const display = value && isValidHex(value) ? value : autoColor;
-  const [draftHex, setDraftHex] = useState(display);
-  const activeHsv = safeHexToHsv(isValidHex(draftHex) ? draftHex : display);
-
-  useEffect(() => {
-    setDraftHex(display);
-  }, [display]);
-
-  const updateHex = (raw: string) => {
-    setDraftHex(raw);
-    if (isValidHex(raw)) {
-      onChange(raw);
-    }
-  };
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Popover.Root>
-        <Popover.Trigger asChild>
-          <button
-            type="button"
-            aria-label={t('accentPickerLabel')}
-            className={swatchClasses}
-            style={{
-              background: display,
-              boxShadow: value ? SELECTED_RING : undefined,
-            }}
-          />
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            side="top"
-            align="start"
-            sideOffset={8}
-            className="z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-line bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-            onOpenAutoFocus={(event) => event.preventDefault()}
-          >
-            <ColorControls
-              color={draftHex}
-              hsv={activeHsv}
-              previewLabel={t('colourPreviewLabel')}
-              onHexChange={updateHex}
-              onHsvChange={(next) => updateHex(hsvToHex(next))}
-            />
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
-      {value ? (
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-[12px] text-subtle transition-colors hover:text-foreground focus:outline-none focus-visible:text-foreground"
-          onClick={() => onChange(null)}
-        >
-          <MdRestartAlt size={15} />
-          {t('accentReset')}
-        </button>
-      ) : null}
-    </div>
-  );
-};
-
 type CardColorPickerProps = {
   value: string;
   onChange: (id: string) => void;
@@ -479,10 +406,7 @@ type CardColorPickerProps = {
   tease: string | null;
   onTease: (id: string | null) => void;
   customGradient?: CustomGradient;
-  accentOverride?: string | null;
-  autoAccent?: string;
   onCustomGradient?: (gradient: CustomGradient) => void;
-  onAccentOverride?: (color: string | null) => void;
 };
 
 export const CardColorPicker = ({
@@ -492,33 +416,52 @@ export const CardColorPicker = ({
   tease,
   onTease,
   customGradient = DEFAULT_CUSTOM_GRADIENT,
-  accentOverride = null,
-  autoAccent = DEFAULT_CUSTOM_GRADIENT.from,
   onCustomGradient,
-  onAccentOverride,
 }: CardColorPickerProps) => {
   const t = useTranslations('Profile');
   const locale = useLocale();
 
   return (
-    <>
-      <FormGroup>
-        <Label>{t('bannerColourLabel')}</Label>
-        <div className="flex flex-wrap items-center gap-3">
-          {FREE_CARD_COLORS.map((color) => {
-            const selected = !tease && value === color.id;
+    <FormGroup>
+      <Label>{t('bannerColourLabel')}</Label>
+      <div className="flex flex-wrap items-center gap-3">
+        {FREE_CARD_COLORS.map((color) => {
+          const selected = !tease && value === color.id;
+          return (
+            <button
+              key={color.id}
+              type="button"
+              aria-label={t('bannerColourSwatch', {
+                color: t(COLOR_LABEL_KEYS[color.id]),
+              })}
+              aria-pressed={selected}
+              onClick={() => {
+                onTease(null);
+                onChange(color.id);
+              }}
+              className={swatchClasses}
+              style={{
+                background: color.banner,
+                boxShadow: selected ? SELECTED_RING : undefined,
+              }}
+            />
+          );
+        })}
+
+        <span className="h-[22px] w-px bg-overlay" />
+
+        {PREMIUM_CARD_THEMES.map((color) => {
+          if (premium) {
+            const selected = value === color.id;
             return (
               <button
                 key={color.id}
                 type="button"
-                aria-label={t('bannerColourSwatch', {
+                aria-label={t('bannerThemeSwatch', {
                   color: t(COLOR_LABEL_KEYS[color.id]),
                 })}
                 aria-pressed={selected}
-                onClick={() => {
-                  onTease(null);
-                  onChange(color.id);
-                }}
+                onClick={() => onChange(color.id)}
                 className={swatchClasses}
                 style={{
                   background: color.banner,
@@ -526,101 +469,65 @@ export const CardColorPicker = ({
                 }}
               />
             );
-          })}
+          }
 
-          <span className="h-[22px] w-px bg-overlay" />
-
-          {PREMIUM_CARD_THEMES.map((color) => {
-            if (premium) {
-              const selected = value === color.id;
-              return (
-                <button
-                  key={color.id}
-                  type="button"
-                  aria-label={t('bannerThemeSwatch', {
-                    color: t(COLOR_LABEL_KEYS[color.id]),
-                  })}
-                  aria-pressed={selected}
-                  onClick={() => onChange(color.id)}
-                  className={swatchClasses}
-                  style={{
-                    background: color.banner,
-                    boxShadow: selected ? SELECTED_RING : undefined,
-                  }}
-                />
-              );
-            }
-
-            const teased = tease === color.id;
-            return (
-              <button
-                key={color.id}
-                type="button"
-                aria-label={t('bannerThemeLockedSwatch', {
-                  color: t(COLOR_LABEL_KEYS[color.id]),
-                })}
-                aria-pressed={teased}
-                onClick={() => onTease(teased ? null : color.id)}
-                className={`${swatchClasses} ${
-                  teased ? 'opacity-100' : 'opacity-40 hover:opacity-75'
-                }`}
-                style={{
-                  background: color.banner,
-                  boxShadow: teased ? TEASE_RING : undefined,
-                }}
-              />
-            );
-          })}
-
-          {premium ? (
-            <GradientColorPicker
-              gradient={customGradient}
-              isActive={value === CUSTOM_CARD_THEME_ID}
-              onChange={(gradient) => {
-                onCustomGradient?.(gradient);
-                onChange(CUSTOM_CARD_THEME_ID);
+          const teased = tease === color.id;
+          return (
+            <button
+              key={color.id}
+              type="button"
+              aria-label={t('bannerThemeLockedSwatch', {
+                color: t(COLOR_LABEL_KEYS[color.id]),
+              })}
+              aria-pressed={teased}
+              onClick={() => onTease(teased ? null : color.id)}
+              className={`${swatchClasses} ${
+                teased ? 'opacity-100' : 'opacity-40 hover:opacity-75'
+              }`}
+              style={{
+                background: color.banner,
+                boxShadow: teased ? TEASE_RING : undefined,
               }}
             />
-          ) : null}
-        </div>
+          );
+        })}
 
-        <p className="text-[12px] text-subtle">
-          {premium ? t('cardColorHintPremium') : t('cardColorHintFree')}
-        </p>
-
-        {!premium && tease ? (
-          <p className="text-[13px] text-muted leading-relaxed">
-            {t.rich('cardColorTeaseUpsell', {
-              theme: t(COLOR_LABEL_KEYS[tease]),
-              strong: (chunks) => (
-                <strong className="font-semibold text-foreground">
-                  {chunks}
-                </strong>
-              ),
-              premiumLink: (chunks) => (
-                <Link
-                  href={`/${locale}/settings#premium`}
-                  className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
-                >
-                  {chunks}
-                </Link>
-              ),
-            })}
-          </p>
-        ) : null}
-      </FormGroup>
-
-      {premium ? (
-        <FormGroup>
-          <Label>{t('accentColourLabel')}</Label>
-          <AccentPicker
-            value={accentOverride}
-            autoColor={autoAccent}
-            onChange={(color) => onAccentOverride?.(color)}
+        {premium ? (
+          <GradientColorPicker
+            gradient={customGradient}
+            isActive={value === CUSTOM_CARD_THEME_ID}
+            onChange={(gradient) => {
+              onCustomGradient?.(gradient);
+              onChange(CUSTOM_CARD_THEME_ID);
+            }}
           />
-          <p className="text-[12px] text-subtle">{t('accentColourHint')}</p>
-        </FormGroup>
+        ) : null}
+      </div>
+
+      <p className="text-[12px] text-subtle">
+        {premium ? t('cardColorHintPremium') : t('cardColorHintFree')}
+      </p>
+
+      {!premium && tease ? (
+        <p className="text-[13px] text-muted leading-relaxed">
+          {t.rich('cardColorTeaseUpsell', {
+            theme: t(COLOR_LABEL_KEYS[tease]),
+            strong: (chunks) => (
+              <strong className="font-semibold text-foreground">
+                {chunks}
+              </strong>
+            ),
+            premiumLink: (chunks) => (
+              <Link
+                href={`/${locale}/settings#premium`}
+                className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
+        </p>
       ) : null}
-    </>
+    </FormGroup>
   );
 };

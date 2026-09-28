@@ -91,8 +91,6 @@ export const profileSchema = z.object({
     })
     .optional(),
 
-  accentOverride: hexColorSchema.nullable().optional(),
-
   timezone: z
     .string()
     .refine((val) => !val || isValidIANATimezone(val), {

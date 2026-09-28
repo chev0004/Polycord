@@ -50,7 +50,6 @@ import {
 
 export type ProfileValues = Pick<
   NewProfile,
-  | 'accentOverride'
   | 'allowAnonymousCopy'
   | 'bio'
   | 'cardColor'
@@ -106,13 +105,7 @@ const toCardTheme = (profile: Profile, premium: boolean): CardTheme => {
     theme = findCardTheme(profile.cardColor);
   }
 
-  theme ??= getFreeCardTheme(0);
-
-  if (premium && profile.accentOverride) {
-    return { ...theme, accent: profile.accentOverride };
-  }
-
-  return theme;
+  return theme ?? getFreeCardTheme(0);
 };
 
 const toUserValues = (user: CurrentUser): NewUser => ({

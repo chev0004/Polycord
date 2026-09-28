@@ -123,9 +123,6 @@ export const POST = async (request: Request) => {
     customGradientTo: premiumThemes
       ? (customGradient?.to ?? null)
       : existing?.profile.customGradientTo,
-    accentOverride: premiumThemes
-      ? (values.accentOverride ?? null)
-      : existing?.profile.accentOverride,
     country: values.country || null,
     displayAvailability: values.displayAvailability,
     displayTimezone: values.displayTimezone,

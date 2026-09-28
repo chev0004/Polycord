@@ -121,7 +121,6 @@ const defaultValues: ProfileFormValues = {
   voiceIntroSeconds: 0,
   cardColor: DEFAULT_CARD_COLOR,
   customGradient: DEFAULT_CUSTOM_GRADIENT,
-  accentOverride: null,
   timezone: '',
 };
 
@@ -313,19 +312,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const timezone = watch('timezone');
   const cardColor = watch('cardColor') ?? DEFAULT_CARD_COLOR;
   const customGradient = watch('customGradient') ?? DEFAULT_CUSTOM_GRADIENT;
-  const accentOverride = watch('accentOverride') ?? null;
   const voiceIntroSeconds = watch('voiceIntroSeconds') ?? 0;
 
   const effectiveCardColor = premium ? cardColor : (tease ?? cardColor);
-  const basePreviewTheme =
+  const previewTheme =
     premium && effectiveCardColor === CUSTOM_CARD_THEME_ID
       ? getCustomCardTheme(customGradient)
       : (findCardTheme(effectiveCardColor) ?? getFreeCardTheme(0));
-  const previewTheme =
-    premium && accentOverride
-      ? { ...basePreviewTheme, accent: accentOverride }
-      : basePreviewTheme;
-  const autoAccent = basePreviewTheme.accent;
   const previewIsPremiumLook = premium || Boolean(tease);
 
   const initialTimezone = initialValues?.timezone;
@@ -652,16 +645,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           tease={tease}
           onTease={setTease}
           customGradient={customGradient}
-          accentOverride={accentOverride}
-          autoAccent={autoAccent}
           onCustomGradient={(gradient) =>
             setValue('customGradient', gradient, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-          onAccentOverride={(color) =>
-            setValue('accentOverride', color, {
               shouldDirty: true,
               shouldValidate: true,
             })

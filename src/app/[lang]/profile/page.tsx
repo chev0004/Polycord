@@ -29,7 +29,6 @@ const toProfileFormValues = ({
     profile.customGradientFrom && profile.customGradientTo
       ? { from: profile.customGradientFrom, to: profile.customGradientTo }
       : DEFAULT_CUSTOM_GRADIENT,
-  accentOverride: profile.accentOverride ?? null,
   country: profile.country ?? '',
   displayAvailability: profile.displayAvailability,
   displayTimezone: profile.displayTimezone,

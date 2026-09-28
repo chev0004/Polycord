@@ -413,7 +413,6 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
       })),
       cardColor: 'custom',
       customGradient: { from: '#112233', to: '#445566' },
-      accentOverride: '#aabbcc',
     };
     expect(
       (await context.request.post('/api/profile', { data: values })).status(),
@@ -430,11 +429,10 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
       ).status(),
     ).toBe(200);
     const [stored] =
-      await sql`select tags, card_color, custom_gradient_from, accent_override from profiles where user_id = ${user.id}`;
+      await sql`select tags, card_color, custom_gradient_from from profiles where user_id = ${user.id}`;
     expect(stored.tags).toEqual(values.tags);
     expect(stored.card_color).toBe('custom');
     expect(stored.custom_gradient_from).toBe('#112233');
-    expect(stored.accent_override).toBe('#aabbcc');
     expect(
       (
         await context.request.post('/api/profile', {
