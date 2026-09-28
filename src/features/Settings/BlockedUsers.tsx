@@ -1,14 +1,17 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { MdSearch } from 'react-icons/md';
 import { Button } from '@/components/Button';
-import {
-  type DiscoveryProfile,
-  ProfileCard,
-} from '@/features/Discovery/ProfileCard';
+import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
+import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
+import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
+import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { ProfileDetail } from '@/features/Profile/ProfileDetail';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { copyText } from '@/lib/clipboard';
 
 type BlockedUser = {
   id: string;
@@ -28,26 +31,62 @@ const loadBlockedUsers = async (): Promise<BlockedUser[]> => {
 
 const BlockedProfilePreview = ({
   profile,
-  onClose,
+  open,
+  onOpenChange,
 }: {
   profile: DiscoveryProfile;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) => {
   const t = useTranslations('Settings');
+  const locale = useLocale();
+  const router = useRouteProgressRouter();
+  const mobile = useIsMobile();
+
+  if (mobile)
+    return (
+      <MobileProfileSheet
+        profile={profile}
+        open={open}
+        onOpenChange={onOpenChange}
+        isLoggedIn
+      />
+    );
 
   return (
-    <Dialog.Root open onOpenChange={onClose}>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 flex animate-[sheetFadeIn_150ms_ease-out] overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
+        <Dialog.Overlay className="fixed inset-0 z-50 flex animate-[sheetFadeIn_150ms_ease-out] overflow-y-auto bg-black/60 p-6 backdrop-blur-sm">
           <Dialog.Content
             aria-describedby={undefined}
-            className="m-auto w-full max-w-[420px] animate-popIn outline-none"
+            className="m-auto w-full max-w-[1032px] animate-popIn outline-none"
             onOpenAutoFocus={(event) => event.preventDefault()}
           >
             <Dialog.Title className="sr-only">
               {t('blockedPreviewTitle')}
             </Dialog.Title>
-            <ProfileCard profile={profile} variant="preview" isLoggedIn />
+            <ProfileDetail
+              profile={profile}
+              isLoggedIn
+              onCopyUsername={() => copyText(profile.discordUsername ?? '')}
+              onTagClick={(tag) =>
+                router.push(buildDiscoveryFilterHref(locale, 'tag', tag))
+              }
+              onLanguageClick={(language, isPrimary) =>
+                router.push(
+                  buildDiscoveryFilterHref(
+                    locale,
+                    isPrimary ? 'primaryLanguage' : 'targetLanguage',
+                    language,
+                  ),
+                )
+              }
+              onCountryClick={(country) =>
+                router.push(
+                  buildDiscoveryFilterHref(locale, 'country', country),
+                )
+              }
+            />
           </Dialog.Content>
         </Dialog.Overlay>
       </Dialog.Portal>
@@ -83,6 +122,7 @@ export const BlockedUsers = ({
   const [previewProfile, setPreviewProfile] = useState<DiscoveryProfile | null>(
     null,
   );
+  const [previewOpen, setPreviewOpen] = useState(false);
   const reload = useCallback(async () => {
     setLoadFailed(false);
     setUsers(null);
@@ -181,7 +221,10 @@ export const BlockedUsers = ({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setPreviewProfile(user.profile)}
+                    onClick={() => {
+                      setPreviewProfile(user.profile);
+                      setPreviewOpen(true);
+                    }}
                     aria-label={t('previewBlockedUserLabel', {
                       name: user.displayName,
                     })}
@@ -211,7 +254,8 @@ export const BlockedUsers = ({
       {previewProfile ? (
         <BlockedProfilePreview
           profile={previewProfile}
-          onClose={() => setPreviewProfile(null)}
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
         />
       ) : null}
     </section>

@@ -9,6 +9,7 @@ import {
 } from '@storybook/test';
 import { findCardTheme } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
+import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { BlockedUsers } from './BlockedUsers';
 
 const kenjiProfile: DiscoveryProfile = {
@@ -40,11 +41,14 @@ const accounts = [
 const meta: Meta<typeof BlockedUsers> = {
   title: 'Features/Settings/BlockedUsers',
   component: BlockedUsers,
+  parameters: { nextjs: { appDirectory: true } },
   decorators: [
     (Story) => (
-      <div className="max-w-xl rounded-3xl bg-background-dark p-6">
-        <Story />
-      </div>
+      <RouteProgressProvider>
+        <div className="max-w-xl rounded-3xl bg-background-dark p-6">
+          <Story />
+        </div>
+      </RouteProgressProvider>
     ),
   ],
   args: {
@@ -169,7 +173,7 @@ export const PreviewProfile: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(
       await canvas.findByRole('button', {
-        name: "Preview Kenji Ito's profile",
+        name: "Show Kenji Ito's profile",
       }),
     );
     const dialog = within(await screen.findByRole('dialog'));
@@ -179,7 +183,10 @@ export const PreviewProfile: Story = {
       ),
     ).toBeInTheDocument();
     expect(dialog.getByText('Hiking')).toBeInTheDocument();
-    expect(dialog.queryByRole('button', { name: 'Card menu' })).toBeNull();
+    expect(dialog.queryByRole('button', { name: 'More actions' })).toBeNull();
+    expect(
+      dialog.queryByRole('button', { name: 'Copy profile link' }),
+    ).toBeNull();
     expect(
       dialog.queryByRole('button', { name: /block|save|bookmark/i }),
     ).toBeNull();
@@ -190,12 +197,16 @@ export const PreviewProfile: Story = {
     expect(args.unblock).not.toHaveBeenCalled();
   },
 };
+export const MobilePreviewProfile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: PreviewProfile.play,
+};
 export const NoPreviewWithoutProfile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
     expect(
-      canvas.queryByRole('button', { name: "Preview Haruka Tanaka's profile" }),
+      canvas.queryByRole('button', { name: "Show Haruka Tanaka's profile" }),
     ).toBeNull();
   },
 };

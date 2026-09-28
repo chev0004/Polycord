@@ -221,7 +221,7 @@ test('blocked accounts show usernames and a restricted current preview', async (
     page.on('request', (request) => requests.push(request.url()));
     await page
       .getByRole('button', {
-        name: `Preview ${identities[1].name}'s profile`,
+        name: `Show ${identities[1].name}'s profile`,
         exact: true,
       })
       .click();

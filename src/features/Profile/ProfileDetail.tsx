@@ -58,12 +58,12 @@ type ProfileDetailProps = {
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern;
   onCopyUsername: () => Promise<boolean>;
-  onShare: () => void;
+  onShare?: () => void;
   onToggleSave?: () => void;
   onReport?: () => void;
   onBlock?: () => void;
   onEdit?: () => void;
-  onSignIn: () => void;
+  onSignIn?: () => void;
   onTagClick: (tag: string) => void;
   onLanguageClick: (language: string, isPrimary: boolean) => void;
   onCountryClick: (country: string) => void;
@@ -331,7 +331,7 @@ export const ProfileDetail = ({
     'group-hover:translate-x-0 group-hover:text-[#0b0b0c] group-hover:opacity-100 group-hover:[background:var(--member-banner)]';
 
   const copy = async () => {
-    if (!canCopy) return onSignIn();
+    if (!canCopy) return onSignIn?.();
     const copiedToClipboard = await onCopyUsername();
     setCopyFailed(!copiedToClipboard);
     if (!copiedToClipboard) return;
@@ -417,15 +417,17 @@ export const ProfileDetail = ({
         </div>
         <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 pb-1">
           {bumpPill('mr-1 hidden min-[861px]:inline')}
-          <button
-            type="button"
-            onClick={onShare}
-            aria-label={t('copyProfileLink')}
-            title={t('copyProfileLink')}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-muted transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
-          >
-            <MdLink size={20} />
-          </button>
+          {onShare ? (
+            <button
+              type="button"
+              onClick={onShare}
+              aria-label={t('copyProfileLink')}
+              title={t('copyProfileLink')}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-muted transition-colors hover:bg-background-main hover:text-foreground focus:outline-none focus-visible:bg-background-main focus-visible:text-foreground"
+            >
+              <MdLink size={20} />
+            </button>
+          ) : null}
           {menuItems.length > 0 && mobile ? (
             <>
               {menuTrigger}
