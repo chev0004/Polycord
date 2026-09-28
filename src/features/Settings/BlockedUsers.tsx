@@ -8,6 +8,7 @@ import { Button } from '@/components/Button';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
 import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
+import { blockedProfileIds } from '@/features/Discovery/safetyRequests';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfileDetail } from '@/features/Profile/ProfileDetail';
 import { useProfileActions } from '@/features/Profile/useProfileActions';
@@ -143,10 +144,12 @@ export const BlockedUsers = ({
   }, [reload]);
 
   const handleUnblock = async (id: string) => {
+    const profileId = users?.find((user) => user.id === id)?.profile?.id;
     setPendingId(id);
     setUnblockFailed(false);
     try {
       await unblock(id);
+      if (profileId) blockedProfileIds.delete(profileId);
       setUsers((previous) => previous?.filter((user) => user.id !== id) ?? []);
       onChange?.();
     } catch {

@@ -21,6 +21,7 @@ import {
   useRouteProgress,
   useRouteProgressRouter,
 } from '@/features/Navigation/RouteProgress';
+import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
 import { profileDraftSchema } from '@/features/Profile/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
@@ -62,6 +63,7 @@ import { ReportDialog } from './ReportDialog';
 import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
 import {
+  blockedProfileIds,
   blockProfileRequest,
   ReportProfileError,
   type ReportReason,
@@ -73,6 +75,9 @@ import { type AppliedFilter, TagCloud } from './TagCloud';
 
 const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
+
+const withoutBlocked = (profiles: DiscoveryProfile[]) =>
+  profiles.filter(({ id }) => !blockedProfileIds.has(id));
 
 type DiscoveryPageProps = {
   userId?: string;
@@ -205,7 +210,9 @@ export const DiscoveryPage = ({
   const requestRef = useRef<AbortController | null>(null);
   const [draft, setDraft] = useState<ProfileDraft>({});
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
-  const [profileItems, setProfileItems] = useState(profiles);
+  const [profileItems, setProfileItems] = useState(() =>
+    withoutBlocked(profiles),
+  );
   const [isBumping, setIsBumping] = useState(false);
   const [bumpReadyAt, setBumpReadyAt] = useState(initialBumpReadyAt);
   const [reportTarget, setReportTarget] = useState<{
@@ -215,7 +222,7 @@ export const DiscoveryPage = ({
   const { toasts, addToast, dismissToast } = useToastStack();
 
   useEffect(() => {
-    setProfileItems(profiles);
+    setProfileItems(withoutBlocked(profiles));
   }, [profiles]);
 
   useEffect(() => {
@@ -367,7 +374,7 @@ export const DiscoveryPage = ({
       const data: DiscoveryData = await response.json();
       if (controller.signal.aborted) return;
       setRemoteData(data);
-      setProfileItems(data.profiles);
+      setProfileItems(withoutBlocked(data.profiles));
       setPage(data.page);
     } catch {
       if (!controller.signal.aborted) setRefreshFailed(true);
@@ -424,6 +431,8 @@ export const DiscoveryPage = ({
       window.removeEventListener('polycord:profiles-changed', refresh);
     };
   }, [refreshDiscovery]);
+
+  useHistoryRefresh(refreshDiscovery);
 
   useEffect(() => {
     if (mobile === null || stackPending) return;

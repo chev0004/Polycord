@@ -30,6 +30,8 @@ export const reportProfileRequest = async (
   }
 };
 
+export const blockedProfileIds = new Set<string>();
+
 export const blockProfileRequest = async (
   profileId: string,
   nextBlocked: boolean,
@@ -43,4 +45,7 @@ export const blockProfileRequest = async (
   if (!response.ok) {
     throw new Error('Block update failed');
   }
+
+  if (nextBlocked) blockedProfileIds.add(profileId);
+  else blockedProfileIds.delete(profileId);
 };
