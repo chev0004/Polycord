@@ -858,7 +858,12 @@
     "notFoundDescription": "The member may have hidden or deleted their profile.",
     "backToDiscover": "Back to Discover",
     "metaTitle": "{name} on Polycord",
-    "metaDescription": "{name} speaks {primary} and is learning {targets}. Find language partners on Polycord."
+    "metaDescription": "{name} speaks {primary} and is learning {targets}. Find language partners on Polycord.",
+    "ogLanguages": "Languages",
+    "ogAvailability": "Availability",
+    "ogLocation": "Location",
+    "ogTimezone": "Timezone",
+    "ogImageAlt": "{name}'s Polycord profile card"
   },
   "DiscoveryStories": {
     "gridTitle": "Find your next language partner",

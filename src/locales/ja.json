@@ -858,7 +858,12 @@
     "notFoundDescription": "プロフィールが非公開になったか、削除された可能性があります。",
     "backToDiscover": "ディスカバリーに戻る",
     "metaTitle": "{name}さんのPolycordプロフィール",
-    "metaDescription": "{name}さんは{primary}を話し、{targets}を学習中です。Polycordで言語パートナーを見つけよう。"
+    "metaDescription": "{name}さんは{primary}を話し、{targets}を学習中です。Polycordで言語パートナーを見つけよう。",
+    "ogLanguages": "言語",
+    "ogAvailability": "対応可能な時間",
+    "ogLocation": "地域",
+    "ogTimezone": "タイムゾーン",
+    "ogImageAlt": "{name}さんのPolycordプロフィールカード"
   },
   "DiscoveryStories": {
     "gridTitle": "次の言語パートナーを見つけよう",

@@ -127,3 +127,6 @@ export const deriveCardAccent = (hex: string): CSSProperties => {
     '--ct-chip-dot': `rgb(${r},${g},${b})`,
   } as CSSProperties;
 };
+
+export const representativeColor = (theme: CardTheme) =>
+  isValidHex(theme.banner) ? theme.banner : theme.accent;
