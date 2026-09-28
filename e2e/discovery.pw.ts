@@ -190,6 +190,74 @@ test('discovery keeps results through refresh, failure and return navigation', a
   }
 });
 
+test('desktop pages load behind the progress bar and open at the top', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Page ' || lpad(n::text,2,'0') from generate_series(1,20) n returning id`;
+  try {
+    await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country)
+      select now(),id,true,'en','ja','intermediate','A pagination fixture.',array[${prefix}],'US' from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`/en?q=Page&tag=${prefix}&country=US&sort=name-desc`);
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    const bar = page.locator('div.fixed.top-0.h-1');
+    const next = page.getByRole('button', { name: 'Next page', exact: true });
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/api/discovery?*', async (route) => {
+      await gate;
+      await route.continue();
+    });
+    await next.scrollIntoViewIfNeeded();
+    const scrolled = await page.evaluate(() => window.scrollY);
+    expect(scrolled).toBeGreaterThan(300);
+
+    await next.click();
+    await expect(bar).toHaveClass(/opacity-100/);
+    await expect(page.getByText(/Searching/)).toBeVisible();
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+    release();
+    await expect(
+      page.getByRole('heading', { name: `${prefix} Page 11`, exact: true }),
+    ).toBeAttached();
+    await expect(bar).toHaveClass(/opacity-0/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(
+      page.getByRole('textbox', { name: 'Search profiles' }),
+    ).toBeInViewport();
+    await expect(
+      page.getByRole('button', { name: 'Primary Language', exact: true }),
+    ).toBeInViewport();
+    expect(Object.fromEntries(new URL(page.url()).searchParams)).toMatchObject({
+      q: 'Page',
+      tag: prefix,
+      country: 'US',
+      sort: 'name-desc',
+      page: '2',
+    });
+
+    await page.unroute('**/api/discovery?*');
+    await page.route('**/api/discovery?*', (route) =>
+      route.fulfill({ status: 503, body: '{}' }),
+    );
+    await next.click();
+    await expect(page.getByRole('main').getByRole('alert')).toContainText(
+      "We couldn't load profiles",
+    );
+    await expect(bar).toHaveClass(/opacity-0/);
+  } finally {
+    await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql.end();
+  }
+});
+
 test('discovery responses stay private and slow delivery does not hold a profile page', async ({
   request,
 }) => {
