@@ -97,7 +97,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
     expect(
       (await context.request.get(`/api/voice/${target.profileId}`)).status(),
     ).toBe(404);
-    for (const route of ['saved', 'report', 'notifications']) {
+    for (const route of ['saved', 'notifications']) {
       expect(
         (
           await context.request.post(`/api/${route}`, {
@@ -247,6 +247,13 @@ test('blocked accounts show usernames and a restricted current preview', async (
 
     await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${target}, ${viewer})`;
     expect((await listBlocked())[0].profile).toBeNull();
+    expect(
+      (
+        await context.request.post('/api/report', {
+          data: { profileId: blocked[0].profile.id, reason: 'spam' },
+        })
+      ).status(),
+    ).toBe(404);
     await sql`delete from user_blocks where blocker_user_id = ${target}`;
     await sql`update profiles set is_public = false where user_id = ${target}`;
     expect((await listBlocked())[0].profile).toBeNull();
