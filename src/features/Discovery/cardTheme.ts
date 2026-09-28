@@ -19,9 +19,9 @@ export const DEFAULT_CUSTOM_GRADIENT: CustomGradient = {
 };
 
 export const FREE_CARD_COLORS = [
-  { id: 'sky', banner: '#c1d5e9' },
-  { id: 'pink', banner: '#f9a8cf' },
-  { id: 'slate', banner: '#46525f' },
+  { id: 'sky', banner: '#c1d5e9', accent: '#8fb3d9' },
+  { id: 'pink', banner: '#f9a8cf', accent: '#ec8fbd' },
+  { id: 'slate', banner: '#46525f', accent: '#8395a8' },
 ] as const;
 
 export const DEFAULT_CARD_COLOR = FREE_CARD_COLORS[0].id;
@@ -59,14 +59,14 @@ export const PREMIUM_CARD_THEMES = [
   },
 ] as const;
 
-export const getFreeCardTheme = (index: number): CardTheme => ({
-  banner: FREE_CARD_COLORS[index % FREE_CARD_COLORS.length].banner,
-  accent: FREE_ACCENT,
-});
+export const getFreeCardTheme = (index: number): CardTheme => {
+  const { banner, accent } = FREE_CARD_COLORS[index % FREE_CARD_COLORS.length];
+  return { banner, accent };
+};
 
 export const findCardTheme = (id: string): CardTheme | undefined => {
   const free = FREE_CARD_COLORS.find((color) => color.id === id);
-  if (free) return { banner: free.banner, accent: FREE_ACCENT };
+  if (free) return { banner: free.banner, accent: free.accent };
 
   const premium = PREMIUM_CARD_THEMES.find((color) => color.id === id);
   if (premium) {
