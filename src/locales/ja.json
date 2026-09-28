@@ -905,7 +905,11 @@
     "dockInbox": "受信ボックス",
     "dockInboxUnread": "受信ボックス、未読{count}件",
     "dockSettings": "設定",
-    "dockYourCard": "マイカード"
+    "dockYourCard": "マイカード",
+    "dockMyProfile": "マイプロフィール",
+    "dockSavedProfiles": "保存したプロフィール",
+    "dockBump": "プロフィールをバンプ",
+    "dockBumpCooldown": "あと{time}でバンプ可能"
   },
   "Recovery": {
     "missingTitle": "ページが見つかりません",
