@@ -108,12 +108,22 @@ export const blendHex = (from: string, to: string, amount = 0.45): string => {
   });
 };
 
+const MIN_ACCENT_LUMA = 0.4;
+
+const readableAccent = (hex: string) => {
+  const { r, g, b } = hexToRgb(hex) ?? { r: 0, g: 0, b: 0 };
+  const luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luma < MIN_ACCENT_LUMA
+    ? blendHex(hex, '#ffffff', (MIN_ACCENT_LUMA - luma) / (1 - luma))
+    : hex;
+};
+
 export const getCustomCardTheme = (
   gradient: CustomGradient = DEFAULT_CUSTOM_GRADIENT,
 ): CardTheme => ({
   banner: `linear-gradient(115deg, ${gradient.from}, ${gradient.to})`,
   tint: `${gradient.from}22`,
-  accent: blendHex(gradient.from, gradient.to),
+  accent: readableAccent(blendHex(gradient.from, gradient.to)),
 });
 
 export const deriveCardAccent = (hex: string): CSSProperties => {
