@@ -5,7 +5,12 @@ import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import {
+  Controller,
+  type FieldErrors,
+  type FieldPath,
+  useForm,
+} from 'react-hook-form';
 import type { IconType } from 'react-icons';
 import {
   MdAdd,
@@ -51,7 +56,7 @@ import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { entitlementLimit } from '@/lib/entitlements';
-import { SessionExpiredError } from '@/lib/formErrors';
+import { FieldValidationError, SessionExpiredError } from '@/lib/formErrors';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
 import { MobileCardEditor } from './MobileCardEditor';
@@ -93,6 +98,14 @@ type ProfilePageProps = {
 const FREE_TAG_CAP = entitlementLimit('profile.tags', false);
 const PREMIUM_TAG_CAP = entitlementLimit('profile.tags', true);
 const PREVIEW_TEASE_VOICE_SECONDS = 12;
+const FIELDS_WITH_ERRORS = new Set([
+  'primaryLanguage',
+  'targetLanguages',
+  'country',
+  'timezone',
+  'bio',
+  'tags',
+]);
 
 const defaultValues: ProfileFormValues = {
   primaryLanguage: '',
@@ -282,6 +295,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     control,
     reset,
     resetField,
+    setError,
     setValue,
     watch,
     formState: { errors, isDirty, isSubmitting },
@@ -346,7 +360,27 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         draft.clear();
       } catch (error) {
         setSessionExpired(error instanceof SessionExpiredError);
-        setSaveFailed(true);
+        const issues =
+          error instanceof FieldValidationError ? error.issues : [];
+        const fieldIssues = issues.filter(
+          ({ path, message }) =>
+            FIELDS_WITH_ERRORS.has(String(path[0])) && t.has(message),
+        );
+        fieldIssues.forEach(({ path, message }, index) => {
+          const name =
+            path[0] === 'targetLanguages' ? path.join('.') : String(path[0]);
+          setError(
+            name as FieldPath<ProfileFormValues>,
+            { type: 'server', message },
+            { shouldFocus: index === 0 },
+          );
+        });
+        setSaveFailed(
+          fieldIssues.length === 0 || fieldIssues.length < issues.length,
+        );
+        return Object.fromEntries(
+          fieldIssues.map(({ path }) => [path[0], { type: 'server' }]),
+        ) as FieldErrors<ProfileFormValues>;
       }
     } else {
       reset(data);
@@ -460,9 +494,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const tagsSchemaError = errors.tags?.message
     ? t(errors.tags.message as string, { cap: tagCap })
     : null;
+  const tagsError = tagError ?? tagsSchemaError;
   const bannerError =
-    tagError ??
-    tagsSchemaError ??
     (saveFailed ? t('saveError') : null) ??
     (deleteFailed ? t('deleteError') : null) ??
     (boostFailed ? t('boostError') : null);
@@ -538,7 +571,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 }}
                 placeholder={t('tagsPlaceholder')}
                 className="flex-1"
-                error={!!errors.tags}
+                error={!!tagsError}
               />
               <button
                 type="button"
@@ -549,6 +582,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <MdAdd size={20} />
               </button>
             </div>
+            <FieldError id={`${tagsInputId}-error`}>{tagsError}</FieldError>
             <p className="text-[12px] text-subtle">
               {t('tagCounterHint', {
                 count: currentTags.length,
@@ -647,9 +681,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           : null;
 
   const statusMessage = bannerError ? (
-    <Notice id={`${tagsInputId}-error`} tone="error">
-      {bannerError}
-    </Notice>
+    <Notice tone="error">{bannerError}</Notice>
   ) : bumpMessage ? (
     <Notice tone={bumpStatus === 'success' ? 'info' : 'error'}>
       {bumpMessage}
@@ -872,7 +904,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               />
               {errors.country && (
                 <FieldError id="country-error">
-                  {errors.country.message}
+                  {t(errors.country.message as string)}
                 </FieldError>
               )}
             </FormGroup>

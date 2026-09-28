@@ -2,7 +2,7 @@
 
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
-import { SessionExpiredError } from '@/lib/formErrors';
+import { saveResponseError } from '@/lib/formErrors';
 
 type OnboardingRouteClientProps = {
   userId: string;
@@ -40,8 +40,7 @@ export const OnboardingRouteClient = ({
         });
 
         if (!response.ok) {
-          if (response.status === 401) throw new SessionExpiredError();
-          throw new Error('Profile save failed');
+          throw await saveResponseError(response, 'Profile save failed');
         }
 
         router.push(`/${locale}`);
