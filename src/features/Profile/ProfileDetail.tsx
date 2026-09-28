@@ -531,8 +531,11 @@ export const ProfileDetail = ({
                   src={`/api/voice/${profile.id}`}
                 />
               ) : null}
-              <span className="inline-flex h-6 items-center gap-1 rounded-full bg-primary-darker pr-2.5 pl-[7px] font-semibold text-primary-light text-xs">
-                <MdWorkspacePremium size={15} />
+              <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[var(--ct-chip-bg)] pr-2.5 pl-[7px] font-semibold text-[var(--ct-chip-text)] text-xs">
+                <MdWorkspacePremium
+                  size={15}
+                  className="text-[var(--ct-accent)]"
+                />
                 {t('premium')}
               </span>
             </div>
