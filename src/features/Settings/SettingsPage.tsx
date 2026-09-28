@@ -373,7 +373,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       </div>
 
       {userId ? (
-        <DraftNotice {...draft} sessionExpired={sessionExpired} />
+        <DraftNotice
+          {...draft}
+          stored={false}
+          sessionExpired={sessionExpired}
+        />
       ) : null}
       <fieldset
         disabled={!draft.ready}

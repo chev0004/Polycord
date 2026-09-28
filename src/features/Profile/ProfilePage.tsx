@@ -813,7 +813,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         ) : null}
       </div>
 
-      {draftNotice}
+      {userId ? (
+        <DraftNotice
+          {...draft}
+          stored={false}
+          sessionExpired={sessionExpired}
+        />
+      ) : null}
       <fieldset
         disabled={!draft.ready}
         className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
