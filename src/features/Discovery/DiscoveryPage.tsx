@@ -718,6 +718,7 @@ export const DiscoveryPage = ({
 
   const handlePageChange = (nextPage: number) => {
     settlePageChange.current?.();
+    setRefreshFailed(false);
     setPage(nextPage);
     navigate(
       () =>
