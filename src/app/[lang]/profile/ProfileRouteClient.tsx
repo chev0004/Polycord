@@ -4,7 +4,7 @@ import { bumpProfileRequest } from '@/features/Discovery/bumpProfileRequest';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
-import { SessionExpiredError } from '@/lib/formErrors';
+import { saveResponseError } from '@/lib/formErrors';
 
 type ProfileRouteClientProps = {
   userId: string;
@@ -94,8 +94,7 @@ export const ProfileRouteClient = ({
         });
 
         if (!response.ok) {
-          if (response.status === 401) throw new SessionExpiredError();
-          throw new Error('Profile save failed');
+          throw await saveResponseError(response, 'Profile save failed');
         }
 
         router.refresh();

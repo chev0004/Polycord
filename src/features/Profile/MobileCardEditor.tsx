@@ -93,7 +93,9 @@ type LocationPick = 'country' | 'timezone';
 
 type MobileCardEditorProps = {
   form: UseFormReturn<ProfileFormValues>;
-  onSubmit: (data: ProfileFormValues) => Promise<void>;
+  onSubmit: (
+    data: ProfileFormValues,
+  ) => Promise<FieldErrors<ProfileFormValues> | undefined>;
   onDiscard: () => void;
   onStyleClose: () => void;
   premium: boolean;
@@ -442,7 +444,10 @@ export const MobileCardEditor = ({
   return (
     <form
       noValidate
-      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      onSubmit={handleSubmit(async (data) => {
+        const invalid = await onSubmit(data);
+        if (invalid && Object.keys(invalid).length > 0) onInvalid(invalid);
+      }, onInvalid)}
       className="mx-auto w-full max-w-xl pb-24 font-figtree"
     >
       <div className="flex min-h-[52px] items-center justify-between gap-3 pt-1 pr-3 pb-2 pl-4">
@@ -700,6 +705,11 @@ export const MobileCardEditor = ({
                 />
               )}
             </EditGroup>
+            {errors.tags?.message ? (
+              <FieldError id="mobile-tags-error">
+                {t(errors.tags.message, { cap: tagCap })}
+              </FieldError>
+            ) : null}
 
             <EditGroup title={t('timePlaceTitle')}>
               <ListRow

@@ -10,6 +10,7 @@ import {
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
+import { FieldValidationError } from '@/lib/formErrors';
 import { ProfilePage } from './ProfilePage';
 import type { ProfileFormValues } from './schema';
 
@@ -489,6 +490,11 @@ export const ValidationErrors: Story = {
         ).toBeInTheDocument(),
       { timeout: 5000 },
     );
+    const tagInput = canvas.getByPlaceholderText('Type a tag and press Enter');
+    await expect(tagInput).toHaveAttribute('aria-invalid', 'true');
+    await expect(tagInput).toHaveAccessibleDescription(
+      'Tags must be at least 2 characters.',
+    );
 
     await addTag(canvas, 'anime');
     await waitFor(
@@ -498,6 +504,42 @@ export const ValidationErrors: Story = {
         ).toBeInTheDocument(),
       { timeout: 5000 },
     );
+  },
+};
+
+export const ServerFieldErrors: Story = {
+  args: {
+    initialValues: sampleProfile,
+    onSubmit: fn(async () => {
+      throw new FieldValidationError([
+        { path: ['bio'], message: 'bioTooShort' },
+        { path: ['tags'], message: 'maxTags' },
+      ]);
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
+    setFieldValue(bio, `${sampleProfile.bio} Updated for the server check.`);
+    await canvas.findByText('You have unsaved changes');
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Profile' }));
+
+    await waitFor(() =>
+      expect(bio).toHaveAccessibleDescription(
+        'Please enter at least 10 characters for your bio.',
+      ),
+    );
+    await expect(bio).toHaveAttribute('aria-invalid', 'true');
+    await expect(
+      canvas.getByPlaceholderText('Type a tag and press Enter'),
+    ).toHaveAccessibleDescription(
+      'You can add up to 5 tags on your current plan.',
+    );
+    await expect(
+      canvas.queryByText('Profile could not be saved. Please try again.'),
+    ).not.toBeInTheDocument();
   },
 };
 
