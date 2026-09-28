@@ -231,10 +231,23 @@ test('blocked accounts show usernames and a restricted current preview', async (
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('The bio they have today.')).toBeVisible();
     expect(requests).toEqual([]);
-    await expect(dialog.getByRole('button', { name: 'Card menu' })).toHaveCount(
-      0,
-    );
     await expect(dialog.getByText(/ago|just now/i)).toHaveCount(0);
+    await expect(
+      dialog.getByRole('button', { name: 'Copy profile link' }),
+    ).toBeVisible();
+    await dialog.getByRole('button', { name: 'More actions' }).click();
+    await expect(
+      page.getByRole('button', { name: /block|save|bookmark/i }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Report profile' }).click();
+    const report = page.getByRole('dialog', { name: 'Report profile' });
+    await report.getByText('Spam or scam').click();
+    await report.getByRole('button', { name: 'Submit report' }).click();
+    await expect(page.getByText('Report submitted')).toBeVisible();
+    await expect(report).toHaveCount(0);
+    const [filed] =
+      await sql`select reason from reports where reporter_user_id = ${viewer} and reported_user_id = ${target}`;
+    expect(filed.reason).toBe('spam');
     await page.mouse.click(8, 8);
     await expect(dialog).toHaveCount(0);
     await expect(page).toHaveURL(/\/en\/settings/);
