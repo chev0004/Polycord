@@ -397,7 +397,11 @@ export const getBlockedProfilePreview = async (
     return null;
   }
 
-  return { ...toDiscoveryProfile(row, true), lastBumpedAt: undefined };
+  return {
+    ...toDiscoveryProfile(row, true),
+    lastBumpedAt: undefined,
+    voiceIntroSeconds: undefined,
+  };
 };
 
 export const mapDiscoveryProfiles = async (
