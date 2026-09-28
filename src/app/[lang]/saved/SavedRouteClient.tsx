@@ -215,7 +215,10 @@ export const SavedRouteClient = ({
                   `/${locale}/u/${id}?from=${encodeURIComponent(`/${locale}/saved`)}`,
                 )
               }
-              onShare={actions.share}
+              onShare={(id) => {
+                const profile = profiles.find((item) => item.id === id);
+                if (profile) actions.share(profile);
+              }}
               onReport={(id) => {
                 const profile = profiles.find((item) => item.id === id);
                 if (profile) actions.report(profile);

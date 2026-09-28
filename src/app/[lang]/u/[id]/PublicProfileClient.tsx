@@ -93,7 +93,7 @@ export const PublicProfileClient = ({
             viewerAvailability={viewerAvailability}
             onToggleSave={isOwnProfile ? undefined : toggleSave}
             onCopyUsername={() => actions.copyUsername(profile, isOwnProfile)}
-            onShare={() => actions.share(profile.id)}
+            onShare={() => actions.share(profile)}
             onReport={isOwnProfile ? undefined : () => actions.report(profile)}
             onBlock={isOwnProfile ? undefined : () => actions.block(profile.id)}
             onEdit={

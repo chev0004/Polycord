@@ -90,8 +90,8 @@ export const useProfileActions = (
     }
   };
 
-  const share = async (profileId: string) => {
-    const copied = await copyText(buildPublicProfileUrl(locale, profileId));
+  const share = async (profile: DiscoveryProfile) => {
+    const copied = await copyText(buildPublicProfileUrl(locale, profile));
     addToast({
       title: t(copied ? 'shareCopiedTitle' : 'shareErrorTitle'),
       description: t(
