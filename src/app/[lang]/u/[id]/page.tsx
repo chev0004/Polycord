@@ -1,4 +1,5 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { after } from 'next/server';
 import { getTranslations } from 'next-intl/server';
@@ -13,6 +14,10 @@ import {
   toViewerAvailabilityContext,
   type ViewerAvailabilityContext,
 } from '@/db';
+import {
+  getFreeCardTheme,
+  representativeColor,
+} from '@/features/Discovery/cardTheme';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
@@ -22,6 +27,11 @@ import { notifyProfileView } from '@/lib/notifications/profileView';
 import { PublicProfileClient } from './PublicProfileClient';
 
 const loadPublicProfile = cache(getPublicProfileById);
+
+const requestOrigin = async () => {
+  const requestHeaders = await headers();
+  return `${requestHeaders.get('x-forwarded-proto') ?? 'https'}://${requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host')}`;
+};
 
 export async function generateMetadata({
   params,
@@ -39,7 +49,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale: lang, namespace: 'PublicProfile' });
   const profile = mapProfileToDiscoveryProfile(row);
   const title = t('metaTitle', { name: profile.displayName });
-  const description = t('metaDescription', {
+  const summary = t('metaDescription', {
     name: profile.displayName,
     primary: getLanguageName(profile.primaryLanguage, lang),
     targets: new Intl.ListFormat(lang).format(
@@ -49,7 +59,56 @@ export async function generateMetadata({
     ),
   });
 
-  return { title, description, openGraph: { title, description } };
+  const description = profile.about ?? summary;
+  const url = `${await requestOrigin()}/${lang}/u/${id}`;
+  const version = Math.max(
+    row.profile.updatedAt.getTime(),
+    row.user.updatedAt.getTime(),
+  );
+  const image = {
+    url: `${url}/og?v=${version}`,
+    width: 1200,
+    height: 630,
+    type: 'image/png',
+    alt: t('ogImageAlt', { name: profile.displayName }),
+  };
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: 'profile',
+      siteName: 'Polycord',
+      url,
+      title: profile.displayName,
+      description,
+      images: [image],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: profile.displayName,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export async function generateViewport({
+  params,
+}: {
+  params: Promise<{ lang: string; id: string }>;
+}): Promise<Viewport> {
+  const { id } = await params;
+  const user = await getCurrentUser();
+  const row = await loadPublicProfile(id, user?.accountId);
+
+  return row
+    ? {
+        themeColor: representativeColor(
+          mapProfileToDiscoveryProfile(row).cardTheme ?? getFreeCardTheme(0),
+        ),
+      }
+    : {};
 }
 
 export default async function PublicProfileRoute({
