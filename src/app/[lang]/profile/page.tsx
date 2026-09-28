@@ -53,15 +53,16 @@ export default async function ProfileRoute({
     redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/profile`)}`);
   }
 
-  const profile = await getProfileByUserId(user.accountId);
-  const premium = await isPremiumUser(user);
-  const boostStatus = premium
-    ? await getBoostStatusForUser(user.accountId, premium)
-    : undefined;
-  const stats =
+  const [profile, premium] = await Promise.all([
+    getProfileByUserId(user.accountId),
+    isPremiumUser(user),
+  ]);
+  const [boostStatus, stats] = await Promise.all([
+    premium ? getBoostStatusForUser(user.accountId, premium) : undefined,
     premium && profile
-      ? await getProfileStatsForUser(user.accountId, profile.profile.id)
-      : undefined;
+      ? getProfileStatsForUser(user.accountId, profile.profile.id)
+      : undefined,
+  ]);
 
   return (
     <main>

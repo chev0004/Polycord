@@ -19,26 +19,23 @@ export default async function SavedRoute({
     redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/saved`)}`);
   }
 
-  const profile = await getProfileByUserId(user.accountId);
+  const [profile, savedProfiles] = await Promise.all([
+    getProfileByUserId(user.accountId),
+    listSavedProfiles(user.accountId).catch((error) => {
+      console.error('Failed to load saved profiles:', error);
+      return null;
+    }),
+  ]);
   const viewer = profile
     ? toViewerAvailabilityContext(profile.profile)
     : undefined;
-  let savedProfiles: Awaited<ReturnType<typeof listSavedProfiles>> = [];
-  let loadError = false;
-
-  try {
-    savedProfiles = await listSavedProfiles(user.accountId);
-  } catch (error) {
-    console.error('Failed to load saved profiles:', error);
-    loadError = true;
-  }
 
   return (
     <SavedRouteClient
       locale={lang}
-      profiles={savedProfiles}
+      profiles={savedProfiles ?? []}
       currentProfileId={profile?.profile.id}
-      loadError={loadError}
+      loadError={savedProfiles === null}
       viewerTimezone={viewer?.timezone}
       viewerAvailability={viewer?.availability}
     />

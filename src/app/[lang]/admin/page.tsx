@@ -18,10 +18,10 @@ export default async function AdminRoute({
     redirect(`/${lang}`);
   }
 
-  return (
-    <ModerationPage
-      initial={await loadModerationSnapshot(user.accountId, role)}
-      seed={await getSeedStatus(user)}
-    />
-  );
+  const [initial, seed] = await Promise.all([
+    loadModerationSnapshot(user.accountId, role),
+    getSeedStatus(user),
+  ]);
+
+  return <ModerationPage initial={initial} seed={seed} />;
 }
