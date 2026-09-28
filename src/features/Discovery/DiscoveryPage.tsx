@@ -570,7 +570,12 @@ export const DiscoveryPage = ({
   };
 
   const handleShareProfile = async (profileId: string) => {
-    if (await copyText(buildPublicProfileUrl(locale, profileId))) {
+    const profile = profileItems.find((item) => item.id === profileId);
+    if (
+      await copyText(
+        buildPublicProfileUrl(locale, profile ?? { id: profileId }),
+      )
+    ) {
       addToast({
         title: t('shareCopiedTitle'),
         description: t('shareCopiedDescription'),
