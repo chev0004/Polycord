@@ -85,6 +85,11 @@ export const CopyUsername: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Yuki Tanaka' }));
     await expect(args.onCopyUsername).toHaveBeenCalled();
     await expect(canvas.queryByText(/yuki_lang/)).not.toBeInTheDocument();
+    const name = getComputedStyle(canvas.getByText('Yuki Tanaka'));
+    await waitFor(() => expect(name.backgroundClip).toBe('text'));
+    await expect(name.backgroundImage).toBe(
+      'linear-gradient(rgb(70, 82, 95), rgb(70, 82, 95))',
+    );
   },
 };
 
