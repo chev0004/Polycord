@@ -7,6 +7,8 @@ import {
   waitFor,
   within,
 } from '@storybook/test';
+import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from './ProfilePage';
 import type { ProfileFormValues } from './schema';
@@ -580,6 +582,27 @@ export const Mobile: Story = {
         }),
       ),
     );
+  },
+};
+
+export const MobileDockBump: Story = {
+  parameters: {
+    viewport: { defaultViewport: 'mobile1' },
+    nextjs: { appDirectory: true, navigation: { pathname: '/en/profile' } },
+  },
+  args: { initialValues: sampleProfile, onBumpProfile: fn() },
+  render: (args) => (
+    <AppShell locale="en" isLoggedIn userAvatarUrl={MOCK_USER_AVATAR_URL}>
+      <ProfilePage {...args} />
+    </AppShell>
+  ),
+  play: async ({ args }) => {
+    fireEvent.click(await screen.findByRole('button', { name: 'Your Card' }));
+    const menu = within(
+      await screen.findByRole('dialog', { name: 'Your Card' }),
+    );
+    fireEvent.click(menu.getByRole('button', { name: 'Bump profile' }));
+    await waitFor(() => expect(args.onBumpProfile).toHaveBeenCalledOnce());
   },
 };
 

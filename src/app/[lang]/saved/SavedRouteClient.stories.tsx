@@ -10,7 +10,9 @@ import {
 } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { useLayoutEffect, useState } from 'react';
+import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { createSampleProfiles } from '@/features/Discovery/profileFixtures';
+import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { SavedRouteClient } from './SavedRouteClient';
 
@@ -170,5 +172,64 @@ export const MobileFilters: Story = {
     await waitFor(() =>
       expect(canvas.getByText('2 partners')).toBeInTheDocument(),
     );
+  },
+};
+
+const DockExample = () => {
+  const t = useTranslations('DiscoveryStories');
+
+  return (
+    <RouteProgressProvider>
+      <AppShell locale="en" isLoggedIn userAvatarUrl={MOCK_USER_AVATAR_URL}>
+        <SavedRouteClient
+          locale="en"
+          profiles={createSampleProfiles(t)}
+          currentProfileId="own-profile"
+        />
+      </AppShell>
+    </RouteProgressProvider>
+  );
+};
+
+export const MobileDockBump: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  beforeEach: () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        String(args[0]) === '/api/profile/bump'
+          ? Promise.resolve(
+              Response.json({
+                lastBumpedAt: new Date().toISOString(),
+                nextBumpAt: new Date(Date.now() + 3 * 3600000).toISOString(),
+                premium: false,
+              }),
+            )
+          : original(...args),
+      { preconnect: original.preconnect },
+    );
+    return () => {
+      globalThis.fetch = original;
+    };
+  },
+  render: () => <DockExample />,
+  play: async () => {
+    const openMenu = async () => {
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Your Card' }),
+      );
+      return within(await screen.findByRole('dialog', { name: 'Your Card' }));
+    };
+
+    await userEvent.click(
+      (await openMenu()).getByRole('button', { name: 'Bump profile' }),
+    );
+    await expect(await screen.findByText('Profile bumped')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    await expect(
+      (await openMenu()).getByRole('button', { name: /^Bump in/ }),
+    ).toBeDisabled();
   },
 };
