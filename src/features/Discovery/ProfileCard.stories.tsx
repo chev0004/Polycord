@@ -159,6 +159,11 @@ const CardStory = ({ modify, ...args }: CardStoryProps) => {
 const premiumTheme = (id: string) =>
   PREMIUM_CARD_THEMES.find((theme) => theme.id === id);
 
+const accentOf = (canvasElement: HTMLElement) =>
+  getComputedStyle(
+    canvasElement.querySelector('article') as HTMLElement,
+  ).getPropertyValue('--ct-accent');
+
 export const Dummy: Story = {
   render: (args) => (
     <CardStory {...args} modify={(p) => ({ ...p, synthetic: true })} />
@@ -184,6 +189,21 @@ export const FreePink: Story = {
       modify={(p) => ({ ...p, cardTheme: getFreeCardTheme(1) })}
     />
   ),
+  play: async ({ canvasElement }) => {
+    await expect(accentOf(canvasElement)).toBe('rgb(122,138,153)');
+  },
+};
+
+export const PremiumPink: Story = {
+  render: (args) => (
+    <CardStory
+      {...args}
+      modify={(p) => ({ ...p, premium: true, cardTheme: getFreeCardTheme(1) })}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(accentOf(canvasElement)).toBe('rgb(236,143,189)');
+  },
 };
 
 export const FreeSlate: Story = {

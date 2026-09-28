@@ -128,6 +128,47 @@ test('discovery cards keep their colour when filters and sorting reorder results
   }
 });
 
+test('premium pink profiles use pink accents while free pink profiles stay neutral', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const accent = (locator: Locator) =>
+    locator.evaluate((element) =>
+      getComputedStyle(element).getPropertyValue('--ct-accent'),
+    );
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Accent ' || n from generate_series(1,2) n returning id, display_name`;
+  const [premium, free] = owners;
+  try {
+    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${premium.id}, ${prefix}, 'active', now() + interval '1 day')`;
+    for (const owner of owners) {
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,card_color,accent_override)
+        values (now(),${owner.id},true,'en','ja','beginner','An accent fixture.',array[${prefix}],'pink','#ff8800')`;
+    }
+    await page.goto(`/en?tag=${prefix}`);
+    const card = (name: string) =>
+      page.locator('article').filter({
+        has: page.getByRole('heading', { name, exact: true }),
+      });
+    expect(await accent(card(premium.display_name))).toBe('rgb(236,143,189)');
+    expect(await accent(card(free.display_name))).toBe('rgb(122,138,153)');
+
+    await card(premium.display_name).click();
+    await expect(page).toHaveURL(/\/en\/u\//);
+    expect(await accent(page.locator('main article').first())).toBe(
+      'rgb(236,143,189)',
+    );
+    expect(await background(page.getByText('Premium', { exact: true }))).toBe(
+      'rgba(236, 143, 189, 0.15)',
+    );
+  } finally {
+    await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql.end();
+  }
+});
+
 test('the progress bar follows the signed-in member profile colour', async ({
   page,
   context,

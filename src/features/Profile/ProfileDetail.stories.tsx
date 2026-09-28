@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
 import { Proficiency } from '@/constants';
-import { PREMIUM_CARD_THEMES } from '@/features/Discovery/cardTheme';
+import {
+  getFreeCardTheme,
+  PREMIUM_CARD_THEMES,
+} from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { ProfileDetail } from './ProfileDetail';
 import 'src/app/globals.css';
@@ -129,6 +132,38 @@ export const PremiumSaved: Story = {
       cardTheme: PREMIUM_CARD_THEMES[0],
       voiceIntroSeconds: 12,
     },
+  },
+};
+
+export const PremiumPink: Story = {
+  args: {
+    profile: { ...profile, premium: true, cardTheme: getFreeCardTheme(1) },
+  },
+  play: async ({ canvasElement }) => {
+    const pill = within(canvasElement).getByText('Premium');
+
+    await expect(getComputedStyle(pill).backgroundColor).toBe(
+      'rgba(236, 143, 189, 0.15)',
+    );
+    await expect(
+      getComputedStyle(
+        canvasElement.querySelector('article') as HTMLElement,
+      ).getPropertyValue('--ct-accent'),
+    ).toBe('rgb(236,143,189)');
+  },
+};
+
+export const FreePink: Story = {
+  args: { profile: { ...profile, cardTheme: getFreeCardTheme(1) } },
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).queryByText('Premium'),
+    ).not.toBeInTheDocument();
+    await expect(
+      getComputedStyle(
+        canvasElement.querySelector('article') as HTMLElement,
+      ).getPropertyValue('--ct-accent'),
+    ).toBe('rgb(122,138,153)');
   },
 };
 
