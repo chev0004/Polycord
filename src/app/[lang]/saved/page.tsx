@@ -20,6 +20,9 @@ export default async function SavedRoute({
   }
 
   const profile = await getProfileByUserId(user.accountId);
+  const viewer = profile
+    ? toViewerAvailabilityContext(profile.profile)
+    : undefined;
   let savedProfiles: Awaited<ReturnType<typeof listSavedProfiles>> = [];
   let loadError = false;
 
@@ -36,11 +39,8 @@ export default async function SavedRoute({
       profiles={savedProfiles}
       currentProfileId={profile?.profile.id}
       loadError={loadError}
-      viewerTimezone={
-        profile
-          ? toViewerAvailabilityContext(profile.profile).timezone
-          : undefined
-      }
+      viewerTimezone={viewer?.timezone}
+      viewerAvailability={viewer?.availability}
     />
   );
 }
