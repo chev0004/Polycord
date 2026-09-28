@@ -350,6 +350,23 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
   return row ? attachTargetLanguages(row) : null;
 };
 
+export const getPrivacySettingsByDiscordUserId = async (
+  discordUserId: string,
+) => {
+  const [row] = await db
+    .select({
+      allowAnonymousCopy: profiles.allowAnonymousCopy,
+      displayTimezone: profiles.displayTimezone,
+      isPublic: profiles.isPublic,
+    })
+    .from(profiles)
+    .innerJoin(users, eq(profiles.userId, users.id))
+    .where(eq(users.discordUserId, discordUserId))
+    .limit(1);
+
+  return row;
+};
+
 export const publiclyVisible = () =>
   and(
     eq(profiles.isPublic, true),
