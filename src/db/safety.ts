@@ -102,7 +102,11 @@ export const listBlockedUserIds = async (userId: string): Promise<string[]> => {
 
 export const listBlockedUsers = async (userId: string) =>
   db
-    .select({ id: users.id, displayName: users.displayName })
+    .select({
+      id: users.id,
+      displayName: users.displayName,
+      username: users.discordUsername,
+    })
     .from(userBlocks)
     .innerJoin(users, eq(users.id, userBlocks.blockedUserId))
     .where(eq(userBlocks.blockerUserId, userId))
