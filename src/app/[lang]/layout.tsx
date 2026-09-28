@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
-import { getUserSettingsByDiscordUserId } from '@/db';
+import {
+  getCardThemeByDiscordUserId,
+  getUserSettingsByDiscordUserId,
+} from '@/db';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
@@ -38,7 +41,12 @@ export default async function RootLayout({
 
   const messages = await getMessages({ locale: lang });
   const user = await getCurrentUser();
-  const settings = user ? await getUserSettingsByDiscordUserId(user.id) : null;
+  const [settings, cardTheme] = user
+    ? await Promise.all([
+        getUserSettingsByDiscordUserId(user.id),
+        getCardThemeByDiscordUserId(user.id),
+      ])
+    : [null, undefined];
 
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -49,7 +57,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={lang} messages={messages}>
           <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
             <TimeFormatProvider value={settings?.timeFormat ?? '24hr'}>
-              <RouteProgressProvider>
+              <RouteProgressProvider theme={cardTheme}>
                 <AppShell
                   locale={lang}
                   isLoggedIn={Boolean(user)}

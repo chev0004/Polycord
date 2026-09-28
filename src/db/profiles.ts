@@ -350,6 +350,13 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
   return row ? attachTargetLanguages(row) : null;
 };
 
+export const getCardThemeByDiscordUserId = async (discordUserId: string) => {
+  const row = await getProfileByDiscordUserId(discordUserId);
+  return row
+    ? toCardTheme(row.profile, isPremiumOwner(row.user, row.subscription))
+    : undefined;
+};
+
 export const publiclyVisible = () =>
   and(
     eq(profiles.isPublic, true),

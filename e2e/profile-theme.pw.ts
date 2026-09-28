@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import { expect, type Locator, test } from '@playwright/test';
 import postgres from 'postgres';
 
@@ -124,6 +124,70 @@ test('discovery cards keep their colour when filters and sorting reorder results
     }
   } finally {
     await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql.end();
+  }
+});
+
+test('the progress bar follows the signed-in member profile colour', async ({
+  page,
+  context,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const id = randomUUID().replaceAll('-', '').slice(0, 24);
+  const [owner, other] =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    values (${id}, ${id}, 'Progress owner'), (${`${id}-other`}, ${`${id}-other`}, 'Progress other') returning id`;
+  try {
+    await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,card_color,timezone)
+      values (${owner.id},true,'en','ja','beginner','A progress colour fixture.',array['Cooking'],'pink','Asia/Tokyo'),
+      (${other.id},true,'en','ja','beginner','Another progress colour fixture.',array['Cooking'],'slate','Asia/Tokyo')`;
+    const [otherProfile] =
+      await sql`select id from profiles where user_id=${other.id}`;
+    const payload = Buffer.from(
+      JSON.stringify({
+        user: { id, accountId: owner.id, name: 'Progress owner', username: id },
+        expiresAt: Date.now() + 3600000,
+      }),
+    ).toString('base64url');
+    const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+      .update(payload)
+      .digest('base64url');
+    await context.addCookies([
+      {
+        name: 'polycord_session',
+        value: `${payload}.${signature}`,
+        domain: 'localhost',
+        path: '/',
+      },
+    ]);
+    const bar = page.locator('div.fixed.top-0.h-1');
+
+    await page.goto('/en');
+    await expect(bar).toHaveCSS('background-color', pink);
+    await page.goto(`/en/u/${otherProfile.id}`);
+    await expect(bar).toHaveCSS('background-color', pink);
+
+    await page.goto('/en/profile');
+    await page
+      .getByRole('button', { name: 'Slate banner colour', exact: true })
+      .click();
+    await page
+      .getByRole('button', { name: 'Save Profile', exact: true })
+      .click();
+    await expect(bar).toHaveCSS('background-color', slate);
+    await page.getByRole('button', { name: 'Polycord', exact: true }).click();
+    await expect(page).toHaveURL('/en');
+    await expect(bar).toHaveCSS('background-color', slate);
+
+    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owner.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update profiles set card_color='custom', custom_gradient_from='#ff5f6d', custom_gradient_to='#ffc371' where user_id=${owner.id}`;
+    await page.reload();
+    await expect(bar).toHaveCSS(
+      'background-image',
+      'linear-gradient(115deg, rgb(255, 95, 109), rgb(255, 195, 113))',
+    );
+  } finally {
+    await sql`delete from users where id in ${sql([owner.id, other.id])}`;
     await sql.end();
   }
 });

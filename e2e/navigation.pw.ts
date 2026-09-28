@@ -186,3 +186,56 @@ test('every product route shares navigation and returns to discovery', async ({
     await sql.end();
   }
 });
+
+test('settings opens behind the progress bar without a skeleton', async ({
+  page,
+  context,
+}) => {
+  const { accountId } = await signIn(context);
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  try {
+    await page.addInitScript(() => {
+      const log = { skeleton: false, completedBeforeSettings: false };
+      Object.assign(window, { progressLog: log });
+      new MutationObserver(() => {
+        if (document.querySelector('.skeleton-shimmer')) log.skeleton = true;
+        const bar = document.querySelector<HTMLElement>('div.fixed.top-0.h-1');
+        if (
+          bar?.style.width === '100%' &&
+          !document.querySelector('main fieldset')
+        )
+          log.completedBeforeSettings = true;
+      }).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+      });
+    });
+    for (const width of [1280, 375]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/en');
+      if (width === 1280) {
+        await openAccountMenu(page);
+        await page
+          .getByRole('button', { name: 'Settings', exact: true })
+          .click();
+      } else {
+        await page
+          .getByRole('button', { name: 'Settings', exact: true })
+          .last()
+          .click();
+      }
+      await expect(page).toHaveURL('/en/settings');
+      await expect(page.locator('main fieldset').first()).toBeEnabled();
+      await expect(page.locator('div.fixed.top-0.h-1')).toHaveClass(
+        /opacity-0/,
+      );
+      expect(
+        await page.evaluate(() => Reflect.get(window, 'progressLog')),
+      ).toEqual({ skeleton: false, completedBeforeSettings: false });
+    }
+  } finally {
+    await sql`delete from users where id = ${accountId}`;
+    await sql.end();
+  }
+});

@@ -597,7 +597,6 @@
     "saveSettings": "Save Settings",
     "saving": "Saving...",
     "unsavedChanges": "You have unsaved changes",
-    "allChangesSaved": "All changes saved",
     "saveError": "Could not save your settings. Please try again.",
     "discard": "Discard",
     "makeProfilePublicLabel": "Make Profile Public",
@@ -825,6 +824,7 @@
     "emptyTitle": "No saved profiles yet",
     "emptyDescription": "Use the save action in any profile card menu to keep it here for later.",
     "emptyAction": "Browse profiles",
+    "noMatchesDescription": "No saved profiles match your search or filters. Clear them to see all of your saved profiles.",
     "errorTitle": "Saved profiles could not load",
     "errorDescription": "Something went wrong while loading your saved profiles. They are still safe.",
     "errorRetry": "Try again"

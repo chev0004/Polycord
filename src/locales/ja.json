@@ -597,7 +597,6 @@
     "saveSettings": "設定を保存",
     "saving": "保存中...",
     "unsavedChanges": "保存されていない変更があります",
-    "allChangesSaved": "すべての変更を保存しました",
     "saveError": "設定を保存できませんでした。もう一度お試しください。",
     "discard": "破棄",
     "makeProfilePublicLabel": "プロフィールを公開する",
@@ -825,6 +824,7 @@
     "emptyTitle": "保存したプロフィールはまだありません",
     "emptyDescription": "プロフィールカードメニューの保存アクションを使うと、ここに保存して後で見返せます。",
     "emptyAction": "プロフィールを見る",
+    "noMatchesDescription": "検索またはフィルターに一致する保存済みプロフィールはありません。解除するとすべての保存済みプロフィールが表示されます。",
     "errorTitle": "保存済みプロフィールを読み込めませんでした",
     "errorDescription": "保存済みプロフィールの読み込み中に問題が発生しました。データは失われていません。",
     "errorRetry": "もう一度試す"

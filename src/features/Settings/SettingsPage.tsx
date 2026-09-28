@@ -984,38 +984,40 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </SectionCard>
           )}
 
-          <div className="sticky bottom-[calc(var(--dock-space,0px)+20px)] z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            {saveStatus === 'error' ? (
-              <span className="text-[13px] text-danger">{t('saveError')}</span>
-            ) : billingStatus === 'error' ? (
-              <span className="text-[13px] text-danger">
-                {t('billingError')}
-              </span>
-            ) : (
-              <span
-                className={`text-[13px] ${isDirty ? 'text-primary-light' : 'text-muted'}`}
-              >
-                {isDirty ? t('unsavedChanges') : t('allChangesSaved')}
-              </span>
-            )}
-            <div className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap">
-              <Button
-                variant="outline"
-                onClick={handleDiscard}
-                disabled={!isDirty || isSubmitting}
-                className="h-10"
-              >
-                {t('discard')}
-              </Button>
-              <Button
-                type="submit"
-                disabled={!isDirty || isSubmitting}
-                className="h-10"
-              >
-                {isSubmitting ? t('saving') : t('saveSettings')}
-              </Button>
+          {isDirty || billingStatus === 'error' ? (
+            <div className="sticky bottom-[calc(var(--dock-space,0px)+20px)] z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              {saveStatus === 'error' ? (
+                <span className="text-[13px] text-danger">
+                  {t('saveError')}
+                </span>
+              ) : billingStatus === 'error' ? (
+                <span className="text-[13px] text-danger">
+                  {t('billingError')}
+                </span>
+              ) : (
+                <span className="text-[13px] text-primary-light">
+                  {t('unsavedChanges')}
+                </span>
+              )}
+              <div className="flex shrink-0 items-center justify-end gap-2 whitespace-nowrap">
+                <Button
+                  variant="outline"
+                  onClick={handleDiscard}
+                  disabled={!isDirty || isSubmitting}
+                  className="h-10"
+                >
+                  {t('discard')}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!isDirty || isSubmitting}
+                  className="h-10"
+                >
+                  {isSubmitting ? t('saving') : t('saveSettings')}
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </fieldset>
     </form>

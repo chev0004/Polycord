@@ -255,9 +255,10 @@ export const SaveFlow: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expect(canvas.getByText('All changes saved')).toBeInTheDocument();
-    const saveButton = canvas.getByRole('button', { name: 'Save Settings' });
-    await expect(saveButton).toBeDisabled();
+    await expect(
+      canvas.queryByRole('button', { name: 'Save Settings' }),
+    ).not.toBeInTheDocument();
+    await expect(canvas.queryByText('All changes saved')).toBeNull();
 
     const email = canvas.getByPlaceholderText(
       'Enter your email address',
@@ -271,6 +272,7 @@ export const SaveFlow: Story = {
         ).toBeInTheDocument(),
       { timeout: 5000 },
     );
+    const saveButton = canvas.getByRole('button', { name: 'Save Settings' });
     await expect(saveButton).toBeEnabled();
 
     fireEvent.click(saveButton);
@@ -279,9 +281,48 @@ export const SaveFlow: Story = {
       timeout: 5000,
     });
     await waitFor(
-      () => expect(canvas.getByText('All changes saved')).toBeInTheDocument(),
+      () =>
+        expect(
+          canvas.queryByRole('button', { name: 'Save Settings' }),
+        ).not.toBeInTheDocument(),
       { timeout: 5000 },
     );
+  },
+};
+
+export const DiscardAndRevert: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const email = canvas.getByPlaceholderText(
+      'Enter your email address',
+    ) as HTMLInputElement;
+    const expectBarHidden = () =>
+      waitFor(
+        () =>
+          expect(
+            canvas.queryByRole('button', { name: 'Discard' }),
+          ).not.toBeInTheDocument(),
+        { timeout: 5000 },
+      );
+    const expectBarShown = () =>
+      waitFor(
+        () =>
+          expect(
+            canvas.getByRole('button', { name: 'Discard' }),
+          ).toBeInTheDocument(),
+        { timeout: 5000 },
+      );
+
+    setFieldValue(email, 'discard.me@polycord.app');
+    await expectBarShown();
+    fireEvent.click(canvas.getByRole('button', { name: 'Discard' }));
+    await expectBarHidden();
+    await expect(email).toHaveValue('xhev@polycord.app');
+
+    setFieldValue(email, 'revert.me@polycord.app');
+    await expectBarShown();
+    setFieldValue(email, 'xhev@polycord.app');
+    await expectBarHidden();
   },
 };
 
@@ -316,6 +357,10 @@ export const SaveError: Story = {
         ).toBeInTheDocument(),
       { timeout: 5000 },
     );
+    await expect(
+      canvas.getByRole('button', { name: 'Save Settings' }),
+    ).toBeEnabled();
+    await expect(canvas.getByRole('button', { name: 'Discard' })).toBeEnabled();
   },
 };
 
