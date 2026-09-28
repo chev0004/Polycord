@@ -23,18 +23,23 @@ const BumpContext = createContext<(action: BumpAction | null) => void>(
   () => {},
 );
 
-export const useNavbarBump = (onClick: () => void, readyAt?: string) => {
+export const useNavbarBump = (
+  onClick: (() => void) | undefined,
+  readyAt?: string,
+) => {
   const setBump = useContext(BumpContext);
   const handler = useRef(onClick);
+  const enabled = Boolean(onClick);
 
   useEffect(() => {
     handler.current = onClick;
   });
 
   useEffect(() => {
-    setBump({ onClick: () => handler.current(), readyAt });
+    if (!enabled) return;
+    setBump({ onClick: () => handler.current?.(), readyAt });
     return () => setBump(null);
-  }, [setBump, readyAt]);
+  }, [setBump, enabled, readyAt]);
 };
 
 type AppShellProps = {

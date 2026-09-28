@@ -46,6 +46,7 @@ import {
   getFreeCardTheme,
 } from '@/features/Discovery/cardTheme';
 import { useBumpCountdown } from '@/features/Navbar/UserMenu';
+import { useNavbarBump } from '@/features/Navigation/AppShell';
 import { ReturnLink } from '@/features/Navigation/ReturnLink';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -246,6 +247,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       );
     }
   };
+
+  useNavbarBump(onBumpProfile && handleBumpProfile, bumpReadyAt);
 
   const boostActive = boostedUntil
     ? new Date(boostedUntil).getTime() > Date.now()
