@@ -8,6 +8,7 @@ import {
   within,
 } from '@storybook/test';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { DEFAULT_CARD_COLOR } from '@/features/Discovery/cardTheme';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { FieldValidationError } from '@/lib/formErrors';
@@ -51,6 +52,8 @@ const sampleProfile: ProfileFormValues = {
   availability: { days: 'weekdays', from: '06:00', to: '09:00' },
   bio: 'I am a graphic designer in Osaka looking for a patient partner to practice everyday English with.',
   tags: ['Anime', 'Cooking', 'Photography'],
+  cardColor: DEFAULT_CARD_COLOR,
+  voiceIntroSeconds: 0,
 };
 
 const twoLanguages = [
@@ -317,8 +320,8 @@ export const CreateModeDetectedTimezone: Story = {
 
     await waitFor(() => expect(timezone.value).toMatch(/Asia\/Tokyo$/));
     await expect(
-      canvas.getByRole('button', { name: 'Publish profile' }),
-    ).toBeDisabled();
+      canvas.queryByRole('button', { name: 'Publish profile' }),
+    ).not.toBeInTheDocument();
   },
 };
 
@@ -586,9 +589,9 @@ export const DirtySaveFlow: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expect(canvas.getByText('All changes saved')).toBeInTheDocument();
-    const saveButton = canvas.getByRole('button', { name: 'Save Profile' });
-    await expect(saveButton).toBeDisabled();
+    await expect(
+      canvas.queryByRole('button', { name: 'Save Profile' }),
+    ).not.toBeInTheDocument();
 
     const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
     setFieldValue(
@@ -603,6 +606,7 @@ export const DirtySaveFlow: Story = {
         ).toBeInTheDocument(),
       { timeout: 5000 },
     );
+    const saveButton = canvas.getByRole('button', { name: 'Save Profile' });
     await expect(saveButton).toBeEnabled();
 
     fireEvent.click(saveButton);
@@ -611,9 +615,54 @@ export const DirtySaveFlow: Story = {
       timeout: 5000,
     });
     await waitFor(
-      () => expect(canvas.getByText('All changes saved')).toBeInTheDocument(),
+      () =>
+        expect(
+          canvas.queryByRole('button', { name: 'Save Profile' }),
+        ).not.toBeInTheDocument(),
       { timeout: 5000 },
     );
+
+    setFieldValue(bio, `${sampleProfile.bio} Weekends work best for me.`);
+    await expect(
+      await canvas.findByRole('button', { name: 'Save Profile' }),
+    ).toBeEnabled();
+  },
+};
+
+export const DiscardAndRevert: Story = {
+  args: {
+    initialValues: sampleProfile,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
+    const expectBarHidden = () =>
+      waitFor(
+        () =>
+          expect(
+            canvas.queryByRole('button', { name: 'Discard' }),
+          ).not.toBeInTheDocument(),
+        { timeout: 5000 },
+      );
+    const expectBarShown = () =>
+      waitFor(
+        () =>
+          expect(
+            canvas.getByRole('button', { name: 'Discard' }),
+          ).toBeInTheDocument(),
+        { timeout: 5000 },
+      );
+
+    setFieldValue(bio, `${sampleProfile.bio} Discard me.`);
+    await expectBarShown();
+    fireEvent.click(canvas.getByRole('button', { name: 'Discard' }));
+    await expectBarHidden();
+    await expect(bio).toHaveValue(sampleProfile.bio);
+
+    setFieldValue(bio, `${sampleProfile.bio} Revert me.`);
+    await expectBarShown();
+    setFieldValue(bio, sampleProfile.bio);
+    await expectBarHidden();
   },
 };
 
@@ -681,15 +730,16 @@ export const CreateMode: Story = {
       canvas.queryByRole('button', { name: 'Profile options' }),
     ).not.toBeInTheDocument();
 
-    const submitButton = canvas.getByRole('button', {
-      name: 'Publish profile',
-    });
-    await expect(submitButton).toBeDisabled();
+    await expect(
+      canvas.queryByRole('button', { name: 'Publish profile' }),
+    ).not.toBeInTheDocument();
 
     const bio = canvas.getByLabelText('Bio') as HTMLTextAreaElement;
     setFieldValue(bio, sampleProfile.bio);
 
-    await waitFor(() => expect(submitButton).toBeEnabled());
+    await expect(
+      await canvas.findByRole('button', { name: 'Publish profile' }),
+    ).toBeEnabled();
   },
 };
 

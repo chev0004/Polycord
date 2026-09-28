@@ -128,6 +128,80 @@ test('discovery cards keep their colour when filters and sorting reorder results
   }
 });
 
+test('discovery display names fill with their own banner colour on hover', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const solid = (rgb: string) => `linear-gradient(${rgb}, ${rgb})`;
+  const fixtures = [
+    { colour: 'pink', premium: false, fill: solid(pink) },
+    { colour: 'sky', premium: false, fill: solid(sky) },
+    { colour: 'blue', premium: true, fill: solid('rgb(89, 100, 242)') },
+    {
+      colour: 'gold',
+      premium: true,
+      fill: 'linear-gradient(115deg, rgb(236, 159, 10), rgb(240, 177, 51) 60%, rgb(244, 195, 92))',
+    },
+    {
+      colour: 'custom',
+      premium: true,
+      fill: 'linear-gradient(115deg, rgb(255, 95, 109), rgb(255, 195, 113))',
+    },
+    { colour: 'pink', premium: true, accent: '#ff8800', fill: solid(pink) },
+  ];
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Hover ' || n from generate_series(1,${fixtures.length}) n returning id, display_name`;
+  try {
+    for (const [index, { colour, premium, accent }] of fixtures.entries()) {
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,card_color,custom_gradient_from,custom_gradient_to,accent_override)
+        values (now() - make_interval(mins => ${index}),${owners[index].id},true,'en','ja','beginner','A hover fixture.',array[${prefix}],${colour},'#ff5f6d','#ffc371',${accent ?? null})`;
+      if (premium)
+        await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owners[index].id}, ${`${prefix}-${index}`}, 'active', now() + interval '1 day')`;
+    }
+    const paint = (locator: Locator) =>
+      locator.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          color: style.color,
+          clip: style.backgroundClip,
+          fill: style.backgroundImage,
+        };
+      });
+    const nameOf = (index: number) =>
+      page.getByRole('button', {
+        name: owners[index].display_name,
+        exact: true,
+      });
+    for (const query of ['', '&sort=name-desc']) {
+      await page.goto(`/en?tag=${prefix}${query}`);
+      for (const [index, { fill }] of fixtures.entries()) {
+        const card = page.locator('article').filter({ has: nameOf(index) });
+        await expect(async () => {
+          await card.hover({ position: { x: 20, y: 150 } });
+          expect(await paint(nameOf(index))).toEqual({
+            color: 'rgba(0, 0, 0, 0)',
+            clip: 'text',
+            fill,
+          });
+        }).toPass();
+      }
+      await page.mouse.move(0, 0);
+      await expect(async () => {
+        expect(await paint(nameOf(0))).toEqual({
+          color: 'rgb(255, 255, 255)',
+          clip: 'border-box',
+          fill: 'none',
+        });
+      }).toPass();
+    }
+  } finally {
+    await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql.end();
+  }
+});
+
 test('public profile names fill with the banner colour on hover', async ({
   page,
 }) => {
