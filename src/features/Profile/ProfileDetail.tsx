@@ -326,7 +326,7 @@ export const ProfileDetail = ({
   const levelLabel = (level: Proficiency | string) =>
     tProfile(getProficiencyTranslationKey(level));
   const nameEffect =
-    'group-hover:bg-clip-text group-hover:text-transparent group-hover:[background:var(--member-banner)]';
+    'group-hover:bg-clip-text group-hover:text-transparent group-hover:[background-image:var(--member-banner-fill)]';
   const iconEffect =
     'group-hover:translate-x-0 group-hover:text-[#0b0b0c] group-hover:opacity-100 group-hover:[background:var(--member-banner)]';
 
@@ -398,6 +398,9 @@ export const ProfileDetail = ({
         {
           ...deriveCardAccent(profile.premium ? theme.accent : FREE_ACCENT),
           '--member-banner': theme.banner,
+          '--member-banner-fill': theme.banner.startsWith('#')
+            ? `linear-gradient(${theme.banner},${theme.banner})`
+            : theme.banner,
           ...(tinted
             ? { '--card-tint': theme.tint, background: tintedSurface }
             : {}),
@@ -499,7 +502,7 @@ export const ProfileDetail = ({
               <span
                 className={`truncate font-bold font-figtree text-[32px] text-foreground leading-[1.1] tracking-[-0.01em] transition-colors ${
                   copied
-                    ? 'bg-clip-text text-transparent [background:var(--member-banner)]'
+                    ? 'bg-clip-text text-transparent [background-image:var(--member-banner-fill)]'
                     : nameEffect
                 }`}
               >

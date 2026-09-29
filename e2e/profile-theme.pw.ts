@@ -202,6 +202,80 @@ test('discovery display names fill with their own banner colour on hover', async
   }
 });
 
+test('public profile names fill with the banner colour on hover', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const fixtures = [
+    {
+      colour: 'pink',
+      premium: false,
+      fill: `linear-gradient(${pink}, ${pink})`,
+    },
+    {
+      colour: 'gold',
+      premium: true,
+      fill: 'linear-gradient(115deg, rgb(236, 159, 10), rgb(240, 177, 51) 60%, rgb(244, 195, 92))',
+    },
+  ];
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Name ' || n from generate_series(1,${fixtures.length}) n returning id, display_name`;
+  try {
+    for (const [index, { colour, premium }] of fixtures.entries()) {
+      await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,card_color)
+        values (now(),${owners[index].id},true,'en','ja','beginner','A name fixture.',array[${prefix}],${colour})`;
+      if (premium)
+        await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owners[index].id}, ${`${prefix}-${index}`}, 'active', now() + interval '1 day')`;
+    }
+    const paint = (locator: Locator) =>
+      locator.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          color: style.color,
+          clip: style.backgroundClip,
+          fill: style.backgroundImage,
+        };
+      });
+    for (const [index, { fill }] of fixtures.entries()) {
+      await page.goto(`/en?tag=${prefix}`);
+      await page
+        .locator('article')
+        .filter({
+          has: page.getByRole('heading', {
+            name: owners[index].display_name,
+            exact: true,
+          }),
+        })
+        .click();
+      await expect(page).toHaveURL(/\/en\/u\//);
+      const name = page
+        .getByRole('heading', { level: 1 })
+        .getByText(owners[index].display_name, { exact: true });
+      await expect(async () => {
+        await name.hover();
+        expect(await paint(name)).toEqual({
+          color: 'rgba(0, 0, 0, 0)',
+          clip: 'text',
+          fill,
+        });
+      }).toPass();
+      await page.mouse.move(0, 0);
+      await expect(async () => {
+        expect(await paint(name)).toEqual({
+          color: 'rgb(255, 255, 255)',
+          clip: 'border-box',
+          fill: 'none',
+        });
+      }).toPass();
+    }
+  } finally {
+    await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql.end();
+  }
+});
+
 test('the progress bar follows the signed-in member profile colour', async ({
   page,
   context,
