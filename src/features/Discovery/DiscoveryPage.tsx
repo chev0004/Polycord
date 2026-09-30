@@ -962,7 +962,10 @@ export const DiscoveryPage = ({
               safePage < Math.min(totalPages, MAX_STACK_PAGES) ? (
                 <button
                   type="button"
-                  onClick={() => setPage(safePage + 1)}
+                  onClick={() => {
+                    setPage(safePage + 1);
+                    trackRequest(false);
+                  }}
                   disabled={isRefreshing}
                   className="mt-1 mb-6 h-12 w-full rounded-lg border border-line font-semibold text-sm text-soft transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:bg-overlay active:scale-[0.98] disabled:opacity-60"
                 >
