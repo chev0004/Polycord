@@ -13,6 +13,7 @@ export type RateLimitAction =
   | 'bump'
   | 'copy'
   | 'view'
+  | 'share'
   | 'auth-failure';
 
 export type RateLimitSubject = {
@@ -28,6 +29,7 @@ const DEFAULT_LIMITS: Record<
   bump: { max: 10, windowMs: 60_000 },
   copy: { max: 30, windowMs: 3_600_000 },
   view: { max: 120, windowMs: 3_600_000 },
+  share: { max: 30, windowMs: 3_600_000 },
   'auth-failure': { max: 10, windowMs: 900_000 },
 };
 
