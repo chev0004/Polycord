@@ -24,6 +24,13 @@ export const getNotificationMessage = (
 ) => {
   if (notification.kind === 'warning') return t('moderationWarning');
 
+  if (notification.kind === 'share') {
+    if (!premium) return t('anonymousShareAlert');
+    return notification.actorName
+      ? t('userShared', { user: notification.actorName })
+      : t(notification.isGuest ? 'guestShared' : 'anonymousUserShared');
+  }
+
   if (!premium) return t('anonymousCopyAlert');
 
   if (notification.kind === 'view') {
