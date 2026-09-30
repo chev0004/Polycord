@@ -23,14 +23,14 @@ export function RecoveryPage({
   }, [locale]);
   const copy = language === 'ja' ? ja.Recovery : en.Recovery;
   const actionClass =
-    'rounded-lg border border-line-strong px-5 py-3 font-semibold hover:bg-overlay focus-visible:bg-overlay';
+    'rounded-control border border-line-strong px-5 py-3 font-semibold hover:bg-overlay focus-visible:bg-overlay';
 
   return (
     <main
       lang={language}
       className="flex flex-1 items-center justify-center bg-background-main px-4 py-12 text-foreground"
     >
-      <section className="w-full max-w-lg space-y-6 rounded-xl border border-line bg-background-dark p-6 sm:p-10">
+      <section className="w-full max-w-lg space-y-6 rounded-panel border border-line bg-background-dark p-6 sm:p-10">
         <h1 className="font-bold text-3xl">
           {kind === 'missing' ? copy.missingTitle : copy.errorTitle}
         </h1>
