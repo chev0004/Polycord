@@ -899,7 +899,7 @@ export const DiscoveryPage = ({
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
               >
-                {showSkeleton || isRefreshing
+                {showSkeleton || (isRefreshing && !awaitingResults)
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}
               </span>
