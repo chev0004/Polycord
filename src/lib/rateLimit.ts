@@ -8,7 +8,12 @@ import {
   type RateLimitResult,
 } from '@/db';
 
-export type RateLimitAction = 'report' | 'bump' | 'copy' | 'auth-failure';
+export type RateLimitAction =
+  | 'report'
+  | 'bump'
+  | 'copy'
+  | 'view'
+  | 'auth-failure';
 
 export type RateLimitSubject = {
   userId?: string;
@@ -22,6 +27,7 @@ const DEFAULT_LIMITS: Record<
   report: { max: 5, windowMs: 3_600_000 },
   bump: { max: 10, windowMs: 60_000 },
   copy: { max: 30, windowMs: 3_600_000 },
+  view: { max: 120, windowMs: 3_600_000 },
   'auth-failure': { max: 10, windowMs: 900_000 },
 };
 

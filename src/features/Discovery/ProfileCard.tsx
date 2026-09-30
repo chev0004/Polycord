@@ -43,6 +43,7 @@ import {
 } from './cardTheme';
 import { DummyChip } from './DummyChip';
 import { MobileNameCopy, MobileProfileSheet } from './MobileProfileSheet';
+import { recordProfileView } from './profileViewRequest';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
 import { VoiceChip } from './VoiceChip';
 
@@ -156,6 +157,10 @@ export const ProfileCard = ({
   const usernameCopy = useUsernameCopy(profile, onCopyUsername);
   const { copied, copyFailed } = usernameCopy;
   const [detailOpen, setDetailOpen] = useState(false);
+  const openSheet = () => {
+    setDetailOpen(true);
+    recordProfileView(profile.id);
+  };
 
   const countryName =
     countryOptions(locale).find(({ value }) => value === profile.country)
@@ -240,9 +245,7 @@ export const ProfileCard = ({
       key: 'view',
       icon: MdPersonOutline,
       label: t('viewProfile'),
-      onSelect: mobile
-        ? () => setDetailOpen(true)
-        : () => onViewProfile(profile.id),
+      onSelect: mobile ? openSheet : () => onViewProfile(profile.id),
     },
     onToggleSave && {
       key: 'save',
@@ -340,7 +343,7 @@ export const ProfileCard = ({
       target.closest('button, a, input, audio')
     )
       return;
-    if (opensSheet) setDetailOpen(true);
+    if (opensSheet) openSheet();
     else onViewProfile?.(profile.id);
   };
 
