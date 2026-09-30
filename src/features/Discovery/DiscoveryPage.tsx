@@ -582,6 +582,7 @@ export const DiscoveryPage = ({
       addToast({
         title: t('shareCopiedTitle'),
         description: t('shareCopiedDescription'),
+        iconUrl: profile?.avatarUrl,
         duration: BUMP_TOAST_DURATION,
       });
     } else {
