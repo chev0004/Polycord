@@ -53,6 +53,15 @@ export default {
           },
         },
       },
+      borderRadius: {
+        panel: '24px',
+        popover: '20px',
+        menu: '18px',
+        list: '16px',
+        field: '12px',
+        control: '8px',
+        row: '6px',
+      },
       fontFamily: {
         zen: ['var(--font-Zen)'],
         figtree: ['var(--font-Figtree)'],
