@@ -80,11 +80,13 @@ export const MobileNameCopy = ({
       >
         {copied ? <MdCheck size={15} /> : <MdContentCopy size={15} />}
         <span
-          className={`overflow-hidden whitespace-nowrap font-bold text-xs transition-[max-width,opacity] duration-300 ${
-            copied ? 'max-w-[72px] opacity-100' : 'max-w-0 opacity-0'
+          className={`grid transition-[grid-template-columns,opacity] duration-300 ${
+            copied ? 'grid-cols-[1fr] opacity-100' : 'grid-cols-[0fr] opacity-0'
           }`}
         >
-          {t('copied')}
+          <span className="overflow-hidden whitespace-nowrap font-bold text-xs">
+            {t('copied')}
+          </span>
         </span>
       </span>
     </button>
