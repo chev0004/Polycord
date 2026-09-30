@@ -188,7 +188,8 @@ export const DiscoveryPage = ({
         : SORT_OPTIONS.filter((option) => option !== 'overlap-desc'),
     [viewerHasAvailability],
   );
-  const settlePageChange = useRef<(() => void) | null>(null);
+  const settleRequest = useRef<(() => void) | null>(null);
+  const [awaitingResults, setAwaitingResults] = useState(false);
   const [initialState] = useState(() => parseDiscoveryState(searchParams));
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>(
     initialState.filterValues,
@@ -348,6 +349,7 @@ export const DiscoveryPage = ({
   });
 
   const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
+  const [loadedUrl, setLoadedUrl] = useState(requestUrl);
 
   const refreshDiscovery = useCallback(async () => {
     if (!discoveryData) return;
@@ -367,6 +369,7 @@ export const DiscoveryPage = ({
       setRemoteData(data);
       setProfileItems(withoutBlocked(data.profiles));
       setPage(data.page);
+      setLoadedUrl(requestUrl);
     } catch {
       if (!controller.signal.aborted) setRefreshFailed(true);
     } finally {
@@ -476,6 +479,18 @@ export const DiscoveryPage = ({
 
   const showSkeleton = isLoading;
 
+  const trackRequest = () => {
+    settleRequest.current?.();
+    setRefreshFailed(false);
+    setAwaitingResults(true);
+    navigate(
+      () =>
+        new Promise<void>((resolve) => {
+          settleRequest.current = resolve;
+        }),
+    );
+  };
+
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setPage(1);
@@ -484,16 +499,19 @@ export const DiscoveryPage = ({
   const handleSortChange = (value: DiscoverySortValue) => {
     setSortValue(value);
     setPage(1);
+    trackRequest();
   };
 
   const handleFilterChange = (filterId: string, value: string | string[]) => {
     setFilterValues((previous) => ({ ...previous, [filterId]: value }));
     setPage(1);
+    trackRequest();
   };
 
   const handleClearFilters = () => {
     setFilterValues({});
     setPage(1);
+    trackRequest();
   };
 
   const handleRemoveFilter = (filterId: string, value: string) => {
@@ -507,6 +525,7 @@ export const DiscoveryPage = ({
       };
     });
     setPage(1);
+    trackRequest();
   };
 
   const handleApplyFilters = (draft: FilterDraft) => {
@@ -514,6 +533,7 @@ export const DiscoveryPage = ({
     setSelectedTags(draft.selectedTags);
     setSortValue(draft.sortValue);
     setPage(1);
+    trackRequest();
   };
 
   const appliedFilters: AppliedFilter[] = filterDefs.flatMap((filter) =>
@@ -536,11 +556,13 @@ export const DiscoveryPage = ({
         : [...previous, tag],
     );
     setPage(1);
+    trackRequest();
   };
 
   const handleClearTags = () => {
     setSelectedTags([]);
     setPage(1);
+    trackRequest();
   };
 
   const handleAddTagFilter = (tag: string) => {
@@ -548,6 +570,7 @@ export const DiscoveryPage = ({
       previous.includes(tag) ? previous : [...previous, tag],
     );
     setPage(1);
+    trackRequest();
   };
 
   const handleAddMultiFilter = (filterId: string, value: string) => {
@@ -566,6 +589,7 @@ export const DiscoveryPage = ({
       return { ...previous, [filterId]: [...values, value] };
     });
     setPage(1);
+    trackRequest();
   };
 
   const handleViewProfile = (profileId: string) => {
@@ -584,6 +608,7 @@ export const DiscoveryPage = ({
       addToast({
         title: t('shareCopiedTitle'),
         description: t('shareCopiedDescription'),
+        iconUrl: profile?.avatarUrl,
         duration: BUMP_TOAST_DURATION,
       });
     } else {
@@ -723,26 +748,27 @@ export const DiscoveryPage = ({
   };
 
   const handlePageChange = (nextPage: number) => {
-    settlePageChange.current?.();
-    setRefreshFailed(false);
     setPage(nextPage);
-    navigate(
-      () =>
-        new Promise<void>((resolve) => {
-          settlePageChange.current = resolve;
-        }),
-    );
+    trackRequest();
   };
 
   useLayoutEffect(() => {
-    if (!settlePageChange.current || isRefreshing) return;
-    if (remoteData && remoteData.page !== page && !refreshFailed) return;
+    if (!awaitingResults || isRefreshing) return;
+    if (discoveryData && loadedUrl !== requestUrl && !refreshFailed) return;
     window.scrollTo(0, 0);
-    settlePageChange.current();
-    settlePageChange.current = null;
-  }, [isRefreshing, remoteData, page, refreshFailed]);
+    settleRequest.current?.();
+    settleRequest.current = null;
+    setAwaitingResults(false);
+  }, [
+    awaitingResults,
+    isRefreshing,
+    discoveryData,
+    loadedUrl,
+    requestUrl,
+    refreshFailed,
+  ]);
 
-  useEffect(() => () => settlePageChange.current?.(), []);
+  useEffect(() => () => settleRequest.current?.(), []);
 
   useProfileBump({
     profileId: currentProfileId,
@@ -874,7 +900,7 @@ export const DiscoveryPage = ({
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
               >
-                {showSkeleton || isRefreshing
+                {showSkeleton || (isRefreshing && !awaitingResults)
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}
               </span>
@@ -933,7 +959,10 @@ export const DiscoveryPage = ({
               safePage < Math.min(totalPages, MAX_STACK_PAGES) ? (
                 <button
                   type="button"
-                  onClick={() => setPage(safePage + 1)}
+                  onClick={() => {
+                    setPage(safePage + 1);
+                    trackRequest();
+                  }}
                   disabled={isRefreshing}
                   className="mt-1 mb-6 h-12 w-full rounded-lg border border-line font-semibold text-sm text-soft transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:bg-overlay active:scale-[0.98] disabled:opacity-60"
                 >

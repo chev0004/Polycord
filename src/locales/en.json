@@ -686,7 +686,6 @@
   },
   "Discovery": {
     "copyNamedUsername": "Copy {name}'s username",
-    "tapToCopyHint": "Tap the name to copy their Discord username",
     "detailPrimary": "Primary",
     "pageEyebrow": "Discovery",
     "pageTitle": "Find a language partner on Discord",

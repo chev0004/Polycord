@@ -99,6 +99,7 @@ export const useProfileActions = (
       description: t(
         copied ? 'shareCopiedDescription' : 'shareErrorDescription',
       ),
+      iconUrl: copied ? profile.avatarUrl : undefined,
       duration: 4000,
     });
   };

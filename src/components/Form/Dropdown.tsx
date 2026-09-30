@@ -270,7 +270,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
     const triggerClasses = isMinimalVariant
       ? `flex h-10 items-center gap-2 whitespace-nowrap bg-transparent px-3 py-2 text-foreground transition-colors hover:opacity-80 ${className ?? ''}`
-      : `flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-xl border bg-background-darker px-4 text-[15px] text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-subtle ${error ? 'border-red-500' : 'border-line hover:border-line-strong data-[state=open]:border-line-strong'} ${className ?? ''}`;
+      : `flex h-12 ${widthClass} items-center justify-between gap-2 whitespace-nowrap rounded-field border bg-background-darker px-4 text-[15px] text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none data-[placeholder]:text-subtle ${error ? 'border-red-500' : 'border-line hover:border-line-strong data-[state=open]:border-line-strong'} ${className ?? ''}`;
 
     const chevronSize = isMinimalVariant ? 12 : 20;
     const ChevronDown = isMinimalVariant
@@ -325,7 +325,7 @@ export const Dropdown = React.forwardRef<HTMLButtonElement, DropdownProps>(
 
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
-            className="SelectContent relative z-50 overflow-hidden rounded-2xl border border-gray-500/50 bg-background-dark shadow-lg"
+            className="SelectContent relative z-50 overflow-hidden rounded-list border border-gray-500/50 bg-background-dark shadow-lg"
             position="popper"
             align={align}
             sideOffset={sideOffset}

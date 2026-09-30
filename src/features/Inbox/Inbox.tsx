@@ -100,7 +100,7 @@ export const Inbox = ({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent max-h-[var(--radix-popover-content-available-height)] w-[420px] max-w-[calc(100vw-20px)] overflow-y-auto rounded-[18px] border border-gray-500/50 bg-background-dark shadow-lg"
+          className="PopoverContent max-h-[var(--radix-popover-content-available-height)] w-[420px] max-w-[calc(100vw-20px)] overflow-y-auto rounded-menu border border-gray-500/50 bg-background-dark shadow-lg"
           side="bottom"
           align="end"
           sideOffset={5}
@@ -156,6 +156,7 @@ export const Inbox = ({
                     }}
                     premium={viewerPremium}
                     disabled={pending}
+                    last={index === currentNotifications.length - 1}
                     key={notification.id}
                     onMarkAsRead={() =>
                       setRead(notification.id, !notification.read)
