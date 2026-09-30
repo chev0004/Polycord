@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ToastStack } from '@/components/Toast';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
+import { recordProfileShare } from '@/features/Discovery/profileShareRequest';
 import { ReportDialog } from '@/features/Discovery/ReportDialog';
 import {
   blockProfileRequest,
@@ -92,6 +93,7 @@ export const useProfileActions = (
 
   const share = async (profile: DiscoveryProfile) => {
     const copied = await copyText(buildPublicProfileUrl(locale, profile));
+    if (copied) recordProfileShare(profile.id);
     addToast({
       title: t(copied ? 'shareCopiedTitle' : 'shareErrorTitle'),
       description: t(
