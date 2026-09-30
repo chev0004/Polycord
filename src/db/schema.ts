@@ -36,6 +36,11 @@ export const notificationKindEnum = pgEnum('notification_kind', [
   'warning',
 ]);
 
+export const profileInteractionKindEnum = pgEnum('profile_interaction_kind', [
+  'view',
+  'copy',
+]);
+
 export const moderationActionEnum = pgEnum('moderation_action', [
   'dismiss',
   'warn',
@@ -316,6 +321,27 @@ export const analyticsEvents = pgTable(
     index('analytics_events_name_idx').on(table.name),
     index('analytics_events_created_at_idx').on(table.createdAt),
     index('analytics_events_user_id_idx').on(table.userId),
+  ],
+);
+
+export const profileInteractions = pgTable(
+  'profile_interactions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ownerUserId: uuid('owner_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    kind: profileInteractionKindEnum('kind').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('profile_interactions_owner_kind_created_at_idx').on(
+      table.ownerUserId,
+      table.kind,
+      table.createdAt,
+    ),
   ],
 );
 
@@ -682,6 +708,8 @@ export type UserSettings = typeof userSettings.$inferSelect;
 export type NewUserSettings = typeof userSettings.$inferInsert;
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type NewAnalyticsEvent = typeof analyticsEvents.$inferInsert;
+export type ProfileInteractionKind =
+  (typeof profileInteractionKindEnum.enumValues)[number];
 export type NotificationRecord = typeof notifications.$inferSelect;
 export type NewNotificationRecord = typeof notifications.$inferInsert;
 export type Report = typeof reports.$inferSelect;
