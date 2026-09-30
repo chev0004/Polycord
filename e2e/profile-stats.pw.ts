@@ -138,3 +138,43 @@ test('guest username copies reach the profile owner', async ({ browser }) => {
     await sql`delete from users where id = ${owner.id}`;
   }
 });
+
+test('shares from a blocked profile preview stay anonymous and blocked viewers are rejected', async ({
+  browser,
+}) => {
+  const [owner, blocker, blocked] = await sql<Person[]>`
+    insert into users (discord_user_id, discord_username, display_name)
+    values (${randomUUID().replaceAll('-', '')}, 'share-owner', 'Share owner'),
+           (${randomUUID().replaceAll('-', '')}, 'share-blocker', 'Share blocker'),
+           (${randomUUID().replaceAll('-', '')}, 'share-blocked', 'Share blocked')
+    returning id, discord_user_id, display_name`;
+  try {
+    const [profile] = await sql`
+      insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio)
+      values (now(), ${owner.id}, true, 'en', 'ja', 'beginner', 'A profile shared from a block list.')
+      returning id`;
+    await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${blocker.id}, ${owner.id}), (${owner.id}, ${blocked.id})`;
+
+    const context = await browser.newContext();
+    const share = () =>
+      context.request.post('/api/profile/share', {
+        data: { profileId: profile.id },
+      });
+
+    await signIn(context, blocker);
+    const shared = await share();
+    expect(shared.status()).toBe(200);
+    const interactions =
+      await sql`select kind from profile_interactions where owner_user_id = ${owner.id}`;
+    expect(interactions).toEqual([{ kind: 'share' }]);
+    const notified =
+      await sql`select actor_user_id from notifications where user_id = ${owner.id}`;
+    expect(notified.every((row) => row.actor_user_id === null)).toBe(true);
+
+    await signIn(context, blocked);
+    expect((await share()).status()).toBe(404);
+    await context.close();
+  } finally {
+    await sql`delete from users where id in (${owner.id}, ${blocker.id}, ${blocked.id})`;
+  }
+});
