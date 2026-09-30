@@ -169,6 +169,7 @@ export const ProfileCard = ({
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
 
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
+  const tinted = Boolean(profile.premium && theme.tint);
   const accent = profile.premium ? theme.accent : FREE_ACCENT;
   const themeStyle = {
     ...deriveCardAccent(accent),
@@ -586,6 +587,14 @@ export const ProfileCard = ({
             <Popover.Portal>
               <Popover.Content
                 className="PopoverContent z-50 w-[240px] rounded-menu border border-gray-500/50 bg-background-dark p-3 shadow-lg"
+                style={
+                  tinted
+                    ? ({
+                        '--card-tint': theme.tint,
+                        background: tintedSurface,
+                      } as React.CSSProperties)
+                    : undefined
+                }
                 side="bottom"
                 align="start"
                 sideOffset={5}
