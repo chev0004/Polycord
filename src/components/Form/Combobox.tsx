@@ -206,7 +206,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Anchor asChild>
           <div
-            className={`flex h-12 w-full items-center justify-between rounded-xl border bg-background-darker px-4 text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`flex h-12 w-full items-center justify-between rounded-field border bg-background-darker px-4 text-foreground outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               error
                 ? 'border-red-500'
                 : readOnly || disabled
@@ -248,7 +248,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         </PopoverPrimitive.Anchor>
         <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content
-            className="z-50 mt-1 w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-2xl border border-gray-500/50 bg-background-dark shadow-lg"
+            className="z-50 mt-1 w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-list border border-gray-500/50 bg-background-dark shadow-lg"
             sideOffset={6}
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
