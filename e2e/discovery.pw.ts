@@ -395,7 +395,7 @@ test('desktop filter changes load behind the progress bar and open at the top', 
   }
 });
 
-test('phone filter changes and load more use the progress bar', async ({
+test('phone filter changes use the progress bar and load more keeps the position', async ({
   page,
 }) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
@@ -423,13 +423,17 @@ test('phone filter changes and load more use the progress bar', async ({
 
     const more = page.getByRole('button', { name: 'Show more partners' });
     await more.scrollIntoViewIfNeeded();
+    const loadedCards = await page.locator('article').count();
+    const beforeMore = await page.evaluate(() => window.scrollY);
     release = await gateDiscovery(page);
     await more.click();
-    await expect(bar).toHaveClass(/opacity-100/);
+    await page.waitForTimeout(500);
+    await expect(bar).toHaveClass(/opacity-0/);
+    await expect(page.locator('article')).toHaveCount(loadedCards);
     await release();
     await expect(page.locator('article')).toHaveCount(10);
-    await expect(bar).toHaveClass(/opacity-0/);
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    expect(await page.locator('article').count()).toBeGreaterThan(loadedCards);
+    expect(await page.evaluate(() => window.scrollY)).toBe(beforeMore);
   } finally {
     await fixture.cleanup();
     await sql.end();
