@@ -364,3 +364,20 @@ export const SingleEntryCorners: Story = {
     ).toEqual(['6px', '18px']);
   },
 };
+
+export const LastEntryCornersWithUpsell: Story = {
+  args: {
+    premium: false,
+    persist: false,
+    notifications: [
+      { id: 'a', kind: 'copy', isGuest: true },
+      { id: 'b', kind: 'copy', isGuest: true },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const portal = await openInbox(canvasElement);
+    const entries = await portal.findAllByText('A user copied your username');
+    await expect(entryCorners(entries[0])).toEqual(['6px', '6px']);
+    await expect(entryCorners(entries[1])).toEqual(['6px', '18px']);
+  },
+};

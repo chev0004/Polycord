@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
 import { Proficiency } from '@/constants';
-import { PREMIUM_CARD_THEMES } from '@/features/Discovery/cardTheme';
+import {
+  type CardTheme,
+  findCardTheme,
+  PREMIUM_CARD_THEMES,
+} from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { ProfileDetail } from './ProfileDetail';
 import 'src/app/globals.css';
@@ -136,6 +140,24 @@ export const PremiumSaved: Story = {
     },
   },
 };
+
+const premiumPill = (cardTheme: CardTheme, chipBg: string): Story => ({
+  args: { profile: { ...profile, premium: true, cardTheme } },
+  play: async ({ canvasElement }) => {
+    const pill = within(canvasElement).getByText('Premium');
+    await expect(getComputedStyle(pill).backgroundColor).toBe(chipBg);
+  },
+});
+
+export const PremiumPillCustomAccent = premiumPill(
+  { ...(findCardTheme('blue') as CardTheme), accent: '#f97316' },
+  'rgba(249, 115, 22, 0.15)',
+);
+
+export const PremiumPillThemeAccent = premiumPill(
+  findCardTheme('rose') as CardTheme,
+  'rgba(196, 91, 149, 0.15)',
+);
 
 export const NoAvailability: Story = {
   args: {

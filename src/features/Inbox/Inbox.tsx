@@ -156,6 +156,7 @@ export const Inbox = ({
                     }}
                     premium={viewerPremium}
                     disabled={pending}
+                    last={index === currentNotifications.length - 1}
                     key={notification.id}
                     onMarkAsRead={() =>
                       setRead(notification.id, !notification.read)
