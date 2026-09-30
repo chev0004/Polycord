@@ -7,6 +7,7 @@ import {
   getPublicProfileById,
   listNotificationsForUser,
   markAllNotificationsRead,
+  recordProfileInteraction,
   setNotificationRead,
 } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
@@ -111,6 +112,7 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ created: false });
   }
 
+  await recordProfileInteraction(target.profile.userId, 'copy');
   await trackEvent({
     name: ANALYTICS_EVENTS.profileCopyReceived,
     userId: currentUser.accountId,
