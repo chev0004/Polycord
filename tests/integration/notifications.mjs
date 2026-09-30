@@ -10,7 +10,10 @@ process.env.POLYCORD_PREMIUM_USER_IDS = '';
 process.env.POLYCORD_ANALYTICS_DISABLED = 'true';
 mock.module('server-only', () => ({}));
 let currentUser = null;
-mock.module('@/lib/auth', () => ({ getActiveUser: async () => currentUser }));
+mock.module('@/lib/auth', () => ({
+  getActiveUser: async () => currentUser,
+  getCurrentUser: async () => currentUser,
+}));
 const { db } = await import('../../src/db/client');
 const { users, profiles, userSettings, notifications, userBlocks } =
   await import('../../src/db/schema');
@@ -199,6 +202,19 @@ try {
   assert.equal(
     (await POST(request('POST', { profileId: profileFor(owner) }))).status,
     200,
+  );
+  currentUser = null;
+  const guestCopy = await POST(
+    request('POST', { profileId: profileFor(owner) }),
+  );
+  assert.equal(guestCopy.status, 200);
+  assert.deepEqual(await guestCopy.json(), { created: true });
+  assert.equal(
+    (await listNotificationsForUser(owner.id)).filter(
+      ({ notification }) =>
+        notification.isGuest && notification.kind === 'copy',
+    ).length,
+    1,
   );
   await db
     .update(userSettings)
