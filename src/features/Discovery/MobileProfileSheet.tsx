@@ -187,13 +187,15 @@ export const MobileProfileSheet = ({
                 big
               />
             ) : (
-              <p className="truncate font-bold font-figtree text-2xl">
-                {profile.displayName}
-              </p>
+              <>
+                <p className="truncate font-bold font-figtree text-2xl">
+                  {profile.displayName}
+                </p>
+                <p className="mt-0.5 text-muted text-xs">
+                  {t('signInToViewUsername')}
+                </p>
+              </>
             )}
-            <p className="mt-0.5 text-muted text-xs">
-              {canCopy ? t('tapToCopyHint') : t('signInToViewUsername')}
-            </p>
             {profile.synthetic ? <DummyChip className="mt-2" /> : null}
             {copyFailed && profile.discordUsername ? (
               <p role="alert" className="mt-1.5 text-danger text-sm">
