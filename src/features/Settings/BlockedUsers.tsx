@@ -2,11 +2,14 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
-import { MdSearch } from 'react-icons/md';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { MdClose, MdSearch } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
-import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
+import {
+  bannerButton,
+  MobileProfileSheet,
+} from '@/features/Discovery/MobileProfileSheet';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { blockedProfileIds } from '@/features/Discovery/safetyRequests';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
@@ -41,10 +44,12 @@ const BlockedProfilePreview = ({
   onOpenChange: (open: boolean) => void;
 }) => {
   const t = useTranslations('Settings');
+  const tSheet = useTranslations('Sheet');
   const locale = useLocale();
   const router = useRouteProgressRouter();
   const mobile = useIsMobile();
   const actions = useProfileActions(locale, true, () => {});
+  const returnFocus = useRef<Element | null>(null);
 
   if (mobile)
     return (
@@ -63,7 +68,15 @@ const BlockedProfilePreview = ({
           <Dialog.Content
             aria-describedby={undefined}
             className="m-auto w-full max-w-[1032px] animate-popIn outline-none"
-            onOpenAutoFocus={(event) => event.preventDefault()}
+            onOpenAutoFocus={(event) => {
+              event.preventDefault();
+              returnFocus.current = document.activeElement;
+            }}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              if (returnFocus.current instanceof HTMLElement)
+                returnFocus.current.focus();
+            }}
           >
             <Dialog.Title className="sr-only">
               {t('blockedPreviewTitle')}
@@ -71,6 +84,17 @@ const BlockedProfilePreview = ({
             <ProfileDetail
               profile={profile}
               isLoggedIn
+              bannerActions={
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    aria-label={tSheet('close')}
+                    className={bannerButton}
+                  >
+                    <MdClose size={20} />
+                  </button>
+                </Dialog.Close>
+              }
               onCopyUsername={() => copyText(profile.discordUsername ?? '')}
               onShare={() => actions.share(profile)}
               onReport={() => actions.report(profile)}
