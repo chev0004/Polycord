@@ -18,6 +18,8 @@ type VoiceChipProps = {
   className?: string;
 };
 
+let activeAudio: HTMLAudioElement | null = null;
+
 const formatRemaining = (value: number) =>
   `0:${String(Math.max(0, Math.ceil(value))).padStart(2, '0')}`;
 
@@ -90,6 +92,8 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
       return;
     }
 
+    if (activeAudio !== audio) activeAudio?.pause();
+    activeAudio = audio;
     audio.currentTime = 0;
     setPlaying(true);
     void audio.play().catch(() => audio.paused && reset());
