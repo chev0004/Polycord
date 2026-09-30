@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getPublicProfileById } from '@/db';
+import { getPublicProfileById, hasBlocked } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import { receiveProfileShare } from '@/lib/notifications/profileShare';
 import {
@@ -18,9 +18,12 @@ export const POST = async (request: Request) => {
   }
 
   const viewer = await getCurrentUser();
-  const target = await getPublicProfileById(profileId.data, viewer?.accountId);
+  const target = await getPublicProfileById(profileId.data);
 
-  if (!target) {
+  if (
+    !target ||
+    (viewer && (await hasBlocked(target.profile.userId, viewer.accountId)))
+  ) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
@@ -37,7 +40,10 @@ export const POST = async (request: Request) => {
     created: await receiveProfileShare({
       ownerUserId: target.profile.userId,
       synthetic: target.user.isSynthetic,
-      viewer,
+      viewer:
+        viewer && (await hasBlocked(viewer.accountId, target.profile.userId))
+          ? null
+          : viewer,
     }),
   });
 };
