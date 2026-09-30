@@ -36,6 +36,9 @@ import { type DiscoveryProfile, getBumpAge } from './ProfileCard';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
 import { VoiceChip } from './VoiceChip';
 
+export const bannerButton =
+  'flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50';
+
 export const MobileNameCopy = ({
   name,
   copied,
@@ -127,8 +130,6 @@ export const MobileProfileSheet = ({
     languageDisplay === 'short' && isValidLanguageCode(language)
       ? capitalizeLanguageCode(language)
       : getLanguageName(language, locale);
-  const bannerButton =
-    'flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50';
 
   return (
     <Sheet
