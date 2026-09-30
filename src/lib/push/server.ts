@@ -38,7 +38,11 @@ export const sendPushForNotification = async (
   if (!isPushConfigured()) return;
   const settings = await getUserSettingsByUserId(notification.userId);
   if (!settings?.pushNotifications) return;
-  if (notification.kind === 'copy' && !settings.profileInteractionAlert) return;
+  if (
+    (notification.kind === 'copy' || notification.kind === 'share') &&
+    !settings.profileInteractionAlert
+  )
+    return;
   if (notification.kind === 'view') {
     if (!settings.profileViewAlert) return;
     const [user] = await db
