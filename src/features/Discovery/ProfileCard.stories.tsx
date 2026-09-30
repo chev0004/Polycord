@@ -533,6 +533,43 @@ export const MobileOpensSheet: Story = {
     ).toBeInTheDocument();
   },
 };
+const copyInMobileSheet =
+  (label: string): Story['play'] =>
+  async ({ canvasElement }) => {
+    const view = canvasElement.ownerDocument.defaultView as Window;
+    Object.defineProperty(view.navigator, 'clipboard', {
+      value: { writeText: async () => {} },
+      configurable: true,
+    });
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(
+      canvasElement.querySelector('article') as HTMLElement,
+    );
+    const sheet = await body.findByRole('dialog', { name: 'User 1' });
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: /User 1/ }),
+    );
+    const copied = await within(sheet).findByText(label);
+    await waitFor(() => {
+      expect(copied.clientWidth).toBeGreaterThan(0);
+      expect(copied.scrollWidth).toBeLessThanOrEqual(copied.clientWidth);
+    });
+  };
+
+export const MobileSheetCopied: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: (args) => <CardStory {...args} />,
+  play: copyInMobileSheet('Copied!'),
+};
+
+export const MobileSheetCopiedJapanese: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  globals: { locale: 'ja' },
+  render: (args) => <CardStory {...args} />,
+  play: copyInMobileSheet('コピーしました！'),
+};
+
 export const MobileSheet: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   render: (args) => <CardStory {...args} />,
