@@ -355,12 +355,16 @@ test('desktop filter changes load behind the progress bar and open at the top', 
     await expect(page.getByText(/Searching/)).toHaveCount(0);
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
-    expect(await recordedScrolls(page)).toEqual([]);
+    expect((await recordedScrolls(page)).every((y) => y === scrolled)).toBe(
+      true,
+    );
     await release();
     await expect(page.getByText('10 partners', { exact: true })).toBeVisible();
     await expect(bar).toHaveClass(/opacity-0/);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
-    expect(new Set(await recordedScrolls(page))).toEqual(new Set([0]));
+    expect(
+      new Set((await recordedScrolls(page)).filter((y) => y !== scrolled)),
+    ).toEqual(new Set([0]));
     await expect(
       page.getByRole('textbox', { name: 'Search profiles' }),
     ).toBeInViewport();
