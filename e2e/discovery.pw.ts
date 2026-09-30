@@ -220,7 +220,8 @@ test('desktop pages load behind the progress bar and open at the top', async ({
 
     await next.click();
     await expect(bar).toHaveClass(/opacity-100/);
-    await expect(page.getByText(/Searching/)).toBeVisible();
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Searching/)).toHaveCount(0);
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
     release();
@@ -287,6 +288,147 @@ test('desktop pages load behind the progress bar and open at the top', async ({
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   } finally {
     await sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`;
+    await sql.end();
+  }
+});
+
+const languageFixture = async (sql: postgres.Sql) => {
+  const prefix = randomUUID().slice(0, 8);
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Filter ' || lpad(n::text,2,'0') from generate_series(1,20) n returning id`;
+  await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country)
+    select now(),users.id,true,case when right(users.display_name,2)::int % 2 = 0 then 'en' else 'fr' end,'ja','intermediate','A filter fixture.',array[${prefix}],'US'
+    from users where users.id in ${sql(owners.map((owner) => owner.id))}`;
+  return {
+    prefix,
+    cleanup: () =>
+      sql`delete from users where id in ${sql(owners.map((owner) => owner.id))}`,
+  };
+};
+
+const gateDiscovery = async (page: import('@playwright/test').Page) => {
+  let release: () => void = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/discovery?*', async (route) => {
+    await gate;
+    await route.continue().catch(() => {});
+  });
+  return async () => {
+    release();
+    await page.unroute('**/api/discovery?*');
+  };
+};
+
+const recordScrolls = (page: import('@playwright/test').Page) =>
+  page.evaluate(() => {
+    const scrolls: number[] = [];
+    (window as unknown as { scrolls: number[] }).scrolls = scrolls;
+    window.addEventListener('scroll', () => scrolls.push(window.scrollY));
+  });
+
+const recordedScrolls = (page: import('@playwright/test').Page) =>
+  page.evaluate(() => (window as unknown as { scrolls: number[] }).scrolls);
+
+test('desktop filter changes load behind the progress bar and open at the top', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const fixture = await languageFixture(sql);
+  try {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`/en?tag=${fixture.prefix}&sort=name-desc`);
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    const bar = page.locator('div.fixed.top-0.h-1');
+    const french = page.getByRole('button', { name: 'French', exact: true });
+    await french.last().scrollIntoViewIfNeeded();
+    const scrolled = await page.evaluate(() => window.scrollY);
+    expect(scrolled).toBeGreaterThan(300);
+    await recordScrolls(page);
+
+    let release = await gateDiscovery(page);
+    await french.last().click();
+    await expect(bar).toHaveClass(/opacity-100/);
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Searching/)).toHaveCount(0);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+    expect(await recordedScrolls(page)).toEqual([]);
+    await release();
+    await expect(page.getByText('10 partners', { exact: true })).toBeVisible();
+    await expect(bar).toHaveClass(/opacity-0/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    expect(new Set(await recordedScrolls(page))).toEqual(new Set([0]));
+    await expect(
+      page.getByRole('textbox', { name: 'Search profiles' }),
+    ).toBeInViewport();
+    expect(Object.fromEntries(new URL(page.url()).searchParams)).toMatchObject({
+      tag: fixture.prefix,
+      sort: 'name-desc',
+      primary: 'fr',
+    });
+
+    await page.goto(`/en?tag=${fixture.prefix}&sort=name-desc`);
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    release = await gateDiscovery(page);
+    await french.last().click();
+    await page
+      .getByRole('button', { name: 'English', exact: true })
+      .last()
+      .click();
+    await release();
+    await expect(bar).toHaveClass(/opacity-0/);
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    expect(new URL(page.url()).searchParams.getAll('primary').sort()).toEqual([
+      'en',
+      'fr',
+    ]);
+  } finally {
+    await fixture.cleanup();
+    await sql.end();
+  }
+});
+
+test('phone filter changes and load more use the progress bar', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const fixture = await languageFixture(sql);
+  try {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/en?tag=${fixture.prefix}&sort=name-desc`);
+    await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    const bar = page.locator('div.fixed.top-0.h-1');
+    const french = page.getByRole('button', { name: 'French', exact: true });
+    await french.last().scrollIntoViewIfNeeded();
+    const scrolled = await page.evaluate(() => window.scrollY);
+    expect(scrolled).toBeGreaterThan(300);
+
+    let release = await gateDiscovery(page);
+    await french.last().click();
+    await expect(bar).toHaveClass(/opacity-100/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+    await release();
+    await expect(page.getByText('10 partners', { exact: true })).toBeVisible();
+    await expect(bar).toHaveClass(/opacity-0/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+    const more = page.getByRole('button', { name: 'Show more partners' });
+    await more.scrollIntoViewIfNeeded();
+    const beforeMore = await page.evaluate(() => window.scrollY);
+    release = await gateDiscovery(page);
+    await more.click();
+    await expect(bar).toHaveClass(/opacity-100/);
+    await release();
+    await expect(page.locator('article')).toHaveCount(10);
+    await expect(bar).toHaveClass(/opacity-0/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(beforeMore);
+  } finally {
+    await fixture.cleanup();
     await sql.end();
   }
 });
