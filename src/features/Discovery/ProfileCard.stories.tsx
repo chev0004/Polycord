@@ -451,6 +451,24 @@ export const MobileOpensSheet: Story = {
     ).toBeInTheDocument();
   },
 };
+export const MobileSheet: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: (args) => <CardStory {...args} />,
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(
+      canvasElement.querySelector('article') as HTMLElement,
+    );
+    const sheet = await body.findByRole('dialog', { name: 'User 1' });
+    await expect(
+      within(sheet).getByRole('button', { name: "Copy User 1's username" }),
+    ).toBeInTheDocument();
+    await expect(
+      within(sheet).queryByText('Tap the name to copy their Discord username'),
+    ).not.toBeInTheDocument();
+  },
+};
 export const SaveAction: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');
