@@ -34,11 +34,13 @@ export const notificationKindEnum = pgEnum('notification_kind', [
   'copy',
   'view',
   'warning',
+  'share',
 ]);
 
 export const profileInteractionKindEnum = pgEnum('profile_interaction_kind', [
   'view',
   'copy',
+  'share',
 ]);
 
 export const moderationActionEnum = pgEnum('moderation_action', [
