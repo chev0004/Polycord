@@ -165,6 +165,7 @@ export const ProfileCard = ({
     isPreview || profile.allowAnonymousCopy !== false || isLoggedIn;
 
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
+  const tinted = Boolean(profile.premium && theme.tint);
   const accent = profile.premium ? theme.accent : FREE_ACCENT;
   const themeStyle = {
     ...deriveCardAccent(accent),
@@ -571,6 +572,14 @@ export const ProfileCard = ({
                 type="button"
                 suppressHydrationWarning
                 className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main hover:text-foreground focus-visible:text-foreground"
+                style={
+                  tinted
+                    ? {
+                        backgroundImage:
+                          'linear-gradient(var(--card-tint),var(--card-tint))',
+                      }
+                    : undefined
+                }
                 aria-label={t('showMoreLanguages', {
                   count: remainingLanguagesCount,
                 })}
@@ -582,6 +591,14 @@ export const ProfileCard = ({
             <Popover.Portal>
               <Popover.Content
                 className="PopoverContent z-50 w-[240px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-3 shadow-lg"
+                style={
+                  tinted
+                    ? ({
+                        '--card-tint': theme.tint,
+                        background: tintedSurface,
+                      } as React.CSSProperties)
+                    : undefined
+                }
                 side="bottom"
                 align="start"
                 sideOffset={5}
