@@ -905,13 +905,9 @@ export const DiscoveryPage = ({
                 currentProfileId={currentProfileId}
                 viewerTimezone={viewerTimezone}
                 onSaveProfile={saveProfileRequest}
-                onCopyUsername={
-                  isLoggedIn
-                    ? (_username, profileId) => {
-                        notifyUsernameCopied(profileId).catch(() => {});
-                      }
-                    : undefined
-                }
+                onCopyUsername={(_username, profileId) => {
+                  notifyUsernameCopied(profileId).catch(() => {});
+                }}
                 onViewProfile={handleViewProfile}
                 onShare={handleShareProfile}
                 onReport={handleReportProfile}

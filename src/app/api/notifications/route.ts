@@ -13,7 +13,7 @@ import {
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
-import { getActiveUser } from '@/lib/auth';
+import { getActiveUser, getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import {
   enforceRateLimit,
@@ -76,7 +76,7 @@ export const GET = async () => {
 export const POST = async (request: Request) => {
   const currentUser = await getActiveUser();
 
-  if (!currentUser) {
+  if (!currentUser && (await getCurrentUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -88,19 +88,22 @@ export const POST = async (request: Request) => {
 
   const target = await getPublicProfileById(
     profileId.data,
-    currentUser.accountId,
+    currentUser?.accountId,
   );
 
   if (!target) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
-  if (target.profile.userId === currentUser.accountId) {
+  if (
+    target.profile.userId === currentUser?.accountId ||
+    (!currentUser && !target.profile.allowAnonymousCopy)
+  ) {
     return NextResponse.json({ created: false });
   }
 
   const limit = await enforceRateLimit('copy', {
-    userId: currentUser.accountId,
+    userId: currentUser?.accountId,
     ip: requestIp(request),
   });
 
@@ -115,7 +118,7 @@ export const POST = async (request: Request) => {
   await recordProfileInteraction(target.profile.userId, 'copy');
   await trackEvent({
     name: ANALYTICS_EVENTS.profileCopyReceived,
-    userId: currentUser.accountId,
+    userId: currentUser?.accountId,
     locale: localeFromRequest(request),
     metadata: { ownerUserId: target.profile.userId },
   });
@@ -123,10 +126,10 @@ export const POST = async (request: Request) => {
   const notification = await createNotification({
     userId: target.profile.userId,
     kind: 'copy',
-    actorUserId: currentUser.accountId,
-    actorName: currentUser.name,
-    actorAvatarUrl: currentUser.avatarUrl ?? null,
-    isGuest: false,
+    actorUserId: currentUser?.accountId ?? null,
+    actorName: currentUser?.name ?? null,
+    actorAvatarUrl: currentUser?.avatarUrl ?? null,
+    isGuest: !currentUser,
   });
 
   return NextResponse.json({ created: notification !== null });

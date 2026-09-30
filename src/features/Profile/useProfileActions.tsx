@@ -111,7 +111,7 @@ export const useProfileActions = (
     const copiedToClipboard = await copyText(discordUsername);
     if (copiedToClipboard && !own) {
       trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy, { profileId: id });
-      if (isLoggedIn) void notifyUsernameCopied(id).catch(() => {});
+      void notifyUsernameCopied(id).catch(() => {});
     }
     if (copiedToClipboard) {
       addToast({
