@@ -190,3 +190,22 @@ export const PremiumAccentOverride: Story = {
     );
   },
 };
+
+export const CustomPickerTransition: Story = {
+  args: { premium: true, initialValue: 'indigo' },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', {
+        name: 'Open custom gradient picker',
+      }),
+    );
+    const picker = (
+      await within(canvasElement.ownerDocument.body).findByLabelText(
+        'Hex colour',
+      )
+    ).closest('.PopoverContent') as HTMLElement;
+    await expect(getComputedStyle(picker).animationName).toBe(
+      picker.dataset.side === 'top' ? 'slideDownAndFade' : 'slideUpAndFade',
+    );
+  },
+};

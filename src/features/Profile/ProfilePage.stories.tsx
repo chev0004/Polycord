@@ -4,6 +4,7 @@ import {
   fireEvent,
   fn,
   screen,
+  userEvent,
   waitFor,
   within,
 } from '@storybook/test';
@@ -118,6 +119,24 @@ export const WithProfile: Story = {
     onBumpProfile: fn(),
     onViewPublicProfile: fn(),
     onDeleteProfile: fn(),
+  },
+};
+
+export const OptionsMenuTransition: Story = {
+  args: {
+    initialValues: sampleProfile,
+    onBumpProfile: fn(),
+    onViewPublicProfile: fn(),
+    onDeleteProfile: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: 'Profile options' }),
+    );
+    const menu = (
+      await screen.findByRole('button', { name: 'View public profile' })
+    ).closest('.PopoverContent') as HTMLElement;
+    await expect(getComputedStyle(menu).animationName).toBe('slideUpAndFade');
   },
 };
 

@@ -295,3 +295,17 @@ export const OwnProfile: Story = {
     ).not.toBeInTheDocument();
   },
 };
+
+export const MenuTransition: Story = {
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: 'More actions' }),
+    );
+    const menu = (
+      await within(canvasElement.ownerDocument.body).findByRole('button', {
+        name: 'Report profile',
+      })
+    ).closest('.PopoverContent') as HTMLElement;
+    await expect(getComputedStyle(menu).animationName).toBe('slideUpAndFade');
+  },
+};
