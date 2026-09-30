@@ -188,7 +188,6 @@ export const DiscoveryPage = ({
     [viewerHasAvailability],
   );
   const settleRequest = useRef<(() => void) | null>(null);
-  const scrollOnSettle = useRef(true);
   const [awaitingResults, setAwaitingResults] = useState(false);
   const [initialState] = useState(() => parseDiscoveryState(searchParams));
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>(
@@ -479,9 +478,8 @@ export const DiscoveryPage = ({
 
   const showSkeleton = isLoading;
 
-  const trackRequest = (scroll = true) => {
+  const trackRequest = () => {
     settleRequest.current?.();
-    scrollOnSettle.current = scroll;
     setRefreshFailed(false);
     setAwaitingResults(true);
     navigate(
@@ -754,7 +752,7 @@ export const DiscoveryPage = ({
   useLayoutEffect(() => {
     if (!awaitingResults || isRefreshing) return;
     if (discoveryData && loadedUrl !== requestUrl && !refreshFailed) return;
-    if (scrollOnSettle.current) window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
     settleRequest.current?.();
     settleRequest.current = null;
     setAwaitingResults(false);
@@ -964,7 +962,7 @@ export const DiscoveryPage = ({
                   type="button"
                   onClick={() => {
                     setPage(safePage + 1);
-                    trackRequest(false);
+                    trackRequest();
                   }}
                   disabled={isRefreshing}
                   className="mt-1 mb-6 h-12 w-full rounded-lg border border-line font-semibold text-sm text-soft transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:bg-overlay active:scale-[0.98] disabled:opacity-60"

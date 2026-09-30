@@ -423,14 +423,13 @@ test('phone filter changes and load more use the progress bar', async ({
 
     const more = page.getByRole('button', { name: 'Show more partners' });
     await more.scrollIntoViewIfNeeded();
-    const beforeMore = await page.evaluate(() => window.scrollY);
     release = await gateDiscovery(page);
     await more.click();
     await expect(bar).toHaveClass(/opacity-100/);
     await release();
     await expect(page.locator('article')).toHaveCount(10);
     await expect(bar).toHaveClass(/opacity-0/);
-    expect(await page.evaluate(() => window.scrollY)).toBe(beforeMore);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
   } finally {
     await fixture.cleanup();
     await sql.end();
