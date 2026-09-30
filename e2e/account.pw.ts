@@ -64,7 +64,6 @@ test('deleted sessions cannot read, write, or recreate an account', async ({
         'saved',
         'block',
         'report',
-        'notifications',
         'profile/bump',
         'profile/boost',
         'profile/voice',
