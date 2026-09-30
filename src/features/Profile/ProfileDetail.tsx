@@ -2,7 +2,13 @@
 
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
-import { type CSSProperties, Fragment, useEffect, useState } from 'react';
+import {
+  type CSSProperties,
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useState,
+} from 'react';
 import {
   MdBlock,
   MdBookmark,
@@ -68,6 +74,7 @@ type ProfileDetailProps = {
   onTagClick: (tag: string) => void;
   onLanguageClick: (language: string, isPrimary: boolean) => void;
   onCountryClick: (country: string) => void;
+  bannerActions?: ReactNode;
 };
 
 const bannerFill = '[background:var(--member-banner)]';
@@ -300,6 +307,7 @@ export const ProfileDetail = ({
   onTagClick,
   onLanguageClick,
   onCountryClick,
+  bannerActions,
 }: ProfileDetailProps) => {
   const t = useTranslations('PublicProfile');
   const tDiscovery = useTranslations('Discovery');
@@ -407,9 +415,11 @@ export const ProfileDetail = ({
       }
     >
       <div
-        className="h-[132px] min-[861px]:h-[176px]"
+        className="flex h-[132px] justify-end gap-2 px-2 pt-1.5 min-[861px]:h-[176px]"
         style={{ background: theme.banner }}
-      />
+      >
+        {bannerActions}
+      </div>
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-3.5 px-5 pb-2 min-[861px]:gap-x-5 min-[861px]:px-7">
         <div
           className="-mt-[62px] relative z-[1] justify-self-start rounded-full bg-background-dark p-2"
@@ -533,7 +543,7 @@ export const ProfileDetail = ({
                   src={`/api/voice/${profile.id}`}
                 />
               ) : null}
-              <span className="inline-flex h-6 items-center gap-1 rounded-full bg-primary-darker pr-2.5 pl-[7px] font-semibold text-primary-light text-xs">
+              <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[var(--ct-chip-bg)] pr-2.5 pl-[7px] font-semibold text-[var(--ct-chip-text)] text-xs">
                 <MdWorkspacePremium size={15} />
                 {t('premium')}
               </span>

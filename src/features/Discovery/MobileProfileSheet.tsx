@@ -41,6 +41,9 @@ import { type DiscoveryProfile, getBumpAge } from './ProfileCard';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
 import { VoiceChip } from './VoiceChip';
 
+export const bannerButton =
+  'flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50';
+
 export const MobileNameCopy = ({
   name,
   copied,
@@ -96,6 +99,7 @@ type MobileProfileSheetProps = {
   viewerTimezone?: string;
   onCopyUsername?: CopyUsernameHandler;
   menuItems?: ActionSheetItem[];
+  pointerReturnFocus?: boolean;
 };
 
 export const MobileProfileSheet = ({
@@ -106,6 +110,7 @@ export const MobileProfileSheet = ({
   viewerTimezone,
   onCopyUsername,
   menuItems = [],
+  pointerReturnFocus,
 }: MobileProfileSheetProps) => {
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
@@ -133,8 +138,6 @@ export const MobileProfileSheet = ({
     languageDisplay === 'short' && isValidLanguageCode(language)
       ? capitalizeLanguageCode(language)
       : getLanguageName(language, locale);
-  const bannerButton =
-    'flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50';
 
   return (
     <Sheet
@@ -152,6 +155,7 @@ export const MobileProfileSheet = ({
             } as CSSProperties)
           : undefined
       }
+      pointerReturnFocus={pointerReturnFocus}
     >
       <div
         className="h-full overflow-y-auto overscroll-contain [scrollbar-width:none]"
@@ -204,13 +208,15 @@ export const MobileProfileSheet = ({
                 big
               />
             ) : (
-              <p className="truncate font-bold font-figtree text-2xl">
-                {profile.displayName}
-              </p>
+              <>
+                <p className="truncate font-bold font-figtree text-2xl">
+                  {profile.displayName}
+                </p>
+                <p className="mt-0.5 text-muted text-xs">
+                  {t('signInToViewUsername')}
+                </p>
+              </>
             )}
-            <p className="mt-0.5 text-muted text-xs">
-              {canCopy ? t('tapToCopyHint') : t('signInToViewUsername')}
-            </p>
             {profile.synthetic ? <DummyChip className="mt-2" /> : null}
             {copyFailed && profile.discordUsername ? (
               <p role="alert" className="mt-1.5 text-danger text-sm">

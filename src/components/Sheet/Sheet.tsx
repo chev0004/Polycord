@@ -27,6 +27,7 @@ type SheetProps = {
   bare?: boolean;
   onCloseAutoFocus?: () => void;
   style?: CSSProperties;
+  pointerReturnFocus?: boolean;
   children: ReactNode;
 };
 
@@ -42,12 +43,14 @@ export const Sheet = ({
   bare = false,
   onCloseAutoFocus,
   style,
+  pointerReturnFocus = true,
   children,
 }: SheetProps) => {
   const t = useTranslations('Sheet');
   const [drag, setDrag] = useState(0);
   const [start, setStart] = useState<number | null>(null);
   const returnFocus = useRef<Element | null>(null);
+  const pointerClose = useRef(false);
 
   const release = () => {
     if (start === null) return;
@@ -74,13 +77,26 @@ export const Sheet = ({
         <Dialog.Overlay className="SheetOverlay fixed inset-0 z-50 bg-black/60" />
         <Dialog.Content
           aria-describedby={undefined}
+          onPointerDownCapture={() => {
+            pointerClose.current = true;
+          }}
+          onPointerDownOutside={() => {
+            pointerClose.current = true;
+          }}
+          onKeyDownCapture={() => {
+            pointerClose.current = false;
+          }}
           onOpenAutoFocus={() => {
             returnFocus.current = document.activeElement;
+            pointerClose.current = false;
             setDrag(0);
           }}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            if (returnFocus.current instanceof HTMLElement)
+            if (
+              returnFocus.current instanceof HTMLElement &&
+              (pointerReturnFocus || !pointerClose.current)
+            )
               returnFocus.current.focus();
             onCloseAutoFocus?.();
           }}
