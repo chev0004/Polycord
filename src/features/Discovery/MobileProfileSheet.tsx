@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { type CSSProperties, useState } from 'react';
 import {
   MdCheck,
   MdClose,
@@ -30,7 +30,12 @@ import {
 import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { AvailabilityRow } from './AvailabilityRow';
-import { deriveCardAccent, FREE_ACCENT, getFreeCardTheme } from './cardTheme';
+import {
+  deriveCardAccent,
+  FREE_ACCENT,
+  getFreeCardTheme,
+  tintedSurface,
+} from './cardTheme';
 import { DummyChip } from './DummyChip';
 import { type DiscoveryProfile, getBumpAge } from './ProfileCard';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
@@ -113,6 +118,7 @@ export const MobileProfileSheet = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const canCopy = profile.allowAnonymousCopy !== false || isLoggedIn;
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
+  const tinted = Boolean(profile.premium && theme.tint);
   const bumpAge = getBumpAge(profile.lastBumpedAt);
   const bumped =
     profile.lastBumpRelative ??
@@ -138,6 +144,14 @@ export const MobileProfileSheet = ({
       full
       flush
       bare
+      style={
+        tinted
+          ? ({
+              '--card-tint': theme.tint,
+              background: tintedSurface,
+            } as CSSProperties)
+          : undefined
+      }
     >
       <div
         className="h-full overflow-y-auto overscroll-contain [scrollbar-width:none]"
@@ -169,7 +183,10 @@ export const MobileProfileSheet = ({
         </div>
         <div className="flex flex-col gap-4 px-5 pb-6">
           <div className="-mt-[52px] relative z-[1] flex items-end justify-between">
-            <div className="rounded-full bg-background-dark p-1.5">
+            <div
+              className="rounded-full bg-background-dark p-1.5"
+              style={tinted ? { background: tintedSurface } : undefined}
+            >
               <Avatar avatarUrl={profile.avatarUrl} size="lg" />
             </div>
             {bumped ? (
