@@ -49,6 +49,7 @@ import {
   deriveCardAccent,
   FREE_ACCENT,
   getFreeCardTheme,
+  tintedSurface,
 } from '@/features/Discovery/cardTheme';
 import { DummyChip } from '@/features/Discovery/DummyChip';
 import {
@@ -81,8 +82,6 @@ type ProfileDetailProps = {
   bannerActions?: ReactNode;
 };
 
-const tintedSurface =
-  'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 const bannerFill = '[background:var(--member-banner)]';
 const overlapFill = 'bg-overlay ring-1 ring-line-strong ring-inset';
 

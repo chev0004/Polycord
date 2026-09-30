@@ -45,6 +45,7 @@ import {
   deriveCardAccent,
   FREE_ACCENT,
   getFreeCardTheme,
+  tintedSurface,
 } from './cardTheme';
 import { DummyChip } from './DummyChip';
 import { MobileNameCopy, MobileProfileSheet } from './MobileProfileSheet';
@@ -109,8 +110,6 @@ const baseLanguagePillClasses =
   'rounded-md px-2.5 py-[5px] text-xs font-medium whitespace-nowrap flex-shrink-0';
 const languagePillClasses = `${baseLanguagePillClasses} bg-background-darker text-soft`;
 const primaryLanguagePillClasses = `${baseLanguagePillClasses} bg-[var(--ct-chip-bg,var(--color-primary-darker))] text-[var(--ct-chip-text,var(--color-foreground))]`;
-const tintedSurface =
-  'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 
 export const getBumpAge = (value?: string) => {
   if (!value) return null;
