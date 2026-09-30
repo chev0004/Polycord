@@ -53,6 +53,7 @@ const BlockedProfilePreview = ({
         open={open}
         onOpenChange={onOpenChange}
         isLoggedIn
+        pointerReturnFocus={false}
       />
     );
 
