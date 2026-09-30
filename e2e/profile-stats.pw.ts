@@ -37,7 +37,7 @@ const stat = (page: import('@playwright/test').Page, label: string) =>
 
 test.afterAll(() => sql.end());
 
-test('mobile sheet views and copies reach Premium profile insights', async ({
+test('mobile sheet views, copies, and shares reach Premium profile insights', async ({
   browser,
 }) => {
   const [owner, viewer] = await sql<Person[]>`
@@ -79,17 +79,25 @@ test('mobile sheet views and copies reach Premium profile insights', async ({
       .getByRole('button', { name: "Copy Stats owner's username" })
       .click();
     expect((await copy).status()).toBe(200);
+    const share = page.waitForResponse('**/api/profile/share');
+    await sheet.getByRole('button', { name: 'More actions' }).click();
+    await page.getByRole('button', { name: 'Share profile' }).click();
+    expect(await (await share).json()).toEqual({ created: true });
 
     await signIn(context, owner);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/en/profile');
     await expect(stat(page, 'Views (30d)').first()).toHaveText('1');
     await expect(stat(page, 'Copies (30d)').first()).toHaveText('1');
+    await expect(stat(page, 'Shares (30d)').first()).toHaveText('1');
     await page
       .getByRole('button', { name: 'Notifications', exact: true })
       .click();
     await expect(
       page.getByText('Stats viewer copied your username'),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Stats viewer shared your profile'),
     ).toBeVisible();
     await context.close();
   } finally {

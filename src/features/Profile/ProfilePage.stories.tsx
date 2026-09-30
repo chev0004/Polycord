@@ -121,6 +121,30 @@ export const WithProfile: Story = {
   },
 };
 
+export const PremiumInsights: Story = {
+  args: {
+    initialValues: sampleProfile,
+    premium: true,
+    stats: { views30d: 12, copies30d: 5, shares30d: 3, saves: 7 },
+    onBumpProfile: fn(),
+    onViewPublicProfile: fn(),
+    onDeleteProfile: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const [label, value] of [
+      ['Views (30d)', '12'],
+      ['Copies (30d)', '5'],
+      ['Shares (30d)', '3'],
+      ['Saves', '7'],
+    ]) {
+      await expect(
+        canvas.getByText(label).previousElementSibling,
+      ).toHaveTextContent(value);
+    }
+  },
+};
+
 export const LastBump: Story = {
   args: {
     initialValues: sampleProfile,
