@@ -4,6 +4,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MdCheck, MdSwapVert } from 'react-icons/md';
+import { menuContentClass, menuItemClass } from '@/components/Menu';
 import { type DiscoverySortValue, SORT_OPTIONS } from './discoverySort';
 
 type SortMenuProps = {
@@ -42,7 +43,7 @@ export const SortMenu = ({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent z-50 min-w-[200px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.5),0_4px_6px_-4px_rgba(0,0,0,0.5)]"
+          className={`${menuContentClass} min-w-[200px]`}
           side="bottom"
           align="end"
           sideOffset={8}
@@ -62,7 +63,7 @@ export const SortMenu = ({
                   onChange(option);
                   setOpen(false);
                 }}
-                className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-sm transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`${menuItemClass} ${
                   active
                     ? 'bg-background-main text-primary-light'
                     : 'text-foreground hover:bg-background-main'

@@ -17,6 +17,11 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
+import {
+  menuContentClass,
+  menuDividerClass,
+  menuItemClass,
+} from '@/components/Menu';
 import { ActionSheet, type ActionSheetItem } from '@/components/Sheet';
 import {
   type AvailabilityPattern,
@@ -447,7 +452,7 @@ export const ProfileDetail = ({
               <Popover.Trigger asChild>{menuTrigger}</Popover.Trigger>
               <Popover.Portal>
                 <Popover.Content
-                  className="z-50 w-[200px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                  className={`${menuContentClass} w-[200px]`}
                   side="bottom"
                   align="end"
                   sideOffset={6}
@@ -460,7 +465,7 @@ export const ProfileDetail = ({
                     ) => (
                       <Fragment key={key}>
                         {danger && index > 0 && !menuItems[index - 1].danger ? (
-                          <div className="my-1 h-px bg-gray-500/50" />
+                          <div className={menuDividerClass} />
                         ) : null}
                         <button
                           type="button"
@@ -469,7 +474,7 @@ export const ProfileDetail = ({
                             onSelect();
                             setMenuOpen(false);
                           }}
-                          className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main disabled:opacity-60 ${danger ? 'text-danger' : 'text-foreground'}`}
+                          className={`${menuItemClass} enabled:hover:bg-background-main ${danger ? 'text-danger' : 'text-foreground'}`}
                         >
                           {Icon ? (
                             <Icon

@@ -9,6 +9,7 @@ import {
   MdPersonOutline,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { menuContentClass, menuItemClass } from '@/components/Menu';
 
 type UserMenuProps = {
   iconUrl?: string;
@@ -36,9 +37,7 @@ const MenuItem = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-left text-foreground text-sm no-underline transition-colors focus-visible:bg-background-main ${
-        disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-background-main'
-      }`}
+      className={`${menuItemClass} text-foreground enabled:hover:bg-background-main`}
     >
       <Icon size={20} className="text-muted" />
       {children}
@@ -128,7 +127,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       <Popover.Trigger asChild>{triggerButton}</Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent z-50 w-[200px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 shadow-lg"
+          className={`${menuContentClass} w-[200px]`}
           side="bottom"
           align="end"
           sideOffset={8}
