@@ -65,10 +65,10 @@ const BlockedProfilePreview = ({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 flex animate-[sheetFadeIn_150ms_ease-out] overflow-y-auto bg-black/60 p-6 backdrop-blur-sm">
+        <Dialog.Overlay className="DialogOverlay fixed inset-0 z-50 flex overflow-y-auto bg-black/60 p-6 backdrop-blur-sm">
           <Dialog.Content
             aria-describedby={undefined}
-            className="m-auto w-full max-w-[1032px] animate-popIn outline-none"
+            className="DialogContent m-auto w-full max-w-[1032px] outline-none"
             onOpenAutoFocus={(event) => {
               event.preventDefault();
               returnFocus.current = document.activeElement;

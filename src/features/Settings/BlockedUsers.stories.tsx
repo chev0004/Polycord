@@ -370,3 +370,13 @@ export const NoPreviewWithoutProfile: Story = {
     ).toBeNull();
   },
 };
+export const PreviewTransition: Story = {
+  play: async ({ canvasElement }) => {
+    await openPreview(canvasElement);
+    const overlay = document.querySelector('.DialogOverlay') as HTMLElement;
+    await expect(getComputedStyle(overlay).animationName).toBe('sheetFadeIn');
+    await expect(
+      getComputedStyle(screen.getByRole('dialog')).animationName,
+    ).toBe('popIn');
+  },
+};

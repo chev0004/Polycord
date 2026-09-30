@@ -456,9 +456,9 @@ const ModDialog = ({
 }) => (
   <Dialog.Root open={open} onOpenChange={(next) => (next ? null : onClose())}>
     <Dialog.Portal>
-      <Dialog.Overlay className="fixed inset-0 z-[80] bg-black/65" />
+      <Dialog.Overlay className="DialogOverlay fixed inset-0 z-[80] bg-black/65" />
       <div className="pointer-events-none fixed inset-0 z-[81] flex items-center justify-center p-5">
-        <Dialog.Content className="pointer-events-auto flex w-full max-w-[460px] flex-col gap-4 rounded-panel border border-[rgba(107,114,128,0.5)] bg-background-dark p-[22px] font-figtree shadow-xl">
+        <Dialog.Content className="DialogContent pointer-events-auto flex w-full max-w-[460px] flex-col gap-4 rounded-panel border border-[rgba(107,114,128,0.5)] bg-background-dark p-[22px] font-figtree shadow-xl">
           <div>
             <Dialog.Title className="font-bold text-[19px] text-foreground leading-tight">
               {title}
