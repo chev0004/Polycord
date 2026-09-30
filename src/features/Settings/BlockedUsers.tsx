@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
@@ -49,6 +49,7 @@ const BlockedProfilePreview = ({
   const router = useRouteProgressRouter();
   const mobile = useIsMobile();
   const actions = useProfileActions(locale, true, () => {});
+  const returnFocus = useRef<Element | null>(null);
 
   if (mobile)
     return (
@@ -67,7 +68,15 @@ const BlockedProfilePreview = ({
           <Dialog.Content
             aria-describedby={undefined}
             className="m-auto w-full max-w-[1032px] animate-popIn outline-none"
-            onOpenAutoFocus={(event) => event.preventDefault()}
+            onOpenAutoFocus={(event) => {
+              event.preventDefault();
+              returnFocus.current = document.activeElement;
+            }}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              if (returnFocus.current instanceof HTMLElement)
+                returnFocus.current.focus();
+            }}
           >
             <Dialog.Title className="sr-only">
               {t('blockedPreviewTitle')}
