@@ -96,3 +96,37 @@ test('mobile sheet views and copies reach Premium profile insights', async ({
     await sql`delete from users where id in (${owner.id}, ${viewer.id})`;
   }
 });
+
+test('guest username copies reach the profile owner', async ({ browser }) => {
+  const [owner] = await sql<Person[]>`
+    insert into users (discord_user_id, discord_username, display_name)
+    values (${randomUUID().replaceAll('-', '')}, 'guest-copy-owner', 'Guest copy owner')
+    returning id, discord_user_id, display_name`;
+  try {
+    await sql`
+      insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio)
+      values (now(), ${owner.id}, true, 'en', 'ja', 'beginner', 'A profile copied by a guest.')`;
+    await sql`insert into user_settings (user_id, profile_view_alert, product_analytics) values (${owner.id}, true, true)`;
+
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 900 },
+      permissions: ['clipboard-read', 'clipboard-write'],
+    });
+    const page = await context.newPage();
+    await page.goto('/en');
+    const copy = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/notifications') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Copy username' }).first().click();
+    expect((await copy).status()).toBe(200);
+    await context.close();
+
+    const rows =
+      await sql`select is_guest from notifications where user_id = ${owner.id} and kind = 'copy'`;
+    expect(rows).toEqual([{ is_guest: true }]);
+  } finally {
+    await sql`delete from users where id = ${owner.id}`;
+  }
+});
