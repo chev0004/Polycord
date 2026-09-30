@@ -12,7 +12,7 @@ export const textFieldClasses = (error?: boolean, readOnly?: boolean) => {
       : 'border-line hover:border-line-strong focus:border-line-strong';
   const text = readOnly ? 'cursor-not-allowed text-muted' : 'text-foreground';
 
-  return `w-full rounded-xl border bg-background-darker placeholder-subtle outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 ${border} ${text}`;
+  return `w-full rounded-field border bg-background-darker placeholder-subtle outline-none transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 ${border} ${text}`;
 };
 
 export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(

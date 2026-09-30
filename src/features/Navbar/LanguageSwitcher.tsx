@@ -1,6 +1,7 @@
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { menuContentClass, menuItemClass } from '@/components/Menu';
 import { languages } from '@/constants/languages';
 import { locales } from '@/utils/locales';
 import { LocaleLink } from './LocaleLink';
@@ -56,7 +57,7 @@ export const LanguageSwitcher: React.FC = () => {
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent z-50 w-[120px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 shadow-lg"
+          className={`${menuContentClass} w-[120px]`}
           side="bottom"
           align="end"
           sideOffset={8}
@@ -66,7 +67,7 @@ export const LanguageSwitcher: React.FC = () => {
               <LocaleLink
                 key={locale}
                 locale={locale}
-                className={`flex h-[38px] w-full items-center gap-2.5 rounded-full px-3 text-sm no-underline transition-colors focus-visible:bg-background-main ${
+                className={`${menuItemClass} ${
                   locale === currentLocale
                     ? 'bg-background-main text-primary-light'
                     : 'text-foreground hover:bg-background-main'
