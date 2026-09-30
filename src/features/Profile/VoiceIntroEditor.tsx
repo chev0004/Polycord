@@ -16,10 +16,13 @@ type PendingClip = {
   seconds: number;
 };
 
+export type PendingVoiceClip = { url: string; seconds: number };
+
 type VoiceIntroEditorProps = {
   premium: boolean;
   voiceSeconds: number;
   onChange: (seconds: number) => void;
+  onPendingChange?: (clip: PendingVoiceClip | null) => void;
 };
 
 const blobToDataUrl = (blob: Blob): Promise<string> =>
@@ -34,6 +37,7 @@ export const VoiceIntroEditor = ({
   premium,
   voiceSeconds,
   onChange,
+  onPendingChange,
 }: VoiceIntroEditorProps) => {
   const t = useTranslations('Profile');
   const locale = useLocale();
@@ -56,6 +60,12 @@ export const VoiceIntroEditor = ({
     },
     [pending],
   );
+
+  useEffect(() => {
+    onPendingChange?.(
+      pending ? { url: pending.url, seconds: pending.seconds } : null,
+    );
+  }, [pending, onPendingChange]);
 
   const startRecording = async () => {
     setError(null);
