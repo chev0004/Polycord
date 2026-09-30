@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/Button';
@@ -299,4 +299,85 @@ const LiveUpdateStory = () => {
 
 export const LiveUpdate: Story = {
   render: () => <LiveUpdateStory />,
+};
+
+const entryCorners = (element: HTMLElement) => {
+  const entry = element.closest('[class*="rounded-row"]') as HTMLElement;
+  const style = getComputedStyle(entry);
+  return [style.borderTopLeftRadius, style.borderBottomLeftRadius];
+};
+
+const openInbox = async (canvasElement: HTMLElement) => {
+  await userEvent.click(
+    await within(canvasElement).findByRole('button', {
+      name: 'Notifications',
+    }),
+  );
+  return within(document.body);
+};
+
+export const LastEntryCorners: Story = {
+  args: {
+    premium: true,
+    persist: false,
+    notifications: [
+      { id: 'a', kind: 'copy', isGuest: true },
+      { id: 'b', kind: 'view', isGuest: true },
+      { id: 'c', kind: 'copy', actorName: 'Mina Park' },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const portal = await openInbox(canvasElement);
+    const first = await portal.findByText(
+      'An anonymous user copied your username',
+    );
+    const middle = portal.getByText('A guest viewed your profile');
+    const last = portal.getByText('Mina Park copied your username');
+
+    await expect(entryCorners(first)).toEqual(['6px', '6px']);
+    await expect(entryCorners(middle)).toEqual(['6px', '6px']);
+    await expect(entryCorners(last)).toEqual(['6px', '18px']);
+
+    const lastEntry = last.closest('[class*="rounded-row"]') as HTMLElement;
+    await userEvent.click(
+      within(lastEntry).getByRole('button', { name: 'Delete' }),
+    );
+    await waitFor(() =>
+      expect(
+        portal.queryByText('Mina Park copied your username'),
+      ).not.toBeInTheDocument(),
+    );
+    await expect(entryCorners(middle)).toEqual(['6px', '18px']);
+  },
+};
+
+export const SingleEntryCorners: Story = {
+  args: {
+    premium: true,
+    persist: false,
+    notifications: [{ id: 'only', kind: 'view', isGuest: true }],
+  },
+  play: async ({ canvasElement }) => {
+    const portal = await openInbox(canvasElement);
+    await expect(
+      entryCorners(await portal.findByText('A guest viewed your profile')),
+    ).toEqual(['6px', '18px']);
+  },
+};
+
+export const LastEntryCornersWithUpsell: Story = {
+  args: {
+    premium: false,
+    persist: false,
+    notifications: [
+      { id: 'a', kind: 'copy', isGuest: true },
+      { id: 'b', kind: 'copy', isGuest: true },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const portal = await openInbox(canvasElement);
+    const entries = await portal.findAllByText('A user copied your username');
+    await expect(entryCorners(entries[0])).toEqual(['6px', '6px']);
+    await expect(entryCorners(entries[1])).toEqual(['6px', '18px']);
+  },
 };

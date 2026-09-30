@@ -20,7 +20,7 @@ export const Button = ({
   type = 'button',
   ...props
 }: ButtonProps) => {
-  const baseClasses = `flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`;
+  const baseClasses = `flex select-none items-center justify-center gap-2 rounded-control px-4 py-2 font-${font} font-${weight} text-sm transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`;
 
   const variants = {
     primary:

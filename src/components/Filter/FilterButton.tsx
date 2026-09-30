@@ -129,7 +129,7 @@ export const FilterButton = React.forwardRef<
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content
-            className="PopoverContent z-50 w-[280px] rounded-[20px] border border-gray-500/50 bg-background-dark p-4 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.5),0_4px_6px_-4px_rgba(0,0,0,0.5)]"
+            className="PopoverContent z-50 w-[280px] rounded-popover border border-gray-500/50 bg-background-dark p-4 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.5),0_4px_6px_-4px_rgba(0,0,0,0.5)]"
             side="bottom"
             align="start"
             sideOffset={8}

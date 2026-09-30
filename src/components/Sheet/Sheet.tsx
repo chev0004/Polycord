@@ -26,6 +26,8 @@ type SheetProps = {
   flush?: boolean;
   bare?: boolean;
   onCloseAutoFocus?: () => void;
+  style?: CSSProperties;
+  pointerReturnFocus?: boolean;
   children: ReactNode;
 };
 
@@ -40,12 +42,15 @@ export const Sheet = ({
   flush = false,
   bare = false,
   onCloseAutoFocus,
+  style,
+  pointerReturnFocus = true,
   children,
 }: SheetProps) => {
   const t = useTranslations('Sheet');
   const [drag, setDrag] = useState(0);
   const [start, setStart] = useState<number | null>(null);
   const returnFocus = useRef<Element | null>(null);
+  const pointerClose = useRef(false);
 
   const release = () => {
     if (start === null) return;
@@ -72,17 +77,30 @@ export const Sheet = ({
         <Dialog.Overlay className="SheetOverlay fixed inset-0 z-50 bg-black/60" />
         <Dialog.Content
           aria-describedby={undefined}
+          onPointerDownCapture={() => {
+            pointerClose.current = true;
+          }}
+          onPointerDownOutside={() => {
+            pointerClose.current = true;
+          }}
+          onKeyDownCapture={() => {
+            pointerClose.current = false;
+          }}
           onOpenAutoFocus={() => {
             returnFocus.current = document.activeElement;
+            pointerClose.current = false;
             setDrag(0);
           }}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            if (returnFocus.current instanceof HTMLElement)
+            if (
+              returnFocus.current instanceof HTMLElement &&
+              (pointerReturnFocus || !pointerClose.current)
+            )
               returnFocus.current.focus();
             onCloseAutoFocus?.();
           }}
-          style={{ '--sheet-drag': `${drag}px` } as CSSProperties}
+          style={{ ...style, '--sheet-drag': `${drag}px` } as CSSProperties}
           className={`SheetContent fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100dvh-60px)] translate-y-[var(--sheet-drag)] flex-col overflow-hidden rounded-t-3xl bg-background-dark font-figtree text-foreground shadow-[0_-1px_0_var(--color-line),0_-12px_32px_rgba(0,0,0,0.5)] ${
             full ? 'h-[calc(100dvh-60px)]' : ''
           } ${start === null ? 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]' : ''}`}

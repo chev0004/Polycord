@@ -235,10 +235,90 @@ export const ReportFromPreview: Story = {
     expect(args.unblock).not.toHaveBeenCalled();
   },
 };
+export const ShareFromPreview: Story = {
+  args: {
+    load: async () => [
+      {
+        ...accounts[0],
+        profile: {
+          ...kenjiProfile,
+          avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png',
+        },
+      },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => {} },
+    });
+    const dialog = await openPreview(canvasElement);
+    await userEvent.click(
+      dialog.getByRole('button', { name: 'Copy profile link' }),
+    );
+    const toast = (await screen.findByText('Profile link copied')).closest(
+      'li',
+    ) as HTMLElement;
+    await expect(toast.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('embed/avatars/0.png'),
+    );
+  },
+};
+export const PreviewOpen: Story = {
+  play: async ({ canvasElement }) => {
+    await openPreview(canvasElement);
+  },
+};
+export const ClosePreviewButton: Story = {
+  play: async ({ canvasElement }) => {
+    const dialog = await openPreview(canvasElement);
+    const close = dialog.getAllByRole('button', { name: 'Close' });
+    expect(close).toHaveLength(1);
+    await userEvent.click(close[0]);
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() =>
+      expect(
+        within(canvasElement).getByRole('button', {
+          name: "Show Kenji Ito's profile",
+        }),
+      ).toHaveFocus(),
+    );
+  },
+};
+export const ClosePreviewWithKeyboard: Story = {
+  play: async ({ canvasElement }) => {
+    const dialog = await openPreview(canvasElement);
+    dialog.getByRole('button', { name: 'Close' }).focus();
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() =>
+      expect(
+        within(canvasElement).getByRole('button', {
+          name: "Show Kenji Ito's profile",
+        }),
+      ).toHaveFocus(),
+    );
+  },
+};
+export const ClosePreviewJapanese: Story = {
+  globals: { locale: 'ja' },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      await within(canvasElement).findByRole('button', {
+        name: 'Kenji Itoさんのプロフィールを表示',
+      }),
+    );
+    const dialog = within(await screen.findByRole('dialog'));
+    await userEvent.click(dialog.getByRole('button', { name: '閉じる' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  },
+};
 export const MobilePreviewProfile: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   play: async ({ canvasElement, args }) => {
     const dialog = await openPreview(canvasElement);
+    expect(dialog.getAllByRole('button', { name: 'Close' })).toHaveLength(1);
     expect(dialog.queryByRole('button', { name: 'More actions' })).toBeNull();
     expect(
       dialog.queryByRole('button', { name: 'Copy profile link' }),
@@ -248,6 +328,37 @@ export const MobilePreviewProfile: Story = {
     ).toBeNull();
     await closePreview(canvasElement);
     expect(args.unblock).not.toHaveBeenCalled();
+  },
+};
+export const MobileTapClosePreview: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const show = await within(canvasElement).findByRole('button', {
+      name: "Show Kenji Ito's profile",
+    });
+    const background = getComputedStyle(show).backgroundColor;
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await userEvent.click(show);
+      const dialog = within(await screen.findByRole('dialog'));
+      await userEvent.click(dialog.getByRole('button', { name: 'Close' }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(show).not.toHaveFocus();
+      expect(getComputedStyle(show).backgroundColor).toBe(background);
+    }
+  },
+};
+export const MobileKeyboardClosePreview: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const show = await within(canvasElement).findByRole('button', {
+      name: "Show Kenji Ito's profile",
+    });
+    show.focus();
+    await userEvent.keyboard('{Enter}');
+    await screen.findByRole('dialog');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(show).toHaveFocus());
   },
 };
 export const NoPreviewWithoutProfile: Story = {
