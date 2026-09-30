@@ -72,87 +72,89 @@ export const ReportDialog = ({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-[fadeIn_150ms_ease-out]" />
-        <Dialog.Content
-          className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(440px,calc(100vw-2rem))] flex-col gap-5 overflow-y-auto rounded-panel bg-background-dark p-6 shadow-xl"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <Dialog.Title className="font-figtree font-semibold text-foreground text-lg">
-                {t('reportDialogTitle')}
-              </Dialog.Title>
-              <Dialog.Description className="text-muted text-sm">
-                {profileName
-                  ? t('reportDialogDescriptionNamed', { name: profileName })
-                  : t('reportDialogDescription')}
-              </Dialog.Description>
+        <Dialog.Overlay className="DialogOverlay fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content
+            className="DialogContent pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-[min(440px,calc(100vw-2rem))] flex-col gap-5 overflow-y-auto rounded-panel bg-background-dark p-6 shadow-xl"
+            onOpenAutoFocus={(event) => event.preventDefault()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <Dialog.Title className="font-figtree font-semibold text-foreground text-lg">
+                  {t('reportDialogTitle')}
+                </Dialog.Title>
+                <Dialog.Description className="text-muted text-sm">
+                  {profileName
+                    ? t('reportDialogDescriptionNamed', { name: profileName })
+                    : t('reportDialogDescription')}
+                </Dialog.Description>
+              </div>
+              <Dialog.Close
+                className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus-visible:bg-background-main focus-visible:text-foreground"
+                aria-label={t('reportCancel')}
+              >
+                <MdClose size={18} />
+              </Dialog.Close>
             </div>
-            <Dialog.Close
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-background-main hover:text-foreground focus-visible:bg-background-main focus-visible:text-foreground"
-              aria-label={t('reportCancel')}
-            >
-              <MdClose size={18} />
-            </Dialog.Close>
-          </div>
 
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 font-semibold text-[11px] text-subtle uppercase tracking-wide">
-              {t('reportReasonLegend')}
-            </legend>
-            {REPORT_REASONS.map((value) => {
-              const isSelected = reason === value;
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 font-semibold text-[11px] text-subtle uppercase tracking-wide">
+                {t('reportReasonLegend')}
+              </legend>
+              {REPORT_REASONS.map((value) => {
+                const isSelected = reason === value;
 
-              return (
-                <label
-                  key={value}
-                  className={`flex cursor-pointer items-center gap-3 rounded-field border px-3 py-2.5 text-sm transition-colors ${
-                    isSelected
-                      ? 'border-primary bg-primary-darker text-foreground'
-                      : 'border-gray-500/30 text-soft hover:border-gray-500/60 hover:bg-background-darker has-[:focus-visible]:border-gray-500/60 has-[:focus-visible]:bg-background-darker'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="report-reason"
-                    value={value}
-                    checked={isSelected}
-                    onChange={() => setReason(value)}
-                    className="h-4 w-4 flex-shrink-0 appearance-none rounded-full border-2 border-gray-500/50 bg-transparent transition-colors checked:border-primary checked:bg-primary checked:shadow-[inset_0_0_0_2px_var(--color-background-dark)]"
-                  />
-                  {t(reasonLabelKeys[value])}
-                </label>
-              );
-            })}
-          </fieldset>
+                return (
+                  <label
+                    key={value}
+                    className={`flex cursor-pointer items-center gap-3 rounded-field border px-3 py-2.5 text-sm transition-colors ${
+                      isSelected
+                        ? 'border-primary bg-primary-darker text-foreground'
+                        : 'border-gray-500/30 text-soft hover:border-gray-500/60 hover:bg-background-darker has-[:focus-visible]:border-gray-500/60 has-[:focus-visible]:bg-background-darker'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="report-reason"
+                      value={value}
+                      checked={isSelected}
+                      onChange={() => setReason(value)}
+                      className="h-4 w-4 flex-shrink-0 appearance-none rounded-full border-2 border-gray-500/50 bg-transparent transition-colors checked:border-primary checked:bg-primary checked:shadow-[inset_0_0_0_2px_var(--color-background-dark)]"
+                    />
+                    {t(reasonLabelKeys[value])}
+                  </label>
+                );
+              })}
+            </fieldset>
 
-          <label className="flex flex-col gap-2">
-            <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
-              {t('reportDetailsLabel')}
-            </span>
-            <textarea
-              value={details}
-              onChange={(event) => setDetails(event.target.value)}
-              maxLength={MAX_DETAILS_LENGTH}
-              rows={3}
-              placeholder={t('reportDetailsPlaceholder')}
-              className="resize-none rounded-field border border-gray-500/30 bg-background-darker px-3 py-2 text-foreground text-sm placeholder:text-subtle focus:border-primary focus:outline-none"
-            />
-          </label>
+            <label className="flex flex-col gap-2">
+              <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
+                {t('reportDetailsLabel')}
+              </span>
+              <textarea
+                value={details}
+                onChange={(event) => setDetails(event.target.value)}
+                maxLength={MAX_DETAILS_LENGTH}
+                rows={3}
+                placeholder={t('reportDetailsPlaceholder')}
+                className="resize-none rounded-field border border-gray-500/30 bg-background-darker px-3 py-2 text-foreground text-sm placeholder:text-subtle focus:border-primary focus:outline-none"
+              />
+            </label>
 
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              {t('reportCancel')}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSubmit}
-              disabled={!reason || isSubmitting}
-            >
-              {t('reportSubmit')}
-            </Button>
-          </div>
-        </Dialog.Content>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                {t('reportCancel')}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                disabled={!reason || isSubmitting}
+              >
+                {t('reportSubmit')}
+              </Button>
+            </div>
+          </Dialog.Content>
+        </div>
       </Dialog.Portal>
     </Dialog.Root>
   );

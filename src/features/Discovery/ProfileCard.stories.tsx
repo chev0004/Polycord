@@ -2,7 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { Proficiency } from '@/constants';
-import { getFreeCardTheme, PREMIUM_CARD_THEMES } from './cardTheme';
+import {
+  type CardTheme,
+  getCustomCardTheme,
+  getFreeCardTheme,
+  PREMIUM_CARD_THEMES,
+} from './cardTheme';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 import 'src/app/globals.css';
 
@@ -259,6 +264,83 @@ export const LanguageOverflow: Story = {
     );
   },
 };
+
+const overflowStory = (
+  cardTheme: CardTheme | undefined,
+  premium: boolean,
+  variant?: 'preview',
+): Story => ({
+  args: { variant },
+  render: (args) => (
+    <CardStory
+      {...args}
+      modify={(p) => ({
+        ...p,
+        premium,
+        cardTheme,
+        targetLanguages: [
+          { language: 'en', level: Proficiency.ADVANCED },
+          { language: 'ko', level: Proficiency.BEGINNER },
+          { language: 'fr', level: Proficiency.INTERMEDIATE },
+          { language: 'es', level: Proficiency.BEGINNER },
+        ],
+      })}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const card = getComputedStyle(
+      canvasElement.querySelector('article') as HTMLElement,
+    );
+    const trigger = within(canvasElement).getByRole('button', {
+      name: /^Show \d more languages$/,
+    });
+    await userEvent.click(trigger);
+    const popover = getComputedStyle(
+      await waitFor(() => {
+        const content =
+          canvasElement.ownerDocument.querySelector<HTMLElement>(
+            '.PopoverContent',
+          );
+        if (!content) throw new Error('Language popover did not open');
+        return content;
+      }),
+    );
+
+    await expect(popover.backgroundImage).toBe(card.backgroundImage);
+    await expect(popover.backgroundColor).toBe(card.backgroundColor);
+    await expect(getComputedStyle(trigger).backgroundImage).toBe('none');
+  },
+});
+
+export const LanguageOverflowFreeSky = overflowStory(
+  getFreeCardTheme(0),
+  false,
+);
+export const LanguageOverflowFreePink = overflowStory(
+  getFreeCardTheme(1),
+  false,
+);
+export const LanguageOverflowFreeSlate = overflowStory(
+  getFreeCardTheme(2),
+  false,
+);
+export const LanguageOverflowPremiumFlat = overflowStory(
+  premiumTheme('blue'),
+  true,
+);
+export const LanguageOverflowPremiumGradient = overflowStory(
+  premiumTheme('indigo'),
+  true,
+);
+export const LanguageOverflowPremiumCustom = overflowStory(
+  getCustomCardTheme({ from: '#e0457b', to: '#f7b267' }),
+  true,
+);
+export const LanguageOverflowPremiumPreview = overflowStory(
+  getCustomCardTheme({ from: '#e0457b', to: '#f7b267' }),
+  true,
+  'preview',
+);
 
 export const TagOverflow: Story = {
   render: (args) => {

@@ -137,3 +137,20 @@ export const Disabled: Story = {
     await expect(input).toBeDisabled();
   },
 };
+
+export const ResultsTransition: Story = {
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByPlaceholderText(
+      'Enter a language...',
+    );
+
+    await userEvent.type(input, 'ja');
+    const list = (await screen.findByRole('listbox')).closest(
+      '.PopoverContent',
+    ) as HTMLElement;
+    await expect(getComputedStyle(list).animationName).toBe('slideUpAndFade');
+    await userEvent.keyboard('p');
+    await waitFor(() => expect(input).toHaveValue('jap'));
+    await expect(list.isConnected).toBe(true);
+  },
+};
