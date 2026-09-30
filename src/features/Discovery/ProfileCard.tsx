@@ -572,14 +572,6 @@ export const ProfileCard = ({
                 type="button"
                 suppressHydrationWarning
                 className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main hover:text-foreground focus-visible:text-foreground"
-                style={
-                  tinted
-                    ? {
-                        backgroundImage:
-                          'linear-gradient(var(--card-tint),var(--card-tint))',
-                      }
-                    : undefined
-                }
                 aria-label={t('showMoreLanguages', {
                   count: remainingLanguagesCount,
                 })}

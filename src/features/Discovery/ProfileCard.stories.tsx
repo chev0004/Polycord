@@ -308,9 +308,7 @@ const overflowStory = (
 
     await expect(popover.backgroundImage).toBe(card.backgroundImage);
     await expect(popover.backgroundColor).toBe(card.backgroundColor);
-    const triggerImage = getComputedStyle(trigger).backgroundImage;
-    if (premium) await expect(card.backgroundImage).toContain(triggerImage);
-    else await expect(triggerImage).toBe('none');
+    await expect(getComputedStyle(trigger).backgroundImage).toBe('none');
   },
 });
 
