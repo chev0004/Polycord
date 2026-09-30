@@ -171,6 +171,51 @@ export const ShareWithoutClipboard: Story = {
   },
 };
 
+const shareFirstProfile = async (canvasElement: HTMLElement) => {
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: async () => {} },
+  });
+  await userEvent.click(
+    within(canvasElement).getAllByRole('button', { name: 'Card menu' })[0],
+  );
+  await userEvent.click(await screen.findByText('Share profile'));
+  return (await screen.findByText('Profile link copied')).closest(
+    'li',
+  ) as HTMLElement;
+};
+
+export const ShareWithAvatar: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return (
+      <DiscoveryPage
+        {...args}
+        profiles={createSampleProfiles(t).map((profile) => ({
+          ...profile,
+          avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png',
+        }))}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const toast = await shareFirstProfile(canvasElement);
+    await expect(toast.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('embed/avatars/0.png'),
+    );
+  },
+};
+
+export const ShareWithoutAvatar: Story = {
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    const toast = await shareFirstProfile(canvasElement);
+    await expect(toast.querySelector('img')).toBeNull();
+    await expect(within(toast).getByText('?')).toBeInTheDocument();
+  },
+};
+
 export const Mobile: Story = {
   parameters: {
     viewport: {
