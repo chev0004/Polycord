@@ -12,6 +12,8 @@ export type CustomGradient = {
 };
 
 export const FREE_ACCENT = '#7a8a99';
+export const tintedSurface =
+  'linear-gradient(var(--card-tint,transparent),var(--card-tint,transparent)),var(--color-background-dark)';
 export const CUSTOM_CARD_THEME_ID = 'custom';
 export const DEFAULT_CUSTOM_GRADIENT: CustomGradient = {
   from: '#5964f2',
