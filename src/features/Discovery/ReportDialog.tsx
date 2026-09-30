@@ -74,7 +74,7 @@ export const ReportDialog = ({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-[fadeIn_150ms_ease-out]" />
         <Dialog.Content
-          className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(440px,calc(100vw-2rem))] flex-col gap-5 overflow-y-auto rounded-2xl bg-background-dark p-6 shadow-xl"
+          className="-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[min(440px,calc(100vw-2rem))] flex-col gap-5 overflow-y-auto rounded-panel bg-background-dark p-6 shadow-xl"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <div className="flex items-start justify-between gap-4">
@@ -106,7 +106,7 @@ export const ReportDialog = ({
               return (
                 <label
                   key={value}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
+                  className={`flex cursor-pointer items-center gap-3 rounded-field border px-3 py-2.5 text-sm transition-colors ${
                     isSelected
                       ? 'border-primary bg-primary-darker text-foreground'
                       : 'border-gray-500/30 text-soft hover:border-gray-500/60 hover:bg-background-darker has-[:focus-visible]:border-gray-500/60 has-[:focus-visible]:bg-background-darker'
@@ -136,7 +136,7 @@ export const ReportDialog = ({
               maxLength={MAX_DETAILS_LENGTH}
               rows={3}
               placeholder={t('reportDetailsPlaceholder')}
-              className="resize-none rounded-lg border border-gray-500/30 bg-background-darker px-3 py-2 text-foreground text-sm placeholder:text-subtle focus:border-primary focus:outline-none"
+              className="resize-none rounded-field border border-gray-500/30 bg-background-darker px-3 py-2 text-foreground text-sm placeholder:text-subtle focus:border-primary focus:outline-none"
             />
           </label>
 
