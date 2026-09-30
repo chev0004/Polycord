@@ -91,6 +91,7 @@ type MobileProfileSheetProps = {
   viewerTimezone?: string;
   onCopyUsername?: CopyUsernameHandler;
   menuItems?: ActionSheetItem[];
+  pointerReturnFocus?: boolean;
 };
 
 export const MobileProfileSheet = ({
@@ -101,6 +102,7 @@ export const MobileProfileSheet = ({
   viewerTimezone,
   onCopyUsername,
   menuItems = [],
+  pointerReturnFocus,
 }: MobileProfileSheetProps) => {
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
@@ -138,6 +140,7 @@ export const MobileProfileSheet = ({
       full
       flush
       bare
+      pointerReturnFocus={pointerReturnFocus}
     >
       <div
         className="h-full overflow-y-auto overscroll-contain [scrollbar-width:none]"
