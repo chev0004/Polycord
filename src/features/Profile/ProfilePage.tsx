@@ -34,6 +34,11 @@ import {
   Toggle,
 } from '@/components/Form';
 import { DraftNotice } from '@/components/Form/DraftNotice';
+import {
+  menuContentClass,
+  menuDividerClass,
+  menuItemClass,
+} from '@/components/Menu';
 import type { ActionSheetItem } from '@/components/Sheet';
 import { countryOptions, languageOptions } from '@/constants';
 import {
@@ -184,8 +189,8 @@ const MenuItem = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main disabled:cursor-not-allowed disabled:opacity-60 ${
-      danger ? 'hover:!text-danger text-danger' : 'text-foreground'
+    className={`${menuItemClass} enabled:hover:bg-background-main ${
+      danger ? 'text-danger' : 'text-foreground'
     }`}
   >
     <Icon size={20} />
@@ -792,7 +797,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </Popover.Trigger>
             <Popover.Portal>
               <Popover.Content
-                className="z-50 w-[220px] rounded-lg border border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                className={`${menuContentClass} w-[220px]`}
                 side="bottom"
                 align="end"
                 sideOffset={6}
@@ -827,7 +832,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   ) : null}
                   {onDeleteProfile ? (
                     <>
-                      <div className="my-1 h-px bg-overlay" />
+                      <div className={menuDividerClass} />
                       <MenuItem
                         icon={MdDeleteOutline}
                         danger

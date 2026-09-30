@@ -259,6 +259,10 @@
   will-change: width, height, transform, opacity;
 }
 
+.PopoverContent[data-state="closed"] {
+  animation: none;
+}
+
 @keyframes slideLeftAndFade {
   from {
     opacity: 0;

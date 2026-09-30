@@ -18,6 +18,11 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Chip } from '@/components/Chip';
+import {
+  menuContentClass,
+  menuDividerClass,
+  menuItemClass,
+} from '@/components/Menu';
 import { ActionSheet, type ActionSheetItem } from '@/components/Sheet';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { countryOptions } from '@/constants/countries';
@@ -419,13 +424,13 @@ export const ProfileCard = ({
                 </Popover.Trigger>
                 <Popover.Portal>
                   <Popover.Content
-                    className="PopoverContent z-50 w-[200px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-1 shadow-lg"
+                    className={`${menuContentClass} w-[200px]`}
                     side="bottom"
                     align="end"
                     sideOffset={5}
                     onOpenAutoFocus={(e) => e.preventDefault()}
                   >
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col">
                       {menuItems.map(
                         (
                           { key, icon: Icon, label, danger, onSelect },
@@ -433,7 +438,7 @@ export const ProfileCard = ({
                         ) => (
                           <Fragment key={key}>
                             {danger && !menuItems[index - 1]?.danger ? (
-                              <div className="my-1 h-[1px] bg-gray-500/50" />
+                              <div className={menuDividerClass} />
                             ) : null}
                             <button
                               type="button"
@@ -441,7 +446,7 @@ export const ProfileCard = ({
                                 onSelect();
                                 setIsMenuOpen(false);
                               }}
-                              className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-background-main focus:outline-none focus-visible:bg-background-main ${danger ? 'text-danger' : 'text-foreground'}`}
+                              className={`${menuItemClass} hover:bg-background-main ${danger ? 'text-danger' : 'text-foreground'}`}
                             >
                               {Icon ? (
                                 <Icon
@@ -582,7 +587,7 @@ export const ProfileCard = ({
             </Popover.Trigger>
             <Popover.Portal>
               <Popover.Content
-                className="PopoverContent z-50 w-[240px] rounded-lg border-[1px] border-gray-500/50 bg-background-dark p-3 shadow-lg"
+                className="PopoverContent z-50 w-[240px] rounded-menu border border-gray-500/50 bg-background-dark p-3 shadow-lg"
                 style={
                   tinted
                     ? ({

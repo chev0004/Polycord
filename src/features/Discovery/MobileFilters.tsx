@@ -136,7 +136,7 @@ export const BackToTop = ({ count }: { count: number }) => {
     >
       <MdArrowUpward size={22} aria-hidden />
       {count > 0 ? (
-        <span className="-top-[3px] -right-[3px] absolute rounded-full ring-2 ring-background-darker">
+        <span className="-top-[3px] -right-[3px] absolute flex rounded-full ring-2 ring-background-darker">
           <FilterCount count={count} />
         </span>
       ) : null}
