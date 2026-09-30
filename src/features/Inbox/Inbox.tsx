@@ -182,7 +182,9 @@ export const Inbox = ({
               ) : null}
               {!viewerPremium &&
                 currentNotifications.some(
-                  (notification) => notification.kind === 'copy',
+                  (notification) =>
+                    notification.kind === 'copy' ||
+                    notification.kind === 'share',
                 ) && (
                   <Link
                     href={`/${locale}/settings#premium`}

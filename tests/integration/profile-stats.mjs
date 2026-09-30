@@ -18,6 +18,9 @@ const { createNotification, deleteNotification, clearNotifications } =
 const { receiveProfileView } = await import(
   '../../src/lib/notifications/profileView'
 );
+const { receiveProfileShare } = await import(
+  '../../src/lib/notifications/profileShare'
+);
 const { and, eq, inArray } = await import('drizzle-orm');
 
 const createUser = async (name, values = {}) => {
@@ -127,6 +130,45 @@ try {
   });
   assert.equal((await stats()).views30d, 3);
   console.log('received views passed');
+
+  const share = (sharer, target = owner, synthetic = false) =>
+    receiveProfileShare({
+      ownerUserId: target.id,
+      synthetic,
+      viewer: sharer && asViewer(sharer),
+    });
+  assert.equal(await share(viewer), true);
+  assert.equal(await share(null), true);
+  assert.equal(await share(owner), false);
+  assert.equal(await share(viewer, dummy, true), false);
+  await db
+    .update(userSettings)
+    .set({ profileInteractionAlert: false })
+    .where(eq(userSettings.userId, owner.id));
+  assert.equal(await share(viewer), false);
+  assert.deepEqual(await stats(), {
+    views30d: 3,
+    copies30d: 1,
+    shares30d: 3,
+    saves: 0,
+  });
+  const shareNotifications = await db
+    .select()
+    .from(notifications)
+    .where(
+      and(eq(notifications.userId, owner.id), eq(notifications.kind, 'share')),
+    );
+  assert.deepEqual(
+    shareNotifications.map(({ actorUserId, isGuest }) => ({
+      actorUserId,
+      isGuest,
+    })),
+    [
+      { actorUserId: viewer.id, isGuest: false },
+      { actorUserId: null, isGuest: true },
+    ],
+  );
+  console.log('received shares passed');
 } finally {
   await db.delete(users).where(inArray(users.id, created));
   await globalThis.polycordSql.end();

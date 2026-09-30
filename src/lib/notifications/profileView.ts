@@ -50,9 +50,9 @@ export const notifyProfileView = async ({
   }
 };
 
-type Viewer = Awaited<ReturnType<typeof getCurrentUser>>;
+export type Viewer = Awaited<ReturnType<typeof getCurrentUser>>;
 
-const viewActor = async (viewer: NonNullable<Viewer>) => {
+export const interactionActor = async (viewer: NonNullable<Viewer>) => {
   const [settings, premium] = await Promise.all([
     getUserSettingsByUserId(viewer.accountId),
     isPremiumUser(viewer),
@@ -85,7 +85,7 @@ export const receiveProfileView = async ({
     await recordProfileInteraction(ownerUserId, 'view');
     await notifyProfileView({
       ownerUserId,
-      actor: viewer ? await viewActor(viewer) : null,
+      actor: viewer ? await interactionActor(viewer) : null,
     });
   } catch (error) {
     console.error('profile view failed', error);

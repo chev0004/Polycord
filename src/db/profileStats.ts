@@ -12,6 +12,7 @@ import {
 export type ProfileStats = {
   views30d: number;
   copies30d: number;
+  shares30d: number;
   saves: number;
 };
 
@@ -41,9 +42,10 @@ export const getProfileStatsForUser = async (
         ),
       );
 
-  const [[views], [copies], [saves]] = await Promise.all([
+  const [[views], [copies], [shares], [saves]] = await Promise.all([
     received('view'),
     received('copy'),
+    received('share'),
     db
       .select({ value: count() })
       .from(savedProfiles)
@@ -54,6 +56,7 @@ export const getProfileStatsForUser = async (
   return {
     views30d: views?.value ?? 0,
     copies30d: copies?.value ?? 0,
+    shares30d: shares?.value ?? 0,
     saves: saves?.value ?? 0,
   };
 };

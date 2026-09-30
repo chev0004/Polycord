@@ -54,6 +54,7 @@ import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
 import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
+import { recordProfileShare } from './profileShareRequest';
 import { ReportDialog } from './ReportDialog';
 import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
@@ -603,6 +604,7 @@ export const DiscoveryPage = ({
         buildPublicProfileUrl(locale, profile ?? { id: profileId }),
       )
     ) {
+      if (profileId !== currentProfileId) recordProfileShare(profileId);
       addToast({
         title: t('shareCopiedTitle'),
         description: t('shareCopiedDescription'),

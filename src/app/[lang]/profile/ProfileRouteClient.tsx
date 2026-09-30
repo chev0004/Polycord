@@ -16,7 +16,12 @@ type ProfileRouteClientProps = {
   locale: string;
   premium?: boolean;
   profileId?: string;
-  stats?: { views30d: number; copies30d: number; saves: number };
+  stats?: {
+    views30d: number;
+    copies30d: number;
+    shares30d: number;
+    saves: number;
+  };
   userAvatarUrl?: string;
   userDisplayName: string;
   userUsername?: string;

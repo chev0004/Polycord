@@ -52,7 +52,10 @@ export const listNotificationsForUser = async (userId: string) =>
 
 export const createNotification = async (values: NewNotificationRecord) => {
   const settings = await getUserSettingsByUserId(values.userId);
-  if (values.kind === 'copy' && settings?.profileInteractionAlert === false)
+  if (
+    (values.kind === 'copy' || values.kind === 'share') &&
+    settings?.profileInteractionAlert === false
+  )
     return null;
   if (values.kind === 'view' && !settings?.profileViewAlert) return null;
   const [created] = await db.insert(notifications).values(values).returning();

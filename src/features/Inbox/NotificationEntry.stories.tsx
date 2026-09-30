@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { NotificationEntry } from './NotificationEntry';
@@ -75,3 +76,50 @@ const ReadNotificationStory = () => {
 export const Read: Story = {
   render: () => <ReadNotificationStory />,
 };
+
+const shareStory = (
+  notification: {
+    actorName?: string;
+    actorProfileId?: string;
+    isGuest?: boolean;
+  },
+  premium: boolean,
+  message: string,
+): Story => ({
+  render: () => (
+    <NotificationEntry
+      notification={{
+        id: 'share',
+        kind: 'share',
+        actorAvatarUrl: notification.actorName
+          ? 'https://cdn.discordapp.com/embed/avatars/2.png'
+          : undefined,
+        read: false,
+        ...notification,
+      }}
+      premium={premium}
+      onMarkAsRead={() => {}}
+      onDelete={() => {}}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText(message)).toBeInTheDocument();
+  },
+});
+
+export const ShareNamed = shareStory(
+  { actorName: 'Mina Park', actorProfileId: 'profile-mina' },
+  true,
+  'Mina Park shared your profile',
+);
+export const ShareGuest = shareStory(
+  { isGuest: true },
+  true,
+  'A guest shared your profile',
+);
+export const ShareHidden = shareStory({}, true, 'A user shared your profile');
+export const ShareFree = shareStory(
+  { actorName: 'Mina Park' },
+  false,
+  'Someone shared your profile',
+);

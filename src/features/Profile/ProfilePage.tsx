@@ -94,7 +94,12 @@ type ProfilePageProps = {
   onViewSaved?: () => void;
   premium?: boolean;
   profileId?: string;
-  stats?: { views30d: number; copies30d: number; saves: number };
+  stats?: {
+    views30d: number;
+    copies30d: number;
+    shares30d: number;
+    saves: number;
+  };
   userAvatarUrl?: string;
   userDisplayName?: string;
   userUsername?: string;
@@ -1094,7 +1099,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <span className="font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
                   {t('insightsTitle')}
                 </span>
-                <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="grid grid-cols-2 gap-2 text-center">
                   <div className="rounded-xl bg-background-darker px-2 py-3">
                     <p className="font-bold text-[20px] text-foreground">
                       {stats.views30d}
@@ -1109,6 +1114,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     </p>
                     <p className="mt-0.5 text-[11px] text-subtle">
                       {t('insightsCopies')}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-background-darker px-2 py-3">
+                    <p className="font-bold text-[20px] text-foreground">
+                      {stats.shares30d}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-subtle">
+                      {t('insightsShares')}
                     </p>
                   </div>
                   <div className="rounded-xl bg-background-darker px-2 py-3">

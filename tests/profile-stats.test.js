@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 
 test.skipIf(!process.env.TEST_DATABASE_URL)(
-  'received profile stats count views and copies',
+  'received profile stats count views, copies, and shares',
   () => {
     expect(
       execFileSync(
@@ -13,6 +13,6 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
           timeout: 30000,
         },
       ),
-    ).toContain('received views passed');
+    ).toContain('received shares passed');
   },
 );
