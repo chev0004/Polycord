@@ -39,7 +39,7 @@ import {
 import { DummyChip } from './DummyChip';
 import { type DiscoveryProfile, getBumpAge } from './ProfileCard';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
-import { VoiceChip } from './VoiceChip';
+import { ProfileVoiceChip } from './VoiceChip';
 
 export const bannerButton =
   'flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50';
@@ -240,13 +240,7 @@ export const MobileProfileSheet = ({
               </p>
             ) : null}
           </div>
-          {profile.premium && profile.voiceIntroSeconds ? (
-            <VoiceChip
-              seconds={profile.voiceIntroSeconds}
-              src={`/api/voice/${profile.id}`}
-              className="self-start"
-            />
-          ) : null}
+          <ProfileVoiceChip profile={profile} className="self-start" />
           <div>
             <SheetLabel>{t('languagesLabel')}</SheetLabel>
             <SheetGroup>

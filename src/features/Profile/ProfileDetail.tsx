@@ -56,7 +56,7 @@ import {
   type DiscoveryProfile,
   getBumpAge,
 } from '@/features/Discovery/ProfileCard';
-import { VoiceChip } from '@/features/Discovery/VoiceChip';
+import { ProfileVoiceChip } from '@/features/Discovery/VoiceChip';
 import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -542,12 +542,7 @@ export const ProfileDetail = ({
           ) : null}
           {profile.premium ? (
             <div className="flex items-center gap-3 text-muted text-sm">
-              {profile.voiceIntroSeconds ? (
-                <VoiceChip
-                  seconds={profile.voiceIntroSeconds}
-                  src={`/api/voice/${profile.id}`}
-                />
-              ) : null}
+              <ProfileVoiceChip profile={profile} />
               <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[var(--ct-chip-bg)] pr-2.5 pl-[7px] font-semibold text-[var(--ct-chip-text)] text-xs">
                 <MdWorkspacePremium size={15} />
                 {t('premium')}
