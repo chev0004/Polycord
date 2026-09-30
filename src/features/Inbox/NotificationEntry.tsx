@@ -56,7 +56,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
     <div
       {...props}
       style={style}
-      className={`relative flex items-center gap-3 rounded-md bg-background-main p-3 text-foreground transition-opacity ${notification.read ? 'opacity-60' : 'opacity-100'} ${className}`}
+      className={`relative flex items-center gap-3 rounded-row bg-background-main p-3 text-foreground transition-opacity last:rounded-b-menu ${notification.read ? 'opacity-60' : 'opacity-100'} ${className}`}
     >
       <span
         className={`-left-1 absolute h-2 w-2 flex-shrink-0 rounded-full bg-primary transition-opacity duration-300 ${
