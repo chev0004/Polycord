@@ -321,7 +321,7 @@ export const GradientPickerPopover = ({
       side="top"
       align="start"
       sideOffset={8}
-      className="z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-line bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      className="PopoverContent z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-line bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
       onOpenAutoFocus={(event) => event.preventDefault()}
     >
       <div
@@ -445,7 +445,7 @@ export const AccentPicker = ({
             side="top"
             align="start"
             sideOffset={8}
-            className="z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-line bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+            className="PopoverContent z-50 flex w-[236px] select-none flex-col gap-2.5 rounded-[14px] border border-line bg-background-darker p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
             onOpenAutoFocus={(event) => event.preventDefault()}
           >
             <ColorControls

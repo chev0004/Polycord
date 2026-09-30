@@ -248,7 +248,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
         </PopoverPrimitive.Anchor>
         <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content
-            className="z-50 mt-1 w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-list border border-gray-500/50 bg-background-dark shadow-lg"
+            className="PopoverContent z-50 mt-1 w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-list border border-gray-500/50 bg-background-dark shadow-lg"
             sideOffset={6}
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
