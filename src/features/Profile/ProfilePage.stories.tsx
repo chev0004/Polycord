@@ -10,6 +10,7 @@ import {
 } from '@storybook/test';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { DEFAULT_CARD_COLOR } from '@/features/Discovery/cardTheme';
+import { clips, stubPlayback } from '@/features/Discovery/voicePlaybackStub';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { FieldValidationError } from '@/lib/formErrors';
@@ -802,6 +803,87 @@ export const CreateModeMobile: Story = {
     await expect(
       await canvas.findByRole('button', { name: 'Publish' }),
     ).toBeInTheDocument();
+  },
+};
+
+export const PreviewVoicePlayback: Story = {
+  args: {
+    premium: true,
+    profileId: 'voice-preview-story',
+    initialValues: { ...sampleProfile, voiceIntroSeconds: 8 },
+  },
+  beforeEach: stubPlayback(),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Play voice intro' }),
+    );
+
+    await expect(
+      await canvas.findByRole('button', { name: 'Stop voice intro' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvasElement.querySelectorAll('.animate-voiceBar').length,
+    ).toBeGreaterThan(0);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Stop voice intro' }));
+
+    await expect(
+      await canvas.findByRole('button', { name: 'Play voice intro' }),
+    ).toBeInTheDocument();
+    await expect(canvasElement.querySelector('.animate-voiceBar')).toBeNull();
+  },
+};
+
+export const PreviewPlaysPendingVoiceClip: Story = {
+  args: { premium: true, initialValues: sampleProfile },
+  beforeEach: () => {
+    const restorePlayback = stubPlayback()();
+    const { mediaDevices } = navigator;
+    Object.defineProperty(navigator, 'mediaDevices', {
+      value: {
+        getUserMedia: async () =>
+          new AudioContext().createMediaStreamDestination().stream,
+      },
+      configurable: true,
+    });
+    return () => {
+      restorePlayback();
+      Object.defineProperty(navigator, 'mediaDevices', {
+        value: mediaDevices,
+        configurable: true,
+      });
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.queryByRole('button', { name: 'Play voice intro' }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(
+      (await canvas.findAllByRole('button', { name: 'Record voice intro' }))[0],
+    );
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    fireEvent.click(
+      (await canvas.findAllByRole('button', { name: 'Stop recording' }))[0],
+    );
+
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Play voice intro' }),
+    );
+
+    await expect(
+      await canvas.findByRole('button', { name: 'Stop voice intro' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvasElement.querySelectorAll('.animate-voiceBar').length,
+    ).toBeGreaterThan(0);
+    await expect([...clips].some((clip) => clip.src.startsWith('blob:'))).toBe(
+      true,
+    );
   },
 };
 
