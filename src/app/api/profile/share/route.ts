@@ -27,9 +27,10 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
   }
 
+  const ip = requestIp(request);
   const limit = await enforceRateLimit('share', {
     userId: viewer?.accountId,
-    ip: requestIp(request),
+    ip,
   });
 
   if (!limit.allowed) {
@@ -44,6 +45,7 @@ export const POST = async (request: Request) => {
         viewer && (await hasBlocked(viewer.accountId, target.profile.userId))
           ? null
           : viewer,
+      ip,
     }),
   });
 };
