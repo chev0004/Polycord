@@ -1,8 +1,13 @@
 import 'server-only';
 
-import { and, count, eq, gte, sql } from 'drizzle-orm';
+import { and, count, eq, gte } from 'drizzle-orm';
 import { db } from './client';
-import { analyticsEvents, profiles, savedProfiles } from './schema';
+import {
+  type ProfileInteractionKind,
+  profileInteractions,
+  profiles,
+  savedProfiles,
+} from './schema';
 
 export type ProfileStats = {
   views30d: number;
@@ -12,33 +17,33 @@ export type ProfileStats = {
 
 const DAYS_30_MS = 30 * 24 * 60 * 60 * 1000;
 
+export const recordProfileInteraction = async (
+  ownerUserId: string,
+  kind: ProfileInteractionKind,
+) => {
+  await db.insert(profileInteractions).values({ ownerUserId, kind });
+};
+
 export const getProfileStatsForUser = async (
   userId: string,
   profileId: string,
 ): Promise<ProfileStats> => {
   const since = new Date(Date.now() - DAYS_30_MS);
+  const received = (kind: ProfileInteractionKind) =>
+    db
+      .select({ value: count() })
+      .from(profileInteractions)
+      .where(
+        and(
+          eq(profileInteractions.ownerUserId, userId),
+          eq(profileInteractions.kind, kind),
+          gte(profileInteractions.createdAt, since),
+        ),
+      );
 
   const [[views], [copies], [saves]] = await Promise.all([
-    db
-      .select({ value: count() })
-      .from(analyticsEvents)
-      .where(
-        and(
-          eq(analyticsEvents.name, 'profile.view'),
-          gte(analyticsEvents.createdAt, since),
-          sql`${analyticsEvents.metadata} ->> 'ownerUserId' = ${userId}`,
-        ),
-      ),
-    db
-      .select({ value: count() })
-      .from(analyticsEvents)
-      .where(
-        and(
-          eq(analyticsEvents.name, 'profile.copy_received'),
-          sql`${analyticsEvents.metadata} ->> 'ownerUserId' = ${userId}`,
-          gte(analyticsEvents.createdAt, since),
-        ),
-      ),
+    received('view'),
+    received('copy'),
     db
       .select({ value: count() })
       .from(savedProfiles)

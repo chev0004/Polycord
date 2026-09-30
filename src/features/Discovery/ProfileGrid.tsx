@@ -188,7 +188,7 @@ export const ProfileGrid = ({
       });
     }
 
-    if (profileId === currentProfileId) return;
+    if (!copiedToClipboard || profileId === currentProfileId) return;
 
     trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy, { profileId });
     onCopyUsername?.(username, profileId);

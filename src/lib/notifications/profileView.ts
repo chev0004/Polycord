@@ -1,6 +1,14 @@
 import 'server-only';
 
-import { createNotification, hasRecentViewNotification } from '@/db';
+import {
+  createNotification,
+  getUserSettingsByUserId,
+  hasRecentViewNotification,
+  recordProfileInteraction,
+} from '@/db';
+import type { getCurrentUser } from '@/lib/auth';
+import { hasEntitlement } from '@/lib/entitlements';
+import { isPremiumUser } from '@/lib/entitlements.server';
 
 const VIEW_DEDUPE_WINDOW_MS = 60 * 60 * 1000;
 
@@ -39,5 +47,47 @@ export const notifyProfileView = async ({
     });
   } catch (error) {
     console.error('profile view notification failed', error);
+  }
+};
+
+type Viewer = Awaited<ReturnType<typeof getCurrentUser>>;
+
+const viewActor = async (viewer: NonNullable<Viewer>) => {
+  const [settings, premium] = await Promise.all([
+    getUserSettingsByUserId(viewer.accountId),
+    isPremiumUser(viewer),
+  ]);
+
+  return hasEntitlement('privacy.hiddenVisits', premium) &&
+    settings?.hideProfileVisits
+    ? null
+    : {
+        id: viewer.accountId,
+        name: viewer.name,
+        avatarUrl: viewer.avatarUrl ?? null,
+      };
+};
+
+export const receiveProfileView = async ({
+  ownerUserId,
+  synthetic,
+  viewer,
+}: {
+  ownerUserId: string;
+  synthetic: boolean;
+  viewer: Viewer;
+}): Promise<void> => {
+  if (synthetic || viewer?.accountId === ownerUserId) {
+    return;
+  }
+
+  try {
+    await recordProfileInteraction(ownerUserId, 'view');
+    await notifyProfileView({
+      ownerUserId,
+      actor: viewer ? await viewActor(viewer) : null,
+    });
+  } catch (error) {
+    console.error('profile view failed', error);
   }
 };

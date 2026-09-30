@@ -7,7 +7,6 @@ import { getLanguageName } from '@/constants/languages';
 import {
   getProfileByUserId,
   getPublicProfileById,
-  getUserSettingsByUserId,
   listSavedProfileIds,
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
@@ -16,9 +15,7 @@ import {
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
-import { hasEntitlement } from '@/lib/entitlements';
-import { isPremiumUser } from '@/lib/entitlements.server';
-import { notifyProfileView } from '@/lib/notifications/profileView';
+import { receiveProfileView } from '@/lib/notifications/profileView';
 import { PublicProfileClient } from './PublicProfileClient';
 
 const loadPublicProfile = cache(getPublicProfileById);
@@ -71,40 +68,18 @@ export default async function PublicProfileRoute({
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
   let viewerContext: ViewerAvailabilityContext = {};
-  let viewerUserId: string | undefined;
-  let viewerActor: {
-    id: string;
-    name: string;
-    avatarUrl: string | null;
-  } | null = null;
 
   if (user) {
     isLoggedIn = true;
-    viewerUserId = user.accountId;
-    viewerActor = {
-      id: user.accountId,
-      name: user.name,
-      avatarUrl: user.avatarUrl ?? null,
-    };
-    const [viewerProfile, savedIds, viewerSettings, viewerPremium] =
-      await Promise.all([
-        getProfileByUserId(user.accountId),
-        listSavedProfileIds(user.accountId),
-        getUserSettingsByUserId(user.accountId),
-        isPremiumUser(user),
-      ]);
+    const [viewerProfile, savedIds] = await Promise.all([
+      getProfileByUserId(user.accountId),
+      listSavedProfileIds(user.accountId),
+    ]);
     currentProfileId = viewerProfile?.profile.id;
     savedProfileIds = savedIds;
 
     if (viewerProfile) {
       viewerContext = toViewerAvailabilityContext(viewerProfile.profile);
-    }
-
-    if (
-      hasEntitlement('privacy.hiddenVisits', viewerPremium) &&
-      viewerSettings?.hideProfileVisits
-    ) {
-      viewerActor = null;
     }
   }
 
@@ -112,17 +87,15 @@ export default async function PublicProfileRoute({
     if (row.user.isSynthetic) return;
     await trackEvent({
       name: ANALYTICS_EVENTS.profileView,
-      userId: viewerUserId ?? null,
+      userId: user?.accountId ?? null,
       locale: lang,
       metadata: { ownerUserId: row.profile.userId },
     });
-
-    if (viewerUserId !== row.profile.userId) {
-      await notifyProfileView({
-        ownerUserId: row.profile.userId,
-        actor: viewerActor,
-      });
-    }
+    await receiveProfileView({
+      ownerUserId: row.profile.userId,
+      synthetic: row.user.isSynthetic,
+      viewer: user,
+    });
   });
 
   return (
