@@ -252,11 +252,19 @@
 
 .PopoverContent {
   animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin: top center;
+  transform-origin: var(--radix-popover-content-transform-origin);
   transition:
     width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: width, height, transform, opacity;
+}
+
+.PopoverContent[data-side="top"] {
+  animation-name: slideDownAndFade;
+}
+
+.PopoverContent[data-side="bottom"] {
+  animation-name: slideUpAndFade;
 }
 
 @keyframes slideLeftAndFade {
