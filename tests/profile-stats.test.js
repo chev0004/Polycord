@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 
 test.skipIf(!process.env.TEST_DATABASE_URL)(
-  'copy history survives deleting and clearing notifications',
+  'received profile stats count views and copies',
   () => {
     expect(
       execFileSync(
@@ -13,6 +13,6 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
           timeout: 30000,
         },
       ),
-    ).toContain('copy history passed');
+    ).toContain('received views passed');
   },
 );
