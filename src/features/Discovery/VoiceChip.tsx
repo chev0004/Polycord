@@ -57,43 +57,42 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
     return () => clearInterval(interval);
   }, [playing, seconds, src]);
 
+  const reset = () => {
+    setPlaying(false);
+    setRemaining(seconds);
+  };
+
   const togglePlayback = () => {
     if (!src) {
       setPlaying((value) => !value);
       return;
     }
 
+    if (!audioRef.current) {
+      const audio = new Audio(src);
+      const sync = () => (audio.paused ? reset() : setPlaying(true));
+      audio.onplay = sync;
+      audio.onpause = sync;
+      audio.onerror = () => {
+        audio.pause();
+        audioRef.current = null;
+        reset();
+      };
+      audio.ontimeupdate = () =>
+        setRemaining(Math.max(0, seconds - audio.currentTime));
+      audioRef.current = audio;
+    }
+    const audio = audioRef.current;
+
     if (playing) {
-      audioRef.current?.pause();
-      audioRef.current = null;
-      setPlaying(false);
-      setRemaining(seconds);
+      audio.pause();
+      reset();
       return;
     }
 
-    const audio = new Audio(src);
-    audioRef.current = audio;
-
-    audio.ontimeupdate = () => {
-      setRemaining(Math.max(0, seconds - audio.currentTime));
-    };
-    audio.onended = () => {
-      setPlaying(false);
-      setRemaining(seconds);
-      audioRef.current = null;
-    };
-    audio.onerror = () => {
-      setPlaying(false);
-      setRemaining(seconds);
-      audioRef.current = null;
-    };
-
-    void audio.play().then(
-      () => setPlaying(true),
-      () => {
-        audioRef.current = null;
-      },
-    );
+    audio.currentTime = 0;
+    setPlaying(true);
+    void audio.play().catch(() => audio.paused && reset());
   };
 
   return (
