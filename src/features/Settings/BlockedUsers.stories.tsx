@@ -235,6 +235,36 @@ export const ReportFromPreview: Story = {
     expect(args.unblock).not.toHaveBeenCalled();
   },
 };
+export const ShareFromPreview: Story = {
+  args: {
+    load: async () => [
+      {
+        ...accounts[0],
+        profile: {
+          ...kenjiProfile,
+          avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png',
+        },
+      },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => {} },
+    });
+    const dialog = await openPreview(canvasElement);
+    await userEvent.click(
+      dialog.getByRole('button', { name: 'Copy profile link' }),
+    );
+    const toast = (await screen.findByText('Profile link copied')).closest(
+      'li',
+    ) as HTMLElement;
+    await expect(toast.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('embed/avatars/0.png'),
+    );
+  },
+};
 export const PreviewOpen: Story = {
   play: async ({ canvasElement }) => {
     await openPreview(canvasElement);
