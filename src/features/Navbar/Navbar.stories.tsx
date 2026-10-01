@@ -69,9 +69,11 @@ export const LoggedIn: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    const logo = canvasElement.querySelector('img[src*="polycord-logo"]');
+    const logo = canvasElement.querySelector('img[src*="polycord-wordmark"]');
     await expect(logo).toBeInTheDocument();
-    await expect(canvas.getByText('Polycord')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Polycord' }),
+    ).toBeInTheDocument();
   },
 };
 
