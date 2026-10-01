@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { type ToastData, useToast } from '@/hooks/useToast';
+import { MobileToast, MobileToastViewport } from './MobileToast';
 import { Toast, ToastProvider, ToastViewport } from './Toast';
 
 const ToastItem = React.memo(
@@ -37,8 +39,24 @@ type ToastStackProps = {
 };
 
 export const ToastStack = ({ toasts, onDismiss }: ToastStackProps) => {
-  if (!toasts.length) {
+  const mobile = useIsMobile();
+  const latest = toasts.at(-1);
+
+  useEffect(() => {
+    if (!mobile) return;
+    for (const toast of toasts.slice(0, -1)) onDismiss(toast.id);
+  }, [mobile, toasts, onDismiss]);
+
+  if (!latest) {
     return null;
+  }
+
+  if (mobile) {
+    return (
+      <MobileToastViewport>
+        <MobileToast key={latest.id} toast={latest} onDismiss={onDismiss} />
+      </MobileToastViewport>
+    );
   }
 
   return (

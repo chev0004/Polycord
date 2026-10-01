@@ -18,6 +18,9 @@
     "noResults": "結果が見つかりませんでした",
     "noOptions": "選択肢がありません"
   },
+  "Toast": {
+    "now": "今"
+  },
   "Inbox": {
     "title": "受信ボックス",
     "unread": "未読",
