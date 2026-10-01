@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DISCORD_CARDS } from '@/constants/discordCards';
 import { isValidIANATimezone, isValidProficiency } from '@/constants/languages';
 import { entitlementLimit } from '@/lib/entitlements';
 import {
@@ -92,6 +93,8 @@ export const profileSchema = z.object({
     .optional(),
 
   accentOverride: hexColorSchema.nullable().optional(),
+
+  discordCard: z.enum(DISCORD_CARDS).optional(),
 
   timezone: z
     .string()
