@@ -862,7 +862,7 @@
     "backToEditor": "プロフィール編集に戻る",
     "copyProfileLink": "プロフィールのリンクをコピー",
     "moreActions": "その他の操作",
-    "bumped": "バンプ: {time}",
+    "bumped": "{time}",
     "speaks": "話せる言語",
     "learning": "学習中",
     "from": "出身",
