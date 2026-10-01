@@ -45,6 +45,7 @@ import {
   availabilityPresetToPattern,
   DEFAULT_AVAILABILITY_PATTERN,
 } from '@/constants/availability';
+import { DEFAULT_DISCORD_CARD } from '@/constants/discordCards';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { BumpProfileError } from '@/features/Discovery/bumpProfileRequest';
 import {
@@ -132,6 +133,7 @@ const defaultValues: ProfileFormValues = {
   cardColor: DEFAULT_CARD_COLOR,
   customGradient: DEFAULT_CUSTOM_GRADIENT,
   accentOverride: null,
+  discordCard: DEFAULT_DISCORD_CARD,
   timezone: '',
 };
 
