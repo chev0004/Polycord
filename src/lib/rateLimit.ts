@@ -14,6 +14,8 @@ export type RateLimitAction =
   | 'copy'
   | 'view'
   | 'share'
+  | 'notify-kind'
+  | 'notify-actor'
   | 'auth-failure';
 
 export type RateLimitSubject = {
@@ -30,6 +32,8 @@ const DEFAULT_LIMITS: Record<
   copy: { max: 30, windowMs: 3_600_000 },
   view: { max: 120, windowMs: 3_600_000 },
   share: { max: 30, windowMs: 3_600_000 },
+  'notify-kind': { max: 1, windowMs: 3_600_000 },
+  'notify-actor': { max: 3, windowMs: 86_400_000 },
   'auth-failure': { max: 10, windowMs: 900_000 },
 };
 

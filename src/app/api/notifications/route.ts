@@ -15,6 +15,7 @@ import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser, getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
+import { allowInteractionNotification } from '@/lib/notifications/interactionThrottle';
 import {
   enforceRateLimit,
   rateLimitedResponse,
@@ -102,9 +103,10 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ created: false });
   }
 
+  const ip = requestIp(request);
   const limit = await enforceRateLimit('copy', {
     userId: currentUser?.accountId,
-    ip: requestIp(request),
+    ip,
   });
 
   if (!limit.allowed) {
@@ -122,6 +124,17 @@ export const POST = async (request: Request) => {
     locale: localeFromRequest(request),
     metadata: { ownerUserId: target.profile.userId },
   });
+
+  if (
+    !(await allowInteractionNotification({
+      kind: 'copy',
+      ownerUserId: target.profile.userId,
+      actorUserId: currentUser?.accountId,
+      ip,
+    }))
+  ) {
+    return NextResponse.json({ created: false });
+  }
 
   const notification = await createNotification({
     userId: target.profile.userId,
