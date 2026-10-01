@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  getLanguageGreeting,
   getLanguageName,
   getNativeLanguageName,
   isValidLanguageCode,
@@ -63,5 +64,39 @@ describe('native language names', () => {
 
   it('falls back to the code for unknown values', () => {
     expect(getNativeLanguageName('xx')).toBe('xx');
+  });
+});
+
+describe('language greetings', () => {
+  it('returns a short greeting for every language', () => {
+    for (const { code } of languages) {
+      const greeting = getLanguageGreeting(code);
+
+      expect(greeting.trim()).not.toBe('');
+      expect(greeting.length).toBeLessThanOrEqual(20);
+    }
+  });
+
+  it('keeps the greetings from the design unchanged', () => {
+    expect(getLanguageGreeting('en')).toBe('Hello!');
+    expect(getLanguageGreeting('ja')).toBe('こんにちは！');
+    expect(getLanguageGreeting('es')).toBe('¡Hola!');
+    expect(getLanguageGreeting('ko')).toBe('안녕하세요!');
+    expect(getLanguageGreeting('zh')).toBe('你好！');
+    expect(getLanguageGreeting('fr')).toBe('Bonjour !');
+    expect(getLanguageGreeting('de')).toBe('Hallo!');
+    expect(getLanguageGreeting('pt')).toBe('Olá!');
+    expect(getLanguageGreeting('it')).toBe('Ciao!');
+    expect(getLanguageGreeting('ru')).toBe('Привет!');
+    expect(getLanguageGreeting('ar')).toBe('مرحبا!');
+    expect(getLanguageGreeting('hi')).toBe('नमस्ते!');
+  });
+
+  it('only uses the English greeting for English', () => {
+    for (const { code } of languages) {
+      if (code !== 'en') {
+        expect(getLanguageGreeting(code)).not.toBe('Hello!');
+      }
+    }
   });
 });
