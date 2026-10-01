@@ -55,18 +55,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           type="button"
           onClick={onHomeClick}
           aria-label={t('disspeak')}
-          className="flex select-none items-center gap-2.5 font-black font-figtree text-2xl text-foreground tracking-[-0.01em] no-underline focus:outline-none focus-visible:opacity-80 sm:text-[28px]"
+          className="flex select-none items-center focus:outline-none focus-visible:opacity-80"
         >
           <Image
-            src="/polycord-logo.svg"
+            src="/polycord-wordmark.svg"
             alt=""
-            width={28}
-            height={28}
-            className="block"
+            width={68}
+            height={18}
+            className="block h-4 w-auto sm:h-[18px]"
           />
-          <span className={isLoggedIn ? '' : 'hidden sm:inline'}>
-            {t('disspeak')}
-          </span>
         </button>
         {badge}
       </div>
