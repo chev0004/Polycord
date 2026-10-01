@@ -76,7 +76,7 @@ import {
   TargetLanguagesEditor,
 } from './TargetLanguagesEditor';
 import { detectTimezone, timezoneOptions } from './timezoneOptions';
-import { VoiceIntroEditor } from './VoiceIntroEditor';
+import { type PendingVoiceClip, VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
   userId?: string;
@@ -325,6 +325,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const customGradient = watch('customGradient') ?? DEFAULT_CUSTOM_GRADIENT;
   const accentOverride = watch('accentOverride') ?? null;
   const voiceIntroSeconds = watch('voiceIntroSeconds') ?? 0;
+  const [pendingVoice, setPendingVoice] = useState<PendingVoiceClip | null>(
+    null,
+  );
 
   const effectiveCardColor = premium ? cardColor : (tease ?? cardColor);
   const basePreviewTheme =
@@ -474,8 +477,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         ? (availability ?? undefined)
         : undefined,
       voiceIntroSeconds: premium
-        ? voiceIntroSeconds
+        ? (pendingVoice?.seconds ?? voiceIntroSeconds)
         : PREVIEW_TEASE_VOICE_SECONDS,
+      voiceIntroSrc: premium ? pendingVoice?.url : undefined,
     };
   }, [
     allowAnonymousCopy,
@@ -498,6 +502,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     userAvatarUrl,
     userUsername,
     voiceIntroSeconds,
+    pendingVoice,
     profileId,
   ]);
 
@@ -629,6 +634,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           onChange={(seconds) =>
             resetField('voiceIntroSeconds', { defaultValue: seconds })
           }
+          onPendingChange={setPendingVoice}
         />
       )}
     />

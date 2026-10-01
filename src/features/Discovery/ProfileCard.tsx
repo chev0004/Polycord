@@ -51,7 +51,7 @@ import { DummyChip } from './DummyChip';
 import { MobileNameCopy, MobileProfileSheet } from './MobileProfileSheet';
 import { recordProfileView } from './profileViewRequest';
 import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
-import { VoiceChip } from './VoiceChip';
+import { ProfileVoiceChip } from './VoiceChip';
 
 export type DiscoveryTargetLanguage = {
   language: LanguageCode | string;
@@ -79,6 +79,7 @@ export type DiscoveryProfile = {
   cardTheme?: CardTheme;
   availability?: AvailabilityPattern;
   voiceIntroSeconds?: number;
+  voiceIntroSrc?: string;
   synthetic?: boolean;
 };
 
@@ -627,16 +628,7 @@ export const ProfileCard = ({
         />
       )}
 
-      {profile.premium && profile.voiceIntroSeconds ? (
-        <VoiceChip
-          seconds={profile.voiceIntroSeconds}
-          src={
-            profile.id === 'profile-preview'
-              ? undefined
-              : `/api/voice/${profile.id}`
-          }
-        />
-      ) : null}
+      <ProfileVoiceChip profile={profile} />
 
       <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
         {(profile.tags.length > 0 || isPreview) && (

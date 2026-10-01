@@ -32,11 +32,13 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
   useEffect(() => {
     if (!src) return;
 
+    setRemaining(seconds);
+
     return () => {
       audioRef.current?.pause();
       audioRef.current = null;
     };
-  }, [src]);
+  }, [src, seconds]);
 
   useEffect(() => {
     if (src) return;
@@ -137,3 +139,30 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
     </button>
   );
 };
+
+type ProfileVoiceChipProps = {
+  profile: {
+    id: string;
+    premium?: boolean;
+    voiceIntroSeconds?: number;
+    voiceIntroSrc?: string;
+  };
+  className?: string;
+};
+
+export const ProfileVoiceChip = ({
+  profile,
+  className,
+}: ProfileVoiceChipProps) =>
+  profile.premium && profile.voiceIntroSeconds ? (
+    <VoiceChip
+      seconds={profile.voiceIntroSeconds}
+      src={
+        profile.voiceIntroSrc ??
+        (profile.id === 'profile-preview'
+          ? undefined
+          : `/api/voice/${profile.id}`)
+      }
+      className={className}
+    />
+  ) : null;
