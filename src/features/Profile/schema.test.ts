@@ -75,4 +75,21 @@ describe('profileSchema', () => {
         .success,
     ).toBe(false);
   });
+
+  it('accepts known discord card layouts and rejects unknown ones', () => {
+    expect(
+      profileSchema.safeParse({ ...validProfile, discordCard: 'metal' })
+        .success,
+    ).toBe(true);
+    expect(
+      profileSchema.safeParse({ ...validProfile, discordCard: 'unknown' })
+        .success,
+    ).toBe(false);
+  });
+
+  it('treats the discord card as optional', () => {
+    const { discordCard } = profileSchema.parse(validProfile);
+
+    expect(discordCard).toBeUndefined();
+  });
 });

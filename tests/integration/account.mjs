@@ -63,6 +63,7 @@ const profileValues = {
   customGradientFrom: '#123456',
   customGradientTo: '#654321',
   accentOverride: '#abcdef',
+  discordCard: 'mirror',
   timezone: 'Asia/Tokyo',
 };
 const retainedIds = {};
@@ -177,6 +178,7 @@ try {
     'customGradientFrom',
     'customGradientTo',
     'accentOverride',
+    'discordCard',
     'timezone',
   ])
     assert.equal(exported.profile[key], profileValues[key]);
