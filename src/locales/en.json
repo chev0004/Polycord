@@ -412,6 +412,7 @@
     "tagTooLong": "Tags must be 20 characters or fewer.",
     "duplicateTag": "This tag has already been added.",
     "maxTags": "You can add up to {cap} tags on your current plan.",
+    "discordCardPremium": "This card layout is part of Premium.",
     "tagCounterHint": "{count}/{cap} tags · helps the right partners find you",
     "tagCapUpsell": "You've hit the free limit of <strong>{freeCap} tags</strong>. Premium members can add up to <strong>{premiumCap}</strong>.",
     "voiceIntroTitle": "Voice Intro",
