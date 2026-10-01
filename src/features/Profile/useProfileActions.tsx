@@ -85,6 +85,7 @@ export const useProfileActions = (
     } catch {
       addToast({
         title: t('blockErrorTitle'),
+        variant: 'error',
         description: t('blockErrorDescription'),
         duration: 4000,
       });

@@ -614,6 +614,7 @@ export const DiscoveryPage = ({
     } else {
       addToast({
         title: t('shareErrorTitle'),
+        variant: 'error',
         description: t('shareErrorDescription'),
         duration: BUMP_TOAST_DURATION,
       });
@@ -654,6 +655,7 @@ export const DiscoveryPage = ({
         error instanceof ReportProfileError && error.status === 429;
       addToast({
         title: limited ? t('reportCooldownTitle') : t('reportErrorTitle'),
+        variant: 'error',
         description: limited
           ? t('reportCooldownDescription')
           : t('reportErrorDescription'),
@@ -683,6 +685,7 @@ export const DiscoveryPage = ({
     } catch {
       addToast({
         title: t('unblockErrorTitle'),
+        variant: 'error',
         description: t('unblockErrorDescription'),
         duration: BUMP_TOAST_DURATION,
       });
@@ -741,6 +744,7 @@ export const DiscoveryPage = ({
       });
       addToast({
         title: t('blockErrorTitle'),
+        variant: 'error',
         description: t('blockErrorDescription'),
         duration: BUMP_TOAST_DURATION,
       });
