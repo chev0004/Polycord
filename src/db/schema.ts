@@ -15,6 +15,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import type { DiscordCardLayout } from '@/constants/discordCards';
 
 export const proficiencyLevelEnum = pgEnum('proficiency_level', [
   'beginner',
@@ -164,6 +165,9 @@ export const profiles = pgTable(
     customGradientFrom: varchar('custom_gradient_from', { length: 7 }),
     customGradientTo: varchar('custom_gradient_to', { length: 7 }),
     accentOverride: varchar('accent_override', { length: 7 }),
+    discordCard: varchar('discord_card', {
+      length: 32,
+    }).$type<DiscordCardLayout>(),
     country: varchar('country', { length: 2 }),
     timezone: varchar('timezone', { length: 64 }),
     lastBumpedAt: timestamp('last_bumped_at', { withTimezone: true }),

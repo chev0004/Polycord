@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ADD COLUMN "discord_card" varchar(32);
