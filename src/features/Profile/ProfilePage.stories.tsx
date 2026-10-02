@@ -169,6 +169,51 @@ export const DiscordCardSection: Story = {
   },
 };
 
+export const SaveDiscordCard: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Rank card' }));
+
+    await waitFor(() =>
+      expect(canvas.getByRole('button', { name: 'Rank card' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
+    );
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Profile' }),
+    );
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ discordCard: 'rank' }),
+      ),
+    );
+  },
+};
+
+export const DiscardDiscordCard: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Mirror' }));
+    fireEvent.click(await canvas.findByRole('button', { name: 'Discard' }));
+
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Classic card' }),
+      ).toHaveAttribute('aria-pressed', 'true'),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('button', { name: 'Discard' }),
+      ).not.toBeInTheDocument(),
+    );
+  },
+};
+
 export const OptionsMenuTransition: Story = {
   args: {
     initialValues: sampleProfile,
