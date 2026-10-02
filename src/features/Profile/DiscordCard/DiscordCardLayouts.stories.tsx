@@ -263,3 +263,69 @@ export const CyclesThroughLanguages: Story = {
     }
   },
 };
+
+export const ClassicPillFitsActiveLanguage: Story = {
+  args: {
+    data: build({
+      targetLanguages: [
+        { language: 'en', level: Proficiency.INTERMEDIATE },
+        { language: 'sw', level: Proficiency.ADVANCED },
+        { language: 'ko' },
+      ],
+    }),
+  },
+  render: ({ data, theme }) => (
+    <div className="max-w-md p-6">
+      <ScaledDiscordCard
+        layout={DISCORD_CARD_LAYOUTS[0]}
+        data={data}
+        vars={themes[theme]}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await canvasElement.ownerDocument.fonts.ready;
+    const pill = canvasElement.querySelector(
+      '.dc-a .dc-pill:not(.dc-pri)',
+    ) as HTMLElement;
+    const widths: number[] = [];
+
+    for (const label of [
+      'English· Intermediate',
+      'Swahili· Advanced',
+      'Korean',
+      'English· Intermediate',
+    ]) {
+      await waitFor(
+        () => expect(pill.querySelector('.dc-on')).toHaveTextContent(label),
+        { timeout: 6000 },
+      );
+      const text = canvasElement.ownerDocument.createRange();
+      text.selectNodeContents(pill.querySelector('.dc-on') as HTMLElement);
+      const box = pill.getBoundingClientRect();
+      const content = text.getBoundingClientRect();
+      const scale = box.width / pill.offsetWidth;
+      const style = getComputedStyle(pill);
+
+      await expect(
+        Math.abs(
+          content.left -
+            box.left -
+            Number.parseFloat(style.paddingLeft) * scale,
+        ),
+      ).toBeLessThan(1);
+      await expect(
+        Math.abs(
+          box.right -
+            content.right -
+            Number.parseFloat(style.paddingRight) * scale,
+        ),
+      ).toBeLessThan(1);
+      widths.push(box.width);
+    }
+
+    await expect(widths[1]).toBeLessThan(widths[0]);
+    await expect(widths[2]).toBeLessThan(widths[1]);
+    await expect(widths[3]).toBeCloseTo(widths[0], 0);
+  },
+};
