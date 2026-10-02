@@ -95,17 +95,17 @@ test('inbox honors server Premium on every navbar and refreshes without navigati
       .click();
     await sql`insert into notifications (user_id, kind, actor_user_id, actor_name) values (${data.owner.id}, 'view', ${data.actor.id}, 'Inbox actor')`;
     await page.clock.runFor(30000);
-    await expect(
-      page.getByText('Inbox actor viewed your profile'),
-    ).toBeVisible();
+    await expect(page.getByRole('dialog')).toContainText(
+      'Inbox actor viewed your profile',
+    );
     await page.screenshot({
       path: testInfo.outputPath('premium-inbox.png'),
       animations: 'disabled',
     });
     await sql`update subscriptions set status = 'canceled', current_period_end = ${new Date(0)} where user_id = ${data.owner.id}`;
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await expect(page.getByText('Inbox actor viewed your profile')).toHaveCount(
-      0,
+    await expect(page.getByRole('dialog')).not.toContainText(
+      'Inbox actor viewed your profile',
     );
     await expect(page.getByText('A user copied your username')).toBeVisible();
     await expect(

@@ -90,11 +90,14 @@ export const useToast = ({
 
 export type ToastMessage = Omit<ToastData, 'id'> & { id: number };
 
+let lastToastId = 0;
+
 export const useToastStack = () => {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((toast: Omit<ToastData, 'id'>) => {
-    const newId = Date.now();
+    lastToastId = Math.max(Date.now(), lastToastId + 1);
+    const newId = lastToastId;
     const newToast = { ...toast, id: newId };
     setToasts((prev) => [...prev, newToast]);
   }, []);
