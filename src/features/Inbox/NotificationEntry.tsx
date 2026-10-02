@@ -104,11 +104,9 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
           >
             {t('viewProfile')}
           </Link>
-        ) : premium ? (
+        ) : premium && !notification.isGuest ? (
           <p className="text-muted text-xs leading-[1.35]">
-            {t(
-              notification.isGuest ? 'anonymousProfile' : 'profileUnavailable',
-            )}
+            {t('profileUnavailable')}
           </p>
         ) : null}
         <span className="block text-muted text-xs leading-[1.35]">

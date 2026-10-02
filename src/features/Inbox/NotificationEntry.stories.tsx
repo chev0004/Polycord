@@ -103,7 +103,11 @@ const shareStory = (
     />
   ),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText(message)).toBeInTheDocument();
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText(message)).toBeInTheDocument();
+    await expect(
+      canvas.queryByText('This interaction is anonymous.'),
+    ).not.toBeInTheDocument();
   },
 });
 
