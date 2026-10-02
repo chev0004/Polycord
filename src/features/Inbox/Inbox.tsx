@@ -72,7 +72,7 @@ export const Inbox = ({
         size={24}
       />
       {unreadCount > 0 && (
-        <span className="-top-[5px] -right-1.5 absolute flex h-4 min-w-4 items-center justify-center rounded-full bg-discord-blue px-1 font-bold text-[11px] text-foreground">
+        <span className="-top-[5px] -right-1.5 absolute flex h-4 min-w-4 items-center justify-center rounded-full bg-discord-blue px-1 font-bold text-[11px] text-foreground ring-2 ring-background-main md:ring-background-darker">
           {unreadCount}
         </span>
       )}
