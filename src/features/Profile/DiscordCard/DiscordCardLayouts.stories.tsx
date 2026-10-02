@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, waitFor, within } from '@storybook/test';
 import { Proficiency } from '@/constants/languages';
 import { buildDiscordCardData } from './data';
 import { DISCORD_CARD_LAYOUTS } from './registry';
@@ -181,6 +181,37 @@ export const LongLanguageNames: Story = {
       await expect(
         row.offsetWidth + (label?.offsetWidth ?? 0),
       ).toBeLessThanOrEqual(column.clientWidth);
+    }
+  },
+};
+
+const activeTarget = (card: Element | null) =>
+  card?.querySelector('.dc-cy > .dc-on')?.textContent ?? '';
+
+export const CyclesThroughLanguages: Story = {
+  render: ({ data, theme }) => (
+    <div className="max-w-md p-6">
+      {DISCORD_CARD_LAYOUTS.filter(({ id }) =>
+        ['classic', 'bleed', 'watermark'].includes(id),
+      ).map((layout) => (
+        <figure key={layout.id} data-layout={layout.id} className="m-0 mb-6">
+          <ScaledDiscordCard layout={layout} data={data} vars={themes[theme]} />
+        </figure>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const cards = ['classic', 'bleed', 'watermark'].map((id) =>
+      canvasElement.querySelector(`[data-layout="${id}"]`),
+    );
+
+    for (const card of cards) {
+      await expect(activeTarget(card)).toContain('English');
+    }
+    for (const card of cards) {
+      await waitFor(() => expect(activeTarget(card)).toContain('Korean'), {
+        timeout: 6000,
+      });
     }
   },
 };
