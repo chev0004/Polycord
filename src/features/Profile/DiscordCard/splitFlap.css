@@ -60,6 +60,15 @@
   font-size: 22px;
   border-radius: 4px;
 }
+.dc-sf-c.dc-tn {
+  gap: 2px;
+}
+.dc-sf-c.dc-tn span {
+  width: 24px;
+  height: 34px;
+  font-size: 18px;
+  border-radius: 3px;
+}
 .dc-sf-c.dc-xs {
   gap: 3px;
 }

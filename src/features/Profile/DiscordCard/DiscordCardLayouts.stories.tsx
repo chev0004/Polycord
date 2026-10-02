@@ -162,3 +162,25 @@ export const SameNativeAndLearningScript: Story = {
     }),
   },
 };
+
+export const LongLanguageNames: Story = {
+  args: {
+    data: build({
+      primaryLanguage: 'nb',
+      targetLanguages: [{ language: 'cu', level: Proficiency.INTERMEDIATE }],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const card = canvasElement.querySelector('[data-layout="split-flap"]');
+    const column = card?.querySelector('.dc-sf-b') as HTMLElement;
+    const rows = card?.querySelectorAll<HTMLElement>('.dc-sf-c') ?? [];
+
+    await expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const label = row.previousElementSibling as HTMLElement | null;
+      await expect(
+        row.offsetWidth + (label?.offsetWidth ?? 0),
+      ).toBeLessThanOrEqual(column.clientWidth);
+    }
+  },
+};

@@ -5,11 +5,17 @@ import '../splitFlap.css';
 
 const MAX_WORD_LENGTH = 18;
 const SMALL_WORD_LENGTH = 9;
+const MEDIUM_WORD_LENGTH = 15;
 
 const clip = (word: string) =>
   word.length > MAX_WORD_LENGTH
     ? `${word.slice(0, MAX_WORD_LENGTH - 1)}…`
     : word;
+
+const flapSize = (width: number) => {
+  if (width > MEDIUM_WORD_LENGTH) return 'dc-tn';
+  return width > SMALL_WORD_LENGTH ? 'dc-sm' : '';
+};
 
 const Flaps = ({
   word,
@@ -62,7 +68,7 @@ export const SplitFlapCard = ({ data, active }: DiscordCardLayoutProps) => {
           <Flaps
             word={clip(data.native.name)}
             width={clip(data.native.name).length}
-            className="dc-pri"
+            className={`dc-pri ${flapSize(clip(data.native.name).length)}`}
           />
         </div>
         {target ? (
@@ -72,7 +78,7 @@ export const SplitFlapCard = ({ data, active }: DiscordCardLayoutProps) => {
               <Flaps
                 word={clip(target.name)}
                 width={nameWidth}
-                className={nameWidth > SMALL_WORD_LENGTH ? 'dc-sm' : ''}
+                className={flapSize(nameWidth)}
               />
             </div>
             <div className="dc-sf-r">
