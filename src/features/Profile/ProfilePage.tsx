@@ -45,7 +45,10 @@ import {
   availabilityPresetToPattern,
   DEFAULT_AVAILABILITY_PATTERN,
 } from '@/constants/availability';
-import { DEFAULT_DISCORD_CARD } from '@/constants/discordCards';
+import {
+  DEFAULT_DISCORD_CARD,
+  type DiscordCardLayout,
+} from '@/constants/discordCards';
 import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { BumpProfileError } from '@/features/Discovery/bumpProfileRequest';
 import {
@@ -65,6 +68,9 @@ import { entitlementLimit } from '@/lib/entitlements';
 import { FieldValidationError, SessionExpiredError } from '@/lib/formErrors';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { CardColorPicker } from './CardColorPicker';
+import { DiscordCardPicker } from './DiscordCard/DiscordCardPicker';
+import { discordCardVars } from './DiscordCard/theme';
+import { useDiscordCardData } from './DiscordCard/useDiscordCardData';
 import { MobileCardEditor } from './MobileCardEditor';
 import { SectionCard } from './SectionCard';
 import {
@@ -116,6 +122,7 @@ const FIELDS_WITH_ERRORS = new Set([
   'timezone',
   'bio',
   'tags',
+  'discordCard',
 ]);
 
 const defaultValues: ProfileFormValues = {
@@ -247,6 +254,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     DEFAULT_AVAILABILITY_PATTERN,
   );
   const [tease, setTease] = useState<string | null>(null);
+  const [cardTease, setCardTease] = useState<DiscordCardLayout | null>(null);
   const [bumpStatus, setBumpStatus] = useState<
     'idle' | 'bumping' | 'success' | 'cooldown' | 'error'
   >('idle');
@@ -411,6 +419,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     setSaveFailed(false);
     setDeleteFailed(false);
     setTease(null);
+    setCardTease(null);
     setBumpStatus('idle');
   };
 
@@ -507,6 +516,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     pendingVoice,
     profileId,
   ]);
+
+  const discordCardData = useDiscordCardData({
+    name: displayName,
+    handle: userUsername,
+    avatarUrl: userAvatarUrl,
+    primaryLanguage,
+    targetLanguages,
+    tags,
+    availability: displayAvailability ? availability : undefined,
+    country,
+    timezone: displayTimezone ? timezone : undefined,
+  });
+  const discordCardTheme = useMemo(
+    () => discordCardVars(previewTheme.banner, previewTheme.accent),
+    [previewTheme.banner, previewTheme.accent],
+  );
 
   const tagsSchemaError = errors.tags?.message
     ? t(errors.tags.message as string, { cap: tagCap })
@@ -990,6 +1015,32 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             description={t('cardStyleDescription')}
           >
             {cardStylePicker}
+          </SectionCard>
+
+          <SectionCard
+            title={t('discordCardTitle')}
+            description={t('discordCardDescription')}
+          >
+            <Controller
+              name="discordCard"
+              control={control}
+              render={({ field }) => (
+                <DiscordCardPicker
+                  value={field.value ?? DEFAULT_DISCORD_CARD}
+                  onChange={field.onChange}
+                  premium={premium}
+                  tease={premium ? null : cardTease}
+                  onTease={setCardTease}
+                  data={discordCardData}
+                  vars={discordCardTheme}
+                  error={
+                    errors.discordCard?.message
+                      ? t(errors.discordCard.message as string)
+                      : undefined
+                  }
+                />
+              )}
+            />
           </SectionCard>
 
           <SectionCard
