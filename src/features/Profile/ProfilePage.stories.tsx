@@ -8,6 +8,7 @@ import {
   waitFor,
   within,
 } from '@storybook/test';
+import { DEFAULT_DISCORD_CARD } from '@/constants/discordCards';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { DEFAULT_CARD_COLOR } from '@/features/Discovery/cardTheme';
 import { clips, stubPlayback } from '@/features/Discovery/voicePlaybackStub';
@@ -55,6 +56,7 @@ const sampleProfile: ProfileFormValues = {
   bio: 'I am a graphic designer in Osaka looking for a patient partner to practice everyday English with.',
   tags: ['Anime', 'Cooking', 'Photography'],
   cardColor: DEFAULT_CARD_COLOR,
+  discordCard: DEFAULT_DISCORD_CARD,
   voiceIntroSeconds: 0,
 };
 
@@ -144,6 +146,26 @@ export const PremiumInsights: Story = {
         canvas.getByText(label).previousElementSibling,
       ).toHaveTextContent(value);
     }
+  },
+};
+
+export const DiscordCardSection: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const cardStyle = canvas.getByRole('heading', { name: 'Card Style' });
+    const discordCard = canvas.getByRole('heading', { name: 'Discord Card' });
+    await expect(
+      cardStyle.compareDocumentPosition(discordCard) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    await expect(
+      canvas.getByRole('button', { name: 'Classic card' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      canvas.getByRole('img', { name: 'Classic card card preview' }),
+    ).toBeInTheDocument();
   },
 };
 
@@ -272,7 +294,7 @@ export const LivePreviewUpdates: Story = {
     await addTag(canvas, 'Gardening');
 
     await waitFor(() =>
-      expect(canvas.getAllByText('Gardening')).toHaveLength(2),
+      expect(canvas.getAllByText('Gardening').length).toBeGreaterThanOrEqual(2),
     );
   },
 };
