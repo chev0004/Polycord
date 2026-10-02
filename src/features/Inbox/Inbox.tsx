@@ -8,9 +8,11 @@ import {
   MdOutlineKeyboardArrowRight,
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import { ToastStack } from '@/components/Toast';
 import type { Notifications } from '@/types';
 import { NotificationEntry } from './NotificationEntry';
 import { formatRelativeTime, useInbox } from './useInbox';
+import { useIncomingNotificationToasts } from './useIncomingNotificationToasts';
 
 const headerButtonClassName =
   'h-[30px] whitespace-nowrap rounded-control border px-3 font-medium text-[13px] transition-[background-color,border-color,opacity,transform] duration-150 enabled:active:scale-[0.97] disabled:cursor-default disabled:opacity-[0.45]';
@@ -29,6 +31,11 @@ export const Inbox = ({
 }) => {
   const t = useTranslations('Inbox');
   const locale = useLocale();
+  const inbox = useInbox({
+    notifications: initialNotifications,
+    premium,
+    persist,
+  });
   const {
     notifications,
     unreadCount,
@@ -42,7 +49,8 @@ export const Inbox = ({
     remove,
     markAllRead,
     clearAll,
-  } = useInbox({ notifications: initialNotifications, premium, persist });
+  } = inbox;
+  const { toasts, dismissToast } = useIncomingNotificationToasts({ inbox });
   const [currentPage, setCurrentPage] = useState(1);
   const [isMounted, setIsMounted] = useState(false);
   const itemsPerPage = 5;
@@ -92,7 +100,7 @@ export const Inbox = ({
     );
   }
 
-  return (
+  const popover = (
     <Popover.Root
       onOpenChange={(open) => {
         if (open) void refresh();
@@ -223,5 +231,12 @@ export const Inbox = ({
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
+  );
+
+  return (
+    <>
+      {popover}
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
+    </>
   );
 };

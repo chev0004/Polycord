@@ -1,11 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { ToastStack } from '@/components/Toast';
-import { getNotificationMessage } from '@/features/Inbox/NotificationEntry';
 import { useInbox } from '@/features/Inbox/useInbox';
-import { useIncomingNotification } from '@/features/Inbox/useIncomingNotification';
-import { useToastStack } from '@/hooks/useToast';
+import { useIncomingNotificationToasts } from '@/features/Inbox/useIncomingNotificationToasts';
 import { MobileDock } from './MobileDock';
 
 type MobileNavigationProps = {
@@ -21,34 +18,10 @@ export const MobileNavigation = ({
   onNavigate,
   ...dock
 }: MobileNavigationProps) => {
-  const t = useTranslations('Inbox');
-  const { notifications, premium, loading, unreadCount } = useInbox({
-    notifications: [],
-  });
-  const { toasts, addToast, dismissToast } = useToastStack();
-
-  useIncomingNotification({
-    notifications,
-    loading,
-    onIncoming: (notification) => {
-      if (notification.kind === 'view' && !premium) return;
-      addToast({
-        title: getNotificationMessage(notification, premium, t),
-        description: '',
-        iconUrl: premium ? notification.actorAvatarUrl : undefined,
-        activity: {
-          actionLabel:
-            notification.kind === 'warning'
-              ? undefined
-              : premium
-                ? notification.actorProfileId
-                  ? t('viewProfile')
-                  : undefined
-                : t('seeWhoWithPremium'),
-          onOpen: () => onNavigate(`/${locale}/inbox`),
-        },
-      });
-    },
+  const inbox = useInbox({ notifications: [] });
+  const { toasts, dismissToast } = useIncomingNotificationToasts({
+    inbox,
+    onOpen: () => onNavigate(`/${locale}/inbox`),
   });
 
   return (
@@ -56,7 +29,7 @@ export const MobileNavigation = ({
       <MobileDock
         {...dock}
         locale={locale}
-        unreadCount={unreadCount}
+        unreadCount={inbox.unreadCount}
         onNavigate={onNavigate}
       />
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
