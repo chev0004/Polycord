@@ -35,6 +35,7 @@ export const Default: Story = {
       name: 'Change language',
     });
 
+    await expect(trigger).toHaveTextContent('en');
     await userEvent.click(trigger);
 
     await expect(await screen.findByText('English')).toBeInTheDocument();
