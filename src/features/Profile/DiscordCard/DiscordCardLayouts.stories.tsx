@@ -9,6 +9,7 @@ import type { DiscordCardData } from './types';
 
 const labels = {
   days: { any: 'Any day', weekdays: 'Weekdays', weekends: 'Weekends' },
+  daysShort: { any: 'Daily', weekdays: 'Wkdy', weekends: 'Wknd' },
   anyTime: 'Any time',
   levels: {
     [Proficiency.BEGINNER]: 'Beginner',
