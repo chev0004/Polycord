@@ -2,7 +2,7 @@
 
 import * as Popover from '@radix-ui/react-popover';
 import { useLocale, useTranslations } from 'next-intl';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   MdAdd,
   MdBlock,
@@ -154,6 +154,8 @@ export const ProfileCard = ({
   const locale = useLocale();
   const isPreview = variant === 'preview';
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const languageTrigger = useRef<HTMLButtonElement>(null);
+  const closedOutOfView = useRef(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const mobile = useIsMobile();
   const timeFormat = useTimeFormat();
@@ -223,6 +225,24 @@ export const ProfileCard = ({
     visibleTargetLanguageCount,
   );
   const remainingLanguagesCount = remainingTargetLanguages.length;
+
+  useEffect(() => {
+    if (!isPopoverOpen) return;
+    const trigger = languageTrigger.current;
+    if (!remainingLanguagesCount || !trigger) {
+      setIsPopoverOpen(false);
+      return;
+    }
+    closedOutOfView.current = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) {
+        closedOutOfView.current = true;
+        setIsPopoverOpen(false);
+      }
+    });
+    observer.observe(trigger);
+    return () => observer.disconnect();
+  }, [isPopoverOpen, remainingLanguagesCount]);
 
   const handleTagClick = (tag: string) => {
     if (onTagClick) {
@@ -580,6 +600,7 @@ export const ProfileCard = ({
                 type="button"
                 suppressHydrationWarning
                 className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main hover:text-foreground focus-visible:text-foreground"
+                ref={languageTrigger}
                 aria-label={t('showMoreLanguages', {
                   count: remainingLanguagesCount,
                 })}
@@ -591,6 +612,9 @@ export const ProfileCard = ({
             <Popover.Portal>
               <Popover.Content
                 className="PopoverContent z-50 w-[240px] rounded-menu border border-gray-500/50 bg-background-dark p-3 shadow-lg"
+                onCloseAutoFocus={(event) => {
+                  if (closedOutOfView.current) event.preventDefault();
+                }}
                 style={
                   tinted
                     ? ({

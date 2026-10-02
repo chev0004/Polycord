@@ -342,6 +342,77 @@ export const LanguageOverflowPremiumPreview = overflowStory(
   'preview',
 );
 
+const overflowScrollStory = (nested: boolean): Story => ({
+  render: (args) => (
+    <div
+      data-testid="scroll-container"
+      className={nested ? 'h-[400px] overflow-y-auto' : undefined}
+    >
+      <div className="min-h-[200vh]">
+        <CardStory {...args} />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const scroller = canvas.getByTestId('scroll-container');
+    const trigger = canvas.getByRole('button', {
+      name: 'Show 1 more languages',
+    });
+    const top = nested ? scroller.getBoundingClientRect().top : 0;
+    const scroll = (value: number) =>
+      (nested ? scroller : window).scrollTo(0, value);
+    const partial =
+      trigger.getBoundingClientRect().bottom - top - trigger.offsetHeight / 2;
+    const hidden = Math.ceil(partial + trigger.offsetHeight + 50);
+    await userEvent.click(trigger);
+    await body.findByRole('dialog');
+    scroll(partial);
+    await waitFor(() => {
+      expect(trigger.getBoundingClientRect().bottom).toBeGreaterThan(top);
+      expect(trigger.getBoundingClientRect().top).toBeLessThan(top);
+    });
+    await expect(body.getByRole('dialog')).toBeInTheDocument();
+    scroll(hidden);
+    await waitFor(() =>
+      expect(body.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    await expect(nested ? scroller.scrollTop : window.scrollY).toBeCloseTo(
+      hidden,
+      0,
+    );
+    scroll(0);
+    await waitFor(() =>
+      expect(nested ? scroller.scrollTop : window.scrollY).toBe(0),
+    );
+    await expect(body.queryByRole('dialog')).not.toBeInTheDocument();
+    await userEvent.click(trigger);
+    await body.findByRole('dialog');
+    await userEvent.click(trigger);
+    await waitFor(() =>
+      expect(body.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    await userEvent.click(trigger);
+    await body.findByRole('dialog');
+    await userEvent.click(canvasElement);
+    await waitFor(() =>
+      expect(body.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+  },
+});
+
+export const LanguageOverflowViewportScroll = overflowScrollStory(false);
+export const LanguageOverflowContainerScroll = overflowScrollStory(true);
+export const MobileLanguageOverflowViewportScroll: Story = {
+  ...LanguageOverflowViewportScroll,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+};
+export const MobileLanguageOverflowContainerScroll: Story = {
+  ...LanguageOverflowContainerScroll,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+};
+
 export const TagOverflow: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');
