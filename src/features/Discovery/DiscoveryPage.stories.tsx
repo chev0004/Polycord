@@ -14,6 +14,7 @@ import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { DiscoveryPage } from './DiscoveryPage';
 import { createSampleProfiles } from './profileFixtures';
+import { blockedProfileIds } from './safetyRequests';
 import 'src/app/globals.css';
 
 const meta: Meta<typeof DiscoveryPage> = {
@@ -86,8 +87,6 @@ export const RefreshError: Story = {
   },
 };
 
-// Selecting Japanese as the primary language narrows the nine sample profiles
-// to the two Japanese speakers, then clearing restores the full feed.
 const filterAndClearPlay = async ({
   canvasElement,
 }: {
@@ -102,8 +101,6 @@ const filterAndClearPlay = async ({
     canvas.getByRole('button', { name: 'Primary Language' }),
   );
 
-  // The filter popover renders in a portal outside the story canvas, so scope
-  // option lookups to it to avoid matching language pills inside the cards.
   const popover = within(
     await waitFor(() => {
       const content = doc.querySelector<HTMLElement>('.PopoverContent');
@@ -138,7 +135,6 @@ export const Default: Story = {
   play: async (context) => {
     const canvas = within(context.canvasElement);
 
-    // The design removed the eyebrow-title-description header entirely.
     expect(
       canvas.queryByText('Find a language partner on Discord'),
     ).not.toBeInTheDocument();
@@ -146,6 +142,80 @@ export const Default: Story = {
     await filterAndClearPlay(context);
   },
 };
+
+const mobileBlock = (status: number | null, fromSheet = false): Story => {
+  let finishBlock: (response: Response) => void;
+  return {
+    parameters: { viewport: { defaultViewport: 'mobile1' } },
+    render: Default.render,
+    beforeEach: () => {
+      const original = globalThis.fetch;
+      blockedProfileIds.clear();
+      globalThis.fetch = Object.assign(
+        (...args: Parameters<typeof fetch>) =>
+          String(args[0]) === '/api/block'
+            ? new Promise<Response>((resolve) => {
+                finishBlock = resolve;
+              })
+            : original(...args),
+        { preconnect: original.preconnect },
+      );
+      return () => {
+        globalThis.fetch = original;
+        blockedProfileIds.clear();
+      };
+    },
+    play: async ({ canvasElement }) => {
+      if (window.innerWidth >= 768) return;
+      const canvas = within(canvasElement);
+      const card = canvas.getByText('Yuki').closest('article') as HTMLElement;
+      if (fromSheet) {
+        await userEvent.click(card);
+        const sheet = await screen.findByRole('dialog', { name: 'Yuki' });
+        await userEvent.click(
+          within(sheet).getByRole('button', { name: 'More actions' }),
+        );
+      } else {
+        await userEvent.click(
+          within(card).getByRole('button', { name: 'Card menu' }),
+        );
+      }
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Block user' }),
+      );
+      const loading = await screen.findByText('Blocking Yuki…');
+      await expect(await screen.findByRole('status')).toHaveTextContent(
+        'Blocking Yuki…',
+      );
+      await expect(loading.parentElement).toHaveAttribute('aria-busy', 'true');
+      await expect(card.parentElement).toHaveAttribute('inert');
+      await expect(canvas.getByText('Yuki')).toBeInTheDocument();
+      await expect(screen.queryByText('User blocked')).not.toBeInTheDocument();
+      if (status === null) return;
+      finishBlock(new Response('{}', { status }));
+      if (status === 200) {
+        await screen.findByText('User blocked');
+        await waitFor(() =>
+          expect(canvas.queryByText('Yuki')).not.toBeInTheDocument(),
+        );
+      } else {
+        await screen.findByText("Couldn't block user");
+        await waitFor(() =>
+          expect(card.parentElement).not.toHaveAttribute('inert'),
+        );
+        await expect(canvas.getByText('Yuki')).toBeInTheDocument();
+      }
+      await expect(
+        screen.queryByText('Blocking Yuki…'),
+      ).not.toBeInTheDocument();
+    },
+  };
+};
+
+export const MobileBlockLoading = mobileBlock(null);
+export const MobileBlockSuccess = mobileBlock(200);
+export const MobileBlockFailure = mobileBlock(503);
+export const MobileSheetBlockSuccess = mobileBlock(200, true);
 
 export const ShareWithoutClipboard: Story = {
   render: Default.render,

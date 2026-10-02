@@ -710,12 +710,19 @@ export const DiscoveryPage = ({
     }
 
     const blocked = profileItems[index];
-    setProfileItems((previous) =>
-      previous.filter((profile) => profile.id !== profileId),
-    );
+    if (!mobile) {
+      setProfileItems((previous) =>
+        previous.filter((profile) => profile.id !== profileId),
+      );
+    }
 
     try {
       await blockProfileRequest(profileId, true);
+      if (mobile) {
+        setProfileItems((previous) =>
+          previous.filter((profile) => profile.id !== profileId),
+        );
+      }
       refreshDiscovery();
       addToast({
         title: t('blockSuccessTitle'),

@@ -795,6 +795,7 @@
     "shareProfile": "プロフィールを共有",
     "reportProfile": "プロフィールを報告",
     "blockProfile": "ユーザーをブロック",
+    "blockingProfile": "{name}さんをブロック中…",
     "voiceIntroPlay": "ボイスイントロを再生",
     "voiceIntroStop": "ボイスイントロを停止",
     "searchPlaceholder": "名前、言語、国、タグ、自己紹介を検索…",

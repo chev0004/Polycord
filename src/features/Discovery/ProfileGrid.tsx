@@ -42,7 +42,7 @@ type ProfileGridProps = {
   onCountryClick?: (country: string, profileId: string) => void;
   onViewProfile?: (profileId: string) => void;
   onReport?: (profileId: string) => void;
-  onBlock?: (profileId: string) => void;
+  onBlock?: (profileId: string) => void | Promise<void>;
   onShare?: (profileId: string) => void;
   addToast?: (toast: Omit<ToastData, 'id'>) => void;
 };
@@ -98,6 +98,7 @@ export const ProfileGrid = ({
   const localStack = useToastStack();
   const addToast = externalAddToast ?? localStack.addToast;
   const ownsToastStack = !externalAddToast;
+  const [blockingIds, setBlockingIds] = useState<string[]>([]);
   const [savedIds, setSavedIds] = useState<Set<string>>(
     () => new Set(savedProfileIds),
   );
@@ -197,6 +198,16 @@ export const ProfileGrid = ({
     onCopyUsername?.(username, profileId);
   };
 
+  const handleBlock = async (profileId: string) => {
+    if (!mobile) return onBlock?.(profileId);
+    setBlockingIds((previous) => [...previous, profileId]);
+    try {
+      await onBlock?.(profileId);
+    } finally {
+      setBlockingIds((previous) => previous.filter((id) => id !== profileId));
+    }
+  };
+
   const renderProfileCard = (profile: DiscoveryProfile) => {
     const isOwnProfile = profile.id === currentProfileId;
     const canSaveProfile = saveEnabled && !isOwnProfile;
@@ -214,7 +225,7 @@ export const ProfileGrid = ({
         onCountryClick={onCountryClick}
         onViewProfile={onViewProfile}
         onReport={isOwnProfile ? undefined : onReport}
-        onBlock={isOwnProfile ? undefined : onBlock}
+        onBlock={isOwnProfile || !onBlock ? undefined : handleBlock}
         onShare={onShare}
       />
     );
@@ -228,9 +239,23 @@ export const ProfileGrid = ({
             ref={layOutMasonry}
             className="mx-auto grid w-full max-w-[1180px] grid-flow-row-dense grid-cols-1 items-start gap-x-6 md:grid-cols-2 lg:grid-cols-3"
           >
-            {displayedProfiles.map((profile) => (
-              <div key={profile.id}>{renderProfileCard(profile)}</div>
-            ))}
+            {displayedProfiles.map((profile) => {
+              const blocking = blockingIds.includes(profile.id);
+              return (
+                <div key={profile.id} className="relative" aria-busy={blocking}>
+                  <div inert={blocking}>{renderProfileCard(profile)}</div>
+                  {blocking ? (
+                    <output className="absolute inset-x-0 top-0 bottom-6 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-black/50 px-4 text-center text-foreground text-sm backdrop-blur-[1px]">
+                      <span
+                        aria-hidden="true"
+                        className="h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none"
+                      />
+                      {t('blockingProfile', { name: profile.displayName })}
+                    </output>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">
