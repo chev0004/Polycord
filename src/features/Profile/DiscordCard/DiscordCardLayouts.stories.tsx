@@ -119,6 +119,14 @@ export const Gradient: Story = {
 
 export const SecondLanguage: Story = {
   args: { active: 1 },
+  play: async ({ canvasElement }) => {
+    const orbit = canvasElement.querySelector('[data-layout="orbit"]');
+    const chip = within(orbit as HTMLElement).getByText('KO', {
+      selector: '.dc-ob-c',
+    });
+
+    await expect(chip).toHaveStyle({ left: '594px' });
+  },
 };
 
 export const LongName: Story = {
