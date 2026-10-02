@@ -1125,3 +1125,87 @@ export const MobileTimezonePicker: Story = {
     );
   },
 };
+
+const openMobileDiscordCard = async (canvas: ReturnType<typeof within>) => {
+  fireEvent.click(await canvas.findByRole('button', { name: /^Layout/ }));
+  return within(await screen.findByRole('dialog'));
+};
+
+export const MobileSaveDiscordCard: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const sheet = await openMobileDiscordCard(canvas);
+
+    await expect(
+      sheet.getByRole('button', { name: 'Classic card' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(sheet.getByRole('button', { name: 'Rank card' }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Done' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    fireEvent.click(await canvas.findByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ discordCard: 'rank' }),
+      ),
+    );
+  },
+};
+
+export const MobileFreePreviewsPremiumDiscordCard: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const sheet = await openMobileDiscordCard(canvas);
+
+    fireEvent.click(
+      sheet.getByRole('button', { name: 'Metal card (Premium)' }),
+    );
+    await expect(
+      await sheet.findByText(/layout is part of/),
+    ).toBeInTheDocument();
+    await expect(
+      sheet.getByRole('button', { name: 'See Premium' }),
+    ).toBeInTheDocument();
+    fireEvent.click(sheet.getByRole('button', { name: 'Cancel preview' }));
+    await waitFor(() =>
+      expect(sheet.queryByText(/layout is part of/)).not.toBeInTheDocument(),
+    );
+    await expect(
+      sheet.getByRole('button', { name: 'Classic card' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(sheet.getByRole('button', { name: 'Done' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    await expect(
+      canvas.queryByRole('button', { name: 'Save' }),
+    ).not.toBeInTheDocument();
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+};
+
+export const MobilePremiumSavesPremiumDiscordCard: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile, premium: true },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const sheet = await openMobileDiscordCard(canvas);
+
+    fireEvent.click(sheet.getByRole('button', { name: 'Metal card' }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Done' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    fireEvent.click(await canvas.findByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ discordCard: 'metal' }),
+      ),
+    );
+  },
+};
