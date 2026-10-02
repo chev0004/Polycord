@@ -1,0 +1,110 @@
+.dc-ob {
+  width: 934px;
+  height: 320px;
+  border-radius: 24px;
+  background: var(--color-background-dark);
+  position: relative;
+  overflow: hidden;
+  padding: 36px 40px 46px;
+  display: flex;
+  flex-direction: column;
+}
+.dc-ob-rg {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+  transform: translate(-50%, -50%);
+  left: 744px;
+  top: 160px;
+}
+.dc-ob .dc-av {
+  position: absolute;
+  left: 744px;
+  top: 160px;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  font-size: 50px;
+  box-shadow:
+    0 0 0 8px var(--color-background-dark),
+    0 0 0 10px var(--color-primary);
+}
+.dc-ob-c {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  display: grid;
+  place-items: center;
+  background: var(--color-primary-darker);
+  color: var(--color-primary-light);
+  border: 1.5px solid var(--color-primary-dark);
+}
+.dc-ob-c.dc-nat {
+  background: var(--cf);
+  color: var(--ci);
+  border-color: var(--color-primary);
+}
+.dc-ob > div:not(.dc-ob-rg):not(.dc-av) {
+  position: relative;
+}
+.dc-ob-nm {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.dc-ob-un {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+.dc-ob-ls {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dc-ob-r {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.dc-ob-r > .dc-k {
+  width: 92px;
+  flex-shrink: 0;
+}
+.dc-ob-ja {
+  font-family: var(--font-Zen);
+  font-weight: 900;
+  font-size: 64px;
+  line-height: 1.05;
+  color: var(--color-primary);
+}
+.dc-ob-en {
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.dc-ob-lv {
+  font-size: 17px;
+  color: var(--color-text-secondary);
+}
+.dc-ob .dc-cy > * {
+  align-items: baseline;
+  gap: 12px;
+}
+.dc-ob-nm,
+.dc-ob-un {
+  max-width: 540px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dc-ob-r {
+  min-width: 0;
+}
