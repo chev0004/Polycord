@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
 import { BrandName, CardAvatar, TagChips } from '../CardParts';
 import type { DiscordCardLayoutProps } from '../types';
 import '../splitFlap.css';
@@ -6,6 +7,10 @@ import '../splitFlap.css';
 const MAX_WORD_LENGTH = 18;
 const SMALL_WORD_LENGTH = 9;
 const MEDIUM_WORD_LENGTH = 15;
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const BASE_FLIPS = 4;
+const FLIP_INTERVAL = 55;
+const CELL_DELAY = 35;
 
 const clip = (word: string) =>
   word.length > MAX_WORD_LENGTH
@@ -17,6 +22,36 @@ const flapSize = (width: number) => {
   return width > SMALL_WORD_LENGTH ? 'dc-sm' : '';
 };
 
+const useFlapLetters = (word: string, width: number) => {
+  const final = word.toLocaleUpperCase().padEnd(width, ' ');
+  const [letters, setLetters] = useState([...final]);
+  const shown = useRef(letters);
+
+  useEffect(() => {
+    const timers = new Set<number>();
+
+    [...final].forEach((letter, cell) => {
+      if (shown.current[cell] === letter) return;
+      let flips = BASE_FLIPS + cell;
+      const flip = () => {
+        const done = flips-- <= 0;
+        const next = shown.current.slice();
+        next[cell] = done ? letter : LETTERS[Math.floor(Math.random() * 26)];
+        shown.current = next;
+        setLetters(next);
+        if (!done) timers.add(window.setTimeout(flip, FLIP_INTERVAL));
+      };
+      timers.add(window.setTimeout(flip, cell * CELL_DELAY));
+    });
+
+    return () => {
+      for (const timer of timers) window.clearTimeout(timer);
+    };
+  }, [final]);
+
+  return letters.slice(0, final.length);
+};
+
 const Flaps = ({
   word,
   width,
@@ -26,7 +61,7 @@ const Flaps = ({
   width: number;
   className?: string;
 }) => {
-  const letters = [...word.toLocaleUpperCase().padEnd(width, ' ')];
+  const letters = useFlapLetters(word, width);
 
   return (
     <div className={`dc-sf-c ${className}`}>
