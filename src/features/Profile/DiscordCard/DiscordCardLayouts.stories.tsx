@@ -133,6 +133,27 @@ export const Gradient: Story = {
         0,
       );
     }
+
+    const segment = bar.children[0] as HTMLElement;
+    segment.style.setProperty('--d', '0s');
+    segment.classList.remove('dc-on');
+    getComputedStyle(segment, '::after').clipPath;
+    const reveal = document
+      .getAnimations()
+      .find(
+        (animation) =>
+          (animation as CSSTransition).transitionProperty === 'clip-path',
+      ) as CSSTransition;
+    reveal.pause();
+    reveal.currentTime = 160;
+
+    const frame = getComputedStyle(segment, '::after');
+    await expect(frame.clipPath).not.toBe('inset(0px)');
+    await expect(frame.transform).toBe('none');
+    await expect(Number.parseFloat(frame.backgroundSize)).toBeCloseTo(
+      bar.offsetWidth,
+      0,
+    );
   },
 };
 
