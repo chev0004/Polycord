@@ -129,6 +129,19 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  opacity: 0;
+  transform: translateY(0.4em);
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dc-cy > .dc-on {
+  opacity: 1;
+  transform: none;
+}
+.dc-cy > .dc-out {
+  opacity: 0;
+  transform: translateY(-0.4em);
 }
 .dc-cy.dc-col > * {
   flex-direction: column;

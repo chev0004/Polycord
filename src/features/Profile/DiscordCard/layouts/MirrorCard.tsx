@@ -29,13 +29,15 @@ export const MirrorCard = ({ data, active }: DiscordCardLayoutProps) => {
       <div className="dc-mi-r">
         <span className="dc-k">{t('learning')}</span>
         {target ? (
-          <Cycle className="dc-col">
-            <span key={active}>
-              <FitText className="dc-mi-en" max={300}>
-                {target.name}
-              </FitText>
-              <span className="dc-mi-s">{target.level}</span>
-            </span>
+          <Cycle targets={data.targets} active={active} className="dc-col">
+            {(target) => (
+              <>
+                <FitText className="dc-mi-en" max={300}>
+                  {target.name}
+                </FitText>
+                <span className="dc-mi-s">{target.level}</span>
+              </>
+            )}
           </Cycle>
         ) : null}
       </div>

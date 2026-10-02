@@ -6,7 +6,7 @@ import {
 } from 'react';
 import type { IconType } from 'react-icons';
 import { MdLocationOn, MdSchedule } from 'react-icons/md';
-import type { DiscordCardData } from './types';
+import type { DiscordCardData, DiscordCardTarget } from './types';
 import './base.css';
 
 export const BRAND_CAPS = 'POLYCORD.NET';
@@ -51,12 +51,34 @@ export const CardAvatar = ({
 );
 
 export const Cycle = ({
-  children,
+  targets,
+  active,
   className = '',
+  children,
 }: {
-  children: ReactNode;
+  targets: DiscordCardTarget[];
+  active: number;
   className?: string;
-}) => <span className={`dc-cy ${className}`}>{children}</span>;
+  children: (target: DiscordCardTarget) => ReactNode;
+}) => {
+  const previous = (active + targets.length - 1) % targets.length;
+
+  return (
+    <span className={`dc-cy ${className}`}>
+      {targets.map((target, index) => (
+        <span
+          key={target.code}
+          aria-hidden={index !== active}
+          className={
+            index === active ? 'dc-on' : index === previous ? 'dc-out' : ''
+          }
+        >
+          {children(target)}
+        </span>
+      ))}
+    </span>
+  );
+};
 
 export const FitText = ({
   max,

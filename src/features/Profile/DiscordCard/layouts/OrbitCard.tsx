@@ -69,13 +69,15 @@ export const OrbitCard = ({ data, active }: DiscordCardLayoutProps) => {
         {target ? (
           <div className="dc-ob-r">
             <span className="dc-k">{t('learning')}</span>
-            <Cycle>
-              <span key={active}>
-                <FitText className="dc-ob-en" max={300}>
-                  {target.name}
-                </FitText>
-                <span className="dc-ob-lv">{target.level}</span>
-              </span>
+            <Cycle targets={data.targets} active={active}>
+              {(target) => (
+                <>
+                  <FitText className="dc-ob-en" max={300}>
+                    {target.name}
+                  </FitText>
+                  <span className="dc-ob-lv">{target.level}</span>
+                </>
+              )}
             </Cycle>
           </div>
         ) : null}

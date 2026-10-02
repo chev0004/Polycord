@@ -11,9 +11,9 @@ export const MetalCard = ({ data, active }: DiscordCardLayoutProps) => {
   return (
     <div className="dc-mc">
       <div className="dc-mc-h">
-        <span className="dc-cy">
-          <span key={active}>{target?.level}</span>
-        </span>
+        <Cycle targets={data.targets} active={active}>
+          {(item) => item.level}
+        </Cycle>
         <span
           className="dc-pn dc-mc-em"
           style={{
@@ -41,10 +41,12 @@ export const MetalCard = ({ data, active }: DiscordCardLayoutProps) => {
           </FitText>
           <span className="dc-ar" />
           {target ? (
-            <Cycle>
-              <FitText className="dc-mc-em" max={330}>
-                {target.name.toLocaleUpperCase()}
-              </FitText>
+            <Cycle targets={data.targets} active={active}>
+              {(item) => (
+                <FitText className="dc-mc-em" max={330}>
+                  {item.name.toLocaleUpperCase()}
+                </FitText>
+              )}
             </Cycle>
           ) : null}
         </div>

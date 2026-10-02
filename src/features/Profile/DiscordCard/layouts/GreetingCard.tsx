@@ -47,13 +47,15 @@ export const GreetingCard = ({ data, active }: DiscordCardLayoutProps) => {
         </div>
         {target ? (
           <div className="dc-bb dc-lrn">
-            <Cycle className="dc-col">
-              <span key={active}>
-                <span className="dc-k">
-                  {t('learningWith', { language: target.name })}
-                </span>
-                <p className="dc-z">{target.greeting}</p>
-              </span>
+            <Cycle targets={data.targets} active={active} className="dc-col">
+              {(target) => (
+                <>
+                  <span className="dc-k">
+                    {t('learningWith', { language: target.name })}
+                  </span>
+                  <p className="dc-z">{target.greeting}</p>
+                </>
+              )}
             </Cycle>
           </div>
         ) : null}

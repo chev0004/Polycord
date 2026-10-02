@@ -17,15 +17,21 @@ export const BleedCard = ({ data, active }: DiscordCardLayoutProps) => {
         {t('nativeWith', { language: data.native.name })}
       </span>
       {target ? (
-        <Cycle className="dc-col dc-bl-cy">
-          <span key={active}>
-            <span className="dc-k">
-              {t('learningLevel', { level: target.level })}
-            </span>
-            <FitText className="dc-bl-en" max={600}>
-              {target.name}
-            </FitText>
-          </span>
+        <Cycle
+          targets={data.targets}
+          active={active}
+          className="dc-col dc-bl-cy"
+        >
+          {(target) => (
+            <>
+              <span className="dc-k">
+                {t('learningLevel', { level: target.level })}
+              </span>
+              <FitText className="dc-bl-en" max={600}>
+                {target.name}
+              </FitText>
+            </>
+          )}
         </Cycle>
       ) : null}
       <div className="dc-bl-r">

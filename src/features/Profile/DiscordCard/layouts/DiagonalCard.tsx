@@ -43,13 +43,19 @@ export const DiagonalCard = ({ data, active }: DiscordCardLayoutProps) => {
       {target ? (
         <div className="dc-dg-br">
           <span className="dc-k">{t('learning')}</span>
-          <Cycle className="dc-col dc-end">
-            <span key={active}>
-              <FitText className="dc-dg-en" max={330}>
-                {target.name}
-              </FitText>
-              <span className="dc-dg-lv">{target.level}</span>
-            </span>
+          <Cycle
+            targets={data.targets}
+            active={active}
+            className="dc-col dc-end"
+          >
+            {(target) => (
+              <>
+                <FitText className="dc-dg-en" max={330}>
+                  {target.name}
+                </FitText>
+                <span className="dc-dg-lv">{target.level}</span>
+              </>
+            )}
           </Cycle>
         </div>
       ) : null}

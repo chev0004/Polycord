@@ -33,10 +33,12 @@ export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
         </div>
         {target ? (
           <div className="dc-b3-l">
-            <Cycle>
-              <span key={active}>
-                <span className="dc-tag dc-t">{target.code}</span>
-              </span>
+            <Cycle targets={data.targets} active={active}>
+              {(target) => (
+                <>
+                  <span className="dc-tag dc-t">{target.code}</span>
+                </>
+              )}
             </Cycle>
             <span className="dc-seg dc-b3-seg">
               {SEGMENTS.map((segment) => (
@@ -46,10 +48,12 @@ export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
                 />
               ))}
             </span>
-            <Cycle className="dc-end">
-              <span key={active}>
-                <span className="dc-lv">{target.level}</span>
-              </span>
+            <Cycle targets={data.targets} active={active} className="dc-end">
+              {(target) => (
+                <>
+                  <span className="dc-lv">{target.level}</span>
+                </>
+              )}
             </Cycle>
           </div>
         ) : null}
