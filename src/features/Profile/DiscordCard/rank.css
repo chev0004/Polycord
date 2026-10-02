@@ -1,0 +1,124 @@
+.dc-b3 {
+  width: 934px;
+  height: 320px;
+  border-radius: 24px;
+  background: var(--color-background-darker);
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding: 0 40px;
+  position: relative;
+  overflow: hidden;
+}
+.dc-b3::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  top: -160px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: var(--cf);
+  opacity: 0.06;
+}
+.dc-b3 .dc-av {
+  width: 184px;
+  height: 184px;
+  font-size: 60px;
+  box-shadow:
+    0 0 0 6px var(--color-background-darker),
+    0 0 0 11px var(--color-primary);
+}
+.dc-b3-m {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  z-index: 1;
+}
+.dc-b3-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.dc-b3-nm {
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+}
+.dc-b3-nm span {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-left: 10px;
+}
+.dc-b3-t {
+  text-align: right;
+}
+.dc-b3-t b {
+  display: block;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.dc-b3-t span {
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+.dc-b3-l {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  font-size: 18px;
+}
+.dc-b3-seg i,
+.dc-b3-seg i.dc-on {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-primary-darker);
+}
+.dc-b3-seg i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--cf);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1) var(--d, 0s);
+}
+.dc-b3-seg.dc-snap i::after {
+  transition: none;
+}
+.dc-b3-seg i.dc-on::after {
+  transform: none;
+}
+.dc-b3-l .dc-lv {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  min-width: 118px;
+  text-align: right;
+}
+.dc-b3-f {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+.dc-b3-top {
+  gap: 16px;
+}
+.dc-b3-nm {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dc-b3-t {
+  flex-shrink: 0;
+}
