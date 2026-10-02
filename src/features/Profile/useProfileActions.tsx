@@ -14,6 +14,7 @@ import {
 } from '@/features/Discovery/safetyRequests';
 import { buildPublicProfileUrl } from '@/features/Discovery/shareProfile';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
@@ -25,6 +26,7 @@ export const useProfileActions = (
   onBlocked: (id: string) => void,
 ) => {
   const t = useTranslations('Discovery');
+  const mobile = useIsMobile();
   const { toasts, addToast, dismissToast } = useToastStack();
   const [reportTarget, setReportTarget] = useState<DiscoveryProfile | null>(
     null,
@@ -115,7 +117,7 @@ export const useProfileActions = (
       trackClientEvent(ANALYTICS_EVENTS.profileUsernameCopy, { profileId: id });
       void notifyUsernameCopied(id).catch(() => {});
     }
-    if (copiedToClipboard) {
+    if (copiedToClipboard && !mobile) {
       addToast({
         title: t('copied'),
         description: t('copiedToClipboard', {

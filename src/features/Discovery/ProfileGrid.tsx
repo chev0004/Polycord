@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { ToastStack } from '@/components/Toast';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import {
   calculateMatchScore,
   type MatchCriteria,
@@ -93,6 +94,7 @@ export const ProfileGrid = ({
   addToast: externalAddToast,
 }: ProfileGridProps) => {
   const t = useTranslations('Discovery');
+  const mobile = useIsMobile();
   const localStack = useToastStack();
   const addToast = externalAddToast ?? localStack.addToast;
   const ownsToastStack = !externalAddToast;
@@ -180,7 +182,7 @@ export const ProfileGrid = ({
     avatarUrl: string | undefined,
     copiedToClipboard: boolean,
   ) => {
-    if (copiedToClipboard) {
+    if (copiedToClipboard && !mobile) {
       addToast({
         title: t('copied'),
         description: t('copiedToClipboard', { username }),
