@@ -71,17 +71,16 @@ export const MobileToast = ({
   return (
     <output
       {...shared}
-      className="MobileToast pointer-events-auto flex max-w-full touch-none select-none items-center gap-2 rounded-full bg-background-darker px-4 py-2.5 font-figtree text-foreground text-sm shadow-[0_0_0_1px_var(--color-line-strong),0_14px_30px_-6px_rgba(0,0,0,0.7)] data-[state=closed]:opacity-0"
+      className="MobileToast pointer-events-auto flex min-h-11 max-w-full touch-none select-none items-center gap-2 rounded-full bg-background-darker py-2.5 pr-[18px] pl-3.5 font-figtree font-semibold text-foreground text-sm leading-[1.3] shadow-[0_0_0_1px_var(--color-line-strong),0_14px_30px_-6px_rgba(0,0,0,0.7)] data-[state=closed]:opacity-0"
     >
       <Icon
-        size={18}
+        size={20}
         className={`flex-shrink-0 ${toast.variant === 'error' ? 'text-danger' : 'text-primary-light'}`}
       />
       <span>{toast.title}</span>
       {toast.mobileDescription ? (
         <span className="text-muted">{toast.mobileDescription}</span>
       ) : null}
-      {typeof toast.description === 'string' ? null : toast.description}
     </output>
   );
 };

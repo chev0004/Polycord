@@ -262,3 +262,26 @@ export const BannerReplacesStatusFromAnotherStack: Story = {
     );
   },
 };
+
+export const BlockToastHasNoUndo: Story = {
+  args: {
+    toast: {
+      title: 'ユーザーをブロックしました',
+      description: (
+        <span>
+          このユーザーのプロフィールはディスカバリーに表示されません。
+          <button type="button">元に戻す</button>
+        </span>
+      ),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByText('Show toast'));
+    const toast = await canvas.findByRole('status');
+
+    await expect(within(toast).queryByRole('button')).not.toBeInTheDocument();
+    await expect(toast.getBoundingClientRect().height).toBeLessThan(60);
+  },
+};
