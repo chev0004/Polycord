@@ -2,13 +2,9 @@ export const FREE_DISCORD_CARDS = [
   'classic',
   'rank',
   'split',
-  'greeting',
-  'mirror',
   'photo',
-  'watermark',
   'bleed',
   'diagonal',
-  'character-select',
 ] as const;
 
 export const PREMIUM_DISCORD_CARDS = [
@@ -17,6 +13,10 @@ export const PREMIUM_DISCORD_CARDS = [
   'metal',
   'orbit',
   'now-playing',
+  'greeting',
+  'mirror',
+  'watermark',
+  'character-select',
 ] as const;
 
 export const DISCORD_CARDS = [

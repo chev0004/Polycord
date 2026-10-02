@@ -142,6 +142,23 @@ export const FreeTeasesLockedLayout: Story = {
   },
 };
 
+export const FreeLocksMovedLayouts: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    for (const name of [
+      'Greeting bubbles',
+      'Mirror',
+      'Watermark',
+      'Character select',
+    ]) {
+      await expect(
+        canvas.getByRole('button', { name: `${name} (Premium)` }),
+      ).toBeInTheDocument();
+    }
+  },
+};
+
 export const FreeWithLapsedPremiumLayout: Story = {
   args: { initialValue: 'exchange-pass' },
   play: async ({ canvasElement }) => {

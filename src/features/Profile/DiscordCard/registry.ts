@@ -19,17 +19,9 @@ export const DISCORD_CARD_LAYOUTS: DiscordCardLayoutDefinition[] = [
   { id: 'classic', labelKey: 'layoutClassic', component: ClassicCard },
   { id: 'rank', labelKey: 'layoutRank', component: RankCard },
   { id: 'split', labelKey: 'layoutSplit', component: SplitCard },
-  { id: 'greeting', labelKey: 'layoutGreeting', component: GreetingCard },
-  { id: 'mirror', labelKey: 'layoutMirror', component: MirrorCard },
   { id: 'photo', labelKey: 'layoutPhoto', component: PhotoCard },
-  { id: 'watermark', labelKey: 'layoutWatermark', component: WatermarkCard },
   { id: 'bleed', labelKey: 'layoutBleed', component: BleedCard },
   { id: 'diagonal', labelKey: 'layoutDiagonal', component: DiagonalCard },
-  {
-    id: 'character-select',
-    labelKey: 'layoutCharacterSelect',
-    component: CharacterSelectCard,
-  },
   {
     id: 'exchange-pass',
     labelKey: 'layoutExchangePass',
@@ -42,5 +34,13 @@ export const DISCORD_CARD_LAYOUTS: DiscordCardLayoutDefinition[] = [
     id: 'now-playing',
     labelKey: 'layoutNowPlaying',
     component: NowPlayingCard,
+  },
+  { id: 'greeting', labelKey: 'layoutGreeting', component: GreetingCard },
+  { id: 'mirror', labelKey: 'layoutMirror', component: MirrorCard },
+  { id: 'watermark', labelKey: 'layoutWatermark', component: WatermarkCard },
+  {
+    id: 'character-select',
+    labelKey: 'layoutCharacterSelect',
+    component: CharacterSelectCard,
   },
 ];
