@@ -1,0 +1,95 @@
+.dc-h {
+  position: relative;
+  width: 934px;
+  height: 320px;
+  border-radius: 28px;
+  overflow: hidden;
+  background: var(--color-background-dark);
+  display: grid;
+  grid-template-columns: 300px 1fr;
+}
+.dc-h-p {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 32px;
+  background: var(--color-background-darker);
+  border-right: 1px solid var(--color-primary-dark);
+}
+.dc-h .dc-av {
+  width: 96px;
+  height: 96px;
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+.dc-h-nm {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.dc-h-un {
+  font-size: 18px;
+  color: var(--color-text-secondary);
+}
+.dc-h-m {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dc-h .dc-row {
+  font-size: 17px;
+}
+.dc-h .dc-row .dc-ms {
+  font-size: 22px;
+  color: var(--color-primary);
+}
+.dc-h-c {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px 32px;
+}
+.dc-bb {
+  padding: 14px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dc-bb p {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.dc-bb .dc-cy > * {
+  gap: 6px;
+}
+.dc-bb.dc-nat {
+  align-self: flex-start;
+  background: var(--cf);
+  color: var(--ci);
+  border-radius: 26px 26px 26px 8px;
+}
+.dc-bb.dc-nat .dc-k {
+  color: var(--ci2);
+}
+.dc-bb.dc-lrn {
+  align-self: flex-end;
+  background: var(--color-primary-darker);
+  border-radius: 26px 26px 8px 26px;
+}
+.dc-h-p,
+.dc-h-c {
+  min-width: 0;
+}
+.dc-h-nm,
+.dc-h-un {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dc-bb p {
+  overflow-wrap: anywhere;
+}
