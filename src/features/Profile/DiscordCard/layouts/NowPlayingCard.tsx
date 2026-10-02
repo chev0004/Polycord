@@ -72,7 +72,7 @@ export const NowPlayingCard = ({ data, active }: DiscordCardLayoutProps) => {
         </div>
         <div className="dc-np-pg">
           <div className="dc-np-bar">
-            <i />
+            <i key={active} />
           </div>
           <div className="dc-np-ft">
             {data.availability ? <span>{data.availability.text}</span> : null}
