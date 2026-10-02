@@ -336,7 +336,7 @@ export const LastEntryCorners: Story = {
 
     await expect(entryCorners(first)).toEqual(['6px', '6px']);
     await expect(entryCorners(middle)).toEqual(['6px', '6px']);
-    await expect(entryCorners(last)).toEqual(['6px', '18px']);
+    await expect(entryCorners(last)).toEqual(['6px', '14px']);
 
     const lastEntry = last.closest('[class*="rounded-row"]') as HTMLElement;
     await userEvent.click(
@@ -347,7 +347,7 @@ export const LastEntryCorners: Story = {
         portal.queryByText('Mina Park copied your username'),
       ).not.toBeInTheDocument(),
     );
-    await expect(entryCorners(middle)).toEqual(['6px', '18px']);
+    await expect(entryCorners(middle)).toEqual(['6px', '14px']);
   },
 };
 
@@ -361,7 +361,7 @@ export const SingleEntryCorners: Story = {
     const portal = await openInbox(canvasElement);
     await expect(
       entryCorners(await portal.findByText('A guest viewed your profile')),
-    ).toEqual(['6px', '18px']);
+    ).toEqual(['6px', '14px']);
   },
 };
 
@@ -378,6 +378,35 @@ export const LastEntryCornersWithUpsell: Story = {
     const portal = await openInbox(canvasElement);
     const entries = await portal.findAllByText('A user copied your username');
     await expect(entryCorners(entries[0])).toEqual(['6px', '6px']);
-    await expect(entryCorners(entries[1])).toEqual(['6px', '18px']);
+    await expect(entryCorners(entries[1])).toEqual(['6px', '14px']);
+  },
+};
+
+const manyNotifications = Array.from({ length: 7 }, (_, index) => ({
+  id: String(index),
+  kind: 'view' as const,
+  isGuest: true,
+}));
+
+export const AnimatesIn: Story = {
+  args: { premium: true, persist: false, notifications: manyNotifications },
+  play: async ({ canvasElement }) => {
+    const portal = await openInbox(canvasElement);
+    const popover = document.querySelector('.InboxPopover') as HTMLElement;
+    const rows = () =>
+      Array.from(document.querySelectorAll<HTMLElement>('.InboxRow'));
+
+    await waitFor(() => expect(rows()).toHaveLength(5));
+    await expect(getComputedStyle(popover).animationName).toBe('inboxPopIn');
+    await expect(getComputedStyle(rows()[0]).animationName).toBe('inboxIn');
+    await expect(
+      rows().map((row) => getComputedStyle(row).animationDelay),
+    ).toEqual(['0s', '0.05s', '0.1s', '0.15s', '0.2s']);
+
+    const first = rows()[0];
+    await userEvent.click(portal.getByRole('button', { name: 'Next page' }));
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    await expect(rows()[0]).not.toBe(first);
+    await expect(getComputedStyle(rows()[1]).animationDelay).toBe('0.05s');
   },
 };

@@ -12,6 +12,12 @@ import type { Notifications } from '@/types';
 import { NotificationEntry } from './NotificationEntry';
 import { formatRelativeTime, useInbox } from './useInbox';
 
+const headerButtonClassName =
+  'h-[30px] whitespace-nowrap rounded-control border px-3 font-medium text-[13px] transition-[background-color,border-color,opacity,transform] duration-150 enabled:active:scale-[0.97] disabled:cursor-default disabled:opacity-[0.45]';
+
+const pageButtonClassName =
+  'flex h-7 w-7 items-center justify-center rounded-row text-foreground transition-colors duration-150 enabled:hover:bg-white/[0.06] focus-visible:bg-white/[0.06] disabled:cursor-default disabled:text-[#4b5563]';
+
 export const Inbox = ({
   notifications: initialNotifications,
   premium = false,
@@ -100,127 +106,120 @@ export const Inbox = ({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="PopoverContent max-h-[var(--radix-popover-content-available-height)] w-[420px] max-w-[calc(100vw-20px)] overflow-y-auto rounded-menu border border-gray-500/50 bg-background-dark shadow-lg"
+          className="PopoverContent InboxPopover flex max-h-[min(var(--radix-popover-content-available-height),calc(100vh-88px))] w-[380px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-menu border border-gray-500/50 bg-background-dark shadow-lg"
           side="bottom"
           align="end"
-          sideOffset={5}
+          sideOffset={8}
           collisionPadding={10}
         >
-          <div className="flex flex-wrap items-center justify-between gap-2 border-gray-500/50 border-b p-3">
-            <h3 className="font-bold text-base text-foreground">
+          <div className="flex items-center justify-between gap-3 border-gray-500/50 border-b py-3 pr-3 pl-4">
+            <h3 className="font-bold text-[17px] text-foreground leading-[1.2] tracking-[-0.005em]">
               {t('notifications')}
             </h3>
-            {notifications.length > 0 && (
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={markAllRead}
-                  className="px-2 py-1 text-xs"
-                  disabled={pending || unreadCount === 0}
-                >
-                  {t('markAllRead')}
-                </Button>
-                <Button
-                  onClick={clearAll}
-                  className="px-2 py-1 text-xs"
-                  disabled={pending || notifications.length === 0}
-                  variant="outline"
-                >
-                  {t('clearAll')}
-                </Button>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col justify-between">
-            {error && (
-              <div
-                role="alert"
-                className="flex flex-col gap-2 p-3 text-danger text-sm"
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={markAllRead}
+                disabled={pending || unreadCount === 0}
+                className={`${headerButtonClassName} border-primary bg-primary text-[#111] enabled:hover:border-primary-light enabled:hover:bg-primary-light`}
               >
-                <p>{t(error)}</p>
-                <Button onClick={retry}>{t('retry')}</Button>
-              </div>
-            )}
-            {loading && (
-              <output className="p-3 text-muted text-sm">{t('loading')}</output>
-            )}
-            <div className="flex flex-col gap-1 overflow-hidden p-2">
-              {currentNotifications.length > 0 ? (
-                currentNotifications.map((notification, index) => (
-                  <NotificationEntry
-                    notification={{
-                      ...notification,
-                      timestamp: notification.createdAt
-                        ? formatRelativeTime(notification.createdAt, t)
-                        : (notification.timestamp ?? ''),
-                    }}
-                    premium={viewerPremium}
-                    disabled={pending}
-                    last={index === currentNotifications.length - 1}
-                    key={notification.id}
-                    onMarkAsRead={() =>
-                      setRead(notification.id, !notification.read)
-                    }
-                    onDelete={() => remove(notification.id)}
-                    style={{
-                      animationDelay: `${index * 50}ms`,
-                    }}
-                    className="animate-fadeInUp"
-                  />
-                ))
-              ) : !loading && !error ? (
-                <div className="flex h-[290px] flex-col items-center justify-center gap-4">
-                  <MdOutlineInbox size={48} className="text-subtle" />
-                  <p className="text-center text-muted text-sm">
-                    {t('noNotifications')}
-                    <br />
-                    <span className="text-xs">
-                      {t('noNotificationsDescription')}
-                    </span>
-                  </p>
-                </div>
-              ) : null}
-              {!viewerPremium &&
-                currentNotifications.some(
-                  (notification) =>
-                    notification.kind === 'copy' ||
-                    notification.kind === 'share',
-                ) && (
-                  <Link
-                    href={`/${locale}/settings#premium`}
-                    className="rounded-md px-3 py-2.5 font-semibold text-[13px] text-primary-light transition-colors hover:bg-background-main hover:text-primary-lighter focus-visible:bg-background-main focus-visible:text-primary-lighter"
-                  >
-                    {t('seeWhoWithPremium')}
-                  </Link>
-                )}
+                {t('markAllRead')}
+              </button>
+              <button
+                type="button"
+                onClick={clearAll}
+                disabled={pending || notifications.length === 0}
+                className={`${headerButtonClassName} border-gray-500/50 text-foreground enabled:hover:bg-white/5`}
+              >
+                {t('clearAll')}
+              </button>
             </div>
-
-            {totalPages > 1 && (
-              <div className="flex h-[41px] items-center justify-center gap-4 border-gray-500/50 border-t">
-                <button
-                  type="button"
-                  onClick={handlePrevPage}
-                  disabled={page === 1}
-                  aria-label={t('previousPage')}
-                  className="text-foreground transition-colors duration-200 hover:text-soft focus-visible:text-soft disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <MdOutlineKeyboardArrowLeft size={20} />
-                </button>
-                <span className="text-muted text-xs">
-                  {t('page', { current: page, total: totalPages })}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleNextPage}
-                  disabled={page === totalPages}
-                  aria-label={t('nextPage')}
-                  className="text-foreground transition-colors duration-200 hover:text-soft focus-visible:text-soft disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <MdOutlineKeyboardArrowRight size={20} />
-                </button>
-              </div>
-            )}
           </div>
+
+          {error && (
+            <div
+              role="alert"
+              className="flex flex-col gap-2 p-3 text-danger text-sm"
+            >
+              <p>{t(error)}</p>
+              <Button onClick={retry}>{t('retry')}</Button>
+            </div>
+          )}
+          {loading && (
+            <output className="p-3 text-muted text-sm">{t('loading')}</output>
+          )}
+          {currentNotifications.length > 0 ? (
+            <div
+              key={page}
+              className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-2 [scrollbar-width:thin]"
+            >
+              {currentNotifications.map((notification, index) => (
+                <NotificationEntry
+                  notification={{
+                    ...notification,
+                    timestamp: notification.createdAt
+                      ? formatRelativeTime(notification.createdAt, t)
+                      : (notification.timestamp ?? ''),
+                  }}
+                  premium={viewerPremium}
+                  disabled={pending}
+                  last={index === currentNotifications.length - 1}
+                  key={notification.id}
+                  onMarkAsRead={() =>
+                    setRead(notification.id, !notification.read)
+                  }
+                  onDelete={() => remove(notification.id)}
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                  }}
+                />
+              ))}
+            </div>
+          ) : !loading && !error ? (
+            <div className="px-6 py-9 text-center">
+              <div className="mb-1 font-semibold text-[15px] text-foreground">
+                {t('noNotifications')}
+              </div>
+              <div className="text-[13px] text-muted [text-wrap:pretty]">
+                {t('noNotificationsDescription')}
+              </div>
+            </div>
+          ) : null}
+          {!viewerPremium &&
+            notifications.some(
+              (notification) =>
+                notification.kind === 'copy' || notification.kind === 'share',
+            ) && (
+              <Link
+                href={`/${locale}/settings#premium`}
+                className="flex h-[38px] shrink-0 items-center justify-center border-gray-500/50 border-t font-medium text-muted text-xs transition-colors duration-150 hover:text-primary-light focus-visible:text-primary-light"
+              >
+                {t('seeWhoWithPremium')}
+              </Link>
+            )}
+          {totalPages > 1 && (
+            <div className="flex h-11 shrink-0 items-center justify-center gap-4 border-gray-500/50 border-t text-[13px] text-muted">
+              <button
+                type="button"
+                onClick={handlePrevPage}
+                disabled={page === 1}
+                aria-label={t('previousPage')}
+                className={pageButtonClassName}
+              >
+                <MdOutlineKeyboardArrowLeft size={20} />
+              </button>
+              <span>{t('page', { current: page, total: totalPages })}</span>
+              <button
+                type="button"
+                onClick={handleNextPage}
+                disabled={page === totalPages}
+                aria-label={t('nextPage')}
+                className={pageButtonClassName}
+              >
+                <MdOutlineKeyboardArrowRight size={20} />
+              </button>
+            </div>
+          )}
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
