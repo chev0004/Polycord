@@ -25,7 +25,6 @@ export const CharacterSelectCard = ({
   return (
     <div className="dc-cs">
       <div className="dc-cs-p" style={avatarBackground(data.avatarUrl)}>
-        <span className="dc-cs-p1">{t('player')}</span>
         {data.avatarUrl ? null : <b>{data.initials}</b>}
         <BrandName
           tone="light"

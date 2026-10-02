@@ -10,9 +10,9 @@ import {
 } from './discordCards';
 
 describe('discord cards', () => {
-  it('lists ten free and five premium layouts without overlap', () => {
-    expect(FREE_DISCORD_CARDS).toHaveLength(10);
-    expect(PREMIUM_DISCORD_CARDS).toHaveLength(5);
+  it('lists six free and nine premium layouts without overlap', () => {
+    expect(FREE_DISCORD_CARDS).toHaveLength(6);
+    expect(PREMIUM_DISCORD_CARDS).toHaveLength(9);
     expect(new Set(DISCORD_CARDS).size).toBe(15);
   });
 
@@ -42,11 +42,13 @@ describe('discord cards', () => {
   });
 
   it('keeps the stored layout while entitled', () => {
-    expect(resolveDiscordCard('mirror', false)).toBe('mirror');
+    expect(resolveDiscordCard('bleed', false)).toBe('bleed');
+    expect(resolveDiscordCard('mirror', true)).toBe('mirror');
     expect(resolveDiscordCard('orbit', true)).toBe('orbit');
   });
 
   it('falls back to classic when premium lapses', () => {
     expect(resolveDiscordCard('orbit', false)).toBe('classic');
+    expect(resolveDiscordCard('mirror', false)).toBe('classic');
   });
 });
