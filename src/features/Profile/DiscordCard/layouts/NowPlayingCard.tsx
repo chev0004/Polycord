@@ -1,10 +1,5 @@
 import { useTranslations } from 'next-intl';
-import {
-  avatarBackground,
-  BRAND_CAPS,
-  BrandName,
-  TagChips,
-} from '../CardParts';
+import { BrandName, CardAvatar, TagChips } from '../CardParts';
 import type { DiscordCardLayoutProps } from '../types';
 import '../nowPlaying.css';
 
@@ -12,7 +7,6 @@ const PAGE_SIZE = 3;
 
 export const NowPlayingCard = ({ data, active }: DiscordCardLayoutProps) => {
   const t = useTranslations('DiscordCard');
-  const target = data.targets[active];
   const page = Math.floor(active / PAGE_SIZE) * PAGE_SIZE;
   const tracks = data.targets.slice(page, page + PAGE_SIZE);
 
@@ -20,15 +14,9 @@ export const NowPlayingCard = ({ data, active }: DiscordCardLayoutProps) => {
     <div className="dc-np">
       <div className="dc-np-art">
         <div className="dc-np-rec">
-          <div className="dc-np-lb">
-            <span>{target?.code}</span>
-            <small>{BRAND_CAPS}</small>
-          </div>
+          <CardAvatar data={data} />
         </div>
         <div className="dc-np-sh" />
-        <div className="dc-np-sl" style={avatarBackground(data.avatarUrl)}>
-          {data.avatarUrl ? null : data.initials}
-        </div>
       </div>
       <div className="dc-np-r">
         <div className="dc-np-top">
