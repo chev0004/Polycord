@@ -214,6 +214,46 @@ export const DiscardDiscordCard: Story = {
   },
 };
 
+export const FreeCannotSavePremiumDiscordCard: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(
+      canvas.getByRole('button', { name: 'Metal card (Premium)' }),
+    );
+
+    await expect(
+      await canvas.findByText(/layout is part of/),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Classic card' }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    await expect(
+      canvas.queryByRole('button', { name: 'Save Profile' }),
+    ).not.toBeInTheDocument();
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+};
+
+export const PremiumSavesPremiumDiscordCard: Story = {
+  args: { initialValues: sampleProfile, premium: true },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Metal card' }));
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Profile' }),
+    );
+
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ discordCard: 'metal' }),
+      ),
+    );
+  },
+};
+
 export const OptionsMenuTransition: Story = {
   args: {
     initialValues: sampleProfile,

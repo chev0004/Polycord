@@ -9,6 +9,7 @@ import type { DiscordCardData } from './types';
 
 const labels = {
   days: { any: 'Any day', weekdays: 'Weekdays', weekends: 'Weekends' },
+  daysShort: { any: 'Daily', weekdays: 'Wkdy', weekends: 'Wknd' },
   anyTime: 'Any time',
   levels: {
     [Proficiency.BEGINNER]: 'Beginner',
@@ -159,5 +160,27 @@ export const SameNativeAndLearningScript: Story = {
       primaryLanguage: 'en',
       targetLanguages: [{ language: 'es', level: Proficiency.NATIVE_LEVEL }],
     }),
+  },
+};
+
+export const LongLanguageNames: Story = {
+  args: {
+    data: build({
+      primaryLanguage: 'nb',
+      targetLanguages: [{ language: 'cu', level: Proficiency.INTERMEDIATE }],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const card = canvasElement.querySelector('[data-layout="split-flap"]');
+    const column = card?.querySelector('.dc-sf-b') as HTMLElement;
+    const rows = card?.querySelectorAll<HTMLElement>('.dc-sf-c') ?? [];
+
+    await expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const label = row.previousElementSibling as HTMLElement | null;
+      await expect(
+        row.offsetWidth + (label?.offsetWidth ?? 0),
+      ).toBeLessThanOrEqual(column.clientWidth);
+    }
   },
 };

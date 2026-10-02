@@ -542,7 +542,19 @@
     "nativeSuffix": "{language}・ネイティブ",
     "homeNative": "ホーム・ネイティブ",
     "levelShort": "LV・{level}",
-    "player": "P1"
+    "player": "P1",
+    "passTitle": "言語交換パス",
+    "passenger": "搭乗者",
+    "handleLabel": "ハンドル",
+    "freeTime": "空き時間",
+    "interests": "興味",
+    "localTimeIn": "現地時刻・{country}",
+    "level": "レベル",
+    "available": "空き",
+    "nowPlaying": "再生中",
+    "abbrAny": "毎日",
+    "abbrWeekdays": "平日",
+    "abbrWeekends": "週末"
   },
   "Settings": {
     "savedTitle": "保存しました",

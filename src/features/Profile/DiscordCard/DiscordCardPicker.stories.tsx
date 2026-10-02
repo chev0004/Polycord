@@ -8,22 +8,11 @@ import {
 import { Proficiency } from '@/constants/languages';
 import { DiscordCardPicker } from './DiscordCardPicker';
 import { buildDiscordCardData } from './data';
-import { ClassicCard } from './layouts/ClassicCard';
 import { discordCardVars } from './theme';
-import type { DiscordCardLayoutDefinition } from './types';
-
-const layouts: DiscordCardLayoutDefinition[] = [
-  { id: 'classic', labelKey: 'layoutClassic', component: ClassicCard },
-  { id: 'rank', labelKey: 'layoutRank', component: ClassicCard },
-  {
-    id: 'exchange-pass',
-    labelKey: 'layoutExchangePass',
-    component: ClassicCard,
-  },
-];
 
 const labels = {
   days: { any: 'Any day', weekdays: 'Weekdays', weekends: 'Weekends' },
+  daysShort: { any: 'Daily', weekdays: 'Wkdy', weekends: 'Wknd' },
   anyTime: 'Any time',
   levels: {
     [Proficiency.BEGINNER]: 'Beginner',
@@ -86,7 +75,6 @@ const PickerHarness = ({
         data={data}
         vars={vars}
         error={error}
-        layouts={layouts}
       />
       <output data-testid="saved-layout">{value}</output>
     </div>

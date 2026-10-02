@@ -542,7 +542,19 @@
     "nativeSuffix": "{language} · Native",
     "homeNative": "Home · Native",
     "levelShort": "LV · {level}",
-    "player": "P1"
+    "player": "P1",
+    "passTitle": "Language exchange pass",
+    "passenger": "Passenger",
+    "handleLabel": "Handle",
+    "freeTime": "Free time",
+    "interests": "Interests",
+    "localTimeIn": "Local time · {country}",
+    "level": "Level",
+    "available": "Available",
+    "nowPlaying": "Now playing",
+    "abbrAny": "Daily",
+    "abbrWeekdays": "Wkdy",
+    "abbrWeekends": "Wknd"
   },
   "Settings": {
     "savedTitle": "Saved",
