@@ -29,55 +29,30 @@
 .dc-np-rec {
   animation: dc-np-spin 3.2s linear infinite;
   position: absolute;
-  left: 104px;
-  top: 8px;
-  width: 240px;
-  height: 240px;
+  left: 62px;
+  top: 0;
+  width: 256px;
+  height: 256px;
   border-radius: 50%;
   background: repeating-radial-gradient(circle, #101214 0 2px, #1a1d20 2px 3px);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
   display: grid;
   place-items: center;
 }
-.dc-np-lb {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: var(--cf);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--ci);
-  font-size: 18px;
-  font-weight: 900;
-  line-height: 1;
-  gap: 4px;
-  position: relative;
-}
-.dc-np-lb small {
-  font-size: 7.5px;
-  letter-spacing: 0.06em;
-  font-weight: 800;
-  color: var(--ci2);
-}
-.dc-np-lb::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  margin: -4px;
-  border-radius: 50%;
-  background: #0a0b0c;
+.dc-np-rec .dc-av {
+  width: 124px;
+  height: 124px;
+  font-size: 44px;
+  box-shadow:
+    0 0 0 5px #0a0b0c,
+    0 0 0 7px var(--color-primary);
 }
 .dc-np-sh {
   position: absolute;
-  left: 104px;
-  top: 8px;
-  width: 240px;
-  height: 240px;
+  left: 62px;
+  top: 0;
+  width: 256px;
+  height: 256px;
   border-radius: 50%;
   background: conic-gradient(
     from 20deg,
@@ -88,22 +63,6 @@
     transparent 260deg
   );
   pointer-events: none;
-}
-.dc-np-sl {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 256px;
-  height: 256px;
-  border-radius: 6px;
-  background: #4a90c4;
-  display: grid;
-  place-items: center;
-  font-size: 96px;
-  font-weight: 800;
-  color: #fff;
-  box-shadow: 10px 0 24px rgba(0, 0, 0, 0.45);
-  z-index: 1;
 }
 .dc-np-r {
   display: flex;
