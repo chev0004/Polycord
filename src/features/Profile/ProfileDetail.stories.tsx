@@ -8,6 +8,7 @@ import {
 } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { ProfileDetail } from './ProfileDetail';
+import { useProfileActions } from './useProfileActions';
 import 'src/app/globals.css';
 
 const profile: DiscoveryProfile = {
@@ -108,6 +109,49 @@ export const CopyFallback: Story = {
       'yuki_lang',
     );
   },
+};
+
+export const UsernameCopyFeedback: Story = {
+  render: (args) => {
+    const actions = useProfileActions('en', true, () => {});
+    return (
+      <>
+        <ProfileDetail
+          {...args}
+          onCopyUsername={() => actions.copyUsername(args.profile, true)}
+        />
+        {actions.feedback}
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const writeText = fn(async () => {});
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    await userEvent.click(canvas.getByRole('button', { name: 'Yuki Tanaka' }));
+    await expect(writeText).toHaveBeenCalledWith('yuki_lang');
+    await waitFor(() =>
+      expect(
+        getComputedStyle(canvas.getByText('Yuki Tanaka')).backgroundClip,
+      ).toBe('text'),
+    );
+    if (window.innerWidth < 768) {
+      await expect(body.queryByText('Copied!')).not.toBeInTheDocument();
+    } else {
+      await expect(
+        await body.findByText('yuki_lang copied to clipboard'),
+      ).toBeInTheDocument();
+    }
+  },
+};
+
+export const MobileUsernameCopyFeedback: Story = {
+  ...UsernameCopyFeedback,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
 };
 
 export const MoreActions: Story = {

@@ -66,6 +66,11 @@ export const OwnProfileCopy: Story = {
       card('Yuki').getByRole('button', { name: 'Copy username' }),
     );
     await expect(await card('Yuki').findByText('Copied!')).toBeInTheDocument();
+    await expect(
+      within(canvasElement.ownerDocument.body).getByText(
+        'yuki_lang copied to clipboard',
+      ),
+    ).toBeInTheDocument();
     await expect(beacon).not.toHaveBeenCalled();
     await expect(args.onCopyUsername).not.toHaveBeenCalled();
 
@@ -79,6 +84,36 @@ export const OwnProfileCopy: Story = {
       ),
     );
     await expect(beacon).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const MobileUsernameCopy: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { isLoggedIn: true },
+  render: Default.render,
+  play: async ({ args, canvasElement }) => {
+    if (window.innerWidth >= 768) return;
+    const writeText = fn(async () => {});
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    const body = within(canvasElement.ownerDocument.body);
+    const card = within(canvasElement).getByText('Carlos').closest('article');
+    await userEvent.click(card as HTMLElement);
+    const sheet = await body.findByRole('dialog', { name: 'Carlos' });
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: "Copy Carlos's username" }),
+    );
+    await expect(writeText).toHaveBeenCalledWith('carlos_ba');
+    await expect(args.onCopyUsername).toHaveBeenCalledWith(
+      'carlos_ba',
+      'profile-2',
+    );
+    await expect(within(sheet).getByText('Copied!')).toBeInTheDocument();
+    await expect(
+      canvasElement.ownerDocument.querySelector('.MobileToast'),
+    ).not.toBeInTheDocument();
   },
 };
 
