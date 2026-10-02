@@ -1,4 +1,9 @@
-import type { CSSProperties, ReactNode } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import type { IconType } from 'react-icons';
 import { MdLocationOn, MdSchedule } from 'react-icons/md';
 import type { DiscordCardData } from './types';
@@ -19,28 +24,29 @@ export const BrandName = ({
   </span>
 );
 
+export const avatarBackground = (avatarUrl?: string): CSSProperties =>
+  avatarUrl
+    ? {
+        backgroundImage: `url(${JSON.stringify(avatarUrl)})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : {};
+
 export const CardAvatar = ({
   data,
   style,
 }: {
   data: DiscordCardData;
   style?: CSSProperties;
-}) =>
-  data.avatarUrl ? (
-    <div
-      className="dc-av"
-      style={{
-        backgroundImage: `url(${JSON.stringify(data.avatarUrl)})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        ...style,
-      }}
-    />
-  ) : (
-    <div className="dc-av" style={style}>
-      {data.initials}
-    </div>
-  );
+}) => (
+  <div
+    className="dc-av"
+    style={{ ...avatarBackground(data.avatarUrl), ...style }}
+  >
+    {data.avatarUrl ? null : data.initials}
+  </div>
+);
 
 export const Cycle = ({
   children,
@@ -48,15 +54,51 @@ export const Cycle = ({
 }: {
   children: ReactNode;
   className?: string;
-}) => (
-  <span className={`dc-cy ${className}`}>
-    <span>{children}</span>
-  </span>
-);
+}) => <span className={`dc-cy ${className}`}>{children}</span>;
 
-export const Icon = ({ icon: Glyph }: { icon: IconType }) => (
-  <Glyph className="dc-ms" aria-hidden="true" />
-);
+export const FitText = ({
+  max,
+  as: Tag = 'span',
+  className,
+  children,
+}: {
+  max: number;
+  as?: 'span' | 'div' | 'b';
+  className?: string;
+  children: string;
+}) => {
+  const ref = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element || !children) return;
+    const fit = () => {
+      element.style.fontSize = '';
+      element.style.width = 'max-content';
+      const natural = element.offsetWidth;
+      element.style.width = '';
+      if (natural > max) {
+        element.style.fontSize = `${(Number.parseFloat(getComputedStyle(element).fontSize) * max) / natural}px`;
+      }
+    };
+    fit();
+    document.fonts?.ready.then(fit);
+  }, [max, children]);
+
+  return (
+    <Tag ref={ref as never} className={className}>
+      {children}
+    </Tag>
+  );
+};
+
+export const Icon = ({
+  icon: Glyph,
+  style,
+}: {
+  icon: IconType;
+  style?: CSSProperties;
+}) => <Glyph className="dc-ms" style={style} aria-hidden="true" />;
 
 export const ScheduleRow = ({ data }: { data: DiscordCardData }) =>
   data.availability ? (
@@ -73,7 +115,7 @@ export const LocationRow = ({
   currently,
 }: {
   data: DiscordCardData;
-  currently: (time: string) => string;
+  currently?: (time: string) => string;
 }) =>
   data.country || data.time ? (
     <div className="dc-row">
@@ -81,7 +123,7 @@ export const LocationRow = ({
       <span>
         {data.country ? <b>{data.country}</b> : null}
         {data.country && data.time ? ' · ' : null}
-        {data.time ? currently(data.time) : null}
+        {data.time ? (currently ? currently(data.time) : data.time) : null}
       </span>
     </div>
   ) : null;
