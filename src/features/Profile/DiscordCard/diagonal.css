@@ -8,9 +8,10 @@
 }
 .dc-dg-bl {
   position: absolute;
-  inset: 0;
+  inset: 0 auto 0 0;
+  width: 58%;
   background: var(--cf);
-  clip-path: polygon(0 0, 58% 0, 42% 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 72.4138% 100%, 0 100%);
 }
 .dc-dg .dc-av {
   position: absolute;
