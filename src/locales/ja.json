@@ -412,6 +412,7 @@
     "tagTooLong": "タグは20文字以内で入力してください。",
     "duplicateTag": "このタグは既に追加されています。",
     "maxTags": "現在のプランではタグを最大{cap}個まで追加できます。",
+    "discordCardPremium": "このカードレイアウトはプレミアム限定です。",
     "tagCounterHint": "{count}/{cap} 個のタグ · 最適なパートナーが見つかりやすくなります",
     "tagCapUpsell": "無料プランの上限である<strong>{freeCap}個のタグ</strong>に達しました。プレミアム会員は最大<strong>{premiumCap}</strong>個まで追加できます。",
     "voiceIntroTitle": "ボイスイントロ",
