@@ -96,8 +96,13 @@ export default meta;
 type Story = StoryObj<typeof PickerHarness>;
 
 export const Free: Story = {
+  globals: { locale: 'en' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getAllByText('Kenji Ito')[0].parentElement,
+    ).toHaveTextContent('Kenji Ito used profile');
 
     await expect(
       canvas.getByRole('button', { name: 'Classic card' }),
@@ -109,6 +114,16 @@ export const Free: Story = {
       canvas.getByRole('button', { name: 'Rank card' }),
     ).toHaveAttribute('aria-pressed', 'true');
     await expect(canvas.getByTestId('saved-layout')).toHaveTextContent('rank');
+  },
+};
+
+export const Japanese: Story = {
+  globals: { locale: 'ja' },
+  args: { data: buildData({ locale: 'ja' }) },
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).getAllByText('Kenji Ito')[0].parentElement,
+    ).toHaveTextContent('Kenji Itoさんがprofileを使用しました');
   },
 };
 

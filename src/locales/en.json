@@ -483,7 +483,7 @@
     "discordCardTeaseUpsell": "The <strong>{layout}</strong> layout is part of <premiumLink>Premium</premiumLink>.",
     "discordCardLockedLayout": "{layout} (Premium)",
     "discordCardPreviewAria": "{layout} card preview",
-    "discordUsed": "used",
+    "discordCommandUsed": "<username>{name}</username> used <command>profile</command>",
     "discordApp": "APP",
     "discordToday": "Today at {time}",
     "discordCardLayoutLabel": "Layout",

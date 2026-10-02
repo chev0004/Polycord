@@ -483,7 +483,7 @@
     "discordCardTeaseUpsell": "<strong>{layout}</strong> レイアウトは <premiumLink>プレミアム</premiumLink> に含まれます。",
     "discordCardLockedLayout": "{layout}(プレミアム)",
     "discordCardPreviewAria": "{layout} カードのプレビュー",
-    "discordUsed": "が使用",
+    "discordCommandUsed": "<username>{name}</username>さんが<command>profile</command>を使用しました",
     "discordApp": "アプリ",
     "discordToday": "今日 {time}",
     "discordCardLayoutLabel": "レイアウト",
