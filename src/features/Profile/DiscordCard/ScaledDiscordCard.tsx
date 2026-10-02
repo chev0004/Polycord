@@ -5,12 +5,13 @@ import {
   type DiscordCardData,
   type DiscordCardLayoutDefinition,
 } from './types';
+import { useCycleIndex } from './useCycleIndex';
 
 export const ScaledDiscordCard = ({
   layout,
   data,
   vars,
-  active = 0,
+  active,
   className = '',
 }: {
   layout: DiscordCardLayoutDefinition;
@@ -21,6 +22,11 @@ export const ScaledDiscordCard = ({
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const cycled = useCycleIndex(
+    data.targets.length,
+    active === undefined && visible,
+  );
   const Layout = layout.component;
 
   useLayoutEffect(() => {
@@ -30,7 +36,14 @@ export const ScaledDiscordCard = ({
       setScale(entry.contentRect.width / DISCORD_CARD_WIDTH),
     );
     observer.observe(element);
-    return () => observer.disconnect();
+    const visibility = new IntersectionObserver((entries) =>
+      setVisible(entries[entries.length - 1].isIntersecting),
+    );
+    visibility.observe(element);
+    return () => {
+      observer.disconnect();
+      visibility.disconnect();
+    };
   }, []);
 
   return (
@@ -48,7 +61,7 @@ export const ScaledDiscordCard = ({
           ...vars,
         }}
       >
-        <Layout data={data} active={active} />
+        <Layout data={data} active={active ?? cycled} />
       </div>
     </div>
   );

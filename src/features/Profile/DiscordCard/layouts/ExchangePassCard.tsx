@@ -27,14 +27,20 @@ export const ExchangePassCard = ({ data, active }: DiscordCardLayoutProps) => {
           </div>
           <div className="dc-cd dc-r">
             {target ? (
-              <Cycle className="dc-col dc-end">
-                <span key={active}>
-                  <span>{target.code}</span>
-                  <small>
-                    {target.name}
-                    {target.level ? ` · ${target.level}` : null}
-                  </small>
-                </span>
+              <Cycle
+                targets={data.targets}
+                active={active}
+                className="dc-col dc-end"
+              >
+                {(target) => (
+                  <>
+                    <span>{target.code}</span>
+                    <small>
+                      {target.name}
+                      {target.level ? ` · ${target.level}` : null}
+                    </small>
+                  </>
+                )}
               </Cycle>
             ) : null}
           </div>

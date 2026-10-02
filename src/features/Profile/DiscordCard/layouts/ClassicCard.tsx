@@ -36,11 +36,13 @@ export const ClassicCard = ({ data, active }: DiscordCardLayoutProps) => {
             </span>
             {target ? (
               <span className="dc-pill">
-                <Cycle>
-                  <span key={active}>
-                    <span>{target.name}</span>
-                    {target.level ? <small>· {target.level}</small> : null}
-                  </span>
+                <Cycle targets={data.targets} active={active}>
+                  {(target) => (
+                    <>
+                      <span>{target.name}</span>
+                      {target.level ? <small>· {target.level}</small> : null}
+                    </>
+                  )}
                 </Cycle>
               </span>
             ) : null}

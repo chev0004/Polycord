@@ -72,23 +72,25 @@ export const CharacterSelectCard = ({
         </div>
         {target ? (
           <div className="dc-cs-sel">
-            <Cycle>
-              <span key={active}>
-                <FitText className="dc-cs-w" max={360}>
-                  {target.name}
-                </FitText>
-                <span className="dc-cs-lv">
-                  <small>{t('levelShort', { level: target.level })}</small>
-                  <span className="dc-seg">
-                    {SEGMENTS.map((segment) => (
-                      <i
-                        key={segment}
-                        className={segment < target.steps ? 'dc-on' : ''}
-                      />
-                    ))}
+            <Cycle targets={data.targets} active={active}>
+              {(target) => (
+                <>
+                  <FitText className="dc-cs-w" max={360}>
+                    {target.name}
+                  </FitText>
+                  <span className="dc-cs-lv">
+                    <small>{t('levelShort', { level: target.level })}</small>
+                    <span className="dc-seg">
+                      {SEGMENTS.map((segment) => (
+                        <i
+                          key={segment}
+                          className={segment < target.steps ? 'dc-on' : ''}
+                        />
+                      ))}
+                    </span>
                   </span>
-                </span>
-              </span>
+                </>
+              )}
             </Cycle>
           </div>
         ) : null}

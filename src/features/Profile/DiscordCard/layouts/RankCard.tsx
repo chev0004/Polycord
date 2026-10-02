@@ -1,14 +1,23 @@
 import { useTranslations } from 'next-intl';
+import type { CSSProperties } from 'react';
 import { MdSchedule } from 'react-icons/md';
 import { BrandName, CardAvatar, Cycle, Icon, TagChips } from '../CardParts';
 import type { DiscordCardLayoutProps } from '../types';
 import '../rank.css';
 
 const SEGMENTS = [0, 1, 2, 3];
+const SEGMENT_STAGGER = 0.12;
+
+const segmentDelay = (segment: number, from: number, steps: number) =>
+  Math.max(0, steps >= from ? segment - from : from - 1 - segment) *
+  SEGMENT_STAGGER;
 
 export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
   const t = useTranslations('DiscordCard');
   const target = data.targets[active];
+  const from =
+    data.targets[(active + data.targets.length - 1) % data.targets.length]
+      ?.steps ?? 0;
 
   return (
     <div className="dc-b3">
@@ -33,23 +42,24 @@ export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
         </div>
         {target ? (
           <div className="dc-b3-l">
-            <Cycle>
-              <span key={active}>
-                <span className="dc-tag dc-t">{target.code}</span>
-              </span>
+            <Cycle targets={data.targets} active={active}>
+              {(item) => <span className="dc-tag dc-t">{item.code}</span>}
             </Cycle>
             <span className="dc-seg dc-b3-seg">
               {SEGMENTS.map((segment) => (
                 <i
                   key={segment}
                   className={segment < target.steps ? 'dc-on' : ''}
+                  style={
+                    {
+                      '--d': `${segmentDelay(segment, from, target.steps)}s`,
+                    } as CSSProperties
+                  }
                 />
               ))}
             </span>
-            <Cycle className="dc-end">
-              <span key={active}>
-                <span className="dc-lv">{target.level}</span>
-              </span>
+            <Cycle targets={data.targets} active={active} className="dc-end">
+              {(item) => <span className="dc-lv">{item.level}</span>}
             </Cycle>
           </div>
         ) : null}

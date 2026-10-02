@@ -31,11 +31,13 @@ export const WatermarkCard = ({ data, active }: DiscordCardLayoutProps) => {
         {target ? (
           <div>
             <span className="dc-k">{t('learning')}</span>
-            <Cycle className="dc-col">
-              <span key={active}>
-                <b>{target.name}</b>
-                <small>{target.level}</small>
-              </span>
+            <Cycle targets={data.targets} active={active} className="dc-col">
+              {(target) => (
+                <>
+                  <b>{target.name}</b>
+                  <small>{target.level}</small>
+                </>
+              )}
             </Cycle>
           </div>
         ) : null}

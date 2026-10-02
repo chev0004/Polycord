@@ -38,13 +38,15 @@ export const SplitCard = ({ data, active }: DiscordCardLayoutProps) => {
         <div className="dc-g-big">
           <span className="dc-k">{t('learning')}</span>
           {target ? (
-            <Cycle className="dc-col">
-              <span key={active}>
-                <FitText className="dc-g-en" max={510}>
-                  {target.name}
-                </FitText>
-                <span className="dc-g-lv">{target.level}</span>
-              </span>
+            <Cycle targets={data.targets} active={active} className="dc-col">
+              {(target) => (
+                <>
+                  <FitText className="dc-g-en" max={510}>
+                    {target.name}
+                  </FitText>
+                  <span className="dc-g-lv">{target.level}</span>
+                </>
+              )}
             </Cycle>
           ) : null}
         </div>

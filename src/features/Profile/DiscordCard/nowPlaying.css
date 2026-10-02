@@ -1,3 +1,16 @@
+@keyframes dc-np-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes dc-np-pg {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
 .dc-np {
   width: 934px;
   height: 320px;
@@ -14,6 +27,7 @@
   height: 256px;
 }
 .dc-np-rec {
+  animation: dc-np-spin 3.2s linear infinite;
   position: absolute;
   left: 104px;
   top: 8px;
@@ -156,6 +170,7 @@
   height: 100%;
   background: var(--cf);
   transform-origin: left;
+  animation: dc-np-pg 2.8s linear;
 }
 .dc-np-pg span {
   font-size: 14px;

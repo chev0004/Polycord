@@ -44,13 +44,15 @@ export const PhotoCard = ({ data, active }: DiscordCardLayoutProps) => {
           <span className="dc-k">{t('learning')}</span>
           <b>
             {target ? (
-              <Cycle>
-                <span key={active}>
-                  <span>{target.name}</span>
-                  {target.level ? (
-                    <span className="dc-ph-lv">· {target.level}</span>
-                  ) : null}
-                </span>
+              <Cycle targets={data.targets} active={active}>
+                {(target) => (
+                  <>
+                    <span>{target.name}</span>
+                    {target.level ? (
+                      <span className="dc-ph-lv">· {target.level}</span>
+                    ) : null}
+                  </>
+                )}
               </Cycle>
             ) : null}
           </b>
