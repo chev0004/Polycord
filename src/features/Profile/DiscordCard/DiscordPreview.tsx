@@ -62,7 +62,7 @@ export const DiscordPreview = ({
                 <span className="font-medium text-[#f2f3f5]">{chunks}</span>
               ),
               command: (chunks) => (
-                <span className="inline-flex items-center gap-[3px] rounded-[3px] bg-[#3b3f65] px-[3px] font-medium text-[#82b8f8] leading-[18px]">
+                <span className="inline-flex items-center gap-[3px] rounded-[3px] bg-[#3b3f65] px-[3px] align-top font-medium text-[#82b8f8] leading-[18px]">
                   <span
                     aria-hidden="true"
                     className="grid grid-cols-[5px_5px] gap-px [&>i:nth-child(n+3)]:rounded-full [&>i]:h-[5px] [&>i]:w-[5px] [&>i]:rounded-[1px] [&>i]:bg-current"

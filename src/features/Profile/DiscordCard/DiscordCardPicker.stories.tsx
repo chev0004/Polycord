@@ -95,6 +95,36 @@ const meta: Meta<typeof PickerHarness> = {
 export default meta;
 type Story = StoryObj<typeof PickerHarness>;
 
+const expectCommandAlignment = async (canvasElement: HTMLElement) => {
+  await canvasElement.ownerDocument.fonts.ready;
+  const command = within(canvasElement).getByText('profile');
+  const row = command.parentElement?.parentElement as HTMLElement;
+  const avatar = row.children[1];
+  const icon = command.firstElementChild as HTMLElement;
+  const commandBox = command.getBoundingClientRect();
+  const rowBox = row.getBoundingClientRect();
+
+  await expect(Math.abs(commandBox.top - rowBox.top)).toBeLessThan(1);
+  await expect(Math.abs(commandBox.bottom - rowBox.bottom)).toBeLessThan(1);
+
+  for (const element of [avatar, icon]) {
+    const box = element.getBoundingClientRect();
+    await expect(
+      Math.abs(box.top + box.height / 2 - rowBox.top - rowBox.height / 2),
+    ).toBeLessThan(1);
+  }
+
+  const text = canvasElement.ownerDocument.createRange();
+  text.selectNodeContents(command.lastChild as Node);
+  const username = canvasElement.ownerDocument.createRange();
+  username.selectNodeContents(command.previousElementSibling as HTMLElement);
+  await expect(
+    Math.abs(
+      text.getBoundingClientRect().top - username.getBoundingClientRect().top,
+    ),
+  ).toBeLessThan(1);
+};
+
 export const Free: Story = {
   globals: { locale: 'en' },
   play: async ({ canvasElement }) => {
@@ -103,6 +133,8 @@ export const Free: Story = {
     await expect(
       canvas.getAllByText('Kenji Ito')[0].parentElement,
     ).toHaveTextContent('Kenji Ito used profile');
+
+    await expectCommandAlignment(canvasElement);
 
     await expect(
       canvas.getByRole('button', { name: 'Classic card' }),
@@ -124,6 +156,7 @@ export const Japanese: Story = {
     await expect(
       within(canvasElement).getAllByText('Kenji Ito')[0].parentElement,
     ).toHaveTextContent('Kenji Itoさんがprofileを使用しました');
+    await expectCommandAlignment(canvasElement);
   },
 };
 
