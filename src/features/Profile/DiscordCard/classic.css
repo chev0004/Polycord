@@ -67,6 +67,15 @@
   font-weight: 500;
   opacity: 0.8;
 }
+.dc-a .dc-cy {
+  position: relative;
+}
+.dc-a .dc-cy > * {
+  width: max-content;
+}
+.dc-a .dc-cy > :not(.dc-on) {
+  position: absolute;
+}
 .dc-a-rows {
   display: flex;
   flex-direction: column;
