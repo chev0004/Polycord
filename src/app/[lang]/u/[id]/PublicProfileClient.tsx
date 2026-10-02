@@ -69,6 +69,7 @@ export const PublicProfileClient = ({
     } catch {
       actions.addToast({
         title: t('saveError'),
+        variant: 'error',
         description: t('saveErrorDescription'),
         duration: 4000,
       });
