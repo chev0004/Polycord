@@ -55,17 +55,19 @@ const save = (extra) =>
 const stored = async () =>
   (await getProfileByDiscordUserId(member.discordUserId)).profile.discordCard;
 try {
-  assert.equal((await save({ discordCard: 'mirror' })).status, 200);
-  assert.equal(await stored(), 'mirror');
+  assert.equal((await save({ discordCard: 'split' })).status, 200);
+  assert.equal(await stored(), 'split');
 
   const rejected = await save({ discordCard: 'metal' });
   assert.equal(rejected.status, 400);
   assert.equal((await rejected.json()).issues[0].message, 'discordCardPremium');
   assert.equal((await save({ discordCard: 'unknown' })).status, 400);
-  assert.equal(await stored(), 'mirror');
+  for (const card of ['greeting', 'mirror', 'watermark', 'character-select'])
+    assert.equal((await save({ discordCard: card })).status, 400);
+  assert.equal(await stored(), 'split');
 
   assert.equal((await save({})).status, 200);
-  assert.equal(await stored(), 'mirror');
+  assert.equal(await stored(), 'split');
 
   process.env.POLYCORD_PREMIUM_USER_IDS = member.discordUserId;
   assert.equal((await save({ discordCard: 'orbit' })).status, 200);
