@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import { MdBookmarkBorder, MdErrorOutline } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import { siteContainerClass } from '@/components/Container';
 import { FilterBar } from '@/components/Filter';
 import type { AvailabilityPattern } from '@/constants/availability';
 import {
@@ -129,7 +130,7 @@ export const SavedRouteClient = ({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
+      <main className={`${siteContainerClass} py-8`}>
         <BackButton
           href={`/${locale}`}
           label={tNavigation('backToDiscovery')}

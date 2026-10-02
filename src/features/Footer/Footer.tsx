@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { siteContainerClass } from '@/components/Container';
 import { LocaleLink } from '@/features/Navbar/LocaleLink';
 import { useRouteProgress } from '@/features/Navigation/RouteProgress';
 import { locales } from '@/utils/locales';
@@ -72,7 +73,9 @@ export const Footer: React.FC<FooterProps> = ({ locale }) => {
 
   return (
     <footer className="w-full border-primary-darker border-t bg-background-darkest font-figtree">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-12 sm:px-8 md:flex-row md:justify-between md:gap-16">
+      <div
+        className={`${siteContainerClass} flex flex-col gap-10 py-12 md:flex-row md:justify-between md:gap-16`}
+      >
         <div className="max-w-sm">
           <p className="font-black text-[22px] text-foreground tracking-[-0.01em]">
             {t('brand')}
@@ -123,7 +126,9 @@ export const Footer: React.FC<FooterProps> = ({ locale }) => {
       </div>
 
       <div className="border-primary-darker border-t">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div
+          className={`${siteContainerClass} flex flex-col gap-1 py-5 sm:flex-row sm:items-center sm:justify-between`}
+        >
           <p className="text-subtle text-xs">{t('copyright', { year })}</p>
           <p className="text-subtle text-xs">{t('notAffiliated')}</p>
         </div>
