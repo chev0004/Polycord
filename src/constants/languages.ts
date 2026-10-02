@@ -27,7 +27,7 @@ export const languages: Language[] = [
     name_en: 'Avestan',
     name_ja: 'アヴェスター語',
     name_native: 'Avestā',
-    greeting: 'Ašǝm vohū!',
+    greeting: 'Nəmō!',
   },
   {
     code: 'af',
@@ -41,7 +41,7 @@ export const languages: Language[] = [
     name_en: 'Akan',
     name_ja: 'アカン語',
     name_native: 'Akan',
-    greeting: 'Akwaaba!',
+    greeting: 'Ɛte sɛn?',
   },
   {
     code: 'am',
@@ -251,7 +251,7 @@ export const languages: Language[] = [
     name_en: 'Dzongkha',
     name_ja: 'ゾンカ語',
     name_native: 'རྫོང་ཁ',
-    greeting: 'ཀུ་ཟུ་ཟངས་པོ་ལགས།',
+    greeting: 'སྐུ་གཟུགས་བཟང་པོ།',
   },
   {
     code: 'ee',
@@ -314,7 +314,7 @@ export const languages: Language[] = [
     name_en: 'Fula',
     name_ja: 'フラ語',
     name_native: 'Fulfulde',
-    greeting: 'Jam tan!',
+    greeting: 'Hono mbaɗaa?',
   },
   {
     code: 'fi',
@@ -391,7 +391,7 @@ export const languages: Language[] = [
     name_en: 'Manx',
     name_ja: 'マン島語',
     name_native: 'Gaelg',
-    greeting: 'Moghrey mie!',
+    greeting: "Kys t'ou?",
   },
   {
     code: 'ha',
@@ -419,7 +419,7 @@ export const languages: Language[] = [
     name_en: 'Hiri Motu',
     name_ja: 'ヒリモトゥ語',
     name_native: 'Hiri Motu',
-    greeting: 'Dorina!',
+    greeting: 'Oi namo?',
   },
   {
     code: 'hr',
@@ -482,21 +482,21 @@ export const languages: Language[] = [
     name_en: 'Igbo',
     name_ja: 'イボ語',
     name_native: 'Igbo',
-    greeting: 'Nnọọ!',
+    greeting: 'Ndeewo!',
   },
   {
     code: 'ii',
     name_en: 'Sichuan Yi',
     name_ja: '四川彝語',
     name_native: 'ꆈꌠꉙ',
-    greeting: '你好！',
+    greeting: 'ꆏꉾ！',
   },
   {
     code: 'ik',
     name_en: 'Inupiaq',
     name_ja: 'イヌピアック語',
     name_native: 'Iñupiaq',
-    greeting: 'Taikuu!',
+    greeting: 'Haluu!',
   },
   {
     code: 'io',
@@ -566,7 +566,7 @@ export const languages: Language[] = [
     name_en: 'Kuanyama',
     name_ja: 'クワニャマ語',
     name_native: 'Kuanyama',
-    greeting: 'Wa uhala po!',
+    greeting: 'Ongaipi?',
   },
   {
     code: 'kk',
@@ -811,7 +811,7 @@ export const languages: Language[] = [
     name_en: 'Ndonga',
     name_ja: 'ンドンガ語',
     name_native: 'Oshindonga',
-    greeting: 'Wa lalapo!',
+    greeting: 'Ongiini?',
   },
   {
     code: 'nl',
@@ -1140,7 +1140,7 @@ export const languages: Language[] = [
     name_en: 'Tagalog',
     name_ja: 'タガログ語',
     name_native: 'Tagalog',
-    greeting: 'Kumusta!',
+    greeting: 'Kamusta!',
   },
   {
     code: 'tn',
@@ -1182,7 +1182,7 @@ export const languages: Language[] = [
     name_en: 'Twi',
     name_ja: 'トウィ語',
     name_native: 'Twi',
-    greeting: 'Maakye!',
+    greeting: 'Ɛte sɛn?',
   },
   {
     code: 'ty',

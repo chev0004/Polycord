@@ -89,9 +89,13 @@ export const useProfileBump = ({
 
       addToast({
         title: cooldown ? t('bumpCooldownTitle') : t('bumpErrorTitle'),
+        variant: 'error',
         description: cooldown
           ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
           : t('bumpErrorDescription'),
+        mobileDescription: cooldown
+          ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
+          : undefined,
         duration: BUMP_TOAST_DURATION,
       });
     } finally {

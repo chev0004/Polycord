@@ -16,13 +16,13 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { ActionSheet } from '@/components/Sheet';
-import { useInbox } from '@/features/Inbox';
 import { useBumpCountdown } from '@/features/Navbar/UserMenu';
 
 type DockTab = 'discover' | 'inbox' | 'settings' | 'profile';
 
 type MobileDockProps = {
   locale: string;
+  unreadCount?: number;
   userAvatarUrl?: string;
   onNavigate: (href: string) => void;
   onBump?: () => void;
@@ -48,6 +48,7 @@ const surfaceClassName =
 
 export const MobileDock = ({
   locale,
+  unreadCount = 0,
   userAvatarUrl,
   onNavigate,
   onBump,
@@ -55,7 +56,6 @@ export const MobileDock = ({
 }: MobileDockProps) => {
   const t = useTranslations('Navigation');
   const pathname = usePathname();
-  const { unreadCount } = useInbox({ notifications: [] });
   const bumpCountdown = useBumpCountdown(bumpReadyAt);
   const [menuOpen, setMenuOpen] = useState(false);
   const [indicator, setIndicator] = useState<{
