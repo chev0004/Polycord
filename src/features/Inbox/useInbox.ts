@@ -105,14 +105,21 @@ export const useInbox = ({
       void refresh();
     };
     const interval = window.setInterval(refreshVisible, 30000);
+    const refreshPushed = (event: MessageEvent) => {
+      if (event.data?.type === 'push') void refresh();
+    };
+    const worker = navigator.serviceWorker;
     window.addEventListener('focus', refreshVisible);
     window.addEventListener(CHANGED_EVENT, refreshChanged);
     document.addEventListener('visibilitychange', refreshVisible);
+    worker?.addEventListener('message', refreshPushed);
+    worker?.startMessages();
     return () => {
       window.clearInterval(interval);
       window.removeEventListener('focus', refreshVisible);
       window.removeEventListener(CHANGED_EVENT, refreshChanged);
       document.removeEventListener('visibilitychange', refreshVisible);
+      worker?.removeEventListener('message', refreshPushed);
       request.current?.abort();
       request.current = null;
     };
