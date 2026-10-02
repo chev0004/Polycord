@@ -46,18 +46,6 @@
   font-size: 14px;
   color: var(--color-text-secondary);
 }
-.dc-cs-p1 {
-  position: absolute;
-  left: 18px;
-  top: 16px;
-  background: var(--cf);
-  color: var(--ci);
-  font-size: 14px;
-  font-weight: 900;
-  font-style: italic;
-  padding: 3px 10px;
-  border-radius: 4px;
-}
 .dc-cs-r {
   padding: 26px 32px;
   display: flex;
