@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
 import { BrandName, CardAvatar, Cycle, FitText, TagChips } from '../CardParts';
 import type { DiscordCardLayoutProps } from '../types';
 import '../orbit.css';
@@ -7,11 +8,41 @@ const CENTER_X = 744;
 const CENTER_Y = 160;
 const RADIUS = 150;
 const RINGS = [200, 300, 420];
+const SPIN_DURATION = 1000;
+
+const easeInOutCubic = (progress: number) =>
+  progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+
+const useOrbitAngle = (active: number, count: number) => {
+  const [angle, setAngle] = useState(0);
+  const spin = useRef({ active, shown: 0, goal: 0 });
+
+  useEffect(() => {
+    const state = spin.current;
+    if (count < 1 || state.active === active) return;
+    state.goal -= (360 / count) * ((active - state.active + count) % count);
+    state.active = active;
+    const from = state.shown;
+    const start = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / SPIN_DURATION);
+      state.shown = from + (state.goal - from) * easeInOutCubic(progress);
+      setAngle(state.shown);
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active, count]);
+
+  return angle;
+};
 
 export const OrbitCard = ({ data, active }: DiscordCardLayoutProps) => {
   const t = useTranslations('DiscordCard');
   const target = data.targets[active];
   const count = data.targets.length;
+  const angle = useOrbitAngle(active, count);
 
   return (
     <div className="dc-ob">
@@ -30,16 +61,15 @@ export const OrbitCard = ({ data, active }: DiscordCardLayoutProps) => {
         {data.native.code}
       </span>
       {data.targets.map((item, index) => {
-        const angle =
-          ((180 + ((index - active) * 360) / count) * Math.PI) / 180;
+        const radians = ((180 + (index * 360) / count + angle) * Math.PI) / 180;
 
         return (
           <span
             key={item.code}
             className="dc-ob-c"
             style={{
-              left: CENTER_X + RADIUS * Math.cos(angle),
-              top: CENTER_Y + RADIUS * Math.sin(angle),
+              left: CENTER_X + RADIUS * Math.cos(radians),
+              top: CENTER_Y + RADIUS * Math.sin(radians),
             }}
           >
             {item.code}
