@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isAllowedDiscordCard } from '@/constants/discordCards';
 import {
   deleteProfileForUser,
   deleteVoiceIntroForUser,
@@ -103,6 +104,28 @@ export const POST = async (request: Request) => {
   }
 
   const premiumThemes = hasEntitlement('profile.cardThemes', premium);
+  const storedDiscordCard = existing?.profile.discordCard ?? null;
+
+  if (
+    values.discordCard &&
+    values.discordCard !== storedDiscordCard &&
+    !isAllowedDiscordCard(values.discordCard, premiumThemes)
+  ) {
+    return NextResponse.json(
+      {
+        error: 'Invalid profile',
+        issues: [
+          {
+            code: 'custom',
+            path: ['discordCard'],
+            message: 'discordCardPremium',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+  }
+
   const cardColor =
     values.cardColor && isAllowedCardColor(values.cardColor, premiumThemes)
       ? values.cardColor
@@ -126,6 +149,7 @@ export const POST = async (request: Request) => {
     accentOverride: premiumThemes
       ? (values.accentOverride ?? null)
       : existing?.profile.accentOverride,
+    discordCard: values.discordCard ?? storedDiscordCard,
     country: values.country || null,
     displayAvailability: values.displayAvailability,
     displayTimezone: values.displayTimezone,

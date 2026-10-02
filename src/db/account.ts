@@ -149,6 +149,7 @@ export const getAccountExportByUserId = async (userId: string) => {
           customGradientFrom: profile.customGradientFrom,
           customGradientTo: profile.customGradientTo,
           accentOverride: profile.accentOverride,
+          discordCard: profile.discordCard,
           lastBumpedAt: profile.lastBumpedAt,
           boostedUntil: profile.boostedUntil,
           voiceIntroSeconds: profile.voiceIntroSeconds,

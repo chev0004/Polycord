@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { DEFAULT_DISCORD_CARD } from '@/constants/discordCards';
 import {
   getBoostStatusForUser,
   getProfileByUserId,
@@ -30,6 +31,7 @@ const toProfileFormValues = ({
       ? { from: profile.customGradientFrom, to: profile.customGradientTo }
       : DEFAULT_CUSTOM_GRADIENT,
   accentOverride: profile.accentOverride ?? null,
+  discordCard: profile.discordCard ?? DEFAULT_DISCORD_CARD,
   country: profile.country ?? '',
   displayAvailability: profile.displayAvailability,
   displayTimezone: profile.displayTimezone,

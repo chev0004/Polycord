@@ -57,6 +57,7 @@ export type ProfileValues = Pick<
   | 'country'
   | 'customGradientFrom'
   | 'customGradientTo'
+  | 'discordCard'
   | 'displayAvailability'
   | 'displayTimezone'
   | 'isPublic'
