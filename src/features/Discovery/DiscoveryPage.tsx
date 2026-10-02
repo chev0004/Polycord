@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react';
 import { MdClose } from 'react-icons/md';
+import { siteContainerClass } from '@/components/Container';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
@@ -840,7 +841,7 @@ export const DiscoveryPage = ({
         </aside>
       ) : null}
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
+      <main className={`${siteContainerClass} py-8`}>
         {authError ? (
           <div
             className="mb-6 rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
