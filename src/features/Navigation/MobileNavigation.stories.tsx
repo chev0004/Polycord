@@ -30,6 +30,42 @@ const stubNotifications = (premium: boolean) => {
   }) as typeof fetch;
 };
 
+const stubBatch = () => {
+  let reads = 0;
+  const createdAt = new Date().toISOString();
+  window.fetch = (async (input, init) => {
+    if (!String(input).includes('/api/notifications') || init?.method) {
+      return realFetch(input, init);
+    }
+    reads += 1;
+    return Response.json({
+      premium: true,
+      notifications:
+        reads === 1
+          ? []
+          : [
+              { id: 'n3', kind: 'warning', read: false, createdAt },
+              {
+                id: 'n2',
+                kind: 'share',
+                actorName: 'Mina Park',
+                actorProfileId: 'p2',
+                read: false,
+                createdAt,
+              },
+              {
+                id: 'n1',
+                kind: 'copy',
+                actorName: 'xhev',
+                actorProfileId: 'p1',
+                read: false,
+                createdAt,
+              },
+            ],
+    });
+  }) as typeof fetch;
+};
+
 const refreshInbox = () =>
   window.dispatchEvent(
     new CustomEvent('polycord:inbox-changed', { detail: 'story' }),
@@ -72,6 +108,39 @@ export const PremiumBanner: Story = {
       () => expect(screen.queryByRole('alert')).not.toBeInTheDocument(),
       { timeout: 2000 },
     );
+
+    refreshInbox();
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    await expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  },
+};
+
+export const BatchedBannersQueue: Story = {
+  decorators: [
+    (Story) => {
+      stubBatch();
+      return <Story />;
+    },
+  ],
+  play: async () => {
+    await screen.findByRole('navigation');
+
+    refreshInbox();
+
+    for (const message of [
+      'xhev copied your username',
+      'Mina Park shared your profile',
+      'You received a warning from the moderation team. Please review our community guidelines.',
+    ]) {
+      const banner = await screen.findByRole('alert', undefined, {
+        timeout: 4000,
+      });
+      await expect(banner).toHaveTextContent(message);
+      await userEvent.click(banner.querySelector('button') as HTMLElement);
+      await waitFor(() => expect(banner).not.toBeInTheDocument(), {
+        timeout: 2000,
+      });
+    }
 
     refreshInbox();
     await new Promise((resolve) => setTimeout(resolve, 800));

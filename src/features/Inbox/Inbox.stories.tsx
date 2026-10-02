@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, waitFor, within } from '@storybook/test';
+import { expect, screen, userEvent, waitFor, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/Button';
@@ -408,5 +408,119 @@ export const AnimatesIn: Story = {
     await waitFor(() => expect(rows()).toHaveLength(2));
     await expect(rows()[0]).not.toBe(first);
     await expect(getComputedStyle(rows()[1]).animationDelay).toBe('0.05s');
+  },
+};
+
+const realFetch = window.fetch;
+
+const stubIncomingBatch = (premium: boolean) => {
+  let reads = 0;
+  const createdAt = new Date().toISOString();
+  window.fetch = (async (input, init) => {
+    if (!String(input).includes('/api/notifications') || init?.method) {
+      return realFetch(input, init);
+    }
+    reads += 1;
+    return Response.json({
+      premium,
+      notifications:
+        reads === 1
+          ? []
+          : [
+              { id: 'n4', kind: 'warning', read: false, createdAt },
+              {
+                id: 'n3',
+                kind: 'view',
+                actorName: 'Sophie Laurent',
+                read: false,
+                createdAt,
+              },
+              {
+                id: 'n2',
+                kind: 'share',
+                actorName: 'Mina Park',
+                read: false,
+                createdAt,
+              },
+              {
+                id: 'n1',
+                kind: 'copy',
+                actorName: 'xhev',
+                read: false,
+                createdAt,
+              },
+            ],
+    });
+  }) as typeof fetch;
+};
+
+const refreshInbox = () =>
+  window.dispatchEvent(
+    new CustomEvent('polycord:inbox-changed', { detail: 'story' }),
+  );
+
+const expectToastCount = (count: number) =>
+  waitFor(() =>
+    expect(screen.queryAllByText('New Notification')).toHaveLength(count),
+  );
+
+export const IncomingToastsPremium: Story = {
+  decorators: [
+    (Story) => {
+      stubIncomingBatch(true);
+      return <Story />;
+    },
+  ],
+  render: () => <Inbox notifications={[]} />,
+  play: async () => {
+    await screen.findByRole('button', { name: 'Notifications' });
+    await expect(
+      screen.queryByText('New Notification'),
+    ).not.toBeInTheDocument();
+
+    refreshInbox();
+
+    await expectToastCount(4);
+    for (const message of [
+      'xhev copied your username',
+      'Mina Park shared your profile',
+      'Sophie Laurent viewed your profile',
+      'You received a warning from the moderation team. Please review our community guidelines.',
+    ]) {
+      await expect(screen.getByText(message)).toBeInTheDocument();
+    }
+
+    refreshInbox();
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    await expectToastCount(4);
+  },
+};
+
+export const IncomingToastsFree: Story = {
+  decorators: [
+    (Story) => {
+      stubIncomingBatch(false);
+      return <Story />;
+    },
+  ],
+  render: () => <Inbox notifications={[]} />,
+  play: async () => {
+    await screen.findByRole('button', { name: 'Notifications' });
+
+    refreshInbox();
+
+    await expectToastCount(3);
+    await expect(
+      screen.getByText('A user copied your username'),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByText('Someone shared your profile'),
+    ).toBeInTheDocument();
+    await expect(
+      screen.queryByText(/viewed your profile/),
+    ).not.toBeInTheDocument();
+    await expect(
+      screen.queryByText(/xhev|Mina|Sophie/),
+    ).not.toBeInTheDocument();
   },
 };
