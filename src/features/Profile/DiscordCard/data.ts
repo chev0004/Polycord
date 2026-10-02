@@ -109,7 +109,7 @@ export const buildDiscordCardData = ({
   labels,
 }: BuildDiscordCardDataInput): DiscordCardData => ({
   name,
-  handle: handle ?? '',
+  handle: handle ? `@${handle}` : '',
   avatarUrl,
   initials: getInitials(name),
   native: {

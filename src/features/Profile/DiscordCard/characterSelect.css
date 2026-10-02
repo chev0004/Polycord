@@ -1,0 +1,221 @@
+.dc-cs {
+  width: 934px;
+  height: 320px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--color-background-darker);
+  display: grid;
+  grid-template-columns: 320px 1fr;
+}
+.dc-cs-p {
+  position: relative;
+  background: #4a90c4;
+  overflow: hidden;
+}
+.dc-cs-p > b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 150px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 1;
+}
+.dc-cs-nb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0d0f11;
+  padding: 14px 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dc-cs-nb b {
+  font-size: 28px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+.dc-cs-nb span {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+.dc-cs-p1 {
+  position: absolute;
+  left: 18px;
+  top: 16px;
+  background: var(--cf);
+  color: var(--ci);
+  font-size: 14px;
+  font-weight: 900;
+  font-style: italic;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.dc-cs-r {
+  padding: 26px 32px;
+  display: flex;
+  flex-direction: column;
+}
+.dc-cs-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+.dc-cs-id {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.dc-cs-id b {
+  font-size: 28px;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  line-height: 1.05;
+  color: #fff;
+}
+.dc-cs-id span {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+.dc-cs-in {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.dc-cs-row {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+.dc-cs-t {
+  width: 122px;
+  height: 104px;
+  border-radius: 12px;
+  background: #1e2328;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+}
+.dc-cs-t b {
+  font-size: 34px;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1;
+}
+.dc-cs-t small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+}
+.dc-cs-t.dc-nat {
+  background: var(--cf);
+  color: var(--ci);
+}
+.dc-cs-t.dc-nat small {
+  color: var(--ci2);
+}
+.dc-cs-t.dc-nat b {
+  font-style: normal;
+  font-size: 30px;
+}
+.dc-cs-cur {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 122px;
+  height: 104px;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px var(--color-primary),
+    0 0 0 7px var(--color-background-darker);
+  transition: transform 0.45s cubic-bezier(0.7, 0, 0.2, 1.3);
+  pointer-events: none;
+}
+.dc-cs-cur span {
+  position: absolute;
+  left: 50%;
+  top: -15px;
+  transform: translateX(-50%);
+  background: var(--cf);
+  color: var(--ci);
+  font-size: 12px;
+  font-weight: 900;
+  font-style: italic;
+  padding: 1px 8px;
+  border-radius: 3px;
+}
+.dc-cs-sel {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+}
+.dc-cs-sel .dc-cy > * {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 22px;
+}
+.dc-cs-w {
+  font-size: 46px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.dc-cs-lv {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 4px;
+}
+.dc-cs-lv small {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+.dc-cs .dc-seg {
+  width: 140px;
+  height: 10px;
+}
+.dc-cs .dc-seg i {
+  background: #2b3138;
+}
+.dc-cs .dc-seg i.dc-on {
+  background: var(--cf);
+}
+.dc-cs-r {
+  min-width: 0;
+}
+.dc-cs-top {
+  gap: 12px;
+}
+.dc-cs-id {
+  min-width: 0;
+  max-width: 210px;
+}
+.dc-cs-id b,
+.dc-cs-id span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dc-cs-t small,
+.dc-cs-lv small {
+  text-transform: uppercase;
+}

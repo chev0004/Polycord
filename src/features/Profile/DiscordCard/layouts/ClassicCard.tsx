@@ -26,9 +26,7 @@ export const ClassicCard = ({ data, active }: DiscordCardLayoutProps) => {
       <div className="dc-a-body">
         <div>
           <div className="dc-a-nm">{data.name}</div>
-          <div className="dc-a-un">
-            {data.handle ? `@${data.handle}` : null}
-          </div>
+          <div className="dc-a-un">{data.handle}</div>
           <div className="dc-pills">
             <span className="dc-pill dc-pri">
               {data.native.script !== data.native.name ? (

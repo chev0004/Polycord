@@ -1,0 +1,72 @@
+.dc-ph {
+  width: 934px;
+  height: 320px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--color-background-dark);
+  display: grid;
+  grid-template-columns: 320px 1fr;
+}
+.dc-ph-img {
+  background: #4a90c4;
+  display: grid;
+  place-items: center;
+  font-size: 96px;
+  font-weight: 800;
+  color: #fff;
+}
+.dc-ph-r {
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.dc-ph-nm {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+.dc-ph-un {
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+.dc-ph-dl {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px 16px;
+  align-items: center;
+  margin-top: auto;
+}
+.dc-ph-dl b {
+  font-size: 26px;
+  font-weight: 700;
+}
+.dc-ph-lv {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+.dc-ph-f {
+  display: flex;
+  gap: 28px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+.dc-ph .dc-row {
+  font-size: 16px;
+}
+.dc-ph .dc-row .dc-ms {
+  font-size: 20px;
+}
+.dc-ph-r {
+  min-width: 0;
+}
+.dc-ph-nm,
+.dc-ph-un {
+  margin-right: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -531,7 +531,18 @@
     "layoutSplitFlap": "スプリットフラップ",
     "layoutMetal": "メタルカード",
     "layoutOrbit": "オービット",
-    "layoutNowPlaying": "ナウプレイング"
+    "layoutNowPlaying": "ナウプレイング",
+    "native": "ネイティブ",
+    "learning": "学習中",
+    "speaks": "母語",
+    "localTime": "{country}・現地時刻",
+    "nativeWith": "ネイティブ・{language}",
+    "learningWith": "学習中・{language}",
+    "learningLevel": "学習中・{level}",
+    "nativeSuffix": "{language}・ネイティブ",
+    "homeNative": "ホーム・ネイティブ",
+    "levelShort": "LV・{level}",
+    "player": "P1"
   },
   "Settings": {
     "savedTitle": "保存しました",
