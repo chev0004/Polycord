@@ -103,7 +103,7 @@ type ProfileCardProps = {
   onCountryClick?: (country: string, profileId: string) => void;
   onViewProfile?: (profileId: string) => void;
   onReport?: (profileId: string) => void;
-  onBlock?: (profileId: string) => void;
+  onBlock?: (profileId: string) => void | Promise<void>;
   onShare?: (profileId: string) => void;
   onToggleSave?: (profileId: string) => void;
 };
@@ -277,7 +277,10 @@ export const ProfileCard = ({
       icon: MdBlock,
       label: t('blockProfile'),
       danger: true,
-      onSelect: () => onBlock(profile.id),
+      onSelect: () => {
+        if (mobile) setDetailOpen(false);
+        return onBlock(profile.id);
+      },
     },
   ].filter((item) => item !== undefined);
 

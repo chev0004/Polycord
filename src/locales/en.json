@@ -795,6 +795,7 @@
     "shareProfile": "Share profile",
     "reportProfile": "Report profile",
     "blockProfile": "Block user",
+    "blockingProfile": "Blocking {name}…",
     "voiceIntroPlay": "Play voice intro",
     "voiceIntroStop": "Stop voice intro",
     "searchPlaceholder": "Search names, languages, country, tags, descriptions…",
