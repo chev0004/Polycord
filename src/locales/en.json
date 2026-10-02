@@ -528,7 +528,18 @@
     "layoutSplitFlap": "Split-flap",
     "layoutMetal": "Metal card",
     "layoutOrbit": "Orbit",
-    "layoutNowPlaying": "Now playing"
+    "layoutNowPlaying": "Now playing",
+    "native": "Native",
+    "learning": "Learning",
+    "speaks": "Speaks",
+    "localTime": "{country} · local time",
+    "nativeWith": "Native · {language}",
+    "learningWith": "Learning · {language}",
+    "learningLevel": "Learning · {level}",
+    "nativeSuffix": "{language} · Native",
+    "homeNative": "Home · Native",
+    "levelShort": "LV · {level}",
+    "player": "P1"
   },
   "Settings": {
     "savedTitle": "Saved",
