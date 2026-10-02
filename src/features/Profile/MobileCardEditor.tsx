@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import {
+  type CSSProperties,
   type ReactNode,
   useLayoutEffect,
   useMemo,
@@ -50,6 +51,10 @@ import {
   proficiencyOptions,
 } from '@/constants';
 import {
+  type DiscordCardLayout,
+  resolveDiscordCard,
+} from '@/constants/discordCards';
+import {
   formatCurrentTime,
   getAllProficiencyValues,
   type Proficiency,
@@ -68,6 +73,10 @@ import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { entitlementLimit } from '@/lib/entitlements';
 import { BIO_MAX } from '@/lib/profileFields';
 import { COLOR_LABEL_KEYS } from './CardColorPicker';
+import { MobileDiscordCardPicker } from './DiscordCard/MobileDiscordCardPicker';
+import { DISCORD_CARD_LAYOUTS } from './DiscordCard/registry';
+import { ScaledDiscordCard } from './DiscordCard/ScaledDiscordCard';
+import type { DiscordCardData } from './DiscordCard/types';
 import {
   FREE_LANGUAGE_CAP,
   PREMIUM_LANGUAGE_CAP,
@@ -84,6 +93,7 @@ type EditorSheet =
   | 'availability'
   | 'tags'
   | 'location'
+  | 'discordCard'
   | 'privacy'
   | 'menu';
 
@@ -111,6 +121,10 @@ type MobileCardEditorProps = {
   voiceEditor: ReactNode;
   availabilityEditor: ReactNode;
   tagEditor: ReactNode;
+  discordCardData: DiscordCardData;
+  discordCardTheme: CSSProperties;
+  discordCardTease: DiscordCardLayout | null;
+  onDiscordCardTease: (id: DiscordCardLayout | null) => void;
   submitLabel: string;
   submittingLabel: string;
 };
@@ -304,10 +318,15 @@ export const MobileCardEditor = ({
   voiceEditor,
   availabilityEditor,
   tagEditor,
+  discordCardData,
+  discordCardTheme,
+  discordCardTease,
+  onDiscordCardTease,
   submitLabel,
   submittingLabel,
 }: MobileCardEditorProps) => {
   const t = useTranslations('Profile');
+  const tCard = useTranslations('DiscordCard');
   const locale = useLocale();
   const {
     control,
@@ -347,10 +366,15 @@ export const MobileCardEditor = ({
   const timezoneLabel = timezones.find(
     (option) => option.value === values.timezone,
   )?.label;
+  const discordCard = resolveDiscordCard(values.discordCard, premium);
+  const discordCardLayout =
+    DISCORD_CARD_LAYOUTS.find((layout) => layout.id === discordCard) ??
+    DISCORD_CARD_LAYOUTS[0];
   const cardStyle = deriveCardAccent(premiumLook ? theme.accent : FREE_ACCENT);
 
   const closeSheet = () => {
     if (sheet === 'style') onStyleClose();
+    if (sheet === 'discordCard') onDiscordCardTease(null);
     cancelPick();
     setSheet(null);
     setFlash(sheet);
@@ -755,6 +779,36 @@ export const MobileCardEditor = ({
                   aria-label={t('showLocalTime')}
                 />
               </SwitchRow>
+            </EditGroup>
+
+            <EditGroup title={t('discordCardTitle')}>
+              <ListRow
+                stacked
+                label={t('discordCardLayoutLabel')}
+                meta={
+                  <span className="truncate text-[13px] text-muted">
+                    {tCard(discordCardLayout.labelKey)}
+                  </span>
+                }
+                flash={flash === 'discordCard'}
+                onClick={() => openSheet('discordCard')}
+              >
+                <span className="flex flex-col gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="block overflow-hidden rounded-[10px]"
+                  >
+                    <ScaledDiscordCard
+                      layout={discordCardLayout}
+                      data={discordCardData}
+                      vars={discordCardTheme}
+                    />
+                  </span>
+                  <span className="text-[13px] text-subtle leading-snug">
+                    {t('discordCardDescription')}
+                  </span>
+                </span>
+              </ListRow>
             </EditGroup>
 
             <EditGroup title={t('visibilityTitle')}>
@@ -1174,6 +1228,50 @@ export const MobileCardEditor = ({
               />
             ) : null
           }
+        />
+      </Sheet>
+
+      <Sheet
+        open={sheet === 'discordCard'}
+        onOpenChange={(open) =>
+          open ? openSheet('discordCard') : closeSheet()
+        }
+        title={t('discordCardTitle')}
+        full
+        footer={
+          !premium && discordCardTease ? (
+            <>
+              <Button
+                variant="outline"
+                weight="semibold"
+                onClick={() => onDiscordCardTease(null)}
+                className="h-[50px] flex-1 rounded-full text-[15px]"
+              >
+                {t('discordCardCancelPreview')}
+              </Button>
+              <Button
+                weight="semibold"
+                onClick={() =>
+                  window.location.assign(`/${locale}/settings#premium`)
+                }
+                className="h-[50px] flex-1 rounded-full text-[15px]"
+              >
+                {t('discordCardSeePremium')}
+              </Button>
+            </>
+          ) : (
+            footerButton(t('done'), closeSheet)
+          )
+        }
+      >
+        <MobileDiscordCardPicker
+          value={discordCard}
+          onChange={(id) => setValue('discordCard', id, { shouldDirty: true })}
+          premium={premium}
+          tease={premium ? null : discordCardTease}
+          onTease={onDiscordCardTease}
+          data={discordCardData}
+          vars={discordCardTheme}
         />
       </Sheet>
 

@@ -795,6 +795,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         voiceEditor={voiceEditor}
         availabilityEditor={availabilityEditor}
         tagEditor={tagEditor}
+        discordCardData={discordCardData}
+        discordCardTheme={discordCardTheme}
+        discordCardTease={cardTease}
+        onDiscordCardTease={setCardTease}
         submitLabel={mobileSubmitIdleLabel}
         submittingLabel={submittingLabel}
       />
