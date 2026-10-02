@@ -13,12 +13,26 @@ const SPIN_DURATION = 1000;
 const easeInOutCubic = (progress: number) =>
   progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
 
+const homeAngle = (active: number, count: number) =>
+  count ? (-360 * active) / count : 0;
+
 const useOrbitAngle = (active: number, count: number) => {
-  const [angle, setAngle] = useState(0);
-  const spin = useRef({ active, shown: 0, goal: 0 });
+  const [angle, setAngle] = useState(() => homeAngle(active, count));
+  const spin = useRef({
+    active,
+    count,
+    shown: angle,
+    goal: angle,
+  });
 
   useEffect(() => {
     const state = spin.current;
+    if (state.count !== count) {
+      const home = homeAngle(active, count);
+      Object.assign(state, { active, count, shown: home, goal: home });
+      setAngle(home);
+      return;
+    }
     if (count < 1 || state.active === active) return;
     state.goal -= (360 / count) * ((active - state.active + count) % count);
     state.active = active;
