@@ -78,6 +78,9 @@ export const MobileToast = ({
         className={`flex-shrink-0 ${toast.variant === 'error' ? 'text-danger' : 'text-primary-light'}`}
       />
       <span>{toast.title}</span>
+      {toast.mobileDescription ? (
+        <span className="text-muted">{toast.mobileDescription}</span>
+      ) : null}
       {typeof toast.description === 'string' ? null : toast.description}
     </output>
   );

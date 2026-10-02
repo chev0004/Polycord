@@ -93,6 +93,9 @@ export const useProfileBump = ({
         description: cooldown
           ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
           : t('bumpErrorDescription'),
+        mobileDescription: cooldown
+          ? t('bumpCooldownDescription', { time: formatRemaining(cooldown) })
+          : undefined,
         duration: BUMP_TOAST_DURATION,
       });
     } finally {

@@ -18,6 +18,7 @@ export type ToastData = {
   id: number;
   title: string;
   description: ReactNode;
+  mobileDescription?: string;
   duration?: number;
   iconUrl?: string;
   variant?: 'error';
