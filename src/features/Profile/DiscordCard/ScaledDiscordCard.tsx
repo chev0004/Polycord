@@ -1,4 +1,6 @@
+import { NextIntlClientProvider } from 'next-intl';
 import { type CSSProperties, useLayoutEffect, useRef, useState } from 'react';
+import en from '@/locales/en.json';
 import {
   DISCORD_CARD_HEIGHT,
   DISCORD_CARD_WIDTH,
@@ -61,7 +63,12 @@ export const ScaledDiscordCard = ({
           ...vars,
         }}
       >
-        <Layout data={data} active={active ?? cycled} />
+        <NextIntlClientProvider
+          locale="en"
+          messages={{ DiscordCard: en.DiscordCard }}
+        >
+          <Layout data={data} active={active ?? cycled} />
+        </NextIntlClientProvider>
       </div>
     </div>
   );

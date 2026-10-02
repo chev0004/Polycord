@@ -1,11 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, waitFor, within } from '@storybook/test';
+import { NextIntlClientProvider, useTranslations } from 'next-intl';
 import { Proficiency } from '@/constants/languages';
+import en from '@/locales/en.json';
+import ja from '@/locales/ja.json';
 import { buildDiscordCardData } from './data';
 import { DISCORD_CARD_LAYOUTS } from './registry';
 import { ScaledDiscordCard } from './ScaledDiscordCard';
 import { discordCardVars } from './theme';
 import type { DiscordCardData } from './types';
+import { useDiscordCardData } from './useDiscordCardData';
 
 const labels = {
   days: { any: 'Any day', weekdays: 'Weekdays', weekends: 'Weekends' },
@@ -19,21 +23,25 @@ const labels = {
   },
 };
 
+const profile = {
+  name: 'Kenji Ito',
+  handle: 'kenji',
+  primaryLanguage: 'ja',
+  targetLanguages: [
+    { language: 'en', level: Proficiency.INTERMEDIATE },
+    { language: 'ko', level: Proficiency.BEGINNER },
+    { language: 'zh', level: Proficiency.ADVANCED },
+  ],
+  tags: ['Anime', 'Cooking', 'Photography', 'Travel'],
+  availability: { days: 'weekdays', from: '18:00', to: '22:00' },
+  country: 'JP',
+} satisfies Parameters<typeof useDiscordCardData>[0];
+
 const build = (
   overrides: Partial<Parameters<typeof buildDiscordCardData>[0]> = {},
 ) =>
   buildDiscordCardData({
-    name: 'Kenji Ito',
-    handle: 'kenji',
-    primaryLanguage: 'ja',
-    targetLanguages: [
-      { language: 'en', level: Proficiency.INTERMEDIATE },
-      { language: 'ko', level: Proficiency.BEGINNER },
-      { language: 'zh', level: Proficiency.ADVANCED },
-    ],
-    tags: ['Anime', 'Cooking', 'Photography', 'Travel'],
-    availability: { days: 'weekdays', from: '18:00', to: '22:00' },
-    country: 'JP',
+    ...profile,
     time: '21:14',
     locale: 'en',
     labels,
@@ -103,6 +111,86 @@ const expectEveryLayout = async (canvasElement: HTMLElement) => {
 
 export const Sky: Story = {
   play: ({ canvasElement }) => expectEveryLayout(canvasElement),
+};
+
+const LiveLayoutGallery = () => {
+  const t = useTranslations('Profile');
+  const data = useDiscordCardData(profile);
+
+  return (
+    <>
+      <h2>{t('discordCardPreviewLabel')}</h2>
+      <LayoutGallery data={data} theme="sky" />
+    </>
+  );
+};
+
+export const EnglishOnly: Story = {
+  render: () => (
+    <div className="grid grid-cols-2">
+      {(['en', 'ja'] as const).map((locale) => (
+        <section key={locale} data-locale={locale}>
+          <NextIntlClientProvider
+            locale={locale}
+            messages={locale === 'en' ? en : ja}
+          >
+            <LiveLayoutGallery />
+          </NextIntlClientProvider>
+        </section>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const english = canvasElement.querySelector(
+      '[data-locale="en"]',
+    ) as HTMLElement;
+    const japanese = canvasElement.querySelector(
+      '[data-locale="ja"]',
+    ) as HTMLElement;
+
+    await expect(within(english).getByRole('heading')).toHaveTextContent(
+      'Preview',
+    );
+    await expect(within(japanese).getByRole('heading')).toHaveTextContent(
+      'プレビュー',
+    );
+    for (const section of [english, japanese]) {
+      await expectEveryLayout(section);
+      const classic = within(
+        section.querySelector('[data-layout="classic"]') as HTMLElement,
+      );
+      for (const text of [
+        'Japanese',
+        '日本語',
+        'English',
+        '· Intermediate',
+        'Weekdays',
+        'Japan',
+      ]) {
+        await expect(classic.getByText(text)).toBeInTheDocument();
+      }
+      const greeting = within(
+        section.querySelector('[data-layout="greeting"]') as HTMLElement,
+      );
+      await expect(greeting.getByText('こんにちは！')).toBeInTheDocument();
+      await expect(greeting.getByText('안녕하세요!')).toBeInTheDocument();
+    }
+    for (const layout of DISCORD_CARD_LAYOUTS) {
+      const selector = `[data-layout="${layout.id}"] .dc-root`;
+      for (const section of [english, japanese]) {
+        await waitFor(() =>
+          expect(
+            (section.querySelector(selector) as HTMLElement).style.transform,
+          ).not.toBe('scale(0)'),
+        );
+      }
+      await waitFor(() =>
+        expect(japanese.querySelector(selector)?.textContent).toBe(
+          english.querySelector(selector)?.textContent,
+        ),
+      );
+    }
+  },
 };
 
 export const Pink: Story = {
