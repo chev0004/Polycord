@@ -13,17 +13,12 @@ import { DISCORD_CARD_LAYOUTS } from './registry';
 import { ScaledDiscordCard } from './ScaledDiscordCard';
 import type { DiscordCardData, DiscordCardLayoutDefinition } from './types';
 
-const thumbnailClass = (selected: boolean, locked: boolean) => {
+const thumbnailClass = (selected: boolean) => {
   const outline = selected
     ? 'outline-white'
     : 'outline-transparent group-hover:outline-line-strong';
-  const opacity = !locked
-    ? ''
-    : selected
-      ? 'opacity-100'
-      : 'opacity-45 group-hover:opacity-80';
 
-  return `relative block rounded-lg outline outline-2 outline-offset-[3px] transition-[outline-color,opacity] duration-150 ${outline} ${opacity}`;
+  return `relative block rounded-lg outline outline-2 outline-offset-[3px] transition-[outline-color] duration-150 ${outline}`;
 };
 
 const LayoutGrid = ({
@@ -61,13 +56,19 @@ const LayoutGrid = ({
             onClick={() => onSelect(layout.id)}
             className="group flex flex-col gap-1.5 text-left focus:outline-none"
           >
-            <span className={thumbnailClass(selected, locked)}>
+            <span className={thumbnailClass(selected)}>
               <span
                 aria-hidden="true"
                 className="block overflow-hidden rounded-lg"
               >
                 <ScaledDiscordCard layout={layout} data={data} vars={vars} />
               </span>
+              {locked && !selected ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-lg bg-background-dark/55 transition-colors duration-150 group-hover:bg-background-dark/20"
+                />
+              ) : null}
               {locked ? (
                 <span className="absolute top-1.5 right-1.5 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-foreground">
                   <MdLock size={14} />
