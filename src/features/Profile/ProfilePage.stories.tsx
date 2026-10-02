@@ -198,7 +198,7 @@ export const DiscardDiscordCard: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    fireEvent.click(canvas.getByRole('button', { name: 'Mirror' }));
+    fireEvent.click(canvas.getByRole('button', { name: 'Rank card' }));
     fireEvent.click(await canvas.findByRole('button', { name: 'Discard' }));
 
     await waitFor(() =>
