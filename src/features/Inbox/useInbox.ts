@@ -69,6 +69,7 @@ export const useInbox = ({
   const [pending, setPending] = useState(false);
   const request = useRef<AbortController | null>(null);
   const saving = useRef(false);
+  const pushPending = useRef(false);
   const [signature, setSignature] = useState(() =>
     notificationsSignature(initialNotifications, premium),
   );
@@ -105,14 +106,28 @@ export const useInbox = ({
       void refresh();
     };
     const interval = window.setInterval(refreshVisible, 30000);
+    const refreshPushed = (event: MessageEvent) => {
+      if (event.data?.type !== 'push') return;
+      if (saving.current) {
+        pushPending.current = true;
+        return;
+      }
+      request.current?.abort();
+      request.current = null;
+      void refresh();
+    };
+    const worker = navigator.serviceWorker;
     window.addEventListener('focus', refreshVisible);
     window.addEventListener(CHANGED_EVENT, refreshChanged);
     document.addEventListener('visibilitychange', refreshVisible);
+    worker?.addEventListener('message', refreshPushed);
+    worker?.startMessages();
     return () => {
       window.clearInterval(interval);
       window.removeEventListener('focus', refreshVisible);
       window.removeEventListener(CHANGED_EVENT, refreshChanged);
       document.removeEventListener('visibilitychange', refreshVisible);
+      worker?.removeEventListener('message', refreshPushed);
       request.current?.abort();
       request.current = null;
     };
@@ -149,6 +164,10 @@ export const useInbox = ({
     } finally {
       saving.current = false;
       setPending(false);
+      if (pushPending.current) {
+        pushPending.current = false;
+        void refresh();
+      }
     }
   };
 

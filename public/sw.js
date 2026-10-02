@@ -8,11 +8,18 @@ self.addEventListener('push', (event) => {
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title ?? 'Polycord', {
-      body: data.body ?? '',
-      icon: '/icon-192.png',
-      data: { url: data.url ?? '/' },
-    }),
+    Promise.all([
+      self.clients
+        .matchAll({ type: 'window', includeUncontrolled: true })
+        .then((windows) => {
+          for (const client of windows) client.postMessage({ type: 'push' });
+        }),
+      self.registration.showNotification(data.title ?? 'Polycord', {
+        body: data.body ?? '',
+        icon: '/icon-192.png',
+        data: { url: data.url ?? '/' },
+      }),
+    ]),
   );
 });
 

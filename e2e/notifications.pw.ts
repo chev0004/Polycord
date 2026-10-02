@@ -134,6 +134,42 @@ test('inbox honors server Premium on every navbar and refreshes without navigati
   }
 });
 
+test('a push message raises the mobile banner without waiting for the poll', async ({
+  page,
+  context,
+}, testInfo) => {
+  const data = await fixture(context);
+  try {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.clock.install();
+    const loaded = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/notifications') &&
+        response.request().method() === 'GET',
+    );
+    await page.goto('/en');
+    await loaded;
+    await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+    await sql`insert into notifications (user_id, kind, actor_user_id, actor_name) values (${data.owner.id}, 'copy', ${data.actor.id}, 'Inbox actor')`;
+    await page.evaluate(() =>
+      navigator.serviceWorker.dispatchEvent(
+        new MessageEvent('message', { data: { type: 'push' } }),
+      ),
+    );
+    await expect(
+      page
+        .getByRole('alert')
+        .filter({ hasText: 'A user copied your username' }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath('push-banner-mobile.png'),
+      animations: 'disabled',
+    });
+  } finally {
+    await data.cleanup();
+  }
+});
+
 test('loading, failed reads and failed writes preserve recoverable inbox state', async ({
   page,
   context,
