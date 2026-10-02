@@ -14,9 +14,7 @@ export const WatermarkCard = ({ data, active }: DiscordCardLayoutProps) => {
         <CardAvatar data={data} />
         <div className="dc-t-who">
           <div className="dc-t-nm">{data.name}</div>
-          <div className="dc-t-un">
-            {data.handle ? `@${data.handle}` : null}
-          </div>
+          <div className="dc-t-un">{data.handle}</div>
         </div>
         <BrandName
           style={{ marginLeft: 'auto', alignSelf: 'flex-start', fontSize: 16 }}

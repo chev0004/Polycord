@@ -36,7 +36,7 @@ export const CharacterSelectCard = ({
         <div className="dc-cs-top">
           <div className="dc-cs-id">
             <b>{data.name}</b>
-            <span>{data.handle ? `@${data.handle}` : null}</span>
+            <span>{data.handle}</span>
           </div>
           <div className="dc-cs-in">
             <TagChips tags={data.tags} small />

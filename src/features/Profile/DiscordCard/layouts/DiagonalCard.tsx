@@ -13,7 +13,7 @@ export const DiagonalCard = ({ data, active }: DiscordCardLayoutProps) => {
       <div className="dc-dg-tl">
         <BrandName tone="light" style={{ fontSize: 14, marginBottom: 6 }} />
         <span>{data.name}</span>
-        <small>{data.handle ? `@${data.handle}` : null}</small>
+        <small>{data.handle}</small>
       </div>
       <div className="dc-dg-bl2">
         <span className="dc-k">

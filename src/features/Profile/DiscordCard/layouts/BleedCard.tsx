@@ -31,7 +31,7 @@ export const BleedCard = ({ data, active }: DiscordCardLayoutProps) => {
       <div className="dc-bl-r">
         <CardAvatar data={data} />
         <div className="dc-bl-nm">{data.name}</div>
-        <div className="dc-bl-un">{data.handle ? `@${data.handle}` : null}</div>
+        <div className="dc-bl-un">{data.handle}</div>
         <TagChips
           tags={data.tags}
           small

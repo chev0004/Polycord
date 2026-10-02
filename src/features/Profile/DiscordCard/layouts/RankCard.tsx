@@ -18,7 +18,7 @@ export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
         <div className="dc-b3-top">
           <div className="dc-b3-nm">
             {data.name}
-            {data.handle ? <span>@{data.handle}</span> : null}
+            {data.handle ? <span>{data.handle}</span> : null}
           </div>
           {data.time ? (
             <div className="dc-b3-t">

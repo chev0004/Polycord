@@ -103,6 +103,11 @@ describe('buildDiscordCardData', () => {
     expect(build({ locale: 'ja' }).country).toBe('日本');
   });
 
+  it('prefixes the handle and leaves it empty when missing', () => {
+    expect(build().handle).toBe('@kenji');
+    expect(build({ handle: undefined }).handle).toBe('');
+  });
+
   it('builds initials from the first two words', () => {
     expect(getInitials('Kenji Ito')).toBe('KI');
     expect(getInitials('kenji')).toBe('K');

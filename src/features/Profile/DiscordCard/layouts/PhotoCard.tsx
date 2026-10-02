@@ -24,7 +24,7 @@ export const PhotoCard = ({ data, active }: DiscordCardLayoutProps) => {
           style={{ position: 'absolute', right: 32, top: 28, fontSize: 15 }}
         />
         <div className="dc-ph-nm">{data.name}</div>
-        <div className="dc-ph-un">{data.handle ? `@${data.handle}` : null}</div>
+        <div className="dc-ph-un">{data.handle}</div>
         <TagChips tags={data.tags} small style={{ marginTop: 12 }} />
         <div className="dc-ph-dl">
           <span className="dc-k">{t('speaks')}</span>

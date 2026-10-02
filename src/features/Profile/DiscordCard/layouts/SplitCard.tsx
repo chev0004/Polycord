@@ -31,9 +31,7 @@ export const SplitCard = ({ data, active }: DiscordCardLayoutProps) => {
           <CardAvatar data={data} />
           <div className="dc-g-who">
             <div className="dc-g-nm">{data.name}</div>
-            <div className="dc-g-un">
-              {data.handle ? `@${data.handle}` : null}
-            </div>
+            <div className="dc-g-un">{data.handle}</div>
           </div>
           <TagChips tags={data.tags} small style={{ marginLeft: 'auto' }} />
         </div>

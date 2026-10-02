@@ -24,7 +24,7 @@ export const MirrorCard = ({ data, active }: DiscordCardLayoutProps) => {
       <div className="dc-mi-c">
         <CardAvatar data={data} />
         <div className="dc-mi-nm">{data.name}</div>
-        <div className="dc-mi-un">{data.handle ? `@${data.handle}` : null}</div>
+        <div className="dc-mi-un">{data.handle}</div>
       </div>
       <div className="dc-mi-r">
         <span className="dc-k">{t('learning')}</span>

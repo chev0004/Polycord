@@ -16,7 +16,7 @@ export const GreetingCard = ({ data, active }: DiscordCardLayoutProps) => {
       <div className="dc-h-p">
         <CardAvatar data={data} />
         <div className="dc-h-nm">{data.name}</div>
-        <div className="dc-h-un">{data.handle ? `@${data.handle}` : null}</div>
+        <div className="dc-h-un">{data.handle}</div>
         <div className="dc-h-m">
           {data.availability ? (
             <div className="dc-row">
