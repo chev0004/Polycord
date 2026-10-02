@@ -115,6 +115,25 @@ export const Slate: Story = {
 
 export const Gradient: Story = {
   args: { theme: 'indigo' },
+  play: async ({ canvasElement }) => {
+    const bar = canvasElement.querySelector(
+      '[data-layout="rank"] .dc-b3-seg',
+    ) as HTMLElement;
+    const fills = [...bar.children].map((segment) =>
+      getComputedStyle(segment, '::after'),
+    );
+
+    for (const [index, fill] of fills.entries()) {
+      await expect(Number.parseFloat(fill.backgroundSize)).toBeCloseTo(
+        bar.offsetWidth,
+        0,
+      );
+      await expect(Number.parseFloat(fill.backgroundPositionX)).toBeCloseTo(
+        -index * (bar.offsetWidth / 4 + 1.5),
+        0,
+      );
+    }
+  },
 };
 
 export const SecondLanguage: Story = {
