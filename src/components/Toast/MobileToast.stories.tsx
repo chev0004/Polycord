@@ -193,3 +193,72 @@ export const ActivityBannerSwipeUp: Story = {
     await expect(onOpen).not.toHaveBeenCalled();
   },
 };
+
+export const CooldownDetail: Story = {
+  args: {
+    toast: {
+      title: 'Bump cooling down',
+      description: 'Try again in 2 hours.',
+      mobileDescription: 'Try again in 2 hours.',
+      variant: 'error',
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByText('Show toast'));
+
+    const toast = await canvas.findByRole('status');
+
+    await expect(toast).toHaveTextContent('Bump cooling down');
+    await expect(toast).toHaveTextContent('Try again in 2 hours.');
+  },
+};
+
+const SeparateStacksDemo = () => {
+  const status = useToastStack();
+  const banner = useToastStack();
+
+  return (
+    <>
+      <div className="flex gap-2 p-4">
+        <Button
+          onClick={() =>
+            status.addToast({ title: 'Bump cooling down', description: '' })
+          }
+        >
+          Show status
+        </Button>
+        <Button
+          onClick={() =>
+            banner.addToast({
+              title: 'xhev copied your username',
+              description: '',
+              activity: { onOpen: fn() },
+            })
+          }
+        >
+          Show banner
+        </Button>
+      </div>
+      <ToastStack toasts={status.toasts} onDismiss={status.dismissToast} />
+      <ToastStack toasts={banner.toasts} onDismiss={banner.dismissToast} />
+    </>
+  );
+};
+
+export const BannerReplacesStatusFromAnotherStack: Story = {
+  render: () => <SeparateStacksDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByText('Show status'));
+    await canvas.findByRole('status');
+    await userEvent.click(canvas.getByText('Show banner'));
+
+    await expect(await canvas.findByRole('alert')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(canvas.queryByRole('status')).not.toBeInTheDocument(),
+    );
+  },
+};

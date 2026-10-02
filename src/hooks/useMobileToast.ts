@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import type { ToastData } from './useToast';
 
@@ -12,6 +13,32 @@ const ACTIVITY_DURATION = 5000;
 const EXIT_DURATION = 250;
 const SWIPE_DISMISS_DISTANCE = 24;
 const TAP_TOLERANCE = 6;
+
+let newestToastId = 0;
+const listeners = new Set<() => void>();
+
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+export const useSupersededMobileToast = (latestId?: number) => {
+  const newest = useSyncExternalStore(
+    subscribe,
+    () => newestToastId,
+    () => 0,
+  );
+
+  useEffect(() => {
+    if (latestId === undefined || latestId <= newestToastId) return;
+    newestToastId = latestId;
+    for (const listener of listeners) listener();
+  }, [latestId]);
+
+  return latestId !== undefined && newest > latestId;
+};
 
 export const useMobileToast = ({
   toast,

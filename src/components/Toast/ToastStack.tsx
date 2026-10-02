@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useSupersededMobileToast } from '@/hooks/useMobileToast';
 import { type ToastData, useToast } from '@/hooks/useToast';
 import { MobileToast, MobileToastViewport } from './MobileToast';
 import { Toast, ToastProvider, ToastViewport } from './Toast';
@@ -41,13 +42,16 @@ type ToastStackProps = {
 export const ToastStack = ({ toasts, onDismiss }: ToastStackProps) => {
   const mobile = useIsMobile();
   const latest = toasts.at(-1);
+  const superseded = useSupersededMobileToast(mobile ? latest?.id : undefined);
 
   useEffect(() => {
     if (!mobile) return;
-    for (const toast of toasts.slice(0, -1)) onDismiss(toast.id);
-  }, [mobile, toasts, onDismiss]);
+    for (const toast of toasts.slice(0, superseded ? undefined : -1)) {
+      onDismiss(toast.id);
+    }
+  }, [mobile, superseded, toasts, onDismiss]);
 
-  if (!latest) {
+  if (!latest || superseded) {
     return null;
   }
 
