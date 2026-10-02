@@ -4,6 +4,7 @@ import { buildDiscordCardData, getInitials } from './data';
 
 const labels = {
   days: { any: 'Any day', weekdays: 'Weekdays', weekends: 'Weekends' },
+  daysShort: { any: 'Daily', weekdays: 'Wkdy', weekends: 'Wknd' },
   anyTime: 'Any time',
   levels: {
     [Proficiency.BEGINNER]: 'Beginner',
@@ -69,6 +70,7 @@ describe('buildDiscordCardData', () => {
       rangeShort: '18–22',
       text: 'Weekdays 18:00–22:00',
       short: 'Weekdays 18–22',
+      abbr: 'Wkdy 18–22',
     });
   });
 
@@ -101,6 +103,16 @@ describe('buildDiscordCardData', () => {
 
   it('localizes the country name', () => {
     expect(build({ locale: 'ja' }).country).toBe('日本');
+  });
+
+  it('joins up to three tags and counts the rest', () => {
+    expect(build({ tags: [] }).tagsText).toBe('');
+    expect(build({ tags: ['Anime', 'Cooking'] }).tagsText).toBe(
+      'Anime · Cooking',
+    );
+    expect(
+      build({ tags: ['Anime', 'Cooking', 'Travel', 'Music', 'Film'] }).tagsText,
+    ).toBe('Anime · Cooking · Travel +2');
   });
 
   it('prefixes the handle and leaves it empty when missing', () => {

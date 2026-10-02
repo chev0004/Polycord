@@ -16,6 +16,7 @@ export type DiscordCardAvailability = {
   rangeShort: string;
   text: string;
   short: string;
+  abbr: string;
 };
 
 export type DiscordCardData = {
@@ -31,6 +32,7 @@ export type DiscordCardData = {
   };
   targets: DiscordCardTarget[];
   tags: string[];
+  tagsText: string;
   availability?: DiscordCardAvailability;
   country: string;
   time: string;

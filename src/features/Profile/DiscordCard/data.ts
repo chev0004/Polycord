@@ -17,6 +17,7 @@ import type {
 
 export type DiscordCardLabels = {
   days: Record<AvailabilityDays, string>;
+  daysShort: Record<AvailabilityDays, string>;
   anyTime: string;
   levels: Record<Proficiency, string>;
 };
@@ -79,6 +80,7 @@ const buildAvailability = (
         ? labels.anyTime
         : `${days} ${pattern.anyTime ? `· ${labels.anyTime}` : range}`,
     short: `${days} ${rangeShort}`,
+    abbr: `${labels.daysShort[pattern.days] ?? labels.daysShort.any} ${rangeShort}`,
   };
 };
 
@@ -122,6 +124,7 @@ export const buildDiscordCardData = ({
     .filter((row) => row.language)
     .map((row) => buildTarget(row, locale, labels)),
   tags,
+  tagsText: `${tags.slice(0, 3).join(' · ')}${tags.length > 3 ? ` +${tags.length - 3}` : ''}`,
   availability: availability
     ? buildAvailability(availability, labels)
     : undefined,

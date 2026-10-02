@@ -9,6 +9,8 @@ import { MdLocationOn, MdSchedule } from 'react-icons/md';
 import type { DiscordCardData } from './types';
 import './base.css';
 
+export const BRAND_CAPS = 'POLYCORD.NET';
+
 export const BrandName = ({
   tone = 'dark',
   style,

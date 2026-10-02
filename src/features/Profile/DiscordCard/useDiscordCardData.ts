@@ -45,6 +45,7 @@ export const useDiscordCardData = ({
   timezone?: string;
 }) => {
   const t = useTranslations('Profile');
+  const tCard = useTranslations('DiscordCard');
   const locale = useLocale();
   const time = useCardClock(timezone);
 
@@ -67,6 +68,11 @@ export const useDiscordCardData = ({
             weekdays: t('availabilityDayWeekdays'),
             weekends: t('availabilityDayWeekends'),
           },
+          daysShort: {
+            any: tCard('abbrAny'),
+            weekdays: tCard('abbrWeekdays'),
+            weekends: tCard('abbrWeekends'),
+          },
           anyTime: t('availabilityAnyTime'),
           levels: {
             [Proficiency.BEGINNER]: t('proficiencyOptionBeginner'),
@@ -88,6 +94,7 @@ export const useDiscordCardData = ({
       time,
       locale,
       t,
+      tCard,
     ],
   );
 };
