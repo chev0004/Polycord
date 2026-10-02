@@ -13,7 +13,7 @@ import { NotificationEntry } from './NotificationEntry';
 import { formatRelativeTime, useInbox } from './useInbox';
 
 const headerButtonClassName =
-  'h-[30px] whitespace-nowrap rounded-control border px-3 font-medium text-[13px] transition-[background-color,border-color,opacity,transform] duration-150 enabled:active:scale-[0.97] disabled:cursor-default disabled:opacity-45';
+  'h-[30px] whitespace-nowrap rounded-control border px-3 font-medium text-[13px] transition-[background-color,border-color,opacity,transform] duration-150 enabled:active:scale-[0.97] disabled:cursor-default disabled:opacity-[0.45]';
 
 const pageButtonClassName =
   'flex h-7 w-7 items-center justify-center rounded-row text-foreground transition-colors duration-150 enabled:hover:bg-white/[0.06] focus-visible:bg-white/[0.06] disabled:cursor-default disabled:text-[#4b5563]';
