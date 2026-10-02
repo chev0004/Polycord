@@ -9,12 +9,20 @@ import {
 
 const ANIMATION_DURATION = 300;
 
+export type ToastActivity = {
+  actionLabel?: string;
+  onOpen: () => void;
+};
+
 export type ToastData = {
   id: number;
   title: string;
   description: ReactNode;
+  mobileDescription?: string;
   duration?: number;
   iconUrl?: string;
+  variant?: 'error';
+  activity?: ToastActivity;
 };
 
 export type UseToastProps = {

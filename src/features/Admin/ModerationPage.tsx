@@ -57,6 +57,7 @@ export const ModerationPage = ({
 
   const notify: Notify = (user, action, { days, reports, resolved, failed }) =>
     addToast({
+      variant: failed ? 'error' : undefined,
       title: failed
         ? t('actionFailed')
         : t(`toast_${action}`, {
