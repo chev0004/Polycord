@@ -151,7 +151,6 @@ export const Free: Story = {
 
 export const Japanese: Story = {
   globals: { locale: 'ja' },
-  args: { data: buildData({ locale: 'ja' }) },
   play: async ({ canvasElement }) => {
     await expect(
       within(canvasElement).getAllByText('Kenji Ito')[0].parentElement,

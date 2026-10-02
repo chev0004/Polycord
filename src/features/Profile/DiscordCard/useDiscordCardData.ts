@@ -1,10 +1,21 @@
-import { useLocale, useTranslations } from 'next-intl';
+import { createTranslator } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { formatCurrentTime, Proficiency } from '@/constants/languages';
+import en from '@/locales/en.json';
 import { buildDiscordCardData } from './data';
 
 const CLOCK_INTERVAL = 30000;
+const t = createTranslator({
+  locale: 'en',
+  messages: en,
+  namespace: 'Profile',
+});
+const tCard = createTranslator({
+  locale: 'en',
+  messages: en,
+  namespace: 'DiscordCard',
+});
 
 const useCardClock = (timezone?: string) => {
   const [time, setTime] = useState('');
@@ -44,9 +55,6 @@ export const useDiscordCardData = ({
   country?: string;
   timezone?: string;
 }) => {
-  const t = useTranslations('Profile');
-  const tCard = useTranslations('DiscordCard');
-  const locale = useLocale();
   const time = useCardClock(timezone);
 
   return useMemo(
@@ -61,7 +69,7 @@ export const useDiscordCardData = ({
         availability,
         country,
         time,
-        locale,
+        locale: 'en',
         labels: {
           days: {
             any: t('availabilityDayAny'),
@@ -92,9 +100,6 @@ export const useDiscordCardData = ({
       availability,
       country,
       time,
-      locale,
-      t,
-      tCard,
     ],
   );
 };
