@@ -91,6 +91,23 @@
   transform-origin: left;
   transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1) var(--d, 0s);
 }
+.dc-b3-seg {
+  container-type: inline-size;
+}
+.dc-b3-seg i::after {
+  background-size: 100cqw 100%;
+  background-position: calc(var(--j, 0) * -1 * (25cqw + 1.5px)) 0;
+  background-repeat: no-repeat;
+}
+.dc-b3-seg i:nth-child(2) {
+  --j: 1;
+}
+.dc-b3-seg i:nth-child(3) {
+  --j: 2;
+}
+.dc-b3-seg i:nth-child(4) {
+  --j: 3;
+}
 .dc-b3-seg.dc-snap i::after {
   transition: none;
 }
