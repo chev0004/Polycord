@@ -4,23 +4,7 @@ import { type CSSProperties, useEffect, useState } from 'react';
 import { ScaledDiscordCard } from './ScaledDiscordCard';
 import type { DiscordCardData, DiscordCardLayoutDefinition } from './types';
 
-const CYCLE_INTERVAL = 2800;
 const CLOCK_INTERVAL = 15000;
-
-const useCycleIndex = (count: number) => {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    if (count < 2) return;
-    const timer = window.setInterval(
-      () => setIndex((previous) => previous + 1),
-      CYCLE_INTERVAL,
-    );
-    return () => window.clearInterval(timer);
-  }, [count]);
-
-  return count ? index % count : 0;
-};
 
 const useMessageTime = (locale: string) => {
   const [time, setTime] = useState('');
@@ -54,7 +38,6 @@ export const DiscordPreview = ({
   const tCard = useTranslations('DiscordCard');
   const locale = useLocale();
   const time = useMessageTime(locale);
-  const active = useCycleIndex(data.targets.length);
 
   return (
     <div className="overflow-hidden rounded-lg bg-[#323339] py-3.5 pb-4 text-[#dbdee1]">
@@ -114,12 +97,7 @@ export const DiscordPreview = ({
           })}
           className="mt-1 w-full max-w-[550px] overflow-hidden rounded-lg"
         >
-          <ScaledDiscordCard
-            layout={layout}
-            data={data}
-            vars={vars}
-            active={active}
-          />
+          <ScaledDiscordCard layout={layout} data={data} vars={vars} />
         </div>
       </div>
     </div>
