@@ -1,11 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Polycord">
-  
-  <path fill="#c1d5e9" d="M16 8h26a10 10 0 0 1 10 10v8a10 10 0 0 1-10 10H24l-9.2 7.4c-1.4 1.1-3.3-.1-3-1.8l1-5.9A10 10 0 0 1 6 26v-8A10 10 0 0 1 16 8Z"></path>
-  <circle cx="19" cy="22" r="3" fill="#46525f"></circle>
-  <circle cx="29" cy="22" r="3" fill="#46525f"></circle>
-  <circle cx="39" cy="22" r="3" fill="#46525f"></circle>
-  
-  <path fill="#5964f2" d="M34 32h16a8 8 0 0 1 8 8v8a8 8 0 0 1-6.1 7.78l.8 4.5c.3 1.7-1.6 2.9-3 1.8L42.6 56H34a8 8 0 0 1-8-8v-8a8 8 0 0 1 8-8Z"></path>
-  <ellipse cx="37.4" cy="44" rx="2.7" ry="3.5" fill="#ffffff" transform="rotate(-9 37.4 44)"></ellipse>
-  <ellipse cx="46.6" cy="44" rx="2.7" ry="3.5" fill="#ffffff" transform="rotate(9 46.6 44)"></ellipse>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 12 104 98" role="img" aria-label="Polycord"><g transform="translate(10 -2) scale(.83)"><path fill="#fff" d="M6 104C12 98 13 90 13 80C13 62 17 52 24 45L26 22Q27 14 34 18L48 29Q60 26 72 29L86 18Q93 14 94 22L96 45C103 52 107 62 107 80C107 90 108 98 114 104C92 88 28 88 6 104Z"/><circle cx="44" cy="58" r="6.5" fill="#111"/><circle cx="76" cy="58" r="6.5" fill="#111"/></g><rect x="10" y="62" width="100" height="46" rx="12" fill="#3a3a3a"/><circle cx="32" cy="86" r="10" fill="#bdbdbd"/><rect x="50" y="78" width="44" height="7" rx="3.5" fill="#d9d9d9"/><rect x="50" y="90" width="28" height="7" rx="3.5" fill="#d9d9d9"/><ellipse cx="42" cy="63" rx="8" ry="5.5" fill="#fff"/><ellipse cx="78" cy="63" rx="8" ry="5.5" fill="#fff"/></svg>
