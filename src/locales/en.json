@@ -18,6 +18,9 @@
     "noResults": "No results found",
     "noOptions": "No options"
   },
+  "Toast": {
+    "now": "now"
+  },
   "Inbox": {
     "title": "Inbox",
     "unread": "Unread",

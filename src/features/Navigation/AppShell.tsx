@@ -13,7 +13,7 @@ import { StaffPill } from '@/features/Admin/StaffPill';
 import { Footer } from '@/features/Footer';
 import { Navbar } from '@/features/Navbar';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { MobileDock } from './MobileDock';
+import { MobileNavigation } from './MobileNavigation';
 import { useRouteProgressRouter } from './RouteProgress';
 import { signInHref } from './signIn';
 
@@ -96,7 +96,7 @@ export const AppShell = ({
         <div className="flex flex-1 flex-col">{children}</div>
         <Footer locale={locale} />
         {docked ? (
-          <MobileDock
+          <MobileNavigation
             locale={locale}
             userAvatarUrl={userAvatarUrl}
             onNavigate={(href) => router.push(href)}
