@@ -732,3 +732,99 @@ export const MenuOpen: Story = {
     ).toBeInTheDocument();
   },
 };
+
+export const Boosted: Story = {
+  render: (args) => (
+    <CardStory
+      {...args}
+      modify={(profile) => ({
+        ...profile,
+        premium: true,
+        cardTheme: premiumTheme('indigo'),
+        boosted: true,
+        boostedUntil: new Date(Date.now() + 60000).toISOString(),
+      })}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).getByText('Boosted'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const BoostedMobile: Story = {
+  ...Boosted,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+};
+
+export const BoostedJapanese: Story = {
+  ...Boosted,
+  globals: { locale: 'ja' },
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).getByText('\u30d6\u30fc\u30b9\u30c8\u4e2d'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const BoostedMobileJapanese: Story = {
+  ...BoostedJapanese,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+};
+
+export const Unboosted: Story = {
+  render: (args) => <CardStory {...args} />,
+  play: async ({ canvasElement }) => {
+    expect(
+      within(canvasElement).queryByText('Boosted'),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const BoostExpired: Story = {
+  render: (args) => (
+    <CardStory
+      {...args}
+      modify={(profile) => ({
+        ...profile,
+        boosted: true,
+        boostedUntil: '2000-01-01T00:00:00Z',
+      })}
+    />
+  ),
+  play: Unboosted.play,
+};
+
+export const BoostExpires: Story = {
+  render: (args) => (
+    <CardStory
+      {...args}
+      modify={(profile) => ({
+        ...profile,
+        boosted: true,
+        boostedUntil: new Date(Date.now() + 3000).toISOString(),
+      })}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    expect(canvas.getByText('Boosted')).toBeInTheDocument();
+    await waitFor(
+      () => expect(canvas.queryByText('Boosted')).not.toBeInTheDocument(),
+      { timeout: 6000 },
+    );
+  },
+};
+
+export const BoostedSaved: Story = {
+  ...Boosted,
+  args: { showBoostedBadge: false, isSaved: true },
+  play: Unboosted.play,
+};
+
+export const BoostedPreview: Story = {
+  ...Boosted,
+  args: { variant: 'preview' },
+  play: Unboosted.play,
+};
