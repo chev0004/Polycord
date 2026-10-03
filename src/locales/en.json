@@ -906,7 +906,8 @@
     "filterSheetShow": "{count, plural, one {Show # partner} other {Show # partners}}",
     "backToTop": "Back to top: search, sort and filters",
     "loadMore": "Show more partners",
-    "endOfResults": "You've seen everyone who matches."
+    "endOfResults": "You've seen everyone who matches.",
+    "boostedBadge": "Boosted"
   },
   "Saved": {
     "eyebrow": "Saved",

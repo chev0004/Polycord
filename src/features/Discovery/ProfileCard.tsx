@@ -75,6 +75,7 @@ export type DiscoveryProfile = {
   lastBumpedAt?: string;
   bumpedMinutesAgo?: number;
   boosted?: boolean;
+  boostedUntil?: string;
   premium?: boolean;
   cardTheme?: CardTheme;
   availability?: AvailabilityPattern;
@@ -86,6 +87,7 @@ export type DiscoveryProfile = {
 type ProfileCardProps = {
   profile: DiscoveryProfile;
   variant?: 'discovery' | 'preview';
+  showBoostedBadge?: boolean;
   isLoggedIn?: boolean;
   isSaved?: boolean;
   viewerTimezone?: string;
@@ -133,6 +135,7 @@ export const getBumpAge = (value?: string) => {
 export const ProfileCard = ({
   profile,
   variant = 'discovery',
+  showBoostedBadge = true,
   isLoggedIn = false,
   isSaved = false,
   viewerTimezone,
@@ -153,6 +156,23 @@ export const ProfileCard = ({
   const tProfile = useTranslations('Profile');
   const locale = useLocale();
   const isPreview = variant === 'preview';
+  const [boostExpired, setBoostExpired] = useState(() =>
+    Boolean(
+      profile.boostedUntil &&
+        new Date(profile.boostedUntil).getTime() <= Date.now(),
+    ),
+  );
+  useEffect(() => {
+    if (!profile.boostedUntil) {
+      setBoostExpired(false);
+      return;
+    }
+    const remaining = new Date(profile.boostedUntil).getTime() - Date.now();
+    setBoostExpired(remaining <= 0);
+    if (remaining <= 0) return;
+    const timer = setTimeout(() => setBoostExpired(true), remaining);
+    return () => clearTimeout(timer);
+  }, [profile.boostedUntil]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const languageTrigger = useRef<HTMLButtonElement>(null);
   const closedOutOfView = useRef(false);
@@ -499,6 +519,12 @@ export const ProfileCard = ({
             )}
           </div>
         </div>
+
+        {!isPreview && showBoostedBadge && profile.boosted && !boostExpired ? (
+          <span className="absolute top-[68px] right-5 inline-flex h-6 items-center whitespace-nowrap rounded-full bg-[var(--ct-chip-bg)] px-2.5 font-semibold text-[var(--ct-chip-text)] text-xs">
+            {t('boostedBadge')}
+          </span>
+        ) : null}
 
         <div
           className="absolute top-[29px] left-5 rounded-full bg-background-dark p-[7px]"

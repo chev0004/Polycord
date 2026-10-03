@@ -212,6 +212,7 @@ export const SavedRouteClient = ({
             </div>
             <ProfileGrid
               profiles={shownProfiles}
+              showBoostedBadge={false}
               emptyState={t('noMatchesDescription')}
               isLoggedIn
               savedProfileIds={savedProfileIds}
