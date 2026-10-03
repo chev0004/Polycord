@@ -83,6 +83,15 @@ export const hasActivePremiumGrant = ({
 }: Pick<User, 'premiumGrantedUntil'>) =>
   premiumGrantedUntil !== null && premiumGrantedUntil.getTime() > Date.now();
 
+export const getPremiumSource = (
+  user: Pick<User, 'premiumGrantedUntil'>,
+  subscription: Subscription | null,
+): 'free' | 'granted' | 'purchased' | 'both' => {
+  const granted = hasActivePremiumGrant(user);
+  if (isSubscriptionActive(subscription)) return granted ? 'both' : 'purchased';
+  return granted ? 'granted' : 'free';
+};
+
 export const isPremiumAccount = (
   user: User,
   subscription: Subscription | null,

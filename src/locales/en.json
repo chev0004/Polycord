@@ -605,7 +605,7 @@
     "updateDiscordButton": "Update Connection",
     "premiumMembershipLabel": "Premium Membership",
     "premiumMembershipDescription": "You are on the Free plan. Compare plans in the Premium tab.",
-    "premiumMembershipDescriptionPremium": "Polycord Premium · renews July 11, 2026.",
+    "premiumMembershipDescriptionPremium": "Polycord Premium is active.",
     "manageSubscriptionButton": "Manage Subscription",
     "manageBillingButton": "Manage billing",
     "viewPlansButton": "View plans",
@@ -613,7 +613,7 @@
     "premiumTabDescriptionFree": "Everything in Free, plus more room to learn and be found.",
     "premiumTabDescriptionPremium": "Your plan: everything below is included.",
     "premiumPriceAmount": "$2.99",
-    "premiumPriceRenewal": "/ month · renews July 11, 2026",
+    "premiumPriceRenewal": "/ month",
     "premiumPlanNote": "Cancel anytime. Your card keeps its theme until the period ends.",
     "premiumUpgradeNote": "$2.99 / month · cancel anytime",
     "premiumUpgradeButton": "Upgrade",
@@ -713,7 +713,9 @@
     "deleteAccountRetentionNote": "Account, profile, settings, voice, saved links, blocks, reports, inbox, local billing, boosts, and push registrations are deleted. Analytics, moderation and abuse logs remain with account links cleared; metadata, notes and IP addresses may remain. Rate limits, Discord moderation restrictions, actor details in other inboxes, payment-provider records and backups are not purged by this action.",
     "deleteAccountBillingError": "Your account has not been deleted because subscription cancellation failed. Retry deletion. If it keeps failing, use Manage Subscription to check billing and contact support.",
     "deleteAccountError": "Account could not be deleted. Please try again.",
-    "emailDescription": "Stored in your account and used when starting a new Premium checkout. Updating it does not change an existing billing email. Sign-in uses Discord; this address is not verified or used for account recovery."
+    "emailDescription": "Stored in your account and used when starting a new Premium checkout. Updating it does not change an existing billing email. Sign-in uses Discord; this address is not verified or used for account recovery.",
+    "premiumGranted": "Granted",
+    "premiumGrantEnds": "Grant ends {date}"
   },
   "Analytics": {
     "title": "Product analytics",
