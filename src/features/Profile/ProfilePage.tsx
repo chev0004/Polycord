@@ -1196,9 +1196,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     </p>
                   </div>
                 </div>
-                <p className="text-[11px] text-subtle">
-                  {t('insightsWindowNote')}
-                </p>
               </div>
             ) : null}
 
