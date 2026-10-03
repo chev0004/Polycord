@@ -88,7 +88,11 @@ export const getPremiumSource = (
   subscription: Subscription | null,
 ): 'free' | 'granted' | 'purchased' | 'both' => {
   const granted = hasActivePremiumGrant(user);
-  if (isSubscriptionActive(subscription)) return granted ? 'both' : 'purchased';
+  const purchased =
+    isSubscriptionActive(subscription) ||
+    (subscription?.stripeSubscriptionId &&
+      !['canceled', 'incomplete_expired'].includes(subscription.status));
+  if (purchased) return granted ? 'both' : 'purchased';
   return granted ? 'granted' : 'free';
 };
 

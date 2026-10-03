@@ -596,6 +596,39 @@ export const SupporterExpired: Story = {
   args: { premium: false, premiumSource: 'free' },
 };
 
+export const SupporterOverdueWithGrant: Story = {
+  ...SupporterBoth,
+  args: {
+    ...SupporterBoth.args,
+    subscriptionRenewsAt: '2000-01-01T12:00:00Z',
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    );
+    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const MobileSupporterOverdueWithGrant: Story = {
+  ...SupporterOverdueWithGrant,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      await canvas.findByRole('button', { name: /^Supporter/ }),
+    );
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    );
+    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
+  },
+};
+
 export const MobileSupporterGranted: Story = {
   ...SupporterGranted,
   parameters: { viewport: { defaultViewport: 'mobile1' } },

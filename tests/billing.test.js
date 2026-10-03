@@ -3,7 +3,9 @@ import { createHmac } from 'node:crypto';
 
 mock.module('server-only', () => ({}));
 mock.module('@/db/client', () => ({ db: {} }));
-const { getPremiumSource } = await import('../src/db/billing');
+const { getPremiumSource, isSubscriptionActive } = await import(
+  '../src/db/billing'
+);
 const writes = [];
 let subscription;
 let premiumGrantedUntil;
@@ -78,7 +80,12 @@ test('granted-only billing requests create no Stripe session, even with an old c
     calls.push(url);
     return Response.json({ url: 'https://stripe.com/test' });
   };
-  for (const previous of [null, { ...subscription, status: 'canceled' }]) {
+  for (const previous of [
+    null,
+    { ...subscription, status: 'canceled' },
+    { ...subscription, status: 'incomplete_expired' },
+    { ...subscription, status: 'none', stripeSubscriptionId: null },
+  ]) {
     subscription = previous;
     expect(
       (
@@ -167,21 +174,39 @@ test('failed subscription lookup grants nothing and webhook redelivery synchroni
   );
 });
 
-test('past-due subscribers repair billing through the portal', async () => {
-  subscription.status = 'past_due';
+test('non-cancelled subscriptions remain manageable alongside a grant without granting paid entitlements', async () => {
+  premiumGrantedUntil = new Date('2099-01-01');
   const calls = [];
   globalThis.fetch = async (url) => {
     calls.push(url);
     return Response.json({ url: 'https://billing.stripe.com/test' });
   };
-  expect(
-    (
-      await portal(
-        new Request('http://localhost/api/billing/portal', { method: 'POST' }),
-      )
-    ).status,
-  ).toBe(200);
-  expect(calls).toEqual(['https://api.stripe.com/v1/billing_portal/sessions']);
+  for (const status of ['past_due', 'unpaid', 'incomplete', 'paused']) {
+    subscription.status = status;
+    expect(isSubscriptionActive(subscription)).toBe(false);
+    expect(getPremiumSource({ premiumGrantedUntil }, subscription)).toBe(
+      'both',
+    );
+    expect(getPremiumSource({ premiumGrantedUntil: null }, subscription)).toBe(
+      'purchased',
+    );
+    for (const until of [premiumGrantedUntil, null]) {
+      premiumGrantedUntil = until;
+      expect(
+        (
+          await portal(
+            new Request('http://localhost/api/billing/portal', {
+              method: 'POST',
+            }),
+          )
+        ).status,
+      ).toBe(200);
+    }
+    premiumGrantedUntil = new Date('2099-01-01');
+  }
+  expect(calls).toEqual(
+    Array(8).fill('https://api.stripe.com/v1/billing_portal/sessions'),
+  );
 });
 
 test('checkout begun before a grant still records the purchased subscription', async () => {
