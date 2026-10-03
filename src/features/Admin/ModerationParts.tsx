@@ -300,10 +300,14 @@ export const NoteField = ({
   value,
   onChange,
   tall = false,
+  placeholder,
+  label,
 }: {
   value: string;
   onChange: (value: string) => void;
   tall?: boolean;
+  placeholder?: string;
+  label?: string;
 }) => {
   const t = useTranslations('Admin');
   return (
@@ -312,8 +316,8 @@ export const NoteField = ({
         rows={1}
         maxLength={500}
         value={value}
-        placeholder={t('notePlaceholder')}
-        aria-label={t('note')}
+        placeholder={placeholder ?? t('notePlaceholder')}
+        aria-label={label ?? t('note')}
         onChange={(event) => onChange(event.target.value)}
         className={`block max-h-[120px] w-full resize-none rounded-lg border border-white/[0.07] bg-background-darker py-2 pr-14 pl-3 font-light text-[13px] text-foreground leading-[1.45] outline-none transition-colors placeholder:text-subtle hover:border-white/[0.14] focus:border-white/[0.14] ${tall ? 'min-h-[72px]' : 'min-h-9'}`}
       />
@@ -458,7 +462,7 @@ const ModDialog = ({
     <Dialog.Portal>
       <Dialog.Overlay className="DialogOverlay fixed inset-0 z-[80] bg-black/65" />
       <div className="pointer-events-none fixed inset-0 z-[81] flex items-center justify-center p-5">
-        <Dialog.Content className="DialogContent pointer-events-auto flex w-full max-w-[460px] flex-col gap-4 rounded-panel border border-[rgba(107,114,128,0.5)] bg-background-dark p-[22px] font-figtree shadow-xl">
+        <Dialog.Content className="DialogContent pointer-events-auto flex max-h-full w-full max-w-[460px] flex-col gap-4 overflow-y-auto rounded-panel border border-[rgba(107,114,128,0.5)] bg-background-dark p-[22px] font-figtree shadow-xl">
           <div>
             <Dialog.Title className="font-bold text-[19px] text-foreground leading-tight">
               {title}
@@ -570,6 +574,148 @@ export const SuspendDialog = ({
   );
 };
 
+export const WARN_PRESETS = [
+  'Spam',
+  'Harassment',
+  'Hate',
+  'Inappropriate',
+  'Impersonation',
+  'Privacy',
+] as const;
+
+type WarnChoice = (typeof WARN_PRESETS)[number] | 'custom';
+
+export const useWarnMessage = (open: boolean) => {
+  const t = useTranslations('Admin');
+  const [choice, setChoice] = useState<WarnChoice | null>(null);
+  const [text, setText] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setChoice(null);
+    setText('');
+  }, [open]);
+
+  const message = text.trim();
+
+  return {
+    choice,
+    text,
+    setText,
+    message,
+    valid: message.length > 0,
+    pick: (next: WarnChoice) => {
+      setChoice(next);
+      if (next !== 'custom') setText(t(`warnText${next}`));
+    },
+  };
+};
+
+export const WarnPresets = ({
+  choice,
+  onPick,
+  mobile = false,
+}: {
+  choice: WarnChoice | null;
+  onPick: (choice: WarnChoice) => void;
+  mobile?: boolean;
+}) => {
+  const t = useTranslations('Admin');
+  return (
+    <div className="grid grid-cols-2 gap-1.5">
+      {[...WARN_PRESETS, 'custom' as const].map((preset) => (
+        <button
+          key={preset}
+          type="button"
+          aria-pressed={choice === preset}
+          onClick={() => onPick(preset)}
+          className={
+            mobile
+              ? `flex min-h-12 items-center justify-center rounded-xl border px-2 text-center font-medium text-sm ${choice === preset ? 'border-primary bg-primary-darker font-semibold text-primary-light' : 'border-[rgba(107,114,128,0.5)] text-gray-200'}`
+              : `${durationTile(choice === preset)} min-h-[38px] px-2 py-1`
+          }
+        >
+          {preset === 'custom' ? t('warnCustom') : t(`warnPreset${preset}`)}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+export const WarnPreview = ({
+  user,
+  message,
+  mobile = false,
+}: {
+  user: ModUser;
+  message: string;
+  mobile?: boolean;
+}) => {
+  const t = useTranslations('Admin');
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className={mobile ? 'text-[13px] text-muted' : fieldLabel}>
+        {t('warnPreview', { name: user.displayName })}
+      </span>
+      <p
+        className={`whitespace-pre-wrap break-words rounded-[14px] bg-background-darker px-3.5 py-3 leading-normal ${mobile ? 'text-[15px]' : 'text-[13.5px]'} ${message ? 'text-foreground' : 'text-subtle italic'}`}
+      >
+        {message || t('warnPreviewEmpty')}
+      </p>
+    </div>
+  );
+};
+
+export const WarnDialog = ({
+  open,
+  user,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  user: ModUser;
+  onCancel: () => void;
+  onConfirm: (message: string) => void;
+}) => {
+  const t = useTranslations('Admin');
+  const warn = useWarnMessage(open);
+  return (
+    <ModDialog
+      open={open}
+      onClose={onCancel}
+      title={t('warnTitle', { name: user.displayName })}
+      description={t('warnBody')}
+    >
+      <WarnPresets choice={warn.choice} onPick={warn.pick} />
+      <div className="flex flex-col gap-1.5">
+        <span className={fieldLabel}>{t('warnReason')}</span>
+        <NoteField
+          value={warn.text}
+          onChange={warn.setText}
+          tall
+          label={t('warnReason')}
+          placeholder={t('warnPlaceholder')}
+        />
+      </div>
+      <WarnPreview user={user} message={warn.message} />
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className={modButton()}>
+          {t('cancel')}
+        </button>
+        <button
+          type="button"
+          disabled={!warn.valid}
+          onClick={() => onConfirm(warn.message)}
+          className={modButton('primary')}
+        >
+          <MdCampaign size={17} />
+          {t('warnSend')}
+        </button>
+      </div>
+    </ModDialog>
+  );
+};
+
 export const durationTile = (on: boolean) =>
   `h-[38px] rounded-lg border text-[13px] font-medium transition-colors ${
     on
@@ -674,7 +820,7 @@ export const ActionBar = ({
     note: string;
     reauth: boolean;
   } | null>(null);
-  const [dialog, setDialog] = useState<'suspend' | 'ban' | null>(null);
+  const [dialog, setDialog] = useState<'warn' | 'suspend' | 'ban' | null>(null);
   const protectedAccount = user.role !== undefined || user.id === store.meId;
   const suspended = isSuspended(user);
 
@@ -703,7 +849,7 @@ export const ActionBar = ({
   useShortcut(shortcuts, (key) => {
     if (key === 'd' && canDismiss) void run('dismiss');
     if (protectedAccount) return;
-    if (key === 'w') void run('warn');
+    if (key === 'w') setDialog('warn');
     if (key === 'h') void run(user.hidden ? 'unhide_profile' : 'hide_profile');
     if (key === 's') {
       if (suspended) void run('unsuspend');
@@ -758,7 +904,9 @@ export const ActionBar = ({
         ) : null}
         {protectedAccount ? null : (
           <>
-            {button('warn', MdCampaign, t('warn'), 'default', 'W')}
+            {button('warn', MdCampaign, t('warn'), 'default', 'W', () =>
+              setDialog('warn'),
+            )}
             {user.hidden
               ? button(
                   'unhide_profile',
@@ -804,6 +952,12 @@ export const ActionBar = ({
           onRetry={() => run(failed.action, failed.days, failed.note)}
         />
       ) : null}
+      <WarnDialog
+        open={dialog === 'warn'}
+        user={user}
+        onCancel={() => setDialog(null)}
+        onConfirm={(message) => run('warn', undefined, message)}
+      />
       <SuspendDialog
         open={dialog === 'suspend'}
         user={user}
