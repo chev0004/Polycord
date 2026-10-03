@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSubscriptionByUserId } from '@/db';
+import { getPremiumAccountByDiscordUserId, getPremiumSource } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import {
   createCheckoutSession,
@@ -12,6 +12,15 @@ export const POST = async (request: Request) => {
 
   if (!currentUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const account = await getPremiumAccountByDiscordUserId(currentUser.id);
+  const subscription = account?.subscription ?? null;
+  if (account && getPremiumSource(account.user, subscription) === 'granted') {
+    return NextResponse.json(
+      { error: 'An active Premium grant cannot start or manage billing' },
+      { status: 403 },
+    );
   }
 
   if (!isBillingConfigured()) {
@@ -32,7 +41,6 @@ export const POST = async (request: Request) => {
 
   const origin = new URL(request.url).origin;
   const settingsUrl = `${origin}/${locale}/settings#premium`;
-  const subscription = await getSubscriptionByUserId(currentUser.accountId);
 
   try {
     const url = subscription?.stripeCustomerId

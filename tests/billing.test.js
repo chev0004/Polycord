@@ -2,11 +2,21 @@ import { afterAll, beforeEach, expect, mock, test } from 'bun:test';
 import { createHmac } from 'node:crypto';
 
 mock.module('server-only', () => ({}));
+mock.module('@/db/client', () => ({ db: {} }));
+const { getPremiumSource, isSubscriptionActive } = await import(
+  '../src/db/billing'
+);
 const writes = [];
 let subscription;
+let premiumGrantedUntil;
 let deleted;
 mock.module('@/db', () => ({
   getSubscriptionByUserId: async () => subscription,
+  getPremiumAccountByDiscordUserId: async () => ({
+    user: { premiumGrantedUntil },
+    subscription,
+  }),
+  getPremiumSource,
   upsertSubscriptionForUser: async (...values) => writes.push(values),
   updateSubscriptionByCustomerId: async (...values) => {
     writes.push(values);
@@ -40,14 +50,90 @@ const stripeSubscription = {
 beforeEach(() => {
   writes.length = 0;
   deleted = false;
+  premiumGrantedUntil = null;
   subscription = {
     stripeCustomerId: 'cus-1',
     stripeSubscriptionId: 'sub-1',
     status: 'active',
+    currentPeriodEnd: new Date('2099-01-01'),
   };
   process.env.STRIPE_SECRET_KEY = 'test-secret';
   process.env.STRIPE_PRICE_ID = 'price-1';
   process.env.STRIPE_WEBHOOK_SECRET = 'test-webhook';
+});
+
+test('membership sources distinguish active, expired and revoked grants', () => {
+  const user = { premiumGrantedUntil: new Date('2099-01-01') };
+  expect(getPremiumSource(user, null)).toBe('granted');
+  expect(getPremiumSource(user, subscription)).toBe('both');
+  user.premiumGrantedUntil = new Date('2000-01-01');
+  expect(getPremiumSource(user, null)).toBe('free');
+  expect(getPremiumSource(user, subscription)).toBe('purchased');
+  user.premiumGrantedUntil = null;
+  expect(getPremiumSource(user, null)).toBe('free');
+});
+
+test('granted-only billing requests create no Stripe session, even with an old customer', async () => {
+  premiumGrantedUntil = new Date('2099-01-01');
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(url);
+    return Response.json({ url: 'https://stripe.com/test' });
+  };
+  for (const previous of [
+    null,
+    { ...subscription, status: 'canceled' },
+    { ...subscription, status: 'incomplete_expired' },
+    { ...subscription, status: 'none', stripeSubscriptionId: null },
+  ]) {
+    subscription = previous;
+    expect(
+      (
+        await portal(
+          new Request('http://localhost/api/billing/portal', {
+            method: 'POST',
+          }),
+        )
+      ).status,
+    ).toBe(403);
+  }
+  expect(calls).toHaveLength(0);
+});
+
+test('expired and revoked grants can check out, and both sources can manage billing', async () => {
+  const paid = subscription;
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(url);
+    return Response.json({ url: 'https://stripe.com/test' });
+  };
+  subscription = null;
+  for (const until of [new Date('2000-01-01'), null]) {
+    premiumGrantedUntil = until;
+    expect(
+      (
+        await portal(
+          new Request('http://localhost/api/billing/portal', {
+            method: 'POST',
+          }),
+        )
+      ).status,
+    ).toBe(200);
+  }
+  subscription = paid;
+  premiumGrantedUntil = new Date('2099-01-01');
+  expect(
+    (
+      await portal(
+        new Request('http://localhost/api/billing/portal', { method: 'POST' }),
+      )
+    ).status,
+  ).toBe(200);
+  expect(calls).toEqual([
+    'https://api.stripe.com/v1/checkout/sessions',
+    'https://api.stripe.com/v1/checkout/sessions',
+    'https://api.stripe.com/v1/billing_portal/sessions',
+  ]);
 });
 
 afterAll(() => {
@@ -88,21 +174,47 @@ test('failed subscription lookup grants nothing and webhook redelivery synchroni
   );
 });
 
-test('past-due subscribers repair billing through the portal', async () => {
-  subscription.status = 'past_due';
+test('non-cancelled subscriptions remain manageable alongside a grant without granting paid entitlements', async () => {
+  premiumGrantedUntil = new Date('2099-01-01');
   const calls = [];
   globalThis.fetch = async (url) => {
     calls.push(url);
     return Response.json({ url: 'https://billing.stripe.com/test' });
   };
-  expect(
-    (
-      await portal(
-        new Request('http://localhost/api/billing/portal', { method: 'POST' }),
-      )
-    ).status,
-  ).toBe(200);
-  expect(calls).toEqual(['https://api.stripe.com/v1/billing_portal/sessions']);
+  for (const status of ['past_due', 'unpaid', 'incomplete', 'paused']) {
+    subscription.status = status;
+    expect(isSubscriptionActive(subscription)).toBe(false);
+    expect(getPremiumSource({ premiumGrantedUntil }, subscription)).toBe(
+      'both',
+    );
+    expect(getPremiumSource({ premiumGrantedUntil: null }, subscription)).toBe(
+      'purchased',
+    );
+    for (const until of [premiumGrantedUntil, null]) {
+      premiumGrantedUntil = until;
+      expect(
+        (
+          await portal(
+            new Request('http://localhost/api/billing/portal', {
+              method: 'POST',
+            }),
+          )
+        ).status,
+      ).toBe(200);
+    }
+    premiumGrantedUntil = new Date('2099-01-01');
+  }
+  expect(calls).toEqual(
+    Array(8).fill('https://api.stripe.com/v1/billing_portal/sessions'),
+  );
+});
+
+test('checkout begun before a grant still records the purchased subscription', async () => {
+  premiumGrantedUntil = new Date('2099-01-01');
+  globalThis.fetch = async () => Response.json(stripeSubscription);
+  expect((await webhook(checkoutRequest())).status).toBe(200);
+  expect(writes[0][1].status).toBe('active');
+  expect(premiumGrantedUntil.toISOString()).toBe('2099-01-01T00:00:00.000Z');
 });
 
 test('account deletion preserves billing mapping when cancellation fails', async () => {

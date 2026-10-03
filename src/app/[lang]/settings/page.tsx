@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import {
+  getPremiumAccountByDiscordUserId,
+  getPremiumSource,
   getPrivacySettingsByDiscordUserId,
-  getSubscriptionByDiscordUserId,
   getUserSettingsByDiscordUserId,
 } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
@@ -20,12 +21,16 @@ export default async function SettingsRoute({
     redirect(`/${lang}?next=${encodeURIComponent(`/${lang}/settings`)}`);
   }
 
-  const [privacySettings, settings, subscription, premium] = await Promise.all([
+  const [privacySettings, settings, account, premium] = await Promise.all([
     getPrivacySettingsByDiscordUserId(user.id),
     getUserSettingsByDiscordUserId(user.id),
-    getSubscriptionByDiscordUserId(user.id),
+    getPremiumAccountByDiscordUserId(user.id),
     isPremiumUser(user),
   ]);
+  const subscription = account?.subscription;
+  const premiumSource = account
+    ? getPremiumSource(account.user, subscription ?? null)
+    : 'free';
 
   return (
     <main>
@@ -48,6 +53,12 @@ export default async function SettingsRoute({
         }
         locale={lang}
         premium={premium}
+        premiumSource={premiumSource}
+        premiumGrantedUntil={
+          premiumSource === 'granted' || premiumSource === 'both'
+            ? account?.user.premiumGrantedUntil?.toISOString()
+            : undefined
+        }
         subscriptionRenewsAt={
           subscription?.currentPeriodEnd?.toISOString() ?? undefined
         }

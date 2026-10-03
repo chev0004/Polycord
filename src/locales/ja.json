@@ -605,7 +605,7 @@
     "updateDiscordButton": "連携を更新",
     "premiumMembershipLabel": "プレミアムメンバーシップ",
     "premiumMembershipDescription": "現在は無料プランです。Premiumタブでプランを比較できます。",
-    "premiumMembershipDescriptionPremium": "Polycord プレミアム · 2026年7月11日に更新。",
+    "premiumMembershipDescriptionPremium": "Polycord Premiumが有効です。",
     "manageSubscriptionButton": "サブスクリプションを管理",
     "manageBillingButton": "お支払いを管理",
     "viewPlansButton": "プランを見る",
@@ -613,7 +613,7 @@
     "premiumTabDescriptionFree": "無料プランのすべてに加えて、学びと発見の幅がさらに広がります。",
     "premiumTabDescriptionPremium": "現在のプラン：以下のすべてが含まれます。",
     "premiumPriceAmount": "$2.99",
-    "premiumPriceRenewal": "/ 月 · 2026年7月11日に更新",
+    "premiumPriceRenewal": "/ 月",
     "premiumPlanNote": "いつでもキャンセルできます。期間が終了するまでカードのテーマは維持されます。",
     "premiumUpgradeNote": "$2.99 / 月 · いつでもキャンセル可能",
     "premiumUpgradeButton": "アップグレード",
@@ -713,7 +713,9 @@
     "deleteAccountRetentionNote": "アカウント、プロフィール、設定、音声、保存済みリンク、ブロック、通報、受信トレイ、ローカルの請求情報、ブースト、プッシュ登録を削除します。分析、モデレーション、不正対策のログはアカウントへの参照を解除して残り、メタデータ、メモ、IPアドレスが残る場合があります。この操作ではレート制限、Discord IDに紐づく制限、他の受信トレイに記録済みの送信者情報、決済事業者の記録、バックアップは消去しません。",
     "deleteAccountBillingError": "サブスクリプションの解約に失敗したため、アカウントは削除されていません。削除を再試行してください。失敗が続く場合は、サブスクリプション管理で請求状況を確認し、サポートにお問い合わせください。",
     "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。",
-    "emailDescription": "アカウントに保存され、新しくPremiumの購入を開始する際に使用されます。既存の請求用メールアドレスは変更されません。ログインにはDiscordを使用します。このメールアドレスの確認やアカウント復旧は行っていません。"
+    "emailDescription": "アカウントに保存され、新しくPremiumの購入を開始する際に使用されます。既存の請求用メールアドレスは変更されません。ログインにはDiscordを使用します。このメールアドレスの確認やアカウント復旧は行っていません。",
+    "premiumGranted": "付与済み",
+    "premiumGrantEnds": "付与期限: {date}"
   },
   "Analytics": {
     "title": "プロダクト分析",

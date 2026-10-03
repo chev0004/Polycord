@@ -124,6 +124,8 @@ type MobileSettingsProps = {
   premium: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
+  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
+  premiumGrantedUntil?: string;
   subscriptionRenewsAt?: string;
   subscriptionCancelAtPeriodEnd: boolean;
   options: Record<ChoiceField, { label: string; value: string }[]>;
@@ -152,6 +154,8 @@ export const MobileSettings = ({
   premium,
   userAvatarUrl,
   userDisplayName,
+  premiumSource,
+  premiumGrantedUntil,
   subscriptionRenewsAt,
   subscriptionCancelAtPeriodEnd,
   options,
@@ -171,6 +175,7 @@ export const MobileSettings = ({
   onDeleteReset,
   onDeleteAccount,
 }: MobileSettingsProps) => {
+  const grantedOnly = premiumSource === 'granted';
   const t = useTranslations('Settings');
   const locale = useLocale();
   const { control, watch, getValues, setValue, resetField } = form;
@@ -499,18 +504,29 @@ export const MobileSettings = ({
               </span>
               <p>
                 <span className="font-black text-[34px] tracking-[-0.02em]">
-                  {t('premiumPriceAmount')}
+                  {grantedOnly ? t('premiumGranted') : t('premiumPriceAmount')}
                 </span>{' '}
-                <span className="font-medium text-muted text-sm">
-                  {t('premiumPerMonth')}
-                </span>
+                {grantedOnly ? null : (
+                  <span className="font-medium text-muted text-sm">
+                    {t('premiumPerMonth')}
+                  </span>
+                )}
               </p>
               <p className="text-[13px] text-subtle leading-snug">
                 {premium
                   ? t('premiumTabDescriptionPremium')
                   : t('premiumTabDescriptionFree')}
               </p>
-              {premium && subscriptionRenewsAt ? (
+              {premiumGrantedUntil ? (
+                <p className="text-[13px] text-subtle">
+                  {t('premiumGrantEnds', {
+                    date: new Date(premiumGrantedUntil).toLocaleDateString(
+                      locale,
+                    ),
+                  })}
+                </p>
+              ) : null}
+              {premium && !grantedOnly && subscriptionRenewsAt ? (
                 <p className="text-[13px] text-subtle">
                   {t(
                     subscriptionCancelAtPeriodEnd
@@ -526,18 +542,24 @@ export const MobileSettings = ({
               ) : null}
             </div>
             <CompareTable />
-            <Button
-              variant={premium ? 'outline' : 'primary'}
-              weight="semibold"
-              onClick={onManageSubscription}
-              disabled={billingStatus === 'loading'}
-              className="h-[50px] rounded-full text-[15px]"
-            >
-              {premium ? t('manageBillingButton') : t('premiumUpgradeButton')}
-            </Button>
-            <p className="text-center text-subtle text-xs">
-              {premium ? t('premiumPlanNote') : t('premiumUpgradeNote')}
-            </p>
+            {grantedOnly ? null : (
+              <>
+                <Button
+                  variant={premium ? 'outline' : 'primary'}
+                  weight="semibold"
+                  onClick={onManageSubscription}
+                  disabled={billingStatus === 'loading'}
+                  className="h-[50px] rounded-full text-[15px]"
+                >
+                  {premium
+                    ? t('manageBillingButton')
+                    : t('premiumUpgradeButton')}
+                </Button>
+                <p className="text-center text-subtle text-xs">
+                  {premium ? t('premiumPlanNote') : t('premiumUpgradeNote')}
+                </p>
+              </>
+            )}
             {billingStatus === 'error' ? (
               <p role="alert" className="text-center text-[13px] text-danger">
                 {t('billingError')}

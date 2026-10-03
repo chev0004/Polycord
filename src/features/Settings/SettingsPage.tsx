@@ -49,6 +49,8 @@ export type SettingsPageProps = {
   onUpdateDiscordConnection: () => void;
   onManageSubscription: () => Promise<void> | void;
   premium?: boolean;
+  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
+  premiumGrantedUntil?: string;
   subscriptionRenewsAt?: string;
   subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
@@ -120,12 +122,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onUpdateDiscordConnection,
   onManageSubscription,
   premium = false,
+  premiumSource,
+  premiumGrantedUntil,
   subscriptionRenewsAt,
   subscriptionCancelAtPeriodEnd = false,
   userAvatarUrl,
   userDisplayName,
   userId,
 }) => {
+  const grantedOnly = premiumSource === 'granted';
   const t = useTranslations('Settings');
   const currentLocale = useLocale();
   const [activeSection, setActiveSection] = useState<SectionId>('account');
@@ -325,6 +330,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         premium={premium}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
+        premiumSource={premiumSource}
+        premiumGrantedUntil={premiumGrantedUntil}
         subscriptionRenewsAt={subscriptionRenewsAt}
         subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
         options={{
@@ -463,11 +470,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 label={t('premiumMembershipLabel')}
                 description={
                   premium
-                    ? t('premiumMembershipDescriptionPremium')
+                    ? grantedOnly && premiumGrantedUntil
+                      ? t('premiumGrantEnds', {
+                          date: new Date(
+                            premiumGrantedUntil,
+                          ).toLocaleDateString(currentLocale),
+                        })
+                      : t('premiumMembershipDescriptionPremium')
                     : t('premiumMembershipDescription')
                 }
               >
-                {premium ? (
+                {grantedOnly ? (
+                  <span className="text-sm text-subtle">
+                    {t('premiumGranted')}
+                  </span>
+                ) : premium ? (
                   <Button
                     variant="outline"
                     onClick={handleManageSubscription}
@@ -612,16 +629,31 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   <div className="min-w-0">
                     <div className="flex items-baseline gap-[5px]">
                       <span className="font-bold text-[26px] text-foreground tracking-[-0.01em]">
-                        {t('premiumPriceAmount')}
+                        {grantedOnly
+                          ? t('premiumGranted')
+                          : t('premiumPriceAmount')}
                       </span>
-                      <span className="text-[13px] text-muted">
-                        {t('premiumPriceRenewal')}
-                      </span>
+                      {grantedOnly ? null : (
+                        <span className="text-[13px] text-muted">
+                          {t('premiumPerMonth')}
+                        </span>
+                      )}
                     </div>
-                    <p className="mt-0.5 text-[12.5px] text-subtle">
-                      {t('premiumPlanNote')}
-                    </p>
-                    {subscriptionRenewsAt ? (
+                    {grantedOnly ? null : (
+                      <p className="mt-0.5 text-[12.5px] text-subtle">
+                        {t('premiumPlanNote')}
+                      </p>
+                    )}
+                    {premiumGrantedUntil ? (
+                      <p className="mt-0.5 text-[12.5px] text-subtle">
+                        {t('premiumGrantEnds', {
+                          date: new Date(
+                            premiumGrantedUntil,
+                          ).toLocaleDateString(currentLocale),
+                        })}
+                      </p>
+                    ) : null}
+                    {!grantedOnly && subscriptionRenewsAt ? (
                       <p className="mt-0.5 text-[12.5px] text-subtle">
                         {t(
                           subscriptionCancelAtPeriodEnd
@@ -636,14 +668,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       </p>
                     ) : null}
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleManageSubscription}
-                    disabled={billingStatus === 'loading'}
-                    className="h-10 whitespace-nowrap"
-                  >
-                    {t('manageBillingButton')}
-                  </Button>
+                  {grantedOnly ? null : (
+                    <Button
+                      variant="outline"
+                      onClick={handleManageSubscription}
+                      disabled={billingStatus === 'loading'}
+                      className="h-10 whitespace-nowrap"
+                    >
+                      {t('manageBillingButton')}
+                    </Button>
+                  )}
                 </div>
               ) : null}
 

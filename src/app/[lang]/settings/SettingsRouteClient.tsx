@@ -28,6 +28,8 @@ type SettingsRouteClientProps = {
   >;
   locale: string;
   premium?: boolean;
+  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
+  premiumGrantedUntil?: string;
   subscriptionRenewsAt?: string;
   subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
@@ -72,6 +74,8 @@ export const SettingsRouteClient = ({
   initialSettings,
   locale,
   premium = false,
+  premiumSource,
+  premiumGrantedUntil,
   subscriptionRenewsAt,
   subscriptionCancelAtPeriodEnd,
   userAvatarUrl,
@@ -147,6 +151,8 @@ export const SettingsRouteClient = ({
         window.location.assign(url);
       }}
       premium={premium}
+      premiumSource={premiumSource}
+      premiumGrantedUntil={premiumGrantedUntil}
       subscriptionRenewsAt={subscriptionRenewsAt}
       subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
     />

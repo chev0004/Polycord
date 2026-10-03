@@ -540,3 +540,157 @@ export const MobileSessionExpired: Story = {
     ).toBeInTheDocument();
   },
 };
+
+export const PremiumGranted: Story = {
+  args: {
+    premium: true,
+    premiumSource: 'granted',
+    premiumGrantedUntil: '2099-12-31T12:00:00Z',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    expect(
+      canvas.queryByRole('button', { name: 'Manage billing' }),
+    ).not.toBeInTheDocument();
+    await fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    await expect(await canvas.findByText('Granted')).toBeInTheDocument();
+    expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
+    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: 'Manage billing' }),
+    ).not.toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: 'Upgrade' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const PremiumPurchased: Story = {
+  ...PremiumTabPremium,
+  args: {
+    premium: true,
+    premiumSource: 'purchased',
+    subscriptionRenewsAt: '2099-11-30T12:00:00Z',
+  },
+};
+
+export const PremiumBoth: Story = {
+  args: {
+    ...PremiumPurchased.args,
+    premiumSource: 'both',
+    premiumGrantedUntil: '2099-12-31T12:00:00Z',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    expect(canvas.getByText(/Renews/)).toBeInTheDocument();
+    expect(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const PremiumExpired: Story = {
+  ...PremiumTabFree,
+  args: { premium: false, premiumSource: 'free' },
+};
+
+export const PremiumOverdueWithGrant: Story = {
+  ...PremiumBoth,
+  args: {
+    ...PremiumBoth.args,
+    subscriptionRenewsAt: '2000-01-01T12:00:00Z',
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    );
+    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const MobilePremiumOverdueWithGrant: Story = {
+  ...PremiumOverdueWithGrant,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      await canvas.findByRole('button', { name: /^Premium/ }),
+    );
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    );
+    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const MobilePremiumGranted: Story = {
+  ...PremiumGranted,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      await canvas.findByRole('button', { name: /^Premium/ }),
+    );
+    await expect(await canvas.findByText('Granted')).toBeInTheDocument();
+    expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
+    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: 'Manage billing' }),
+    ).not.toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: 'Upgrade' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const MobilePremiumBoth: Story = {
+  ...PremiumBoth,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      await canvas.findByRole('button', { name: /^Premium/ }),
+    );
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    expect(canvas.getByText(/Renews/)).toBeInTheDocument();
+    expect(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const PremiumGrantedJapanese: Story = {
+  ...PremiumGranted,
+  globals: { locale: 'ja' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(canvas.getByRole('button', { name: 'プレミアム' }));
+    await expect(
+      await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
+    ).toBeInTheDocument();
+    expect(canvas.getByText(/\u4ed8\u4e0e\u671f\u9650/)).toBeInTheDocument();
+    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
+  },
+};
+
+export const MobilePremiumGrantedJapanese: Story = {
+  ...PremiumGrantedJapanese,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      await canvas.findByRole('button', { name: /^プレミアム/ }),
+    );
+    await expect(
+      await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
+    ).toBeInTheDocument();
+    expect(canvas.getByText(/\u4ed8\u4e0e\u671f\u9650/)).toBeInTheDocument();
+    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
+  },
+};
