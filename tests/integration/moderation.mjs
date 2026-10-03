@@ -27,6 +27,7 @@ const {
   setProfileHiddenByModeration,
   isUserRestricted,
   listModerationReports,
+  countPendingCases,
 } = await import('../../src/db/moderation');
 const { deleteAccountByUserId } = await import('../../src/db/account');
 const { eq } = await import('drizzle-orm');
@@ -82,6 +83,7 @@ try {
     (await listDiscoveryPage(discoveryState, 'en', {})).profiles[0].id,
     profile.id,
   );
+  const casesBefore = await countPendingCases();
   const created = await db
     .insert(reports)
     .values(
@@ -101,6 +103,7 @@ try {
     ).length,
     105,
   );
+  assert.equal(await countPendingCases(), casesBefore + 1);
   await db
     .update(reports)
     .set({ status: 'dismissed' })
@@ -114,6 +117,7 @@ try {
     listed.find((report) => report.id === created[104].id)?.status,
     'dismissed',
   );
+  assert.equal(await countPendingCases(), casesBefore + 1);
   console.log('moderation lifecycle passed');
 } finally {
   await db.delete(users).where(eq(users.id, user.id));
