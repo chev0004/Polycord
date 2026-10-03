@@ -6,11 +6,13 @@ import type { DiscordCardLayoutProps } from '../types';
 import '../rank.css';
 
 const SEGMENTS = [0, 1, 2, 3];
-const SEGMENT_STAGGER = 0.32;
-
-const segmentDelay = (segment: number, from: number, steps: number) =>
-  Math.max(0, steps >= from ? segment - from : from - 1 - segment) *
-  SEGMENT_STAGGER;
+const segmentDelay = (
+  segment: number,
+  from: number,
+  steps: number,
+  duration: number,
+) =>
+  Math.max(0, steps >= from ? segment - from : from - 1 - segment) * duration;
 
 export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
   const t = useTranslations('DiscordCard');
@@ -18,6 +20,8 @@ export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
   const from =
     data.targets[(active + data.targets.length - 1) % data.targets.length]
       ?.steps ?? 0;
+  const changing = Math.max(1, Math.abs((target?.steps ?? 0) - from));
+  const duration = (0.32 + (changing - 1) * 0.12) / changing;
 
   return (
     <div className="dc-b3">
@@ -45,14 +49,17 @@ export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
             <Cycle targets={data.targets} active={active}>
               {(item) => <span className="dc-tag dc-t">{item.code}</span>}
             </Cycle>
-            <span className="dc-seg dc-b3-seg">
+            <span
+              className="dc-seg dc-b3-seg"
+              style={{ '--duration': `${duration}s` } as CSSProperties}
+            >
               {SEGMENTS.map((segment) => (
                 <i
                   key={segment}
                   className={segment < target.steps ? 'dc-on' : ''}
                   style={
                     {
-                      '--d': `${segmentDelay(segment, from, target.steps)}s`,
+                      '--d': `${segmentDelay(segment, from, target.steps, duration)}s`,
                     } as CSSProperties
                   }
                 />

@@ -88,7 +88,8 @@
   border-radius: inherit;
   background: var(--cf);
   clip-path: inset(0 100% 0 0);
-  transition: clip-path 0.32s cubic-bezier(0.4, 0, 0.2, 1) var(--d, 0s);
+  transition: clip-path var(--duration, 0.32s) cubic-bezier(0.4, 0, 0.2, 1)
+    var(--d, 0s);
 }
 .dc-b3-seg {
   container-type: inline-size;
