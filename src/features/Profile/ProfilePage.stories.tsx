@@ -323,11 +323,20 @@ export const BoostDialogOpensFromMenu: Story = {
     const dialog = await openBoostDialog(canvasElement);
 
     await expect(args.onBoostProfile).not.toHaveBeenCalled();
+    await expect(dialog.getAllByText('Ready')).toHaveLength(3);
+    await expect(dialog.getByText('Boosts this month')).toBeInTheDocument();
+    await expect(dialog.getByText(/^Refills to 3 on/)).toBeInTheDocument();
     await userEvent.click(dialog.getByRole('button', { name: 'Boost now' }));
     await waitFor(() => expect(args.onBoostProfile).toHaveBeenCalledOnce());
     await expect(
       await dialog.findByRole('button', { name: 'Boost running' }),
     ).toBeDisabled();
+    await expect(await dialog.findByRole('timer')).toBeInTheDocument();
+    await expect(dialog.getAllByText('Ready')).toHaveLength(2);
+    await expect(dialog.getAllByText('Live')).toHaveLength(1);
+    await expect(
+      dialog.getByText(/^Ends (today|tomorrow) at/),
+    ).toBeInTheDocument();
     await expect(
       within(canvasElement).getByText('Boosted'),
     ).toBeInTheDocument();
@@ -353,9 +362,33 @@ export const BoostActive: Story = {
     await expect(
       dialog.getByRole('button', { name: 'Boost running' }),
     ).toBeDisabled();
+    await expect(dialog.getByRole('timer')).toBeInTheDocument();
     await expect(
       within(canvasElement).getByText('Boosted'),
     ).toBeInTheDocument();
+  },
+};
+
+export const BoostFinalAllowanceRunning: Story = {
+  args: {
+    ...supporterBoostArgs,
+    boostsRemaining: 0,
+    boostedUntil: new Date(Date.now() + 10 * 60 * 60 * 1000).toISOString(),
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: 'Profile options' }),
+    );
+    await userEvent.click(
+      await screen.findByRole('button', { name: /^Boost profile/ }),
+    );
+    const dialog = within(
+      await screen.findByRole('dialog', { name: 'Boost profile' }),
+    );
+    await expect(dialog.getByRole('timer')).toBeInTheDocument();
+    await expect(
+      dialog.getByRole('button', { name: 'Boost running' }),
+    ).toBeDisabled();
   },
 };
 
@@ -367,6 +400,9 @@ export const BoostDepleted: Story = {
     await expect(
       dialog.getByRole('button', { name: 'No boosts left' }),
     ).toBeDisabled();
+    await expect(dialog.getAllByText('Used')).toHaveLength(3);
+    await expect(dialog.getByText(/^Refills to 3 on/)).toBeInTheDocument();
+    await expect(dialog.queryByRole('timer')).toBeNull();
     await expect(within(canvasElement).queryByText('Boosted')).toBeNull();
   },
 };
