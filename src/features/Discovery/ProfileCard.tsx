@@ -396,8 +396,7 @@ export const ProfileCard = ({
     else onViewProfile?.(profile.id);
   };
 
-  const boostedVisible =
-    !isPreview && showBoostedBadge && profile.boosted && !boostExpired;
+  const boostedVisible = showBoostedBadge && profile.boosted && !boostExpired;
 
   const cardClassName = [
     'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-transform duration-200',
