@@ -176,6 +176,7 @@ const toDiscoveryProfile = (
     (isPremiumOwner(user, subscription) || user.isSynthetic) &&
     profile.boostedUntil !== null &&
     profile.boostedUntil.getTime() > Date.now(),
+  boostedUntil: profile.boostedUntil?.toISOString(),
   voiceIntroSeconds:
     isPremiumOwner(user, subscription) && profile.voiceIntroSeconds
       ? profile.voiceIntroSeconds
