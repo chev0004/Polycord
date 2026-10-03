@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MdStorage } from 'react-icons/md';
+import { NumberStepper } from '@/components/Form';
 import { SEED_PRESETS } from '@/lib/seed/limits';
 import {
   ActionError,
@@ -130,17 +131,18 @@ export const SeedPanel = ({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <input
+          <NumberStepper
             id="seed-target"
-            type="number"
-            inputMode="numeric"
+            value={target}
+            onChange={setTarget}
             min={0}
             max={status.cap}
-            step={1}
-            value={target}
+            size="sm"
+            decrementLabel={t('decrease')}
+            incrementLabel={t('increase')}
+            error={!valid}
             disabled={Boolean(run)}
-            onChange={(event) => setTarget(event.target.value)}
-            className="h-[34px] w-36 rounded-lg border border-white/[0.07] bg-background-darker px-3 text-[13px] text-foreground tabular-nums outline-none hover:border-white/[0.14] focus:border-white/[0.14] disabled:opacity-40"
+            className="w-40"
           />
           <button
             type="button"
