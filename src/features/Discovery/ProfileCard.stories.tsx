@@ -758,6 +758,37 @@ export const BoostedMobile: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 };
 
+export const BoostedFree: Story = {
+  ...Boosted,
+  render: (args) => (
+    <CardStory
+      {...args}
+      modify={(profile) => ({
+        ...profile,
+        cardTheme: getFreeCardTheme(0),
+        boosted: true,
+        boostedUntil: new Date(Date.now() + 60000).toISOString(),
+      })}
+    />
+  ),
+};
+
+export const BoostedGold: Story = {
+  ...Boosted,
+  render: (args) => (
+    <CardStory
+      {...args}
+      modify={(profile) => ({
+        ...profile,
+        premium: true,
+        cardTheme: premiumTheme('gold'),
+        boosted: true,
+        boostedUntil: new Date(Date.now() + 60000).toISOString(),
+      })}
+    />
+  ),
+};
+
 export const BoostedJapanese: Story = {
   ...Boosted,
   globals: { locale: 'ja' },
