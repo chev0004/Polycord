@@ -10,6 +10,11 @@ import {
   type SQL,
   sql,
 } from 'drizzle-orm';
+import {
+  BOOSTS_PER_PAGE,
+  DISCOVERY_PAGE_SIZE,
+  discoveryGroupSizes,
+} from '@/features/Discovery/discoveryData';
 import type { DiscoveryTagCount } from '@/features/Discovery/discoveryTags';
 import {
   type DiscoveryUrlState,
@@ -24,9 +29,6 @@ import {
   type ViewerAvailabilityContext,
 } from './profiles';
 import { profiles, savedProfiles, subscriptions, users } from './schema';
-
-export const DISCOVERY_PAGE_SIZE = 9;
-const BOOSTS_PER_PAGE = 3;
 
 const TOP_TAGS = 32;
 const TAG_CACHE_SIZE = 64;
@@ -337,7 +339,7 @@ export const listDiscoveryPage = async (
       boostIndex += slots;
       bumpIndex += DISCOVERY_PAGE_SIZE - slots;
     }
-    return { rows, total, cards: total + boostCount };
+    return { rows, total, boosts: boostCount };
   };
 
   const requestedPage = stacked
@@ -349,9 +351,9 @@ export const listDiscoveryPage = async (
   ]);
   const page = Math.min(
     requestedPage,
-    Math.max(1, Math.ceil(requested.cards / DISCOVERY_PAGE_SIZE)),
+    Math.max(1, discoveryGroupSizes(requested.boosts, requested.total).length),
   );
-  const { rows, total, cards } =
+  const { rows, total, boosts } =
     page === requestedPage ? requested : await loadPage(page);
   const profileIds = rows.map((row) => row.profile.id);
   const [items, saved] = await Promise.all([
@@ -371,7 +373,7 @@ export const listDiscoveryPage = async (
   return {
     profiles: items,
     total,
-    cards,
+    boosts,
     page,
     tags,
     savedProfileIds: saved.map((row) => row.id),

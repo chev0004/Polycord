@@ -27,7 +27,11 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import { copyText } from '@/lib/clipboard';
 import type { BumpProfileResponse } from './bumpProfileRequest';
-import type { DiscoveryData } from './discoveryData';
+import {
+  DISCOVERY_PAGE_SIZE,
+  type DiscoveryData,
+  discoveryGroupSizes,
+} from './discoveryData';
 import {
   applyDiscoveryFilters,
   type DiscoveryFilterValues,
@@ -71,7 +75,6 @@ import { buildPublicProfileUrl } from './shareProfile';
 import { type AppliedFilter, TagCloud } from './TagCloud';
 import { useProfileBump } from './useProfileBump';
 
-const PER_PAGE = 9;
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
 
 const withoutBlocked = (profiles: DiscoveryProfile[]) =>
@@ -317,8 +320,8 @@ export const DiscoveryPage = ({
   );
 
   const totalResults = remoteData?.total ?? filteredProfiles.length;
-  const totalCards = remoteData?.cards ?? totalResults;
-  const totalPages = Math.max(1, Math.ceil(totalCards / PER_PAGE));
+  const groupSizes = discoveryGroupSizes(remoteData?.boosts ?? 0, totalResults);
+  const totalPages = Math.max(1, groupSizes.length);
   const safePage = Math.min(page, totalPages);
   const stacked = mobile === true;
   const pageItems = useMemo(
@@ -326,13 +329,15 @@ export const DiscoveryPage = ({
       remoteData
         ? profileItems
         : filteredProfiles.slice(
-            stacked ? 0 : (safePage - 1) * PER_PAGE,
-            safePage * PER_PAGE,
+            stacked ? 0 : (safePage - 1) * DISCOVERY_PAGE_SIZE,
+            safePage * DISCOVERY_PAGE_SIZE,
           ),
     [filteredProfiles, safePage, remoteData, profileItems, stacked],
   );
   const stackPending =
-    stacked && pageItems.length < Math.min(totalCards, safePage * PER_PAGE);
+    stacked &&
+    pageItems.length <
+      groupSizes.slice(0, safePage).reduce((sum, size) => sum + size, 0);
 
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
