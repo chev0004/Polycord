@@ -4,6 +4,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { DISCORD_CARDS, FREE_DISCORD_CARDS } from '@/constants/discordCards';
+import { entitlementLimit } from '@/lib/entitlements';
 
 const COLUMNS =
   'grid-cols-2 sm:grid-cols-[minmax(0,1fr)_110px_140px] min-[720px]:grid-cols-[minmax(0,1fr)_150px_170px]';
@@ -13,6 +15,7 @@ type CompareRow = {
   sub: string;
   free: string | null;
   premium: string;
+  values?: { free: number; premium: number };
 };
 
 const CMP_ROWS: CompareRow[] = [
@@ -21,6 +24,16 @@ const CMP_ROWS: CompareRow[] = [
     sub: 'compareBumpSub',
     free: 'compareBumpFree',
     premium: 'compareBumpPremium',
+  },
+  {
+    feature: 'compareBoostsFeature',
+    sub: 'compareBoostsSub',
+    free: 'compareBoostsFree',
+    premium: 'compareBoostsPremium',
+    values: {
+      free: entitlementLimit('discovery.monthlyBoosts', false),
+      premium: entitlementLimit('discovery.monthlyBoosts', true),
+    },
   },
   {
     feature: 'compareLanguagesFeature',
@@ -41,6 +54,22 @@ const CMP_ROWS: CompareRow[] = [
     premium: 'compareColoursPremium',
   },
   {
+    feature: 'compareCustomColoursFeature',
+    sub: 'compareCustomColoursSub',
+    free: null,
+    premium: 'compareCustomColoursPremium',
+  },
+  {
+    feature: 'compareLayoutsFeature',
+    sub: 'compareLayoutsSub',
+    free: 'compareLayoutsFree',
+    premium: 'compareLayoutsPremium',
+    values: {
+      free: FREE_DISCORD_CARDS.length,
+      premium: DISCORD_CARDS.length,
+    },
+  },
+  {
     feature: 'compareVoiceFeature',
     sub: 'compareVoiceSub',
     free: null,
@@ -57,6 +86,18 @@ const CMP_ROWS: CompareRow[] = [
     sub: 'compareViewSub',
     free: null,
     premium: 'compareViewPremium',
+  },
+  {
+    feature: 'compareHiddenFeature',
+    sub: 'compareHiddenSub',
+    free: null,
+    premium: 'compareHiddenPremium',
+  },
+  {
+    feature: 'compareInsightsFeature',
+    sub: 'compareInsightsSub',
+    free: null,
+    premium: 'compareInsightsPremium',
   },
 ];
 
@@ -113,7 +154,7 @@ export const CompareTable = () => {
               className="px-4 py-3.5 font-light text-[13.5px] text-muted"
             >
               {row.free ? (
-                t(row.free)
+                t(row.free, row.values)
               ) : (
                 <span className="text-subtle">{t('compareNoValue')}</span>
               )}
@@ -125,7 +166,7 @@ export const CompareTable = () => {
               <span aria-hidden="true" className="font-bold text-primary-light">
                 ✓
               </span>
-              {t(row.premium)}
+              {t(row.premium, row.values)}
             </td>
           </tr>
         ))}

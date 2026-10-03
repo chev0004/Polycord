@@ -15,11 +15,11 @@ import type { IconType } from 'react-icons';
 import {
   MdAdd,
   MdArrowUpward,
+  MdBolt,
   MdBookmarkBorder,
   MdDeleteOutline,
   MdErrorOutline,
   MdMoreVert,
-  MdRocketLaunch,
   MdVisibility,
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
@@ -67,6 +67,8 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { entitlementLimit } from '@/lib/entitlements';
 import { FieldValidationError, SessionExpiredError } from '@/lib/formErrors';
 import { AvailabilityEditor } from './AvailabilityEditor';
+import { BoostDialog, type BoostDialogError } from './BoostDialog';
+import { BoostProfileError, type BoostResult } from './boostProfileRequest';
 import { CardColorPicker } from './CardColorPicker';
 import { DiscordCardPicker } from './DiscordCard/DiscordCardPicker';
 import { discordCardVars } from './DiscordCard/theme';
@@ -83,6 +85,7 @@ import {
   TargetLanguagesEditor,
 } from './TargetLanguagesEditor';
 import { detectTimezone, timezoneOptions } from './timezoneOptions';
+import { useBoostState } from './useBoostState';
 import { type PendingVoiceClip, VoiceIntroEditor } from './VoiceIntroEditor';
 
 type ProfilePageProps = {
@@ -93,7 +96,7 @@ type ProfilePageProps = {
   initialValues?: ProfileFormValues;
   mode?: 'create' | 'edit';
   lastBumpedAt?: string;
-  onBoostProfile?: () => Promise<void> | void;
+  onBoostProfile?: () => Promise<BoostResult | undefined> | undefined;
   onBumpProfile?: () => Promise<void> | void;
   onDeleteProfile?: () => Promise<void> | void;
   onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
@@ -249,7 +252,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
-  const [boostFailed, setBoostFailed] = useState(false);
+  const [boostError, setBoostError] = useState<BoostDialogError | null>(null);
+  const [boostOpen, setBoostOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [lastAvailability, setLastAvailability] = useState(
     DEFAULT_AVAILABILITY_PATTERN,
   );
@@ -283,23 +288,34 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   useNavbarBump(onBumpProfile && handleBumpProfile, bumpReadyAt);
 
-  const boostActive = boostedUntil
-    ? new Date(boostedUntil).getTime() > Date.now()
-    : false;
+  const boost = useBoostState(boostedUntil, boostsRemaining);
 
   const handleBoostProfile = async () => {
     if (!onBoostProfile || isBoosting) return;
 
     setIsBoosting(true);
-    setBoostFailed(false);
+    setBoostError(null);
 
     try {
-      await onBoostProfile();
-    } catch {
-      setBoostFailed(true);
+      const result = await onBoostProfile();
+      if (result) boost.start(result);
+    } catch (error) {
+      setBoostError(
+        error instanceof BoostProfileError && error.status === 409
+          ? 'boostErrorActive'
+          : error instanceof BoostProfileError && error.status === 429
+            ? 'boostErrorNone'
+            : 'boostError',
+      );
     } finally {
       setIsBoosting(false);
     }
+  };
+
+  const openBoostDialog = () => {
+    setBoostError(null);
+    setOptionsOpen(false);
+    setBoostOpen(true);
   };
 
   const tagCap = premium ? PREMIUM_TAG_CAP : FREE_TAG_CAP;
@@ -482,6 +498,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       timezone: displayTimezone ? timezone : '',
       allowAnonymousCopy,
       lastBumpedAt,
+      boosted: boost.active,
+      boostedUntil: boost.boostedUntil,
       premium: previewIsPremiumLook,
       cardTheme: previewTheme,
       availability: displayAvailability
@@ -497,6 +515,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     availability,
     bio,
     country,
+    boost.active,
+    boost.boostedUntil,
     displayName,
     displayAvailability,
     displayTimezone,
@@ -539,8 +559,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const tagsError = tagError ?? tagsSchemaError;
   const bannerError =
     (saveFailed ? t('saveError') : null) ??
-    (deleteFailed ? t('deleteError') : null) ??
-    (boostFailed ? t('boostError') : null);
+    (deleteFailed ? t('deleteError') : null);
 
   const tagEditor = (
     <Controller
@@ -746,12 +765,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     premium &&
       onBoostProfile && {
         key: 'boost',
-        icon: MdRocketLaunch,
-        label: boostActive
-          ? t('boostActive')
-          : t('boostProfile', { count: boostsRemaining ?? 0 }),
-        disabled: isBoosting || boostActive || (boostsRemaining ?? 0) <= 0,
-        onSelect: handleBoostProfile,
+        icon: MdBolt,
+        label: t('boostProfile'),
+        value: boost.active ? t('boostMenuActive') : undefined,
+        valueActive: boost.active,
+        onSelect: openBoostDialog,
       },
     onViewPublicProfile && {
       key: 'view',
@@ -775,33 +793,50 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     },
   ].filter((item) => item !== undefined && item !== false);
 
+  const boostDialog =
+    premium && onBoostProfile ? (
+      <BoostDialog
+        open={boostOpen}
+        onOpenChange={setBoostOpen}
+        active={boost.active}
+        boostedUntil={boost.boostedUntil}
+        remaining={boost.remaining}
+        boosting={isBoosting}
+        error={boostError}
+        onBoost={handleBoostProfile}
+      />
+    ) : null;
+
   if (mobile) {
     return (
-      <MobileCardEditor
-        form={form}
-        onSubmit={onSubmit}
-        onDiscard={handleDiscard}
-        onStyleClose={() => setTease(null)}
-        premium={premium}
-        premiumLook={previewIsPremiumLook}
-        theme={previewTheme}
-        displayName={displayName}
-        userAvatarUrl={userAvatarUrl}
-        previewProfile={previewProfile}
-        statusMessage={statusMessage}
-        draftNotice={draftNotice}
-        menuItems={menuItems}
-        cardStylePicker={cardStylePicker}
-        voiceEditor={voiceEditor}
-        availabilityEditor={availabilityEditor}
-        tagEditor={tagEditor}
-        discordCardData={discordCardData}
-        discordCardTheme={discordCardTheme}
-        discordCardTease={cardTease}
-        onDiscordCardTease={setCardTease}
-        submitLabel={mobileSubmitIdleLabel}
-        submittingLabel={submittingLabel}
-      />
+      <>
+        <MobileCardEditor
+          form={form}
+          onSubmit={onSubmit}
+          onDiscard={handleDiscard}
+          onStyleClose={() => setTease(null)}
+          premium={premium}
+          premiumLook={previewIsPremiumLook}
+          theme={previewTheme}
+          displayName={displayName}
+          userAvatarUrl={userAvatarUrl}
+          previewProfile={previewProfile}
+          statusMessage={statusMessage}
+          draftNotice={draftNotice}
+          menuItems={menuItems}
+          cardStylePicker={cardStylePicker}
+          voiceEditor={voiceEditor}
+          availabilityEditor={availabilityEditor}
+          tagEditor={tagEditor}
+          discordCardData={discordCardData}
+          discordCardTheme={discordCardTheme}
+          discordCardTease={cardTease}
+          onDiscordCardTease={setCardTease}
+          submitLabel={mobileSubmitIdleLabel}
+          submittingLabel={submittingLabel}
+        />
+        {boostDialog}
+      </>
     );
   }
 
@@ -827,7 +862,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         onBoostProfile ||
         onViewPublicProfile ||
         onDeleteProfile ? (
-          <Popover.Root>
+          <Popover.Root open={optionsOpen} onOpenChange={setOptionsOpen}>
             <Popover.Trigger asChild>
               <button
                 type="button"
@@ -843,6 +878,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 side="bottom"
                 align="end"
                 sideOffset={6}
+                onCloseAutoFocus={(event) => {
+                  if (boostOpen) event.preventDefault();
+                }}
               >
                 <div className="flex flex-col">
                   {onBumpProfile ? (
@@ -855,16 +893,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     </MenuItem>
                   ) : null}
                   {premium && onBoostProfile ? (
-                    <MenuItem
-                      icon={MdRocketLaunch}
-                      onClick={handleBoostProfile}
-                      disabled={
-                        isBoosting || boostActive || (boostsRemaining ?? 0) <= 0
-                      }
-                    >
-                      {boostActive
-                        ? t('boostActive')
-                        : t('boostProfile', { count: boostsRemaining ?? 0 })}
+                    <MenuItem icon={MdBolt} onClick={openBoostDialog}>
+                      {t('boostProfile')}
+                      {boost.active ? (
+                        <span className="ml-auto inline-flex h-5 items-center rounded-full bg-primary-darker px-2 font-bold text-[10.5px] text-primary-light uppercase tracking-[0.06em]">
+                          {t('boostMenuActive')}
+                        </span>
+                      ) : null}
                     </MenuItem>
                   ) : null}
                   {onViewPublicProfile ? (
@@ -1196,9 +1231,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     </p>
                   </div>
                 </div>
-                <p className="text-[11px] text-subtle">
-                  {t('insightsWindowNote')}
-                </p>
               </div>
             ) : null}
 
@@ -1216,6 +1248,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </div>
         </aside>
       </fieldset>
+      {boostDialog}
     </form>
   );
 };

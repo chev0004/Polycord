@@ -177,6 +177,15 @@ export const ProfileGrid = ({
     });
   }, [filteredProfiles, matchCriteria, sortByMatchScore]);
 
+  const keyedProfiles = useMemo(() => {
+    const appearances = new Map<string, number>();
+    return displayedProfiles.map((profile) => {
+      const seen = appearances.get(profile.id) ?? 0;
+      appearances.set(profile.id, seen + 1);
+      return { profile, key: seen ? `${profile.id}:${seen}` : profile.id };
+    });
+  }, [displayedProfiles]);
+
   const hasProfiles = displayedProfiles.length > 0;
 
   const handleCopyUsername = (
@@ -242,10 +251,10 @@ export const ProfileGrid = ({
             ref={layOutMasonry}
             className="mx-auto grid w-full max-w-[1180px] grid-flow-row-dense grid-cols-1 items-start gap-x-6 md:grid-cols-2 lg:grid-cols-3"
           >
-            {displayedProfiles.map((profile) => {
+            {keyedProfiles.map(({ profile, key }) => {
               const blocking = blockingIds.includes(profile.id);
               return (
-                <div key={profile.id} className="relative" aria-busy={blocking}>
+                <div key={key} className="relative" aria-busy={blocking}>
                   <div inert={blocking}>{renderProfileCard(profile)}</div>
                   {blocking ? (
                     <output className="absolute inset-x-0 top-0 bottom-6 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-black/50 px-4 text-center text-foreground text-sm backdrop-blur-[1px]">

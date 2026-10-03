@@ -3,6 +3,7 @@
 import { bumpProfileRequest } from '@/features/Discovery/bumpProfileRequest';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
+import { boostProfileRequest } from '@/features/Profile/boostProfileRequest';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 import { saveResponseError } from '@/lib/formErrors';
 
@@ -56,15 +57,9 @@ export const ProfileRouteClient = ({
       onBoostProfile={
         premium && initialValues
           ? async () => {
-              const response = await fetch('/api/profile/boost', {
-                method: 'POST',
-              });
-
-              if (!response.ok) {
-                throw new Error('Boost failed');
-              }
-
+              const result = await boostProfileRequest();
               router.refresh();
+              return result;
             }
           : undefined
       }

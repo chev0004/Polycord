@@ -26,6 +26,13 @@ export const Default: Story = {
     await expect(canvas.getByText('Profile view alerts')).toBeInTheDocument();
     await expect(canvas.getByText('Every 1 h 30 m')).toBeInTheDocument();
     await expect(canvas.getByText('See who viewed you')).toBeInTheDocument();
-    await expect(canvas.getAllByText('No')).toHaveLength(2);
+    await expect(canvas.getByText('Profile boosts')).toBeInTheDocument();
+    await expect(canvas.getByText('0 per month')).toBeInTheDocument();
+    await expect(
+      canvas.getByText('3 per month, 24 hours each'),
+    ).toBeInTheDocument();
+    await expect(canvas.getByText('6 layouts')).toBeInTheDocument();
+    await expect(canvas.getByText('15 layouts')).toBeInTheDocument();
+    await expect(canvas.getAllByText('No')).toHaveLength(5);
   },
 };

@@ -396,9 +396,12 @@ export const ProfileCard = ({
     else onViewProfile?.(profile.id);
   };
 
+  const boostedVisible = showBoostedBadge && profile.boosted && !boostExpired;
+
   const cardClassName = [
     'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-transform duration-200',
     (opensProfile || opensSheet) && 'group/card cursor-pointer',
+    boostedVisible && 'mt-3',
     isPreview
       ? 'mb-0 border border-line shadow-none'
       : `mb-6 shadow-lg ${
@@ -520,8 +523,11 @@ export const ProfileCard = ({
           </div>
         </div>
 
-        {!isPreview && showBoostedBadge && profile.boosted && !boostExpired ? (
-          <span className="absolute top-[68px] right-5 inline-flex h-6 items-center whitespace-nowrap rounded-full bg-[var(--ct-chip-bg)] px-2.5 font-semibold text-[var(--ct-chip-text)] text-xs">
+        {boostedVisible ? (
+          <span
+            style={{ background: tintedSurface }}
+            className="-top-[26px] -right-3.5 absolute z-[2] inline-flex h-[30px] items-center whitespace-nowrap rounded-full pr-[13px] pl-2.5 font-bold text-[12px] text-[var(--ct-chip-text)] uppercase tracking-[0.06em] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14),0_0_0_8px_var(--color-background-main)]"
+          >
             {t('boostedBadge')}
           </span>
         ) : null}

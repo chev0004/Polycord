@@ -311,6 +311,8 @@ export type ActionSheetItem = {
   icon?: IconType;
   label: ReactNode;
   description?: ReactNode;
+  value?: ReactNode;
+  valueActive?: boolean;
   danger?: boolean;
   disabled?: boolean;
   selected?: boolean;
