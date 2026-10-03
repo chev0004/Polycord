@@ -14,3 +14,15 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
     );
   },
 );
+
+test.skipIf(!process.env.TEST_DATABASE_URL)(
+  'discovery reserves three boost slots per page alongside the bump list',
+  () => {
+    const output = execFileSync(
+      process.execPath,
+      ['run', 'tests/integration/discovery-boosts.mjs'],
+      { encoding: 'utf8', timeout: 30000 },
+    );
+    expect(output).toContain('discovery boost interleaving passed');
+  },
+);
