@@ -316,12 +316,18 @@ export const RankSequentialLevels: Story = {
         const previousTiming = (previous.effect as KeyframeEffect).getTiming();
         const currentTiming = (current.effect as KeyframeEffect).getTiming();
         await expect(
-          Number(current.startTime) + Number(currentTiming.delay),
-        ).toBeGreaterThanOrEqual(
-          Number(previous.startTime) +
-            Number(previousTiming.delay) +
-            Number(previousTiming.duration),
-        );
+          Number(current.startTime) +
+            Number(currentTiming.delay) -
+            (Number(previous.startTime) +
+              Number(previousTiming.delay) +
+              Number(previousTiming.duration)),
+        ).toBeGreaterThanOrEqual(-0.001);
+      }
+      if (transitions.length) {
+        const last = transitions[transitions.length - 1];
+        await expect(
+          Number((last.effect as KeyframeEffect).getComputedTiming().endTime),
+        ).toBeCloseTo(320 + (transitions.length - 1) * 120, 3);
       }
       await Promise.all(transitions.map((transition) => transition.finished));
       for (const [index, segment] of segments.entries()) {
