@@ -30,7 +30,7 @@ const signIn = (context: BrowserContext, user: Account, ageHours = 0) => {
   ]);
 };
 
-test('owners grant and revoke complimentary premium for real and dummy accounts', async ({
+test('owners grant and revoke complimentary Supporter for real and dummy accounts', async ({
   browser,
 }) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
@@ -192,27 +192,29 @@ test('owners grant and revoke complimentary premium for real and dummy accounts'
       .getByRole('searchbox', { name: 'Search users' })
       .fill(`${prefix} Member`);
     await expect(
-      ownerPage.getByText('No complimentary premium.'),
+      ownerPage.getByText('No complimentary Supporter.'),
     ).toBeVisible();
     await ownerPage.getByRole('spinbutton', { name: 'Grant length' }).fill('2');
     await ownerPage.getByRole('button', { name: 'Years' }).click();
     await expect(ownerPage.getByText(/^Ends/)).toBeVisible();
-    await ownerPage.getByRole('button', { name: 'Grant premium' }).click();
+    await ownerPage.getByRole('button', { name: 'Grant Supporter' }).click();
     await expect(
-      ownerPage.getByText(/^Complimentary premium until/),
+      ownerPage.getByText(/^Complimentary Supporter until/),
     ).toBeVisible();
-    await expect(ownerPage.getByText(/^Granted premium until/)).toHaveCount(3);
+    await expect(ownerPage.getByText(/^Granted Supporter until/)).toHaveCount(
+      3,
+    );
     await ownerPage.reload();
     await ownerPage.getByRole('tab', { name: 'Users' }).click();
     await ownerPage
       .getByRole('searchbox', { name: 'Search users' })
       .fill(`${prefix} Member`);
     await expect(
-      ownerPage.getByText(/^Complimentary premium until/),
+      ownerPage.getByText(/^Complimentary Supporter until/),
     ).toBeVisible();
     await ownerPage.getByRole('button', { name: 'Revoke grant' }).click();
     await expect(
-      ownerPage.getByText('No complimentary premium.'),
+      ownerPage.getByText('No complimentary Supporter.'),
     ).toBeVisible();
 
     const modPage = await modContext.newPage();
@@ -225,7 +227,7 @@ test('owners grant and revoke complimentary premium for real and dummy accounts'
       modPage.getByText('Supporter grant fixture profile.'),
     ).toBeVisible();
     await expect(
-      modPage.getByRole('button', { name: 'Grant premium' }),
+      modPage.getByRole('button', { name: 'Grant Supporter' }),
     ).toHaveCount(0);
   } finally {
     for (const context of contexts) await context.close();
