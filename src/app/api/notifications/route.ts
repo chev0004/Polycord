@@ -66,6 +66,7 @@ export const GET = async () => {
           actorProfileId:
             premium && !row.isGuest ? (actorProfileId ?? undefined) : undefined,
           isGuest: row.isGuest,
+          message: row.message ?? undefined,
           read: row.read,
           createdAt: row.createdAt.toISOString(),
         })),

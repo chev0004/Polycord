@@ -7,6 +7,7 @@ export type Notification = {
   actorAvatarUrl?: string;
   actorProfileId?: string;
   isGuest?: boolean;
+  message?: string;
   timestamp?: string;
   createdAt?: string;
 };
