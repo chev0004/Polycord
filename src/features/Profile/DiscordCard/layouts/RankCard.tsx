@@ -21,7 +21,7 @@ export const RankCard = ({ data, active }: DiscordCardLayoutProps) => {
     data.targets[(active + data.targets.length - 1) % data.targets.length]
       ?.steps ?? 0;
   const changing = Math.max(1, Math.abs((target?.steps ?? 0) - from));
-  const duration = (0.32 + (changing - 1) * 0.12) / changing;
+  const duration = 0.32 / changing;
 
   return (
     <div className="dc-b3">
