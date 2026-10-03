@@ -317,7 +317,8 @@ export const DiscoveryPage = ({
   );
 
   const totalResults = remoteData?.total ?? filteredProfiles.length;
-  const totalPages = Math.max(1, Math.ceil(totalResults / PER_PAGE));
+  const totalCards = remoteData?.cards ?? totalResults;
+  const totalPages = Math.max(1, Math.ceil(totalCards / PER_PAGE));
   const safePage = Math.min(page, totalPages);
   const stacked = mobile === true;
   const pageItems = useMemo(
@@ -331,7 +332,7 @@ export const DiscoveryPage = ({
     [filteredProfiles, safePage, remoteData, profileItems, stacked],
   );
   const stackPending =
-    stacked && pageItems.length < Math.min(totalResults, safePage * PER_PAGE);
+    stacked && pageItems.length < Math.min(totalCards, safePage * PER_PAGE);
 
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
