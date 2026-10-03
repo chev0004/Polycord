@@ -310,6 +310,11 @@ export const RankSequentialLevels: Story = {
           ) as CSSTransition;
       });
       await Promise.all(transitions.map((transition) => transition.ready));
+      for (const transition of transitions) {
+        await expect(
+          (transition.effect as KeyframeEffect).getTiming().easing,
+        ).toBe('linear');
+      }
       for (let index = 1; index < transitions.length; index++) {
         const previous = transitions[index - 1];
         const current = transitions[index];
@@ -321,13 +326,13 @@ export const RankSequentialLevels: Story = {
             (Number(previous.startTime) +
               Number(previousTiming.delay) +
               Number(previousTiming.duration)),
-        ).toBeGreaterThanOrEqual(-0.001);
+        ).toBeCloseTo(0, 3);
       }
       if (transitions.length) {
         const last = transitions[transitions.length - 1];
         await expect(
           Number((last.effect as KeyframeEffect).getComputedTiming().endTime),
-        ).toBeCloseTo(320 + (transitions.length - 1) * 120, 3);
+        ).toBeCloseTo(320, 3);
       }
       await Promise.all(transitions.map((transition) => transition.finished));
       for (const [index, segment] of segments.entries()) {
