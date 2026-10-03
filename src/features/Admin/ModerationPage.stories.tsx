@@ -323,7 +323,7 @@ export const SupporterGrant: Story = {
     await expect(canvas.getByText(/^Ends/)).toBeInTheDocument();
     fireEvent.click(canvas.getByRole('button', { name: 'Grant Supporter' }));
     await expect(
-      await canvas.findByText(/^Complimentary premium until/),
+      await canvas.findByText(/^Complimentary Supporter until/),
     ).toBeInTheDocument();
     await expect(premiumFetch).toHaveBeenCalledWith('POST', {
       userId: 'ryan',
@@ -331,7 +331,7 @@ export const SupporterGrant: Story = {
       unit: 'years',
     });
     await expect(
-      canvas.getByText(/^Granted premium until/),
+      canvas.getByText(/^Granted Supporter until/),
     ).toBeInTheDocument();
     await expect(
       canvas.getByText(/Replaces the current grant ending/),
@@ -347,7 +347,7 @@ export const SupporterGrant: Story = {
       userId: 'ryan',
     });
     await expect(
-      canvas.getByText(/^Revoked premium grant ending/),
+      canvas.getByText(/^Revoked Supporter grant ending/),
     ).toBeInTheDocument();
   },
 };
@@ -380,7 +380,7 @@ export const SupporterOtherSources: Story = {
       await canvas.findByText(/^Paid subscription active until/),
     ).toBeInTheDocument();
     await expect(
-      canvas.getByText('Supporter through the configured supporter list.'),
+      canvas.getByText('Supporter through the configured Supporter list.'),
     ).toBeInTheDocument();
     await expect(
       canvas.getByText(/won't end Supporter while another source is active/),
@@ -402,7 +402,7 @@ export const SupporterMobile: Story = {
     await waitFor(() => expect(weeks).toHaveAttribute('aria-pressed', 'true'));
     fireEvent.click(canvas.getByRole('button', { name: 'Grant Supporter' }));
     await expect(
-      await canvas.findByText(/^Complimentary premium until/),
+      await canvas.findByText(/^Complimentary Supporter until/),
     ).toBeInTheDocument();
     await expect(premiumFetch).toHaveBeenCalledWith('POST', {
       userId: 'ryan',
