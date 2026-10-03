@@ -211,6 +211,13 @@
       "when": 1790897467891,
       "tag": "0029_profile_discord_card",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1791069204867,
+      "tag": "0030_warning_message",
+      "breakpoints": true
     }
   ]
 }
