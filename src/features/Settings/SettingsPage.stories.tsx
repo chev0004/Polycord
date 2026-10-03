@@ -596,6 +596,39 @@ export const PremiumExpired: Story = {
   args: { premium: false, premiumSource: 'free' },
 };
 
+export const PremiumOverdueWithGrant: Story = {
+  ...PremiumBoth,
+  args: {
+    ...PremiumBoth.args,
+    subscriptionRenewsAt: '2000-01-01T12:00:00Z',
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    );
+    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const MobilePremiumOverdueWithGrant: Story = {
+  ...PremiumOverdueWithGrant,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      await canvas.findByRole('button', { name: /^Premium/ }),
+    );
+    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
+    await fireEvent.click(
+      canvas.getByRole('button', { name: 'Manage billing' }),
+    );
+    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
+  },
+};
+
 export const MobilePremiumGranted: Story = {
   ...PremiumGranted,
   parameters: { viewport: { defaultViewport: 'mobile1' } },
