@@ -247,7 +247,7 @@ export const StaffProtected: Story = {
 export const SuspendDialog: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    fireEvent.click(canvas.getByRole('button', { name: /^Suspend…/ }));
+    fireEvent.click(canvas.getByRole('button', { name: 'Suspend' }));
     const dialog = within(await screen.findByRole('dialog'));
     fireEvent.click(dialog.getByRole('button', { name: 'Custom' }));
     const days = await dialog.findByRole('spinbutton');
@@ -558,5 +558,28 @@ export const WarnMobile: Story = {
         }),
       ),
     );
+  },
+};
+
+export const ActionStrip: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const strip = within(
+      canvas.getByRole('toolbar', { name: 'Moderation actions' }),
+    );
+    await expect(
+      strip.getAllByRole('button').map((button) => button.ariaLabel),
+    ).toEqual(['Warn', 'Hide profile', 'Suspend', 'Ban']);
+    await expect(canvas.getByText('2 pending reports')).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: /^Dismiss 2/ }),
+    ).toBeInTheDocument();
+    fireEvent.click(canvas.getByRole('tab', { name: /^Resolved/ }));
+    await waitFor(() =>
+      expect(canvas.queryByText(/pending reports?$/)).not.toBeInTheDocument(),
+    );
+    await expect(
+      canvas.queryByRole('button', { name: /^Dismiss/ }),
+    ).not.toBeInTheDocument();
   },
 };
