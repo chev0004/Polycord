@@ -293,6 +293,19 @@ const openBoostDialog = async (canvasElement: HTMLElement) => {
   return within(await screen.findByRole('dialog', { name: 'Boost profile' }));
 };
 
+export const BoostLivePreview: Story = {
+  args: {
+    ...supporterBoostArgs,
+    boostsRemaining: 2,
+    boostedUntil: new Date(Date.now() + 10 * 60 * 60 * 1000).toISOString(),
+  },
+  play: async ({ canvasElement }) => {
+    await expect(
+      await within(canvasElement).findByText('Boosted'),
+    ).toBeInTheDocument();
+  },
+};
+
 export const BoostDialogBefore: Story = {
   args: supporterBoostArgs,
   play: async ({ canvasElement }) => {
