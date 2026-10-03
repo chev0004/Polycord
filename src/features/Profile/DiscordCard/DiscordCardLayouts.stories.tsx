@@ -8,7 +8,7 @@ import { buildDiscordCardData } from './data';
 import { DISCORD_CARD_LAYOUTS } from './registry';
 import { ScaledDiscordCard } from './ScaledDiscordCard';
 import { discordCardVars } from './theme';
-import type { DiscordCardData } from './types';
+import type { DiscordCardData, DiscordCardLayoutDefinition } from './types';
 import { useDiscordCardData } from './useDiscordCardData';
 
 const labels = {
@@ -254,6 +254,83 @@ export const SecondLanguage: Story = {
     });
 
     await expect(chip).toHaveStyle({ left: '594px' });
+  },
+};
+
+export const RankSequentialLevels: Story = {
+  args: {
+    theme: 'indigo',
+    data: build({
+      targetLanguages: [
+        { language: 'en', level: Proficiency.ADVANCED },
+        { language: 'ko', level: Proficiency.BEGINNER },
+        { language: 'zh', level: Proficiency.NATIVE_LEVEL },
+        { language: 'sw' },
+        { language: 'es', level: Proficiency.INTERMEDIATE },
+        { language: 'fr', level: Proficiency.INTERMEDIATE },
+        { language: 'de', level: Proficiency.ADVANCED },
+      ],
+    }),
+  },
+  render: ({ data, theme }) => (
+    <div className="max-w-2xl p-6">
+      <ScaledDiscordCard
+        layout={
+          DISCORD_CARD_LAYOUTS.find(
+            ({ id }) => id === 'rank',
+          ) as DiscordCardLayoutDefinition
+        }
+        data={data}
+        vars={themes[theme]}
+      />
+    </div>
+  ),
+  play: async ({ args, canvasElement }) => {
+    const card = canvasElement.querySelector('.dc-b3') as HTMLElement;
+    const segments = [...card.querySelectorAll('.dc-b3-seg i')];
+    let from = args.data.targets[0].steps;
+
+    for (const target of args.data.targets.slice(1)) {
+      await waitFor(() => expect(activeTarget(card)).toBe(target.code), {
+        timeout: 6000,
+      });
+      const changing = segments.filter(
+        (_, index) =>
+          index >= Math.min(from, target.steps) &&
+          index < Math.max(from, target.steps),
+      );
+      if (target.steps < from) changing.reverse();
+      const transitions = changing.map((segment) => {
+        getComputedStyle(segment, '::after').clipPath;
+        return segment
+          .getAnimations({ subtree: true })
+          .find(
+            (animation) =>
+              (animation as CSSTransition).transitionProperty === 'clip-path',
+          ) as CSSTransition;
+      });
+      await Promise.all(transitions.map((transition) => transition.ready));
+      for (let index = 1; index < transitions.length; index++) {
+        const previous = transitions[index - 1];
+        const current = transitions[index];
+        const previousTiming = (previous.effect as KeyframeEffect).getTiming();
+        const currentTiming = (current.effect as KeyframeEffect).getTiming();
+        await expect(
+          Number(current.startTime) + Number(currentTiming.delay),
+        ).toBeGreaterThanOrEqual(
+          Number(previous.startTime) +
+            Number(previousTiming.delay) +
+            Number(previousTiming.duration),
+        );
+      }
+      await Promise.all(transitions.map((transition) => transition.finished));
+      for (const [index, segment] of segments.entries()) {
+        await expect(getComputedStyle(segment, '::after').clipPath).toBe(
+          index < target.steps ? 'inset(0px)' : 'inset(0px 100% 0px 0px)',
+        );
+      }
+      from = target.steps;
+    }
   },
 };
 

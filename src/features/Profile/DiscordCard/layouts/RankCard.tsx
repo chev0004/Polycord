@@ -6,7 +6,7 @@ import type { DiscordCardLayoutProps } from '../types';
 import '../rank.css';
 
 const SEGMENTS = [0, 1, 2, 3];
-const SEGMENT_STAGGER = 0.12;
+const SEGMENT_STAGGER = 0.32;
 
 const segmentDelay = (segment: number, from: number, steps: number) =>
   Math.max(0, steps >= from ? segment - from : from - 1 - segment) *
