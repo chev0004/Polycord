@@ -314,6 +314,14 @@ export const BoostDialogBefore: Story = {
     await expect(
       dialog.getByRole('button', { name: 'Boost now' }),
     ).toBeEnabled();
+    const modal = screen.getByRole('dialog', { name: 'Boost profile' });
+    await waitFor(() =>
+      expect(modal).toContainElement(document.activeElement as HTMLElement),
+    );
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(modal).toContainElement(document.activeElement as HTMLElement);
   },
 };
 

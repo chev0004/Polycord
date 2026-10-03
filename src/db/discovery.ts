@@ -10,6 +10,11 @@ import {
   type SQL,
   sql,
 } from 'drizzle-orm';
+import {
+  BOOSTS_PER_PAGE,
+  DISCOVERY_PAGE_SIZE,
+  discoveryGroupSizes,
+} from '@/features/Discovery/discoveryData';
 import type { DiscoveryTagCount } from '@/features/Discovery/discoveryTags';
 import {
   type DiscoveryUrlState,
@@ -24,8 +29,6 @@ import {
   type ViewerAvailabilityContext,
 } from './profiles';
 import { profiles, savedProfiles, subscriptions, users } from './schema';
-
-export const DISCOVERY_PAGE_SIZE = 9;
 
 const TOP_TAGS = 32;
 const TAG_CACHE_SIZE = 64;
@@ -220,19 +223,32 @@ export const listDiscoveryPage = async (
     'overlap-desc': sql`${overlap} desc, ${bumped}`,
   }[state.sortValue];
   const boosted = sql`${profiles.boostedUntil} > now() and (${premium} or ${users.isSynthetic})`;
+  const boostOrder = sql`${profiles.boostedUntil} desc, ${profiles.id} asc`;
+  const interleaved = state.sortValue === 'bumped-desc';
+  const searching = Boolean(state.searchQuery.trim());
 
-  const selectRows = (condition: SQL | undefined, limit: number, offset = 0) =>
+  const selectRows = (
+    condition: SQL | undefined,
+    ordering: SQL,
+    limit: number,
+    offset: number,
+  ) =>
     db
       .select({ profile: profiles, user: users, subscription: subscriptions })
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
       .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
       .where(condition)
-      .orderBy(order)
+      .orderBy(ordering)
       .limit(limit)
       .offset(offset);
 
-  const searchPage = async (limit: number, offset: number) => {
+  const searchRows = async (
+    condition: SQL | undefined,
+    ordering: SQL,
+    limit: number,
+    offset: number,
+  ) => {
     const matches = await db
       .select({
         id: profiles.id,
@@ -241,21 +257,32 @@ export const listDiscoveryPage = async (
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
       .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
-      .where(where)
-      .orderBy(
-        state.sortValue === 'bumped-desc'
-          ? sql`coalesce(${boosted}, false) desc, ${order}`
-          : order,
-      )
+      .where(and(where, condition))
+      .orderBy(ordering)
       .limit(limit)
       .offset(offset);
-    if (!matches.length) return { rows: [], total: await countRows() };
     const ids = matches.map((match) => match.id);
-    const found = await selectRows(inArray(profiles.id, ids), ids.length);
+    const found = ids.length
+      ? await selectRows(inArray(profiles.id, ids), ordering, ids.length, 0)
+      : [];
     const byId = new Map(found.map((row) => [row.profile.id, row]));
     return {
       rows: ids.flatMap((id) => byId.get(id) ?? []),
-      total: matches[0].total,
+      total: matches[0]?.total,
+    };
+  };
+
+  const fetchRows = async (
+    condition: SQL | undefined,
+    ordering: SQL,
+    limit: number,
+    offset: number,
+  ) => {
+    if (limit <= 0) return { rows: [], total: undefined };
+    if (searching) return searchRows(condition, ordering, limit, offset);
+    return {
+      rows: await selectRows(and(where, condition), ordering, limit, offset),
+      total: undefined,
     };
   };
 
@@ -267,28 +294,52 @@ export const listDiscoveryPage = async (
       .where(where)
       .then(([summary]) => summary.total);
 
-  const pageRows = async (limit: number, offset: number) => {
-    if (state.sortValue !== 'bumped-desc')
-      return selectRows(where, limit, offset);
-    const top = await selectRows(and(where, boosted), offset + limit);
-    if (top.length === offset + limit) return top.slice(offset);
-    const rest = await selectRows(
-      and(where, sql`not coalesce(${boosted}, false)`),
-      limit - Math.max(0, top.length - offset),
-      Math.max(0, offset - top.length),
-    );
-    return [...top.slice(offset), ...rest];
+  const countBoosts = async () => {
+    if (!interleaved) return 0;
+    const [summary] = await db
+      .select({ total: count() })
+      .from(profiles)
+      .innerJoin(users, eq(profiles.userId, users.id))
+      .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
+      .where(and(where, boosted));
+    return summary.total;
   };
 
   const loadPage = async (page: number) => {
-    const limit = DISCOVERY_PAGE_SIZE * (stacked ? page : 1);
-    const offset = stacked ? 0 : (page - 1) * DISCOVERY_PAGE_SIZE;
-    if (state.searchQuery.trim()) return searchPage(limit, offset);
-    const [total, rows] = await Promise.all([
-      countRows(),
-      pageRows(limit, offset),
+    const firstGroup = stacked ? 0 : page - 1;
+    const boostCount = await countBoosts();
+    const boostFrom = Math.min(boostCount, firstGroup * BOOSTS_PER_PAGE);
+    const boostTo = Math.min(boostCount, page * BOOSTS_PER_PAGE);
+    const [boostPage, bumpPage, counted] = await Promise.all([
+      fetchRows(boosted, boostOrder, boostTo - boostFrom, boostFrom),
+      fetchRows(
+        undefined,
+        order,
+        (page - firstGroup) * DISCOVERY_PAGE_SIZE - (boostTo - boostFrom),
+        firstGroup * DISCOVERY_PAGE_SIZE - boostFrom,
+      ),
+      searching ? undefined : countRows(),
     ]);
-    return { rows, total };
+    const total = counted ?? bumpPage.total ?? (await countRows());
+    const rows: typeof boostPage.rows = [];
+    let boostIndex = 0;
+    let bumpIndex = 0;
+    for (let group = firstGroup; group < page; group++) {
+      const slots = Math.min(
+        BOOSTS_PER_PAGE,
+        Math.max(0, boostCount - group * BOOSTS_PER_PAGE),
+      );
+      rows.push(
+        ...boostPage.rows.slice(boostIndex, boostIndex + slots),
+        ...bumpPage.rows.slice(
+          bumpIndex,
+          bumpIndex + DISCOVERY_PAGE_SIZE - slots,
+        ),
+      );
+      boostIndex += slots;
+      bumpIndex += DISCOVERY_PAGE_SIZE - slots;
+    }
+    return { rows, total, boosts: boostCount };
   };
 
   const requestedPage = stacked
@@ -300,9 +351,9 @@ export const listDiscoveryPage = async (
   ]);
   const page = Math.min(
     requestedPage,
-    Math.max(1, Math.ceil(requested.total / DISCOVERY_PAGE_SIZE)),
+    Math.max(1, discoveryGroupSizes(requested.boosts, requested.total).length),
   );
-  const { rows, total } =
+  const { rows, total, boosts } =
     page === requestedPage ? requested : await loadPage(page);
   const profileIds = rows.map((row) => row.profile.id);
   const [items, saved] = await Promise.all([
@@ -322,6 +373,7 @@ export const listDiscoveryPage = async (
   return {
     profiles: items,
     total,
+    boosts,
     page,
     tags,
     savedProfileIds: saved.map((row) => row.id),

@@ -878,6 +878,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 side="bottom"
                 align="end"
                 sideOffset={6}
+                onCloseAutoFocus={(event) => {
+                  if (boostOpen) event.preventDefault();
+                }}
               >
                 <div className="flex flex-col">
                   {onBumpProfile ? (
@@ -1228,9 +1231,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     </p>
                   </div>
                 </div>
-                <p className="text-[11px] text-subtle">
-                  {t('insightsWindowNote')}
-                </p>
               </div>
             ) : null}
 
