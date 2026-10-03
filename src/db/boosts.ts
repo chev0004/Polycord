@@ -1,15 +1,11 @@
 import 'server-only';
 
 import { and, count, eq, gte } from 'drizzle-orm';
+import { BOOST_DURATION_MS, monthStart } from '@/lib/boostWindow';
 import { entitlementLimit } from '@/lib/entitlements';
 import { isPremiumAccount } from './billing';
 import { db } from './client';
 import { profileBoosts, profiles, subscriptions, users } from './schema';
-
-export const BOOST_DURATION_MS = 24 * 60 * 60 * 1000;
-
-const monthStart = (now = new Date()) =>
-  new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 
 export type BoostStatus = {
   remaining: number;
