@@ -71,19 +71,19 @@ const themedStory = (cardTheme: CardTheme, premium: boolean): Story => ({
 });
 
 export const Free = themedStory(getFreeCardTheme(0), false);
-export const FreeWithPremiumColour = themedStory(
+export const FreeWithSupporterColour = themedStory(
   findCardTheme('indigo') as CardTheme,
   false,
 );
-export const PremiumFlat = themedStory(
+export const SupporterFlat = themedStory(
   findCardTheme('blue') as CardTheme,
   true,
 );
-export const PremiumGradient = themedStory(
+export const SupporterGradient = themedStory(
   findCardTheme('indigo') as CardTheme,
   true,
 );
-export const PremiumCustomGradient = themedStory(
+export const SupporterCustomGradient = themedStory(
   getCustomCardTheme({ from: '#e0457b', to: '#f7b267' }),
   true,
 );

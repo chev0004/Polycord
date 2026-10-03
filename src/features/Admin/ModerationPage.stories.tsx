@@ -49,7 +49,7 @@ const mockSeedApi = (start: number) => () => {
 
 const premiumFetch = fn();
 
-const mockPremiumApi = () => {
+const mockSupporterApi = () => {
   const original = globalThis.fetch;
   const ryan = moderationSnapshot.users.find(
     (user) => user.id === 'ryan',
@@ -293,19 +293,19 @@ export const ModeratorView: Story = {
     await expect(
       canvas.queryByRole('button', { name: 'Manage staff' }),
     ).not.toBeInTheDocument();
-    await expect(canvas.queryByText('Premium')).not.toBeInTheDocument();
+    await expect(canvas.queryByText('Supporter')).not.toBeInTheDocument();
     await expect(
-      canvas.queryByRole('button', { name: 'Grant premium' }),
+      canvas.queryByRole('button', { name: 'Grant Supporter' }),
     ).not.toBeInTheDocument();
   },
 };
 
-export const PremiumGrant: Story = {
-  beforeEach: mockPremiumApi,
+export const SupporterGrant: Story = {
+  beforeEach: mockSupporterApi,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
-      await canvas.findByText('No complimentary premium.'),
+      await canvas.findByText('No complimentary Supporter.'),
     ).toBeInTheDocument();
     fireEvent.change(canvas.getByRole('spinbutton', { name: 'Grant length' }), {
       target: { value: '0' },
@@ -314,14 +314,14 @@ export const PremiumGrant: Story = {
       canvas.getByText('Enter a whole number from 1 to 120.'),
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole('button', { name: 'Grant premium' }),
+      canvas.getByRole('button', { name: 'Grant Supporter' }),
     ).toBeDisabled();
     fireEvent.change(canvas.getByRole('spinbutton', { name: 'Grant length' }), {
       target: { value: '2' },
     });
     fireEvent.click(canvas.getByRole('button', { name: 'Years' }));
     await expect(canvas.getByText(/^Ends/)).toBeInTheDocument();
-    fireEvent.click(canvas.getByRole('button', { name: 'Grant premium' }));
+    fireEvent.click(canvas.getByRole('button', { name: 'Grant Supporter' }));
     await expect(
       await canvas.findByText(/^Complimentary premium until/),
     ).toBeInTheDocument();
@@ -341,7 +341,7 @@ export const PremiumGrant: Story = {
     ).toBeInTheDocument();
     fireEvent.click(canvas.getByRole('button', { name: 'Revoke grant' }));
     await expect(
-      await canvas.findByText('No complimentary premium.'),
+      await canvas.findByText('No complimentary Supporter.'),
     ).toBeInTheDocument();
     await expect(premiumFetch).toHaveBeenCalledWith('DELETE', {
       userId: 'ryan',
@@ -352,7 +352,7 @@ export const PremiumGrant: Story = {
   },
 };
 
-export const PremiumOtherSources: Story = {
+export const SupporterOtherSources: Story = {
   args: {
     initial: {
       ...moderationSnapshot,
@@ -380,27 +380,27 @@ export const PremiumOtherSources: Story = {
       await canvas.findByText(/^Paid subscription active until/),
     ).toBeInTheDocument();
     await expect(
-      canvas.getByText('Premium through the configured premium list.'),
+      canvas.getByText('Supporter through the configured supporter list.'),
     ).toBeInTheDocument();
     await expect(
-      canvas.getByText(/won't end premium while another source is active/),
+      canvas.getByText(/won't end Supporter while another source is active/),
     ).toBeInTheDocument();
   },
 };
 
-export const PremiumMobile: Story = {
+export const SupporterMobile: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
-  beforeEach: mockPremiumApi,
+  beforeEach: mockSupporterApi,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     fireEvent.click(await canvas.findByRole('button', { name: /Ryan Mercer/ }));
     await expect(
-      await canvas.findByText('No complimentary premium.'),
+      await canvas.findByText('No complimentary Supporter.'),
     ).toBeInTheDocument();
     const weeks = canvas.getByRole('button', { name: 'Weeks' });
     fireEvent.click(weeks);
     await waitFor(() => expect(weeks).toHaveAttribute('aria-pressed', 'true'));
-    fireEvent.click(canvas.getByRole('button', { name: 'Grant premium' }));
+    fireEvent.click(canvas.getByRole('button', { name: 'Grant Supporter' }));
     await expect(
       await canvas.findByText(/^Complimentary premium until/),
     ).toBeInTheDocument();

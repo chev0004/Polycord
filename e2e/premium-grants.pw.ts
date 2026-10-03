@@ -76,7 +76,7 @@ test('owners grant and revoke complimentary premium for real and dummy accounts'
   try {
     await sql`insert into staff_roles (user_id) values (${moderator.id})`;
     for (const account of [member, dummy])
-      await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio) values (now(), ${account.id}, true, 'en', 'ja', 'beginner', 'Premium grant fixture profile.')`;
+      await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio) values (now(), ${account.id}, true, 'en', 'ja', 'beginner', 'Supporter grant fixture profile.')`;
     const ownerContext = await contextFor(owner);
     const modContext = await contextFor(moderator);
     const memberContext = await contextFor(member);
@@ -222,7 +222,7 @@ test('owners grant and revoke complimentary premium for real and dummy accounts'
       .getByRole('searchbox', { name: 'Search users' })
       .fill(`${prefix} Member`);
     await expect(
-      modPage.getByText('Premium grant fixture profile.'),
+      modPage.getByText('Supporter grant fixture profile.'),
     ).toBeVisible();
     await expect(
       modPage.getByRole('button', { name: 'Grant premium' }),

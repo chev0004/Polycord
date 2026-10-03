@@ -200,7 +200,7 @@ export const FreeSlate: Story = {
   ),
 };
 
-export const PremiumIndigo: Story = {
+export const SupporterIndigo: Story = {
   render: (args) => (
     <CardStory
       {...args}
@@ -213,7 +213,7 @@ export const PremiumIndigo: Story = {
   ),
 };
 
-export const PremiumGold: Story = {
+export const SupporterGold: Story = {
   render: (args) => (
     <CardStory
       {...args}
@@ -222,7 +222,7 @@ export const PremiumGold: Story = {
   ),
 };
 
-export const PremiumDusk: Story = {
+export const SupporterDusk: Story = {
   render: (args) => (
     <CardStory
       {...args}
@@ -324,19 +324,19 @@ export const LanguageOverflowFreeSlate = overflowStory(
   getFreeCardTheme(2),
   false,
 );
-export const LanguageOverflowPremiumFlat = overflowStory(
+export const LanguageOverflowSupporterFlat = overflowStory(
   premiumTheme('blue'),
   true,
 );
-export const LanguageOverflowPremiumGradient = overflowStory(
+export const LanguageOverflowSupporterGradient = overflowStory(
   premiumTheme('indigo'),
   true,
 );
-export const LanguageOverflowPremiumCustom = overflowStory(
+export const LanguageOverflowSupporterCustom = overflowStory(
   getCustomCardTheme({ from: '#e0457b', to: '#f7b267' }),
   true,
 );
-export const LanguageOverflowPremiumPreview = overflowStory(
+export const LanguageOverflowSupporterPreview = overflowStory(
   getCustomCardTheme({ from: '#e0457b', to: '#f7b267' }),
   true,
   'preview',

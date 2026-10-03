@@ -130,7 +130,7 @@ test('draws unevenly from a pool of exactly 200 valid tags', () => {
   ).toBe(9);
 });
 
-test('mixes free and premium accounts with tier-specific language counts', () => {
+test('mixes free and Supporter accounts with tier-specific language counts', () => {
   expect(premium.length / dummies.length).toBeGreaterThan(0.2);
   expect(premium.length / dummies.length).toBeLessThan(0.3);
   const premiumCounts = new Set(
@@ -149,7 +149,7 @@ test('mixes free and premium accounts with tier-specific language counts', () =>
   ).toBe(4);
 });
 
-test('gives premium features only to premium accounts in varied combinations', () => {
+test('gives Supporter features only to Supporter accounts in varied combinations', () => {
   const premiumThemes = PREMIUM_CARD_THEMES.map(({ id }) => id as string);
   const freeColors = [null, ...FREE_CARD_COLORS.map(({ id }) => id as string)];
 

@@ -93,7 +93,12 @@ test('core pages expose named controls and support keyboard navigation', async (
       );
     }
     expect(violations).toEqual([]);
-    for (const name of ['Appearance', 'Privacy', 'Notifications', 'Premium']) {
+    for (const name of [
+      'Appearance',
+      'Privacy',
+      'Notifications',
+      'Supporter',
+    ]) {
       await page
         .getByRole('main')
         .getByRole('button', { name, exact: true })

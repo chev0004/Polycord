@@ -60,7 +60,7 @@ export const Pink: Story = {
   play: startAndExpect('backgroundColor', 'rgb(249, 168, 207)'),
 };
 
-export const PremiumGradient: Story = {
+export const SupporterGradient: Story = {
   args: { theme: findCardTheme('gold') },
   play: startAndExpect(
     'backgroundImage',

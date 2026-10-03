@@ -18,7 +18,7 @@ describe('getBumpCooldown', () => {
     expect(remainingMs).toBe(2 * 60 * 60 * 1000);
   });
 
-  it('applies the shorter premium cooldown', () => {
+  it('applies the shorter Supporter cooldown', () => {
     const lastBumpedAt = new Date(now.getTime() - 60 * 60 * 1000);
     const { remainingMs } = getBumpCooldown(lastBumpedAt, true, now);
 

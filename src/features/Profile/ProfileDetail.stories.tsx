@@ -173,7 +173,7 @@ export const MoreActions: Story = {
   },
 };
 
-export const PremiumSaved: Story = {
+export const SupporterSaved: Story = {
   args: {
     isSaved: true,
     profile: {
@@ -188,17 +188,17 @@ export const PremiumSaved: Story = {
 const premiumPill = (cardTheme: CardTheme, chipBg: string): Story => ({
   args: { profile: { ...profile, premium: true, cardTheme } },
   play: async ({ canvasElement }) => {
-    const pill = within(canvasElement).getByText('Premium');
+    const pill = within(canvasElement).getByText('Supporter');
     await expect(getComputedStyle(pill).backgroundColor).toBe(chipBg);
   },
 });
 
-export const PremiumPillCustomAccent = premiumPill(
+export const SupporterPillCustomAccent = premiumPill(
   { ...(findCardTheme('blue') as CardTheme), accent: '#f97316' },
   'rgba(249, 115, 22, 0.15)',
 );
 
-export const PremiumPillThemeAccent = premiumPill(
+export const SupporterPillThemeAccent = premiumPill(
   findCardTheme('rose') as CardTheme,
   'rgba(196, 91, 149, 0.15)',
 );

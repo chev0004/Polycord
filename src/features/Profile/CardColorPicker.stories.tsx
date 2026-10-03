@@ -55,7 +55,7 @@ export const Free: Story = {
     const pink = canvas.getByRole('button', { name: 'Pink banner colour' });
     await expect(sky).toHaveAttribute('aria-pressed', 'true');
     await expect(
-      canvas.getByRole('button', { name: 'Indigo banner theme (Premium)' }),
+      canvas.getByRole('button', { name: 'Indigo banner theme (Supporter)' }),
     ).toBeInTheDocument();
 
     await userEvent.click(pink);
@@ -71,7 +71,7 @@ export const FreeTease: Story = {
     const canvas = within(canvasElement);
 
     const indigo = canvas.getByRole('button', {
-      name: 'Indigo banner theme (Premium)',
+      name: 'Indigo banner theme (Supporter)',
     });
     const sky = canvas.getByRole('button', { name: 'Sky banner colour' });
 
@@ -81,7 +81,7 @@ export const FreeTease: Story = {
     await expect(sky).toHaveAttribute('aria-pressed', 'false');
     await expect(canvas.getByText(/matching card tint/)).toBeInTheDocument();
     await expect(
-      canvas.getByRole('link', { name: 'Premium' }),
+      canvas.getByRole('link', { name: 'Supporter' }),
     ).toBeInTheDocument();
 
     await userEvent.click(indigo);
@@ -93,7 +93,7 @@ export const FreeTease: Story = {
   },
 };
 
-export const Premium: Story = {
+export const Supporter: Story = {
   args: { premium: true, initialValue: 'indigo' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -103,7 +103,7 @@ export const Premium: Story = {
     await expect(indigo).toHaveAttribute('aria-pressed', 'true');
     await expect(
       canvas.queryByRole('button', {
-        name: 'Indigo banner theme (Premium)',
+        name: 'Indigo banner theme (Supporter)',
       }),
     ).not.toBeInTheDocument();
 
@@ -117,7 +117,7 @@ export const Premium: Story = {
   },
 };
 
-export const PremiumCustomGradient: Story = {
+export const SupporterCustomGradient: Story = {
   args: { premium: true, initialValue: 'indigo' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -158,7 +158,7 @@ export const PremiumCustomGradient: Story = {
   },
 };
 
-export const PremiumAccentOverride: Story = {
+export const SupporterAccentOverride: Story = {
   args: { premium: true, initialValue: 'custom' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
