@@ -22,6 +22,7 @@ import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
   profiles: DiscoveryProfile[];
+  showBoostedBadge?: boolean;
   emptyState?: ReactNode;
   isLoggedIn?: boolean;
   savedProfileIds?: string[];
@@ -74,6 +75,7 @@ const layOutMasonry = (grid: HTMLDivElement | null) => {
 
 export const ProfileGrid = ({
   profiles,
+  showBoostedBadge = true,
   emptyState,
   isLoggedIn = false,
   savedProfileIds,
@@ -215,6 +217,7 @@ export const ProfileGrid = ({
     return (
       <ProfileCard
         profile={profile}
+        showBoostedBadge={showBoostedBadge}
         isLoggedIn={isLoggedIn}
         isSaved={savedIds.has(profile.id)}
         viewerTimezone={viewerTimezone}

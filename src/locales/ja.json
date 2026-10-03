@@ -904,7 +904,8 @@
     "filterSheetShow": "{count, plural, other {#人のパートナーを表示}}",
     "backToTop": "トップへ戻る：検索、並び替え、フィルター",
     "loadMore": "さらにパートナーを表示",
-    "endOfResults": "条件に合うパートナーはすべて表示しました。"
+    "endOfResults": "条件に合うパートナーはすべて表示しました。",
+    "boostedBadge": "ブースト中"
   },
   "Saved": {
     "eyebrow": "保存済み",
