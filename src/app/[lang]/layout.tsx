@@ -10,6 +10,7 @@ import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
 import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
+import { loadStaffNav } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { locales } from '@/utils/locales';
 import { fontVariables } from '../fonts';
@@ -52,12 +53,13 @@ export default async function RootLayout({
 
   const messages = await getMessages({ locale: lang });
   const user = await getCurrentUser();
-  const [settings, cardTheme] = user
+  const [settings, cardTheme, staffNav] = user
     ? await Promise.all([
         getUserSettingsByDiscordUserId(user.id),
         getCardThemeByDiscordUserId(user.id),
+        loadStaffNav(user),
       ])
-    : [null, undefined];
+    : [null, undefined, null];
 
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -73,6 +75,7 @@ export default async function RootLayout({
                   locale={lang}
                   isLoggedIn={Boolean(user)}
                   userAvatarUrl={user?.avatarUrl}
+                  pendingCases={staffNav?.pendingCases}
                 >
                   {children}
                 </AppShell>

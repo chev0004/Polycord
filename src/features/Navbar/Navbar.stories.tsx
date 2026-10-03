@@ -74,6 +74,68 @@ export const LoggedIn: Story = {
     await expect(
       canvas.getByRole('button', { name: 'Polycord' }),
     ).toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('link', { name: /^Admin/ }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const Staff: Story = {
+  render: (args) => (
+    <Navbar
+      {...args}
+      iconUrl={MOCK_USER_AVATAR_URL}
+      isLoggedIn
+      notifications={[]}
+      persistNotifications={false}
+      pendingCases={3}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const admin = within(canvasElement).getByRole('link', {
+      name: 'Admin, 3 pending cases',
+    });
+    await expect(admin).toHaveAttribute('href', '/en/admin');
+    await expect(admin).toHaveTextContent('3');
+  },
+};
+
+export const StaffNoPending: Story = {
+  render: (args) => (
+    <Navbar
+      {...args}
+      iconUrl={MOCK_USER_AVATAR_URL}
+      isLoggedIn
+      notifications={[]}
+      persistNotifications={false}
+      pendingCases={0}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const admin = within(canvasElement).getByRole('link', { name: 'Admin' });
+    await expect(admin).not.toHaveTextContent('0');
+  },
+};
+
+export const StaffMobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: (args) => (
+    <Navbar
+      {...args}
+      iconUrl={MOCK_USER_AVATAR_URL}
+      isLoggedIn
+      dockable
+      notifications={[]}
+      persistNotifications={false}
+      pendingCases={12}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const admin = within(canvasElement).getByRole('link', {
+      name: 'Admin, 12 pending cases',
+    });
+    await expect(admin).toBeVisible();
+    await expect(admin.getBoundingClientRect().width).toBe(44);
   },
 };
 

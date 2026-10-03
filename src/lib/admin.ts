@@ -2,7 +2,7 @@ import 'server-only';
 
 import { NextResponse } from 'next/server';
 import type { z } from 'zod';
-import { hasStaffRole } from '@/db';
+import { countPendingCases, hasStaffRole } from '@/db';
 import type { StaffRole } from '@/features/Admin/types';
 import { type CurrentUser, getCurrentUser } from './auth';
 
@@ -25,6 +25,13 @@ export const getStaffRole = async (
   if (isOwner(user)) return 'owner';
   return (await hasStaffRole(user.accountId)) ? 'moderator' : null;
 };
+
+export const loadStaffNav = async (
+  user: CurrentUser & { accountId: string },
+) =>
+  (await getStaffRole(user))
+    ? { pendingCases: await countPendingCases() }
+    : null;
 
 export const needsReauth = (user: { issuedAt: number }) =>
   Date.now() - user.issuedAt > REAUTH_WINDOW_MS;

@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { ToastStack } from '@/components/Toast';
+import { useSyncPendingCases } from '@/features/Navigation/AppShell';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import {
@@ -23,6 +24,7 @@ export const ModerationPage = ({
 }) => {
   const t = useTranslations('Admin');
   const store = useModeration(initial);
+  useSyncPendingCases(store.pendingGroups.length);
   const mobile = useIsMobile();
   const { toasts, addToast, dismissToast } = useToastStack();
   const [tab, setTab] = useState<ModTab>('reports');
