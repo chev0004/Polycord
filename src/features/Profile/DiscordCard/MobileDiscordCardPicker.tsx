@@ -138,7 +138,7 @@ export const MobileDiscordCardPicker = ({
               ),
               premiumLink: (chunks) => (
                 <Link
-                  href={`/${locale}/settings#premium`}
+                  href={`/${locale}/settings#supporter`}
                   className="font-bold text-primary-light"
                 >
                   {chunks}

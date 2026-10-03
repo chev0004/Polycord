@@ -94,13 +94,13 @@ export const SettingsPushPage = ({
   </div>
 );
 
-type MobilePage = 'privacy' | 'blocked' | 'notifications' | 'premium';
+type MobilePage = 'privacy' | 'blocked' | 'notifications' | 'supporter';
 
 const mobilePages: string[] = [
   'privacy',
   'blocked',
   'notifications',
-  'premium',
+  'supporter',
 ];
 
 type ChoiceField = 'applicationLanguage' | 'timeFormat' | 'languageDisplay';
@@ -192,7 +192,8 @@ export const MobileSettings = ({
 
   useEffect(() => {
     const syncHash = () => {
-      const hash = window.location.hash.slice(1);
+      const rawHash = window.location.hash.slice(1);
+      const hash = rawHash === 'premium' ? 'supporter' : rawHash;
       setMobilePage(mobilePages.includes(hash) ? (hash as MobilePage) : null);
       setAnimatePage(false);
     };
@@ -334,7 +335,7 @@ export const MobileSettings = ({
     >
       <Toggle
         checked={false}
-        onCheckedChange={() => openPage('premium')}
+        onCheckedChange={() => openPage('supporter')}
         aria-label={label}
       />
     </SettingsToggleRow>
@@ -491,7 +492,7 @@ export const MobileSettings = ({
               </output>
             ) : null}
           </SettingsPushPage>
-        ) : mobilePage === 'premium' ? (
+        ) : mobilePage === 'supporter' ? (
           <SettingsPushPage
             title={t('premiumTitle')}
             backLabel={t('settingsTitle')}
@@ -613,7 +614,7 @@ export const MobileSettings = ({
                 value={premium ? t('premiumActive') : t('premiumFreePlan')}
                 valueActive={premium}
                 chevron
-                onClick={() => openPage('premium')}
+                onClick={() => openPage('supporter')}
               />
               <SheetRow
                 icon={MdDownload}

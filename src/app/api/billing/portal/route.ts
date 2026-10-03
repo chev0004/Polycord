@@ -18,7 +18,7 @@ export const POST = async (request: Request) => {
   const subscription = account?.subscription ?? null;
   if (account && getPremiumSource(account.user, subscription) === 'granted') {
     return NextResponse.json(
-      { error: 'An active Premium grant cannot start or manage billing' },
+      { error: 'An active Supporter grant cannot start or manage billing' },
       { status: 403 },
     );
   }
@@ -40,7 +40,7 @@ export const POST = async (request: Request) => {
   } catch {}
 
   const origin = new URL(request.url).origin;
-  const settingsUrl = `${origin}/${locale}/settings#premium`;
+  const settingsUrl = `${origin}/${locale}/settings#supporter`;
 
   try {
     const url = subscription?.stripeCustomerId
