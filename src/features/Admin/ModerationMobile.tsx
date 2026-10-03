@@ -1151,7 +1151,7 @@ const CaseFooter = ({
             />
           ) : null}
           <SheetGroup>
-            {row('warn', MdCampaign, t('warn'), t('warnDesc'), false, () =>
+            {row('warn', MdCampaign, t('warn'), t('warnDesc'), true, () =>
               open('warn'),
             )}
             {user.hidden
@@ -1192,7 +1192,7 @@ const CaseFooter = ({
                     t('unban'),
                     t('unbanDesc'),
                   )
-                : row('ban', MdBlock, t('ban'), t('banDesc'), true, () =>
+                : row('ban', MdGavel, t('ban'), t('banDesc'), true, () =>
                     open('ban'),
                   )}
           </SheetGroup>
