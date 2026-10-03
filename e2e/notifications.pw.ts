@@ -51,7 +51,7 @@ const fixture = async (context: BrowserContext) => {
 
 test.afterAll(() => sql.end());
 
-test('inbox honors server Premium on every navbar and refreshes without navigation', async ({
+test('inbox honors server Supporter on every navbar and refreshes without navigation', async ({
   page,
   context,
 }, testInfo) => {

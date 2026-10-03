@@ -53,7 +53,7 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | --- | --- | --- |
 | Blocking makes someone no longer appear for you | Mutual hiding while signed in, inbox filtering (`src/db/notifications.ts`), and no notification to the blocked person | Reworded |
 | Reports are confidential | Reporter identity appears only on the admin route behind `isAdmin` | Verified |
-| Enforcement: hide, remove content, warn, remove account | Warn, hide, suspend and ban. Warnings reach free and Premium inboxes (`tests/integration/notifications.mjs`). | Reworded |
+| Enforcement: hide, remove content, warn, remove account | Warn, hide, suspend and ban. Warnings reach free and Supporter inboxes (`tests/integration/notifications.mjs`). | Reworded |
 | Serious issues are escalated to authorities | No documented escalation process | Open: owner defines the process |
 | Contact safety@polycord.app | Same mailbox evidence gap | Open: owner verifies the mailbox |
 

@@ -351,8 +351,8 @@ test('settings drill-in pages reach and save every setting on phones', async ({
     for (const width of [320, 375, 390]) {
       await page.setViewportSize({ width, height: 812 });
       for (const [locale, pages] of [
-        ['en', ['Privacy', 'Notifications', 'Premium']],
-        ['ja', ['プライバシー', '通知', 'プレミアム']],
+        ['en', ['Privacy', 'Notifications', 'Supporter']],
+        ['ja', ['プライバシー', '通知', 'サポーター']],
       ] as const) {
         await page.goto(`/${locale}/settings`);
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -382,7 +382,7 @@ test('settings drill-in pages reach and save every setting on phones', async ({
     await main.getByRole('button', { name: /^Privacy/ }).click();
     await main.getByRole('switch', { name: 'Make Profile Public' }).click();
     await main.getByRole('switch', { name: 'Hidden browsing' }).click();
-    await expect(page).toHaveURL(/#premium$/);
+    await expect(page).toHaveURL(/#supporter$/);
     await expect(page.getByRole('table')).toBeVisible();
     await expect(
       main.getByRole('button', { name: 'Upgrade', exact: true }),

@@ -366,12 +366,12 @@ export const SaveError: Story = {
   },
 };
 
-export const PremiumTabFree: Story = {
+export const SupporterTabFree: Story = {
   args: { premium: false },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
 
     await waitFor(() =>
       expect(canvas.getByText('Bump cooldown')).toBeInTheDocument(),
@@ -390,12 +390,12 @@ export const PremiumTabFree: Story = {
   },
 };
 
-export const PremiumTabPremium: Story = {
+export const SupporterTabSupporter: Story = {
   args: { premium: true },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
 
     await waitFor(() =>
       expect(
@@ -423,7 +423,7 @@ export const GatedProfileViewAlert: Story = {
     await waitFor(() =>
       expect(canvas.getByText('Profile View Alert')).toBeInTheDocument(),
     );
-    expect(canvas.getAllByText('Premium')).toHaveLength(2);
+    expect(canvas.getAllByText('Supporter')).toHaveLength(2);
 
     fireEvent.click(canvas.getByRole('switch', { name: 'Profile View Alert' }));
 
@@ -541,7 +541,7 @@ export const MobileSessionExpired: Story = {
   },
 };
 
-export const PremiumGranted: Story = {
+export const SupporterGranted: Story = {
   args: {
     premium: true,
     premiumSource: 'granted',
@@ -552,7 +552,7 @@ export const PremiumGranted: Story = {
     expect(
       canvas.queryByRole('button', { name: 'Manage billing' }),
     ).not.toBeInTheDocument();
-    await fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
     await expect(await canvas.findByText('Granted')).toBeInTheDocument();
     expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
     expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
@@ -565,8 +565,8 @@ export const PremiumGranted: Story = {
   },
 };
 
-export const PremiumPurchased: Story = {
-  ...PremiumTabPremium,
+export const SupporterPurchased: Story = {
+  ...SupporterTabSupporter,
   args: {
     premium: true,
     premiumSource: 'purchased',
@@ -574,15 +574,15 @@ export const PremiumPurchased: Story = {
   },
 };
 
-export const PremiumBoth: Story = {
+export const SupporterBoth: Story = {
   args: {
-    ...PremiumPurchased.args,
+    ...SupporterPurchased.args,
     premiumSource: 'both',
     premiumGrantedUntil: '2099-12-31T12:00:00Z',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
     await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
     expect(canvas.getByText(/Renews/)).toBeInTheDocument();
     expect(
@@ -591,20 +591,20 @@ export const PremiumBoth: Story = {
   },
 };
 
-export const PremiumExpired: Story = {
-  ...PremiumTabFree,
+export const SupporterExpired: Story = {
+  ...SupporterTabFree,
   args: { premium: false, premiumSource: 'free' },
 };
 
-export const PremiumOverdueWithGrant: Story = {
-  ...PremiumBoth,
+export const SupporterOverdueWithGrant: Story = {
+  ...SupporterBoth,
   args: {
-    ...PremiumBoth.args,
+    ...SupporterBoth.args,
     subscriptionRenewsAt: '2000-01-01T12:00:00Z',
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
-    await fireEvent.click(canvas.getByRole('button', { name: 'Premium' }));
+    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
     await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
     await fireEvent.click(
       canvas.getByRole('button', { name: 'Manage billing' }),
@@ -613,13 +613,13 @@ export const PremiumOverdueWithGrant: Story = {
   },
 };
 
-export const MobilePremiumOverdueWithGrant: Story = {
-  ...PremiumOverdueWithGrant,
+export const MobileSupporterOverdueWithGrant: Story = {
+  ...SupporterOverdueWithGrant,
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
     await fireEvent.click(
-      await canvas.findByRole('button', { name: /^Premium/ }),
+      await canvas.findByRole('button', { name: /^Supporter/ }),
     );
     await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
     await fireEvent.click(
@@ -629,13 +629,13 @@ export const MobilePremiumOverdueWithGrant: Story = {
   },
 };
 
-export const MobilePremiumGranted: Story = {
-  ...PremiumGranted,
+export const MobileSupporterGranted: Story = {
+  ...SupporterGranted,
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await fireEvent.click(
-      await canvas.findByRole('button', { name: /^Premium/ }),
+      await canvas.findByRole('button', { name: /^Supporter/ }),
     );
     await expect(await canvas.findByText('Granted')).toBeInTheDocument();
     expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
@@ -649,13 +649,13 @@ export const MobilePremiumGranted: Story = {
   },
 };
 
-export const MobilePremiumBoth: Story = {
-  ...PremiumBoth,
+export const MobileSupporterBoth: Story = {
+  ...SupporterBoth,
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await fireEvent.click(
-      await canvas.findByRole('button', { name: /^Premium/ }),
+      await canvas.findByRole('button', { name: /^Supporter/ }),
     );
     await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
     expect(canvas.getByText(/Renews/)).toBeInTheDocument();
@@ -665,12 +665,12 @@ export const MobilePremiumBoth: Story = {
   },
 };
 
-export const PremiumGrantedJapanese: Story = {
-  ...PremiumGranted,
+export const SupporterGrantedJapanese: Story = {
+  ...SupporterGranted,
   globals: { locale: 'ja' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await fireEvent.click(canvas.getByRole('button', { name: 'プレミアム' }));
+    await fireEvent.click(canvas.getByRole('button', { name: 'サポーター' }));
     await expect(
       await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
     ).toBeInTheDocument();
@@ -679,18 +679,75 @@ export const PremiumGrantedJapanese: Story = {
   },
 };
 
-export const MobilePremiumGrantedJapanese: Story = {
-  ...PremiumGrantedJapanese,
+export const MobileSupporterGrantedJapanese: Story = {
+  ...SupporterGrantedJapanese,
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await fireEvent.click(
-      await canvas.findByRole('button', { name: /^プレミアム/ }),
+      await canvas.findByRole('button', { name: /^サポーター/ }),
     );
     await expect(
       await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
     ).toBeInTheDocument();
     expect(canvas.getByText(/\u4ed8\u4e0e\u671f\u9650/)).toBeInTheDocument();
     expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
+  },
+};
+
+export const SupporterLegacyLink: Story = {
+  args: { premium: false },
+  beforeEach: () => {
+    const previous = window.location.hash;
+    window.history.replaceState(null, '', '#premium');
+    return () =>
+      window.history.replaceState(
+        null,
+        '',
+        previous || window.location.pathname + window.location.search,
+      );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText('Bump cooldown')).toBeInTheDocument();
+    expect(canvas.getByRole('button', { name: 'Upgrade' })).toBeInTheDocument();
+  },
+};
+
+export const MobileSupporterLegacyLink: Story = {
+  ...SupporterLegacyLink,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+};
+
+export const SupporterJapanese: Story = {
+  globals: { locale: 'ja' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      canvas.getByRole('button', { name: '\u30b5\u30dd\u30fc\u30bf\u30fc' }),
+    );
+    await expect(
+      await canvas.findByText(
+        '\u30d0\u30f3\u30d7\u306e\u30af\u30fc\u30eb\u30c0\u30a6\u30f3',
+      ),
+    ).toBeInTheDocument();
+  },
+};
+
+export const MobileSupporterJapanese: Story = {
+  ...SupporterJapanese,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fireEvent.click(
+      await canvas.findByRole('button', {
+        name: /^\u30b5\u30dd\u30fc\u30bf\u30fc/,
+      }),
+    );
+    await expect(
+      await canvas.findByText(
+        '\u30d0\u30f3\u30d7\u306e\u30af\u30fc\u30eb\u30c0\u30a6\u30f3',
+      ),
+    ).toBeInTheDocument();
   },
 };

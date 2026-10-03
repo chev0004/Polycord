@@ -16,7 +16,7 @@ export const POST = async (request: Request) => {
   const premium = await isPremiumUser(currentUser);
 
   if (!premium) {
-    return NextResponse.json({ error: 'Premium required' }, { status: 403 });
+    return NextResponse.json({ error: 'Supporter required' }, { status: 403 });
   }
 
   const result = await boostProfileForUser(currentUser.accountId);

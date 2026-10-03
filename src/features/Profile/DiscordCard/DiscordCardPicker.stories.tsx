@@ -165,7 +165,7 @@ export const FreeTeasesLockedLayout: Story = {
 
     await userEvent.click(canvas.getByRole('button', { name: 'Rank card' }));
     await userEvent.click(
-      canvas.getByRole('button', { name: 'Exchange pass (Premium)' }),
+      canvas.getByRole('button', { name: 'Exchange pass (Supporter)' }),
     );
 
     await expect(
@@ -177,7 +177,7 @@ export const FreeTeasesLockedLayout: Story = {
     await expect(canvas.getByTestId('saved-layout')).toHaveTextContent('rank');
 
     await userEvent.click(
-      canvas.getByRole('button', { name: 'Exchange pass (Premium)' }),
+      canvas.getByRole('button', { name: 'Exchange pass (Supporter)' }),
     );
 
     await waitFor(() =>
@@ -200,13 +200,13 @@ export const FreeLocksMovedLayouts: Story = {
       'Character select',
     ]) {
       await expect(
-        canvas.getByRole('button', { name: `${name} (Premium)` }),
+        canvas.getByRole('button', { name: `${name} (Supporter)` }),
       ).toBeInTheDocument();
     }
   },
 };
 
-export const FreeWithLapsedPremiumLayout: Story = {
+export const FreeWithLapsedSupporterLayout: Story = {
   args: { initialValue: 'exchange-pass' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -220,7 +220,7 @@ export const FreeWithLapsedPremiumLayout: Story = {
   },
 };
 
-export const Premium: Story = {
+export const Supporter: Story = {
   args: { premium: true, vars: INDIGO },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -260,10 +260,10 @@ export const EdgeCases: Story = {
 };
 
 export const ServerError: Story = {
-  args: { error: 'This card layout is part of Premium.' },
+  args: { error: 'This card layout is part of Supporter.' },
   play: async ({ canvasElement }) => {
     await expect(
-      within(canvasElement).getByText('This card layout is part of Premium.'),
+      within(canvasElement).getByText('This card layout is part of Supporter.'),
     ).toBeInTheDocument();
   },
 };

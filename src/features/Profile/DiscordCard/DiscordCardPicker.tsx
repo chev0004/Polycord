@@ -167,7 +167,7 @@ export const DiscordCardPicker = ({
             ),
             premiumLink: (chunks) => (
               <Link
-                href={`/${locale}/settings#premium`}
+                href={`/${locale}/settings#supporter`}
                 className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
               >
                 {chunks}

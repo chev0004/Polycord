@@ -9,7 +9,7 @@ Evidence-based acceptance pass for the readiness backlog, recorded 2026-09-24 fo
 - Browser: Chromium through Playwright (`bun run test:e2e`), on a production build (`next start`) against an isolated localhost PostgreSQL database. CI runs the same suite with a Postgres service container.
 - Widths: 320, 375, 390, 768, 1024, 1280 and 1440 px are exercised by `e2e/mobile.pw.ts`, `e2e/layouts.pw.ts` and `e2e/navigation.pw.ts`.
 - Not covered: Safari, Firefox, iOS and Android devices, real on-screen keyboards, and the deployed staging site. Emulated widths are not device proof.
-- Identities: fixtures create disposable accounts per test (logged out, free, Premium through an active `subscriptions` row, suspended, banned, and an admin through `POLYCORD_ADMIN_USER_IDS=e2e-admin`). No shared staging or production data is used.
+- Identities: fixtures create disposable accounts per test (logged out, free, Supporter through an active `subscriptions` row, suspended, banned, and an admin through `POLYCORD_ADMIN_USER_IDS=e2e-admin`). No shared staging or production data is used.
 
 ## Audit findings
 
@@ -20,25 +20,25 @@ Evidence-based acceptance pass for the readiness backlog, recorded 2026-09-24 fo
 | 8-9 | Navigation shell, return paths, inert Bump | NAV-003 (#114) | `e2e/navigation.pw.ts` | Resolved |
 | 10-12 | Editor drafts, onboarding draft scope and tag caps, timezone and voice save contract | PROFILE-012 (#108) | `e2e/drafts.pw.ts` | Resolved |
 | 13-20 | Discovery loading, prefetch, server paging, grid duplication, fonts | DISC-009 (#110) | `e2e/discovery.pw.ts`, `docs/performance/discovery.md` | Resolved |
-| 21-23, 28 | Premium comparison at 320 px, hover-only actions, dialog height, focus, errors, motion | MOBILE-002 (#115) | `e2e/layouts.pw.ts`, `e2e/mobile.pw.ts` | Resolved, except device validation |
+| 21-23, 28 | Supporter comparison at 320 px, hover-only actions, dialog height, focus, errors, motion | MOBILE-002 (#115) | `e2e/layouts.pw.ts`, `e2e/mobile.pw.ts` | Resolved, except device validation |
 | 24-26, 27 (split) | Branded 404 and error recovery, identifier validation, failure states outside the inbox | QA-002 (#107) | `e2e/recovery.pw.ts` | Resolved |
 | 27 (split), 29-33 | Inbox entitlements, inbox failure rollback, reload and actor destinations | NOTIF-004 (#105) | `e2e/notifications.pw.ts`, `tests/integration/notifications.mjs` | Resolved |
 | 34-36 | Username privacy, block enforcement, unblock UI, copy ordering | SAFETY-002 (#106) | `e2e/safety.pw.ts`, `tests/integration/safety.mjs` | Resolved |
 | 37 | Session revocation and export completeness | ACCOUNT-002 (#104) | `e2e/account.pw.ts`, `tests/integration/account.mjs` | Resolved |
-| Billing | Deployed Stripe lifecycle and truthful Premium states | BILLING-002 | None | Blocked: not started |
+| Billing | Deployed Stripe lifecycle and truthful Supporter states | BILLING-002 | None | Blocked: not started |
 | Legal | Policy claims against behavior and operations | LEGAL-002 (#116) | `docs/legal/claims.md`, `e2e/legal.pw.ts`, `tests/integration/analytics.mjs` | Resolved, with open owner rows |
 | Operations | Monitoring, alerts, backups, production data boundary | DEV-013 (#111) | `docs/operations/readiness.md` | Blocking rows remain |
 | Test stability | Accessibility scans racing animations | TEST-003 (#113) | `e2e/accessibility.pw.ts` | Resolved |
 
 ## Route coverage
 
-| Route | Logged out | Free | Premium | Restricted or admin |
+| Route | Logged out | Free | Supporter | Restricted or admin |
 | --- | --- | --- | --- | --- |
 | Discovery `/[lang]` | `discovery.pw.ts`, `safety.pw.ts` guest payloads | `discovery.pw.ts`, `navigation.pw.ts` | `notifications.pw.ts`, `tests/integration/boosts.mjs` | Restricted profiles hidden from others: `safety.pw.ts` |
 | Public profile `/[lang]/u/[id]` | `safety.pw.ts`, `recovery.pw.ts` | `discovery.pw.ts`, `journeys.pw.ts` | `notifications.pw.ts` actor links | Suspended and banned members can read: `journeys.pw.ts` |
 | Saved `/[lang]/saved` | Redirect: `product.pw.ts` | `journeys.pw.ts` populated, `navigation.pw.ts` | Not separately covered | Writes rejected: `journeys.pw.ts` |
-| Profile editor | Redirect: `product.pw.ts` | `drafts.pw.ts`, `mobile.pw.ts` | `drafts.pw.ts` lapsed Premium | Writes rejected: `journeys.pw.ts` |
-| Settings, every section | Redirect: `product.pw.ts` | `preferences.pw.ts`, `drafts.pw.ts`, `accessibility.pw.ts` | `layouts.pw.ts` Premium tab | Writes rejected: `journeys.pw.ts` |
+| Profile editor | Redirect: `product.pw.ts` | `drafts.pw.ts`, `mobile.pw.ts` | `drafts.pw.ts` lapsed Supporter | Writes rejected: `journeys.pw.ts` |
+| Settings, every section | Redirect: `product.pw.ts` | `preferences.pw.ts`, `drafts.pw.ts`, `accessibility.pw.ts` | `layouts.pw.ts` Supporter tab | Writes rejected: `journeys.pw.ts` |
 | Onboarding | Redirect: `src/middleware.test.ts` | `drafts.pw.ts` | Not separately covered | Not covered |
 | Inbox | Not shown | `notifications.pw.ts`, `layouts.pw.ts` | `notifications.pw.ts` | Warnings reach members: `journeys.pw.ts` |
 | Legal | `legal.pw.ts`, `recovery.pw.ts` | `navigation.pw.ts` | Same content | Same content |
@@ -49,7 +49,7 @@ Direct entry, refresh, Back and Forward, locale changes and return journeys are 
 
 ## Blockers
 
-1. BILLING-002 has not started, so purchase, renewal, failure, cancellation and the hardcoded renewal dates in Settings Premium are unverified.
+1. BILLING-002 has not started, so purchase, renewal, failure, cancellation and the hardcoded renewal dates in Settings Supporter are unverified.
 2. The Open rows in `docs/legal/claims.md` need owner evidence or decisions: mailbox delivery, eligibility and guardian acknowledgement, escalation, no-sale and security assertions.
 3. The Blocking rows in `docs/operations/readiness.md` remain: production database separation, uptime monitoring and alerting.
 4. No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.

@@ -125,7 +125,7 @@ export const WithProfile: Story = {
   },
 };
 
-export const PremiumInsights: Story = {
+export const SupporterInsights: Story = {
   args: {
     initialValues: sampleProfile,
     premium: true,
@@ -214,13 +214,13 @@ export const DiscardDiscordCard: Story = {
   },
 };
 
-export const FreeCannotSavePremiumDiscordCard: Story = {
+export const FreeCannotSaveSupporterDiscordCard: Story = {
   args: { initialValues: sampleProfile },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
 
     fireEvent.click(
-      canvas.getByRole('button', { name: 'Metal card (Premium)' }),
+      canvas.getByRole('button', { name: 'Metal card (Supporter)' }),
     );
 
     await expect(
@@ -236,7 +236,7 @@ export const FreeCannotSavePremiumDiscordCard: Story = {
   },
 };
 
-export const PremiumSavesPremiumDiscordCard: Story = {
+export const SupporterSavesSupporterDiscordCard: Story = {
   args: { initialValues: sampleProfile, premium: true },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -553,7 +553,7 @@ export const FreeLanguageCap: Story = {
   },
 };
 
-export const PremiumLanguageCap: Story = {
+export const SupporterLanguageCap: Story = {
   args: {
     premium: true,
     initialValues: {
@@ -587,7 +587,7 @@ export const FreeTagCap: Story = {
 
     await expect(canvas.getByText(/5\/5 tags/)).toBeInTheDocument();
     await expect(
-      canvas.getByText(/Premium members can add up to/),
+      canvas.getByText(/Supporter members can add up to/),
     ).toBeInTheDocument();
 
     await addTag(canvas, 'Gaming');
@@ -602,7 +602,7 @@ export const FreeTagCap: Story = {
   },
 };
 
-export const PremiumTagCap: Story = {
+export const SupporterTagCap: Story = {
   args: {
     premium: true,
     initialValues: {
@@ -624,7 +624,7 @@ export const PremiumTagCap: Story = {
 
     await expect(canvas.getByText(/8\/8 tags/)).toBeInTheDocument();
     expect(
-      canvas.queryByText(/Premium members can add up to/),
+      canvas.queryByText(/Supporter members can add up to/),
     ).not.toBeInTheDocument();
   },
 };
@@ -1155,7 +1155,7 @@ export const MobileSaveDiscordCard: Story = {
   },
 };
 
-export const MobileFreePreviewsPremiumDiscordCard: Story = {
+export const MobileFreePreviewsSupporterDiscordCard: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   args: { initialValues: sampleProfile },
   play: async ({ args, canvasElement }) => {
@@ -1163,13 +1163,13 @@ export const MobileFreePreviewsPremiumDiscordCard: Story = {
     const sheet = await openMobileDiscordCard(canvas);
 
     fireEvent.click(
-      sheet.getByRole('button', { name: 'Metal card (Premium)' }),
+      sheet.getByRole('button', { name: 'Metal card (Supporter)' }),
     );
     await expect(
       await sheet.findByText(/layout is part of/),
     ).toBeInTheDocument();
     await expect(
-      sheet.getByRole('button', { name: 'See Premium' }),
+      sheet.getByRole('button', { name: 'See Supporter' }),
     ).toBeInTheDocument();
     fireEvent.click(sheet.getByRole('button', { name: 'Cancel preview' }));
     await waitFor(() =>
@@ -1189,7 +1189,7 @@ export const MobileFreePreviewsPremiumDiscordCard: Story = {
   },
 };
 
-export const MobilePremiumSavesPremiumDiscordCard: Story = {
+export const MobileSupporterSavesSupporterDiscordCard: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   args: { initialValues: sampleProfile, premium: true },
   play: async ({ args, canvasElement }) => {

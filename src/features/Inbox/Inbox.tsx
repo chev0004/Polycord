@@ -199,7 +199,7 @@ export const Inbox = ({
                 notification.kind === 'copy' || notification.kind === 'share',
             ) && (
               <Link
-                href={`/${locale}/settings#premium`}
+                href={`/${locale}/settings#supporter`}
                 className="flex h-[38px] shrink-0 items-center justify-center border-gray-500/50 border-t font-medium text-muted text-xs transition-colors duration-150 hover:text-primary-light focus-visible:text-primary-light"
               >
                 {t('seeWhoWithPremium')}

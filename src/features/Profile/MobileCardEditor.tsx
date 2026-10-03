@@ -1060,7 +1060,7 @@ export const MobileCardEditor = ({
                       premiumCap: PREMIUM_LANGUAGE_CAP,
                       premiumLink: (chunks) => (
                         <a
-                          href={`/${locale}/settings#premium`}
+                          href={`/${locale}/settings#supporter`}
                           className="font-bold text-primary-light"
                         >
                           {chunks}
@@ -1252,7 +1252,7 @@ export const MobileCardEditor = ({
               <Button
                 weight="semibold"
                 onClick={() =>
-                  window.location.assign(`/${locale}/settings#premium`)
+                  window.location.assign(`/${locale}/settings#supporter`)
                 }
                 className="h-[50px] flex-1 rounded-full text-[15px]"
               >

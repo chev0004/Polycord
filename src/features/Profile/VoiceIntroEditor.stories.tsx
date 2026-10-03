@@ -41,13 +41,13 @@ export const FreeLocked: Story = {
       canvas.queryByRole('button', { name: 'Record voice intro' }),
     ).not.toBeInTheDocument();
     await expect(
-      canvas.getByRole('link', { name: 'Premium' }),
+      canvas.getByRole('link', { name: 'Supporter' }),
     ).toBeInTheDocument();
-    await expect(canvas.getAllByText('Premium')).toHaveLength(2);
+    await expect(canvas.getAllByText('Supporter')).toHaveLength(2);
   },
 };
 
-export const PremiumIdle: Story = {
+export const SupporterIdle: Story = {
   args: { premium: true },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -55,11 +55,11 @@ export const PremiumIdle: Story = {
     await expect(
       canvas.getByRole('button', { name: 'Record voice intro' }),
     ).toBeInTheDocument();
-    await expect(canvas.queryByText('Premium')).not.toBeInTheDocument();
+    await expect(canvas.queryByText('Supporter')).not.toBeInTheDocument();
   },
 };
 
-export const PremiumRecording: Story = {
+export const SupporterRecording: Story = {
   args: { premium: true },
   beforeEach: () => {
     const { mediaDevices } = navigator;

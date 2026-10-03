@@ -178,7 +178,7 @@ export const InboxPage = ({
 
         {!inbox.loading && !inbox.premium ? (
           <Link
-            href={`/${locale}/settings#premium`}
+            href={`/${locale}/settings#supporter`}
             className={`${rowClassName} overflow-hidden rounded-3xl bg-background-dark`}
           >
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">

@@ -76,15 +76,15 @@ export const FreeNotifications: Story = {
       portal.getAllByText('A user copied your username'),
     ).toHaveLength(2);
     await expect(
-      portal.getByText('See who it was with Premium'),
-    ).toHaveAttribute('href', '/en/settings#premium');
+      portal.getByText('See who it was with Supporter'),
+    ).toHaveAttribute('href', '/en/settings#supporter');
     await expect(
       portal.queryByText('Sophie Laurent viewed your profile'),
     ).not.toBeInTheDocument();
   },
 };
 
-const PremiumNotificationsStory = () => {
+const SupporterNotificationsStory = () => {
   const t = useTranslations('Inbox');
   return (
     <Inbox
@@ -123,8 +123,8 @@ const PremiumNotificationsStory = () => {
   );
 };
 
-export const PremiumNotifications: Story = {
-  render: () => <PremiumNotificationsStory />,
+export const SupporterNotifications: Story = {
+  render: () => <SupporterNotificationsStory />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const trigger = await canvas.findByRole('button', {
@@ -150,7 +150,7 @@ export const PremiumNotifications: Story = {
       portal.getByText('An anonymous user copied your username'),
     ).toBeInTheDocument();
     await expect(
-      portal.queryByText('See who it was with Premium'),
+      portal.queryByText('See who it was with Supporter'),
     ).not.toBeInTheDocument();
   },
 };
@@ -202,7 +202,7 @@ export const FreeModerationWarning: Story = {
       portal.getByRole('link', { name: 'Review community guidelines' }),
     ).toHaveAttribute('href', '/en/legal/guidelines');
     await expect(
-      portal.queryByText('See who it was with Premium'),
+      portal.queryByText('See who it was with Supporter'),
     ).not.toBeInTheDocument();
     await userEvent.click(portal.getByRole('button', { name: 'Mark as read' }));
     await expect(
@@ -464,7 +464,7 @@ const expectToastCount = (count: number) =>
     expect(screen.queryAllByText('New Notification')).toHaveLength(count),
   );
 
-export const IncomingToastsPremium: Story = {
+export const IncomingToastsSupporter: Story = {
   decorators: [
     (Story) => {
       stubIncomingBatch(true);

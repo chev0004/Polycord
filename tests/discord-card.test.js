@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 
 test.skipIf(!process.env.TEST_DATABASE_URL)(
-  'discord card layouts follow the premium entitlement rules',
+  'discord card layouts follow the Supporter entitlement rules',
   () => {
     expect(
       execFileSync(

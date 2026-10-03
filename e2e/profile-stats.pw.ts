@@ -37,7 +37,7 @@ const stat = (page: import('@playwright/test').Page, label: string) =>
 
 test.afterAll(() => sql.end());
 
-test('mobile sheet views, copies, and shares reach Premium profile insights', async ({
+test('mobile sheet views, copies, and shares reach Supporter profile insights', async ({
   browser,
 }) => {
   const [owner, viewer] = await sql<Person[]>`

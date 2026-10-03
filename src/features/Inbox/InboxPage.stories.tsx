@@ -68,8 +68,8 @@ export const Free: Story = {
       canvas.queryByText('Sophie Laurent viewed your profile'),
     ).not.toBeInTheDocument();
     await expect(
-      canvas.getByRole('link', { name: /See who it was with Premium/ }),
-    ).toHaveAttribute('href', '/en/settings#premium');
+      canvas.getByRole('link', { name: /See who it was with Supporter/ }),
+    ).toHaveAttribute('href', '/en/settings#supporter');
     await expect(canvas.getAllByText('Unread')).toHaveLength(3);
 
     await userEvent.click(
@@ -84,7 +84,7 @@ export const Free: Story = {
   },
 };
 
-export const Premium: Story = {
+export const Supporter: Story = {
   args: { premium: true },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -93,7 +93,7 @@ export const Premium: Story = {
       canvas.getByText('Sophie Laurent viewed your profile'),
     ).toBeInTheDocument();
     await expect(
-      canvas.queryByRole('link', { name: /See who it was with Premium/ }),
+      canvas.queryByRole('link', { name: /See who it was with Supporter/ }),
     ).not.toBeInTheDocument();
 
     await userEvent.click(

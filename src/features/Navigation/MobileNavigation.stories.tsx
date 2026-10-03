@@ -84,7 +84,7 @@ const meta: Meta<typeof MobileNavigation> = {
 export default meta;
 type Story = StoryObj<typeof MobileNavigation>;
 
-export const PremiumBanner: Story = {
+export const SupporterBanner: Story = {
   decorators: [
     (Story) => {
       stubNotifications(true);
@@ -162,7 +162,7 @@ export const FreeBannerHidesNames: Story = {
 
     const banner = await screen.findByRole('alert');
     await expect(banner).toHaveTextContent('A user copied your username');
-    await expect(banner).toHaveTextContent('See who it was with Premium');
+    await expect(banner).toHaveTextContent('See who it was with Supporter');
     await expect(banner).not.toHaveTextContent('xhev');
   },
 };

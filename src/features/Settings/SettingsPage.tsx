@@ -59,14 +59,14 @@ export type SettingsPageProps = {
 
 type SectionId =
   | 'account'
-  | 'premium'
+  | 'supporter'
   | 'appearance'
   | 'privacy'
   | 'notifications';
 
 const sections: { id: SectionId; labelKey: string }[] = [
   { id: 'account', labelKey: 'accountTitle' },
-  { id: 'premium', labelKey: 'premiumTitle' },
+  { id: 'supporter', labelKey: 'premiumTitle' },
   { id: 'appearance', labelKey: 'appearanceTitle' },
   { id: 'privacy', labelKey: 'privacyTitle' },
   { id: 'notifications', labelKey: 'notificationsTitle' },
@@ -220,7 +220,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
+    const rawHash = window.location.hash.slice(1);
+    const hash = rawHash === 'premium' ? 'supporter' : rawHash;
     if (sections.some((section) => section.id === hash)) {
       setActiveSection(hash as SectionId);
     }
@@ -496,7 +497,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 ) : (
                   <Button
                     variant="outline"
-                    onClick={() => jumpToSection('premium')}
+                    onClick={() => jumpToSection('supporter')}
                     className="h-10 whitespace-nowrap"
                   >
                     {t('viewPlansButton')}
@@ -615,7 +616,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </SectionCard>
           )}
 
-          {activeSection === 'premium' && (
+          {activeSection === 'supporter' && (
             <SectionCard
               title={t('premiumTitle')}
               description={
@@ -873,7 +874,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <div className="shrink-0">
                       <Toggle
                         checked={false}
-                        onCheckedChange={() => jumpToSection('premium')}
+                        onCheckedChange={() => jumpToSection('supporter')}
                         aria-label={t('hideProfileVisitsLabel')}
                       />
                     </div>
@@ -1012,7 +1013,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <div className="shrink-0">
                       <Toggle
                         checked={false}
-                        onCheckedChange={() => jumpToSection('premium')}
+                        onCheckedChange={() => jumpToSection('supporter')}
                         aria-label={t('profileViewAlertLabel')}
                       />
                     </div>

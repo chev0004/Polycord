@@ -78,7 +78,7 @@ test('plan comparison stays readable across widths, locales and plans', async ({
   context,
 }, testInfo) => {
   const free = await createUser('Layout Free');
-  const premium = await createUser('Layout Premium', true);
+  const premium = await createUser('Layout Supporter', true);
   try {
     for (const [user, locale] of [
       [free, 'en'],
@@ -87,7 +87,7 @@ test('plan comparison stays readable across widths, locales and plans', async ({
       await signIn(context, user);
       for (const width of [320, 375, 390, 768, 1024, 1440]) {
         await page.setViewportSize({ width, height: 844 });
-        await page.goto(`/${locale}/settings#premium`);
+        await page.goto(`/${locale}/settings#supporter`);
         const table = page.getByRole('table');
         await expect(table).toBeVisible();
         for (const row of await table.getByRole('row').all()) {
