@@ -293,6 +293,17 @@ const openBoostDialog = async (canvasElement: HTMLElement) => {
   return within(await screen.findByRole('dialog', { name: 'Boost profile' }));
 };
 
+export const BoostDialogBefore: Story = {
+  args: supporterBoostArgs,
+  play: async ({ canvasElement }) => {
+    const dialog = await openBoostDialog(canvasElement);
+
+    await expect(
+      dialog.getByRole('button', { name: 'Boost now' }),
+    ).toBeEnabled();
+  },
+};
+
 export const BoostDialogOpensFromMenu: Story = {
   args: supporterBoostArgs,
   play: async ({ args, canvasElement }) => {
