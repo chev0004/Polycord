@@ -3,6 +3,11 @@ export type BoostResult = {
   remaining: number;
 };
 
+export type BoostStatus = {
+  boostedUntil: string | null;
+  remaining: number;
+};
+
 export class BoostProfileError extends Error {
   constructor(
     message: string,
@@ -26,4 +31,12 @@ export const boostProfileRequest = async (): Promise<BoostResult> => {
   }
 
   return data as BoostResult;
+};
+
+export const boostStatusRequest = async (): Promise<BoostStatus> => {
+  const response = await fetch('/api/profile/boost', { cache: 'no-store' });
+
+  if (!response.ok) throw new Error('Boost status failed');
+
+  return response.json();
 };

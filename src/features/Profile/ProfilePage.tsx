@@ -799,6 +799,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         open={boostOpen}
         onOpenChange={setBoostOpen}
         active={boost.active}
+        boostedUntil={boost.boostedUntil}
         remaining={boost.remaining}
         boosting={isBoosting}
         error={boostError}

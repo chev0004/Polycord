@@ -1,10 +1,34 @@
 import { NextResponse } from 'next/server';
-import { boostProfileForUser } from '@/db';
+import { boostProfileForUser, getBoostStatusForUser } from '@/db';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
+
+export const GET = async () => {
+  const currentUser = await getActiveUser();
+
+  if (!currentUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const premium = await isPremiumUser(currentUser);
+
+  if (!premium) {
+    return NextResponse.json({ error: 'Supporter required' }, { status: 403 });
+  }
+
+  const status = await getBoostStatusForUser(currentUser.accountId, premium);
+
+  return NextResponse.json(
+    {
+      boostedUntil: status.boostedUntil?.toISOString() ?? null,
+      remaining: status.remaining,
+    },
+    { headers: { 'Cache-Control': 'private, no-store' } },
+  );
+};
 
 export const POST = async (request: Request) => {
   const currentUser = await getActiveUser();
