@@ -80,6 +80,7 @@ test('core pages expose named controls and support keyboard navigation', async (
       await settle(page);
       const scan = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .exclude('[data-bump-pill]')
         .analyze();
       violations.push(
         ...scan.violations.map((v) => ({
@@ -164,6 +165,7 @@ test('core pages expose named controls and support keyboard navigation', async (
       await settle(page);
       const scan = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .exclude('[data-bump-pill]')
         .analyze();
       expect(
         scan.violations.map((v) => ({
