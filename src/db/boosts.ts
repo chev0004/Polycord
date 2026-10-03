@@ -66,7 +66,7 @@ export const boostProfileForUser = async (userId: string) => {
       .from(subscriptions)
       .where(eq(subscriptions.userId, userId));
     const premium = isPremiumAccount(user, subscription ?? null);
-    if (!premium) return { error: 'Premium required', status: 403 };
+    if (!premium) return { error: 'Supporter required', status: 403 };
     const [profile] = await tx
       .select()
       .from(profiles)

@@ -79,9 +79,9 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         ],
       },
       {
-        heading: 'Premium and payments',
+        heading: 'Supporter and payments',
         paragraphs: [
-          'Some features are part of Polycord Premium. The price and what Premium includes are shown in Settings, and Stripe Checkout shows the amount and billing period before you pay. Subscriptions renew until you cancel, and you keep paid features until the end of the period you already paid for.',
+          'Some features are part of Polycord Supporter. The price and what Supporter includes are shown in Settings, and Stripe Checkout shows the amount and billing period before you pay. Subscriptions renew until you cancel, and you keep paid features until the end of the period you already paid for.',
         ],
       },
       {
@@ -125,7 +125,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, tags, card styling, and voice introductions.',
           'Usage data: product events, timestamps, locale, and limited feature metadata. Events from signed-in users can be linked to their account.',
           'Service data: saved profiles, blocks, reports, moderation records, notifications, preferences, and technical logs, including IP addresses for abuse prevention.',
-          'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Premium, we store Stripe customer and subscription identifiers and billing status; Stripe processes payment details.',
+          'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Supporter, we store Stripe customer and subscription identifiers and billing status; Stripe processes payment details.',
         ],
       },
       {

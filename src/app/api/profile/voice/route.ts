@@ -36,7 +36,7 @@ export const POST = async (request: Request) => {
   const premium = await isPremiumUser(currentUser);
 
   if (!hasEntitlement('profile.voiceIntro', premium)) {
-    return NextResponse.json({ error: 'Premium required' }, { status: 403 });
+    return NextResponse.json({ error: 'Supporter required' }, { status: 403 });
   }
 
   let body: unknown;
