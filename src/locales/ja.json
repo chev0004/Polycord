@@ -664,7 +664,7 @@
     "compareHiddenSub": "プロフィールを見ても、相手の通知に名前が表示されません。",
     "compareHiddenPremium": "匿名で閲覧",
     "compareInsightsFeature": "プロフィールのインサイト",
-    "compareInsightsSub": "直近30日間にプロフィールがどう使われたかの件数。",
+    "compareInsightsSub": "直近30日間の閲覧・コピー・シェア数と、保存の合計数。",
     "compareInsightsPremium": "閲覧・コピー・シェア・保存",
     "emailLabel": "メールアドレス",
     "emailPlaceholder": "メールアドレスを入力",
