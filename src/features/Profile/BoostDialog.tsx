@@ -37,10 +37,7 @@ export const BoostDialog = ({
       <Dialog.Portal>
         <Dialog.Overlay className="DialogOverlay fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
         <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
-          <Dialog.Content
-            className="DialogContent pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-[min(440px,calc(100vw-2rem))] flex-col gap-[22px] overflow-y-auto rounded-panel border border-line bg-background-dark p-6 shadow-xl"
-            onOpenAutoFocus={(event) => event.preventDefault()}
-          >
+          <Dialog.Content className="DialogContent pointer-events-auto flex max-h-[calc(100dvh-2rem)] w-[min(440px,calc(100vw-2rem))] flex-col gap-[22px] overflow-y-auto rounded-panel border border-line bg-background-dark p-6 shadow-xl">
             <div className="flex items-center gap-3">
               <Dialog.Title className="min-w-0 flex-1 font-figtree font-semibold text-[19px] text-foreground leading-[1.2]">
                 {t('boostProfile')}

@@ -877,6 +877,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 side="bottom"
                 align="end"
                 sideOffset={6}
+                onCloseAutoFocus={(event) => {
+                  if (boostOpen) event.preventDefault();
+                }}
               >
                 <div className="flex flex-col">
                   {onBumpProfile ? (
