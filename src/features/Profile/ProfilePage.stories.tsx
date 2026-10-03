@@ -15,6 +15,7 @@ import { clips, stubPlayback } from '@/features/Discovery/voicePlaybackStub';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { FieldValidationError } from '@/lib/formErrors';
+import { BoostProfileError } from './boostProfileRequest';
 import { ProfilePage } from './ProfilePage';
 import type { ProfileFormValues } from './schema';
 
@@ -269,6 +270,123 @@ export const OptionsMenuTransition: Story = {
       await screen.findByRole('button', { name: 'View public profile' })
     ).closest('.PopoverContent') as HTMLElement;
     await expect(getComputedStyle(menu).animationName).toBe('slideUpAndFade');
+  },
+};
+
+const supporterBoostArgs = {
+  initialValues: sampleProfile,
+  premium: true,
+  boostsRemaining: 3,
+  onBoostProfile: fn(async () => ({
+    boostedUntil: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    remaining: 2,
+  })),
+};
+
+const openBoostDialog = async (canvasElement: HTMLElement) => {
+  await userEvent.click(
+    within(canvasElement).getByRole('button', { name: 'Profile options' }),
+  );
+  await userEvent.click(
+    await screen.findByRole('button', { name: /^Boost profile/ }),
+  );
+  return within(await screen.findByRole('dialog', { name: 'Boost profile' }));
+};
+
+export const BoostDialogOpensFromMenu: Story = {
+  args: supporterBoostArgs,
+  play: async ({ args, canvasElement }) => {
+    const dialog = await openBoostDialog(canvasElement);
+
+    await expect(args.onBoostProfile).not.toHaveBeenCalled();
+    await userEvent.click(dialog.getByRole('button', { name: 'Boost now' }));
+    await waitFor(() => expect(args.onBoostProfile).toHaveBeenCalledOnce());
+    await expect(
+      await dialog.findByRole('button', { name: 'Boost running' }),
+    ).toBeDisabled();
+    await expect(
+      within(canvasElement).getByText('Boosted'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const BoostActive: Story = {
+  args: {
+    ...supporterBoostArgs,
+    boostsRemaining: 2,
+    boostedUntil: new Date(Date.now() + 10 * 60 * 60 * 1000).toISOString(),
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: 'Profile options' }),
+    );
+    const item = await screen.findByRole('button', { name: /^Boost profile/ });
+    await expect(within(item).getByText('Active')).toBeInTheDocument();
+    await userEvent.click(item);
+    const dialog = within(
+      await screen.findByRole('dialog', { name: 'Boost profile' }),
+    );
+    await expect(
+      dialog.getByRole('button', { name: 'Boost running' }),
+    ).toBeDisabled();
+    await expect(
+      within(canvasElement).getByText('Boosted'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const BoostDepleted: Story = {
+  args: { ...supporterBoostArgs, boostsRemaining: 0 },
+  play: async ({ canvasElement }) => {
+    const dialog = await openBoostDialog(canvasElement);
+
+    await expect(
+      dialog.getByRole('button', { name: 'No boosts left' }),
+    ).toBeDisabled();
+    await expect(within(canvasElement).queryByText('Boosted')).toBeNull();
+  },
+};
+
+export const BoostError: Story = {
+  args: {
+    ...supporterBoostArgs,
+    onBoostProfile: fn(async () => {
+      throw new BoostProfileError('No boosts remaining', 429);
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const dialog = await openBoostDialog(canvasElement);
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Boost now' }));
+    await expect(await dialog.findByRole('alert')).toHaveTextContent(
+      'You have no boosts left this month.',
+    );
+    await expect(
+      dialog.getByRole('button', { name: 'Boost now' }),
+    ).toBeEnabled();
+  },
+};
+
+export const MobileBoostDialog: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: supporterBoostArgs,
+  play: async ({ canvasElement }) => {
+    fireEvent.click(
+      await within(canvasElement).findByRole('button', {
+        name: 'Profile options',
+      }),
+    );
+    const menu = within(
+      await screen.findByRole('dialog', { name: 'Profile options' }),
+    );
+    fireEvent.click(menu.getByRole('button', { name: /^Boost profile/ }));
+    await waitFor(
+      () =>
+        expect(
+          screen.getByRole('dialog', { name: 'Boost profile' }),
+        ).toBeInTheDocument(),
+      { timeout: 4000 },
+    );
   },
 };
 

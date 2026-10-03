@@ -857,5 +857,4 @@ export const BoostedSaved: Story = {
 export const BoostedPreview: Story = {
   ...Boosted,
   args: { variant: 'preview' },
-  play: Unboosted.play,
 };
