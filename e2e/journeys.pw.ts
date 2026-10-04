@@ -362,6 +362,21 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     await expect(
       page.getByText('Suspended user · 30 days').first(),
     ).toBeVisible();
+    const discovery = `/api/discovery?q=${encodeURIComponent(`${prefix} Reported`)}&locale=en`;
+    const staffCards = (await (await moderator.request.get(discovery)).json())
+      .profiles;
+    expect(staffCards).toHaveLength(1);
+    expect(staffCards[0].moderation).toEqual({
+      hidden: false,
+      suspended: false,
+      banned: false,
+      warnings: 1,
+      pendingReports: 0,
+    });
+    const memberCards = (await (await member.request.get(discovery)).json())
+      .profiles;
+    expect(memberCards).toHaveLength(1);
+    expect(memberCards[0]).not.toHaveProperty('moderation');
     await page.goto(`/en?q=${encodeURIComponent(`${prefix} Reported`)}`);
     await page.getByRole('button', { name: 'Card menu' }).first().click();
     await page.getByRole('button', { name: 'Take action' }).click();
