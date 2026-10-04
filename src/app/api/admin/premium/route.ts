@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import {
+  extendPremiumGrant,
   listModerationUsers,
   logModerationAction,
   type ModerationAction,
   revokePremiumGrant,
-  setPremiumGrant,
 } from '@/db';
 import { authorizeOwner, readBody } from '@/lib/admin';
 import { toModLogEntry, toModUser } from '@/lib/moderation';
-import { grantExpiry, premiumGrantSchema } from '@/lib/premiumGrant';
+import { premiumGrantSchema } from '@/lib/premiumGrant';
 
 const revokeSchema = z.object({ userId: z.uuid() });
 
@@ -31,19 +31,15 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  const [target] = await listModerationUsers([body.userId]);
-  if (!target) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
-  }
-
-  const now = new Date();
-  const current = target.user.premiumGrantedUntil;
-  const expiresAt = grantExpiry(
-    current && current > now ? current : now,
+  const expiresAt = await extendPremiumGrant(
+    body.userId,
     body.amount,
     body.unit,
+    currentUser.accountId,
   );
-  await setPremiumGrant(body.userId, expiresAt, currentUser.accountId);
+  if (!expiresAt) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
 
   return respond(
     body.userId,
