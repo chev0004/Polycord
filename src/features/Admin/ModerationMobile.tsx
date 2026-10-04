@@ -66,6 +66,9 @@ import {
   useLogLabel,
   useModFormat,
   useSuspendDays,
+  useWarnMessage,
+  WarnPresets,
+  WarnPreview,
 } from './ModerationParts';
 import { PremiumPanel } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
@@ -968,9 +971,13 @@ const ProfileFacts = ({ user }: { user: ModUser }) => {
 const Note = ({
   value,
   onChange,
+  placeholder,
+  label,
 }: {
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
+  label?: string;
 }) => {
   const t = useTranslations('Admin');
   return (
@@ -978,8 +985,8 @@ const Note = ({
       <textarea
         maxLength={500}
         value={value}
-        placeholder={t('notePlaceholder')}
-        aria-label={t('note')}
+        placeholder={placeholder ?? t('notePlaceholder')}
+        aria-label={label ?? t('note')}
         onChange={(event) => onChange(event.target.value)}
         className="block min-h-20 w-full resize-none rounded-[14px] border border-white/[0.07] bg-background-darker px-3.5 pt-3 pb-[26px] font-light text-[15px] text-foreground leading-[1.45] outline-none transition-colors placeholder:text-subtle focus:border-primary"
       />
@@ -1034,20 +1041,23 @@ const CaseFooter = ({
 }) => {
   const t = useTranslations('Admin');
   const { date } = useModFormat();
-  const [sheet, setSheet] = useState<'act' | 'suspend' | 'ban' | null>(null);
+  const [sheet, setSheet] = useState<'act' | 'warn' | 'suspend' | 'ban' | null>(
+    null,
+  );
   const [note, setNote] = useState('');
   const protectedAccount = user.role !== undefined || user.id === store.meId;
   const dismiss = useRun(store, user, reportIds, onDone);
   const actions = useRun(store, user, reportIds, onDone);
   const suspend = useSuspendDays(sheet === 'suspend');
+  const warn = useWarnMessage(sheet === 'warn');
   const suspended = isSuspended(user);
 
   const open = (next: typeof sheet) => {
     actions.reset();
     setSheet(next);
   };
-  const run = async (action: ModAction, days?: number) => {
-    if (await actions.run(action, note, days)) {
+  const run = async (action: ModAction, days?: number, text = note) => {
+    if (await actions.run(action, text, days)) {
       setNote('');
       setSheet(null);
     }
@@ -1067,7 +1077,7 @@ const CaseFooter = ({
       description={description}
       danger={danger}
       disabled={actions.busy !== null && actions.busy !== action}
-      chevron={action === 'suspend' || action === 'ban'}
+      chevron={action === 'warn' || action === 'suspend' || action === 'ban'}
       onClick={onClick}
     >
       {actions.busy === action ? (
@@ -1131,12 +1141,18 @@ const CaseFooter = ({
               mobile
               reauth={actions.failed.reauth}
               onRetry={() =>
-                run(actions.failed?.action ?? 'warn', actions.failed?.days)
+                run(
+                  actions.failed?.action ?? 'warn',
+                  actions.failed?.days,
+                  actions.failed?.note,
+                )
               }
             />
           ) : null}
           <SheetGroup>
-            {row('warn', MdCampaign, t('warn'), t('warnDesc'))}
+            {row('warn', MdCampaign, t('warn'), t('warnDesc'), false, () =>
+              open('warn'),
+            )}
             {user.hidden
               ? row(
                   'unhide_profile',
@@ -1179,6 +1195,56 @@ const CaseFooter = ({
                     open('ban'),
                   )}
           </SheetGroup>
+        </div>
+      </Sheet>
+      <Sheet
+        open={sheet === 'warn'}
+        onOpenChange={(next) => setSheet(next ? 'warn' : null)}
+        title={t('warnTitle', { name: user.displayName })}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setSheet(null)}
+              className={mobileButton('outline')}
+            >
+              {t('cancel')}
+            </button>
+            <button
+              type="button"
+              disabled={!warn.valid || actions.busy !== null}
+              onClick={() => run('warn', undefined, warn.message)}
+              className={mobileButton('primary')}
+            >
+              {actions.busy ? (
+                <Spinner className="h-4 w-4" />
+              ) : (
+                <MdCampaign size={20} />
+              )}
+              {actions.busy ? t('working') : t('warnSend')}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-3.5">
+          <p className="text-[15px] text-muted leading-normal">
+            {t('warnBody')}
+          </p>
+          <WarnPresets choice={warn.choice} onPick={warn.pick} mobile />
+          <Note
+            value={warn.text}
+            onChange={warn.setText}
+            label={t('warnReason')}
+            placeholder={t('warnPlaceholder')}
+          />
+          <WarnPreview user={user} message={warn.message} mobile />
+          {actions.failed ? (
+            <ActionError
+              mobile
+              reauth={actions.failed.reauth}
+              onRetry={() => run('warn', undefined, actions.failed?.note)}
+            />
+          ) : null}
         </div>
       </Sheet>
       <Sheet

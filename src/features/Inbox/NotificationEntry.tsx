@@ -29,7 +29,8 @@ export const getNotificationMessage = (
   premium: boolean,
   t: ReturnType<typeof useTranslations<'Inbox'>>,
 ) => {
-  if (notification.kind === 'warning') return t('moderationWarning');
+  if (notification.kind === 'warning')
+    return notification.message ?? t('moderationWarning');
 
   if (notification.kind === 'share') {
     if (!premium) return t('anonymousShareAlert');

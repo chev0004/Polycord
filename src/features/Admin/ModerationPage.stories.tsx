@@ -93,6 +93,43 @@ const mockSupporterApi = () => {
   };
 };
 
+const moderationFetch = fn();
+
+const mockModerationApi = () => {
+  const original = globalThis.fetch;
+  const ryan = moderationSnapshot.users.find(
+    (user) => user.id === 'ryan',
+  ) as ModUser;
+  moderationFetch.mockReset();
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) => {
+      if (String(args[0]) !== '/api/admin/moderation') return original(...args);
+      const body = JSON.parse(String(args[1]?.body));
+      moderationFetch(body);
+      return new Response(
+        JSON.stringify({
+          users: [{ ...ryan, warnings: ryan.warnings + 1 }],
+          reports: [],
+          log: [
+            {
+              id: `action-${moderationFetch.mock.calls.length}`,
+              action: body.action,
+              userId: 'ryan',
+              staffId: 'kenji',
+              note: body.note,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        }),
+      );
+    },
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+  };
+};
+
 const meta: Meta<typeof ModerationPage> = {
   title: 'Features/Admin/ModerationPage',
   component: ModerationPage,
@@ -409,5 +446,117 @@ export const SupporterMobile: Story = {
       amount: 1,
       unit: 'weeks',
     });
+  },
+};
+
+export const WarnComposer: Story = {
+  beforeEach: mockModerationApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
+    const dialog = within(await screen.findByRole('dialog'));
+    await expect(moderationFetch).not.toHaveBeenCalled();
+    await expect(
+      dialog.getByRole('button', { name: 'Send warning' }),
+    ).toBeDisabled();
+    await expect(
+      dialog.queryAllByRole('button', { pressed: true }),
+    ).toHaveLength(0);
+    await expect(
+      dialog.getAllByRole('button', { pressed: false }),
+    ).toHaveLength(7);
+    fireEvent.click(
+      dialog.getByRole('button', { name: 'Spam or advertising' }),
+    );
+    const message = dialog.getByRole('textbox', { name: 'Message' });
+    await waitFor(() =>
+      expect(message).toHaveValue(
+        'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
+      ),
+    );
+    fireEvent.change(message, { target: { value: '   ' } });
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('button', { name: 'Send warning' }),
+      ).toBeDisabled(),
+    );
+    fireEvent.change(message, {
+      target: { value: '  Please stop posting ads.  ' },
+    });
+    await expect(
+      await dialog.findByText('Please stop posting ads.', { selector: 'p' }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('button', { name: 'Send warning' }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(dialog.getByRole('button', { name: 'Send warning' }));
+    await waitFor(() =>
+      expect(moderationFetch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'warn',
+          userId: 'ryan',
+          note: 'Please stop posting ads.',
+        }),
+      ),
+    );
+    fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));
+    await expect(
+      await canvas.findByText('Please stop posting ads.'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const WarnCancelled: Story = {
+  beforeEach: mockModerationApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.keyDown(document.body, { key: 'w' });
+    const dialog = within(await screen.findByRole('dialog'));
+    fireEvent.click(dialog.getByRole('button', { name: 'Custom message' }));
+    fireEvent.change(dialog.getByRole('textbox', { name: 'Message' }), {
+      target: { value: 'Draft that is never sent' },
+    });
+    fireEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    await expect(moderationFetch).not.toHaveBeenCalled();
+    await expect(
+      canvas.getByRole('button', { name: /^Warn/ }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const WarnMobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  beforeEach: mockModerationApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(await canvas.findByRole('button', { name: /Ryan Mercer/ }));
+    fireEvent.click(await canvas.findByRole('button', { name: /Take action/ }));
+    const sheet = within(await screen.findByRole('dialog'));
+    fireEvent.click(sheet.getByRole('button', { name: /^Warn/ }));
+    await expect(moderationFetch).not.toHaveBeenCalled();
+    const warning = within(
+      await screen.findByRole('dialog', { name: /^Warn Ryan/ }),
+    );
+    await expect(
+      warning.getByRole('button', { name: 'Send warning' }),
+    ).toBeDisabled();
+    fireEvent.click(warning.getByRole('button', { name: 'Harassment' }));
+    fireEvent.change(warning.getByRole('textbox', { name: 'Message' }), {
+      target: { value: 'Stop contacting members who said no.' },
+    });
+    fireEvent.click(warning.getByRole('button', { name: 'Send warning' }));
+    await waitFor(() =>
+      expect(moderationFetch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'warn',
+          note: 'Stop contacting members who said no.',
+        }),
+      ),
+    );
   },
 };

@@ -365,6 +365,7 @@ export const notifications = pgTable(
     actorName: text('actor_name'),
     actorAvatarUrl: text('actor_avatar_url'),
     isGuest: boolean('is_guest').default(false).notNull(),
+    message: text('message'),
     read: boolean('read').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()

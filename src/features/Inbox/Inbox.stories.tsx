@@ -211,6 +211,36 @@ export const FreeModerationWarning: Story = {
   },
 };
 
+export const ModerationWarningMessage: Story = {
+  args: {
+    notifications: [
+      {
+        id: 'warning',
+        kind: 'warning',
+        message:
+          'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
+      },
+    ],
+    persist: false,
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      await within(canvasElement).findByRole('button', {
+        name: 'Notifications',
+      }),
+    );
+    const portal = within(document.body);
+    await expect(
+      portal.getByText(
+        'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
+      ),
+    ).toBeInTheDocument();
+    await expect(
+      portal.queryByText(/You received a warning from the moderation team/),
+    ).not.toBeInTheDocument();
+  },
+};
+
 export const UnavailableActor: Story = {
   args: {
     notifications: [{ id: 'unavailable', kind: 'copy' }],
