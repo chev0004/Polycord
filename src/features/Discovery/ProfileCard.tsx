@@ -554,7 +554,7 @@ export const ProfileCard = ({
         {!isPreview && hasModeration(profile.moderation) ? (
           <div
             data-moderation-chips
-            className="absolute top-2 left-3.5 flex max-w-[55%] gap-1 overflow-hidden"
+            className="absolute top-[66px] right-3.5 left-[98px] flex gap-1 overflow-hidden"
           >
             <ModerationChips state={profile.moderation} />
           </div>
