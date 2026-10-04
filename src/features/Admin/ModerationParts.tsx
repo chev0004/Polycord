@@ -25,8 +25,10 @@ import {
   MdContentCopy,
   MdDone,
   MdErrorOutline,
+  MdGavel,
   MdLockOpen,
   MdLockOutline,
+  MdOutlineFlag,
   MdSchedule,
   MdSettingsBackupRestore,
   MdVisibility,
@@ -847,28 +849,46 @@ export const ActionBar = ({
     }
   });
 
-  const button = (
+  const cell = (
     action: ModAction,
     icon: IconType,
     label: string,
-    tone: ButtonTone = 'default',
+    tone: 'danger' | 'restore',
     kbd?: string,
     onClick: () => void = () => run(action),
   ) => {
     const Icon = icon;
+    const working = busy === action;
     return (
       <button
+        key={action}
         type="button"
+        aria-label={label}
         disabled={busy !== null}
         onClick={onClick}
-        title={kbd ? `${label} (${kbd})` : label}
-        className={`${modButton(tone)} ${busy === action ? 'disabled:opacity-100' : ''}`}
+        className={`group relative flex h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 border-line border-l transition-colors duration-150 first:border-l-0 focus-visible:bg-background-main disabled:cursor-not-allowed disabled:opacity-40 max-md:h-[58px] ${working ? 'disabled:opacity-100' : ''} ${
+          tone === 'danger'
+            ? 'text-red-400 enabled:hover:bg-[rgba(69,10,10,0.5)] enabled:hover:text-red-300'
+            : 'text-muted enabled:hover:bg-background-main enabled:hover:text-foreground'
+        }`}
       >
-        {busy === action ? <Spinner /> : <Icon size={17} />}
-        {busy === action ? t('working') : label}
-        {kbd && busy !== action ? (
-          <Kbd dark={tone === 'primary'}>{kbd}</Kbd>
-        ) : null}
+        {working ? (
+          <Spinner className="h-[18px] w-[18px]" />
+        ) : (
+          <Icon size={22} />
+        )}
+        <span
+          aria-hidden
+          className="hidden font-semibold text-[10.5px] leading-none max-md:block"
+        >
+          {label}
+        </span>
+        <span
+          aria-hidden
+          className="-translate-x-1/2 pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-[5] translate-y-1 whitespace-nowrap rounded-lg border border-line-strong bg-background-darker px-[9px] py-[5px] font-medium text-foreground text-xs opacity-0 shadow-lg transition-[opacity,transform] duration-150 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 max-md:hidden"
+        >
+          {kbd && shortcuts ? `${label} · ${kbd}` : label}
+        </span>
       </button>
     );
   };
@@ -881,66 +901,75 @@ export const ActionBar = ({
       : t(protectedAccount ? 'dismissReport' : 'dismiss');
 
   return (
-    <div className="sticky top-0 z-[3] flex flex-col gap-2.5 border-line border-b bg-background-dark px-4 py-3 md:px-5">
+    <div className="flex flex-col border-line border-b bg-background-dark">
       {protectedAccount ? (
-        <ProtectedNotice self={user.id === store.meId} />
-      ) : null}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {canDismiss
-          ? button('dismiss', MdDone, dismissLabel, 'primary', 'D')
-          : null}
-        {canDismiss && !protectedAccount ? (
-          <span className="mx-1 h-[22px] w-px bg-line" />
-        ) : null}
-        {protectedAccount ? null : (
-          <>
-            {button('warn', MdCampaign, t('warn'), 'default', 'W', () =>
-              setDialog('warn'),
-            )}
-            {user.hidden
-              ? button(
-                  'unhide_profile',
-                  MdVisibility,
-                  t('unhideProfile'),
-                  'default',
-                  'H',
-                )
-              : button(
-                  'hide_profile',
-                  MdVisibilityOff,
-                  t('hideProfile'),
-                  'danger',
-                  'H',
+        <div className="px-4 py-3 md:px-5">
+          <ProtectedNotice self={user.id === store.meId} />
+        </div>
+      ) : (
+        <div role="toolbar" aria-label={t('actionsLabel')} className="flex">
+          {cell('warn', MdCampaign, t('warn'), 'danger', 'W', () =>
+            setDialog('warn'),
+          )}
+          {user.hidden
+            ? cell(
+                'unhide_profile',
+                MdVisibility,
+                t('unhideProfile'),
+                'restore',
+                'H',
+              )
+            : cell(
+                'hide_profile',
+                MdVisibilityOff,
+                t('hideProfile'),
+                'danger',
+                'H',
+              )}
+          {suspended
+            ? cell('unsuspend', MdLockOpen, t('liftSuspension'), 'restore', 'S')
+            : cell('suspend', MdSchedule, t('suspend'), 'danger', 'S', () =>
+                setDialog('suspend'),
+              )}
+          {store.meRole !== 'owner'
+            ? null
+            : user.bannedAt
+              ? cell('unban', MdSettingsBackupRestore, t('unban'), 'restore')
+              : cell('ban', MdGavel, t('ban'), 'danger', undefined, () =>
+                  setDialog('ban'),
                 )}
-            {suspended
-              ? button(
-                  'unsuspend',
-                  MdLockOpen,
-                  t('liftSuspension'),
-                  'default',
-                  'S',
-                )
-              : button('suspend', MdSchedule, t('suspend'), 'danger', 'S', () =>
-                  setDialog('suspend'),
-                )}
-            {store.meRole !== 'owner'
-              ? null
-              : user.bannedAt
-                ? button('unban', MdSettingsBackupRestore, t('unban'))
-                : button('ban', MdBlock, t('ban'), 'danger', undefined, () =>
-                    setDialog('ban'),
-                  )}
-          </>
-        )}
-      </div>
+        </div>
+      )}
       {!protectedAccount || canDismiss ? (
-        <NoteField value={note} onChange={setNote} />
+        <div className="border-line border-t px-4 py-3 md:px-5">
+          <NoteField value={note} onChange={setNote} />
+        </div>
       ) : null}
       {failed ? (
-        <ActionError
-          reauth={failed.reauth}
-          onRetry={() => run(failed.action, failed.days, failed.note)}
-        />
+        <div className="px-4 pb-3 md:px-5">
+          <ActionError
+            reauth={failed.reauth}
+            onRetry={() => run(failed.action, failed.days, failed.note)}
+          />
+        </div>
+      ) : null}
+      {canDismiss && reportIds.length > 0 ? (
+        <div className="mx-4 mb-3 flex items-center gap-2.5 rounded-xl bg-background-darker py-1.5 pr-1.5 pl-3 text-[13px] text-muted md:mx-5">
+          <MdOutlineFlag size={18} className="shrink-0 text-discord-yellow" />
+          <span className="flex-1">
+            {t('pendingReports', { count: reportIds.length })}
+          </span>
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => run('dismiss')}
+            className={`${modButton('primary')} ${busy === 'dismiss' ? 'disabled:opacity-100' : ''}`}
+          >
+            {busy === 'dismiss' ? <Spinner /> : <MdDone size={17} />}
+            {busy === 'dismiss' ? t('working') : dismissLabel}
+            {busy !== 'dismiss' ? <Kbd dark>D</Kbd> : null}
+          </button>
+        </div>
       ) : null}
       <WarnDialog
         open={dialog === 'warn'}
@@ -1143,7 +1172,7 @@ export const DetailHeader = ({
             {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
           </button>
         </div>
-        <div className="mt-1 flex flex-wrap gap-1.5">
+        <div className="mt-1 flex min-h-[22px] flex-wrap gap-1.5">
           <UserChips user={user} />
         </div>
       </div>
