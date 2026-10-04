@@ -62,7 +62,11 @@ export const listNotificationsForUser = async (userId: string) =>
       ),
     )
     .where(eq(notifications.userId, userId))
-    .orderBy(desc(notifications.createdAt), desc(notifications.id));
+    .orderBy(
+      desc(noticePending),
+      desc(notifications.createdAt),
+      desc(notifications.id),
+    );
 
 export const createNotification = async (values: NewNotificationRecord) => {
   const settings = await getUserSettingsByUserId(values.userId);

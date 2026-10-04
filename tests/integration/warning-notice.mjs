@@ -72,6 +72,7 @@ try {
   });
   asUser(member);
 
+  assert.equal((await (await GET()).json()).notifications[0].id, notice.id);
   let rows = await stored();
   assert.equal(rows[notice.id].warningCategory, 'harassment');
   assert.equal(rows[notice.id].acknowledgedAt, undefined);
