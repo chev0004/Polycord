@@ -14,6 +14,7 @@ mock.module('@/db', () => ({
 mock.module('@/lib/auth', () => ({
   AUTH_ERROR_PARAM: 'authError',
   clearOAuthStateCookie: () => {},
+  isSuspendedIdentity: async () => false,
   normalizeDiscordUser: (user) => user,
   readOAuthStateCookie: async () => ({ nonce: 'state-1', redirectTo }),
   setSessionCookie: async () => {},
