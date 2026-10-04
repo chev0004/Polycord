@@ -54,6 +54,8 @@
     "guestShared": "A guest shared your profile",
     "anonymousUserShared": "A user shared your profile",
     "moderationWarning": "You received a warning from the moderation team. Please review our community guidelines.",
+    "noteFromModeration": "Note from moderation",
+    "readWarning": "Read warning",
     "seeWhoWithPremium": "See who it was with Supporter",
     "justNow": "Just now",
     "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",
@@ -1097,6 +1099,16 @@
     "dockSavedProfiles": "Saved profiles",
     "dockBump": "Bump profile",
     "dockBumpCooldown": "Bump in {time}"
+  },
+  "WarningNotice": {
+    "eyebrow": "Note from moderation",
+    "harassmentTitle": "Harassment Offense Warning",
+    "harassmentParagraphOne": "After a review of a report, we found that you insulted, harassed, or repeatedly contacted members who did not want to be contacted. This is covered in the <guidelines>Community Guidelines</guidelines> (\"Be respectful\" and \"What is not allowed\") and makes Polycord feel unsafe for the people who use it.",
+    "harassmentParagraphTwo": "People come here from many countries and at every level of fluency. Please be patient, respect others' boundaries, and stop contacting anyone who has made it clear they want that.",
+    "acknowledge": "I have read and understand this warning.",
+    "fine": "This is a warning and no other action has been taken. If this continues, your profile may be hidden and your account suspended or banned.",
+    "continue": "Continue",
+    "close": "Close"
   },
   "Banned": {
     "wordmarkAlt": "Polycord",

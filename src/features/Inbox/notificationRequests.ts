@@ -1,4 +1,4 @@
-import type { NotificationKind } from '@/types';
+import type { NotificationKind, WarningCategory } from '@/types';
 
 export type StoredNotification = {
   id: string;
@@ -8,6 +8,8 @@ export type StoredNotification = {
   actorProfileId?: string;
   isGuest?: boolean;
   message?: string;
+  warningCategory?: WarningCategory;
+  acknowledgedAt?: string;
   read: boolean;
   createdAt: string;
 };
@@ -46,6 +48,9 @@ export const fetchNotifications = async (
 
 export const setNotificationReadRequest = (id: string, read: boolean) =>
   jsonRequest('PATCH', { id, read });
+
+export const acknowledgeNoticeRequest = (id: string) =>
+  jsonRequest('PATCH', { id, acknowledge: true });
 
 export const markAllNotificationsReadRequest = () =>
   jsonRequest('PATCH', { all: true });

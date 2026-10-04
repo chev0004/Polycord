@@ -1,7 +1,12 @@
 import type { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { Notification, Notifications } from '@/types';
 import {
+  isNoticePending,
+  type Notification,
+  type Notifications,
+} from '@/types';
+import {
+  acknowledgeNoticeRequest,
   clearNotificationsRequest,
   deleteNotificationRequest,
   fetchNotifications,
@@ -183,12 +188,26 @@ export const useInbox = ({
       (previous) => previous.filter((n) => n.id !== id),
     );
 
-  const markAllRead = () =>
-    mutate(markAllNotificationsReadRequest, (previous) =>
-      previous.map((n) => ({ ...n, read: true })),
+  const acknowledge = (id: string) =>
+    mutate(
+      () => acknowledgeNoticeRequest(id),
+      (previous) =>
+        previous.map((n) =>
+          n.id === id
+            ? { ...n, read: true, acknowledgedAt: new Date().toISOString() }
+            : n,
+        ),
     );
 
-  const clearAll = () => mutate(clearNotificationsRequest, () => []);
+  const markAllRead = () =>
+    mutate(markAllNotificationsReadRequest, (previous) =>
+      previous.map((n) => (isNoticePending(n) ? n : { ...n, read: true })),
+    );
+
+  const clearAll = () =>
+    mutate(clearNotificationsRequest, (previous) =>
+      previous.filter(isNoticePending),
+    );
 
   const retry = () => {
     setError(null);
@@ -198,6 +217,7 @@ export const useInbox = ({
   return {
     notifications,
     unreadCount: notifications.filter((n) => !n.read).length,
+    pendingNotice: notifications.find(isNoticePending),
     premium: persist ? serverPremium : premium,
     loading,
     error,
@@ -206,6 +226,7 @@ export const useInbox = ({
     retry,
     setRead,
     remove,
+    acknowledge,
     markAllRead,
     clearAll,
   };
