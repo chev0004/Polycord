@@ -160,16 +160,62 @@ export const Moderator: Story = {
   },
 };
 
-export const StaffAccount: Story = {
+export const OwnerModeratesModerator: Story = {
   args: { displayName: 'Tomás Ruiz' },
   beforeEach: mockPanelApi('tomas'),
   play: async () => {
     const panel = within(await screen.findByRole('dialog'));
+    await panel.findByRole('heading', { name: 'Tomás Ruiz' });
     await expect(
-      await panel.findByText(/Staff can't be actioned/),
+      panel.queryByText(/Moderator account/),
+    ).not.toBeInTheDocument();
+    await expect(
+      panel.getByRole('button', { name: 'Warn' }),
+    ).toBeInTheDocument();
+    await expect(
+      panel.getByRole('button', { name: 'Ban' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const ModeratorProtectedFromModerator: Story = {
+  args: { meId: 'amara', meRole: 'moderator', displayName: 'Tomás Ruiz' },
+  beforeEach: mockPanelApi('tomas'),
+  play: async () => {
+    const panel = within(await screen.findByRole('dialog'));
+    await expect(
+      await panel.findByText(/Only owners can take action on moderators/),
     ).toBeInTheDocument();
     await expect(
       panel.queryByRole('button', { name: 'Warn' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const ModeratorProtectedFromOwner: Story = {
+  args: { meId: 'tomas', meRole: 'moderator', displayName: 'Kenji Ito' },
+  beforeEach: mockPanelApi('kenji'),
+  play: async () => {
+    const panel = within(await screen.findByRole('dialog'));
+    await expect(
+      await panel.findByText(/Owners can't be moderated/),
+    ).toBeInTheDocument();
+    await expect(
+      panel.queryByRole('button', { name: 'Warn' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const OwnerProtectedFromOwner: Story = {
+  args: { meId: 'amara', meRole: 'owner', displayName: 'Kenji Ito' },
+  beforeEach: mockPanelApi('kenji'),
+  play: async () => {
+    const panel = within(await screen.findByRole('dialog'));
+    await expect(
+      await panel.findByText(/Owners can't be moderated/),
+    ).toBeInTheDocument();
+    await expect(
+      panel.queryByRole('button', { name: 'Ban' }),
     ).not.toBeInTheDocument();
   },
 };

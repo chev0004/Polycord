@@ -11,6 +11,7 @@ import { trackEvent } from '@/lib/analytics/track.server';
 import {
   AUTH_ERROR_PARAM,
   clearOAuthStateCookie,
+  isSuspendedIdentity,
   normalizeDiscordUser,
   readOAuthStateCookie,
   setSessionCookie,
@@ -141,6 +142,11 @@ export const GET = async (request: NextRequest) => {
 
     const currentUser = normalizeDiscordUser(discordUser);
     const existingUser = await getUserByDiscordId(currentUser.id);
+
+    if (await isSuspendedIdentity(currentUser.id, existingUser)) {
+      return redirectWithError(request, redirectTo, 'suspended');
+    }
+
     const user = await upsertDiscordUser(currentUser);
     const settings = await getUserSettingsByUserId(user.id);
     const requestedLocale = localeFromPath(redirectTo) ?? 'en';
