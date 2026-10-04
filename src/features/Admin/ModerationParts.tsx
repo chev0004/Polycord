@@ -497,6 +497,77 @@ const ModDialog = ({
 
 const fieldLabel = 'font-medium text-[13px] text-soft';
 
+export type ConfirmAction = 'hide_profile' | 'unhide_profile' | 'dismiss';
+
+export const useActionConfirmation = (
+  action: ConfirmAction,
+  user: ModUser,
+  count: number,
+) => {
+  const t = useTranslations('Admin');
+  const key = {
+    hide_profile: 'hide',
+    unhide_profile: 'unhide',
+    dismiss: 'dismiss',
+  }[action];
+  return {
+    title: t(`${key}Title`, { name: user.displayName, count }),
+    body: t(`${key}Body`, { username: user.username, count }),
+    label:
+      action === 'dismiss'
+        ? t(count === 1 ? 'dismissReport' : 'dismissReports', { count })
+        : t(action === 'hide_profile' ? 'hideProfile' : 'unhideProfile'),
+  };
+};
+
+const ConfirmActionDialog = ({
+  action,
+  user,
+  count,
+  note,
+  onNote,
+  onCancel,
+  onConfirm,
+}: {
+  action: ConfirmAction;
+  user: ModUser;
+  count: number;
+  note: string;
+  onNote: (note: string) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) => {
+  const t = useTranslations('Admin');
+  const confirmation = useActionConfirmation(action, user, count);
+  return (
+    <ModDialog
+      open
+      onClose={onCancel}
+      title={confirmation.title}
+      description={confirmation.body}
+    >
+      <div className="flex flex-col gap-1.5">
+        <span className={fieldLabel}>{t('note')}</span>
+        <NoteField value={note} onChange={onNote} tall />
+      </div>
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className={modButton()}>
+          {t('cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          className={modButton(
+            action === 'hide_profile' ? 'dangerFill' : 'primary',
+          )}
+        >
+          {confirmation.label}
+        </button>
+      </div>
+    </ModDialog>
+  );
+};
+
 export const SuspendDialog = ({
   open,
   user,
@@ -838,11 +909,18 @@ export const ActionBar = ({
     note: string;
     reauth: boolean;
   } | null>(null);
-  const [dialog, setDialog] = useState<'warn' | 'suspend' | 'ban' | null>(null);
+  const [dialog, setDialog] = useState<
+    'warn' | 'suspend' | 'ban' | ConfirmAction | null
+  >(null);
   const protectedAccount = user.role !== undefined || user.id === store.meId;
   const suspended = isSuspended(user);
 
-  const run = async (action: ModAction, days?: number, runNote = note) => {
+  const open = (next: NonNullable<typeof dialog>) => {
+    if (busy) return;
+    setNote('');
+    setDialog(next);
+  };
+  const run = async (action: ModAction, days?: number, runNote = '') => {
     if (busy) return;
     setBusy(action);
     setFailed(null);
@@ -865,13 +943,13 @@ export const ActionBar = ({
   };
 
   useShortcut(shortcuts, (key) => {
-    if (key === 'd' && canDismiss) void run('dismiss');
+    if (key === 'd' && canDismiss && reportIds.length) open('dismiss');
     if (protectedAccount) return;
-    if (key === 'w') setDialog('warn');
-    if (key === 'h') void run(user.hidden ? 'unhide_profile' : 'hide_profile');
+    if (key === 'w') open('warn');
+    if (key === 'h') open(user.hidden ? 'unhide_profile' : 'hide_profile');
     if (key === 's') {
       if (suspended) void run('unsuspend');
-      else setDialog('suspend');
+      else open('suspend');
     }
   });
 
@@ -935,7 +1013,7 @@ export const ActionBar = ({
       ) : (
         <div role="toolbar" aria-label={t('actionsLabel')} className="flex">
           {cell('warn', MdCampaign, t('warn'), 'danger', 'W', () =>
-            setDialog('warn'),
+            open('warn'),
           )}
           {user.hidden
             ? cell(
@@ -944,6 +1022,7 @@ export const ActionBar = ({
                 t('unhideProfile'),
                 'restore',
                 'H',
+                () => open('unhide_profile'),
               )
             : cell(
                 'hide_profile',
@@ -951,26 +1030,22 @@ export const ActionBar = ({
                 t('hideProfile'),
                 'danger',
                 'H',
+                () => open('hide_profile'),
               )}
           {suspended
             ? cell('unsuspend', MdLockOpen, t('liftSuspension'), 'restore', 'S')
             : cell('suspend', MdSchedule, t('suspend'), 'danger', 'S', () =>
-                setDialog('suspend'),
+                open('suspend'),
               )}
           {store.meRole !== 'owner'
             ? null
             : user.bannedAt
               ? cell('unban', MdSettingsBackupRestore, t('unban'), 'restore')
               : cell('ban', MdGavel, t('ban'), 'danger', undefined, () =>
-                  setDialog('ban'),
+                  open('ban'),
                 )}
         </div>
       )}
-      {!protectedAccount || canDismiss ? (
-        <div className="border-line border-t px-4 py-3 md:px-5">
-          <NoteField value={note} onChange={setNote} />
-        </div>
-      ) : null}
       {failed ? (
         <div className="px-4 pb-3 md:px-5">
           <ActionError
@@ -988,7 +1063,7 @@ export const ActionBar = ({
           <button
             type="button"
             disabled={busy !== null}
-            onClick={() => run('dismiss')}
+            onClick={() => open('dismiss')}
             className={`${modButton('primary')} ${busy === 'dismiss' ? 'disabled:opacity-100' : ''}`}
           >
             {busy === 'dismiss' ? <Spinner /> : <MdDone size={17} />}
@@ -1009,7 +1084,7 @@ export const ActionBar = ({
         note={note}
         onNote={setNote}
         onCancel={() => setDialog(null)}
-        onConfirm={(days) => run('suspend', days)}
+        onConfirm={(days) => run('suspend', days, note)}
       />
       <BanDialog
         open={dialog === 'ban'}
@@ -1017,8 +1092,21 @@ export const ActionBar = ({
         note={note}
         onNote={setNote}
         onCancel={() => setDialog(null)}
-        onConfirm={() => run('ban')}
+        onConfirm={() => run('ban', undefined, note)}
       />
+      {dialog === 'hide_profile' ||
+      dialog === 'unhide_profile' ||
+      dialog === 'dismiss' ? (
+        <ConfirmActionDialog
+          action={dialog}
+          user={user}
+          count={reportIds.length}
+          note={note}
+          onNote={setNote}
+          onCancel={() => setDialog(null)}
+          onConfirm={() => run(dialog, undefined, note)}
+        />
+      ) : null}
     </div>
   );
 };
