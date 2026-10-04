@@ -880,3 +880,44 @@ export const BoostedPreview: Story = {
   ...Boosted,
   args: { variant: 'preview' },
 };
+
+const allFlags = {
+  hidden: true,
+  suspended: true,
+  banned: true,
+  warnings: 2,
+  pendingReports: 3,
+};
+
+export const ModerationChipsForStaff: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return (
+      <div className="flex flex-col">
+        <ProfileCard {...args} profile={createMockProfile(t)} />
+        <ProfileCard
+          {...args}
+          profile={{ ...createMockProfile(t), moderation: allFlags }}
+        />
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const [plain, flagged] = Array.from(
+      canvasElement.querySelectorAll('article'),
+    );
+    const chips = within(
+      flagged.querySelector('[data-moderation-chips]') as HTMLElement,
+    );
+
+    await expect(plain.querySelector('[data-moderation-chips]')).toBeNull();
+    await expect(chips.getByText('Banned')).toBeInTheDocument();
+    await expect(chips.getByText('Suspended')).toBeInTheDocument();
+    await expect(chips.getByText('Hidden')).toBeInTheDocument();
+    await expect(chips.getByText('3 reports')).toBeInTheDocument();
+    await expect(chips.getByText('Warned 2×')).toBeInTheDocument();
+    await expect(flagged.getBoundingClientRect().height).toBe(
+      plain.getBoundingClientRect().height,
+    );
+  },
+};
