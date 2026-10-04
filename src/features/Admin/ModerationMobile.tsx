@@ -51,6 +51,7 @@ import {
   type UsersQuery,
   useEventLabel,
 } from './ModerationDesktop';
+import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
   ActionError,
@@ -421,6 +422,7 @@ const UsersScreen = ({
 }) => {
   const t = useTranslations('Admin');
   const [staffOpen, setStaffOpen] = useState(false);
+  const [ipBlocksOpen, setIpBlocksOpen] = useState(false);
   const trimmed = users.query.trim();
   const list = (trimmed ? (users.results ?? []) : store.recentUserIds).flatMap(
     (id) => store.usersById.get(id) ?? [],
@@ -462,6 +464,13 @@ const UsersScreen = ({
               chevron
               onClick={() => setStaffOpen(true)}
             />
+            <SheetRow
+              icon={MdBlock}
+              label={t('manageIpBlocks')}
+              description={t('ipBlocksHint')}
+              chevron
+              onClick={() => setIpBlocksOpen(true)}
+            />
           </div>
         ) : null}
         {users.searching ? (
@@ -501,6 +510,13 @@ const UsersScreen = ({
         title={t('staffTitle')}
       >
         <StaffPanel store={store} mobile />
+      </Sheet>
+      <Sheet
+        open={ipBlocksOpen}
+        onOpenChange={setIpBlocksOpen}
+        title={t('manageIpBlocks')}
+      >
+        <IpBlocksPanel store={store} mobile />
       </Sheet>
     </>
   );
