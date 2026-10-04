@@ -59,7 +59,8 @@ const mockSupporterApi = () => {
     async (...args: Parameters<typeof fetch>) => {
       if (String(args[0]) !== '/api/admin/premium') return original(...args);
       const method = args[1]?.method;
-      premiumFetch(method, JSON.parse(String(args[1]?.body)));
+      const request = JSON.parse(String(args[1]?.body));
+      premiumFetch(method, request);
       const expiresAt = '2027-03-28T10:15:00.000Z';
       return new Response(
         JSON.stringify({
@@ -79,6 +80,10 @@ const mockSupporterApi = () => {
               action: method === 'POST' ? 'premium_grant' : 'premium_revoke',
               userId: 'ryan',
               staffId: 'kenji',
+              grant:
+                method === 'POST'
+                  ? { amount: request.amount, unit: request.unit }
+                  : undefined,
               expiresAt,
               createdAt: new Date().toISOString(),
             },
@@ -344,18 +349,22 @@ export const SupporterGrant: Story = {
     await expect(
       await canvas.findByText('No complimentary Supporter.'),
     ).toBeInTheDocument();
-    fireEvent.change(canvas.getByRole('spinbutton', { name: 'Grant length' }), {
-      target: { value: '0' },
-    });
     await expect(
-      canvas.getByText('Enter a whole number from 1 to 120.'),
+      canvas.queryByText('Supporter', { selector: 'span' }),
+    ).toBeNull();
+    const amount = canvas.getByRole('spinbutton', { name: 'Grant length' });
+    fireEvent.change(amount, { target: { value: '0' } });
+    await expect(
+      canvas.getByText('Enter a whole number from 1 to 24.'),
     ).toBeInTheDocument();
     await expect(
       canvas.getByRole('button', { name: 'Grant Supporter' }),
     ).toBeDisabled();
-    fireEvent.change(canvas.getByRole('spinbutton', { name: 'Grant length' }), {
-      target: { value: '2' },
-    });
+    fireEvent.change(amount, { target: { value: '25' } });
+    await expect(
+      canvas.getByText('Enter a whole number from 1 to 24.'),
+    ).toBeInTheDocument();
+    fireEvent.change(amount, { target: { value: '2' } });
     fireEvent.click(canvas.getByRole('button', { name: 'Years' }));
     await expect(canvas.getByText(/^Ends/)).toBeInTheDocument();
     fireEvent.click(canvas.getByRole('button', { name: 'Grant Supporter' }));
@@ -367,25 +376,27 @@ export const SupporterGrant: Story = {
       amount: 2,
       unit: 'years',
     });
+    await expect(canvas.getByText('Extend by')).toBeInTheDocument();
     await expect(
-      canvas.getByText(/^Granted Supporter until/),
+      canvas.getByRole('button', { name: 'Extend Supporter' }),
     ).toBeInTheDocument();
     await expect(
-      canvas.getByText(/Replaces the current grant ending/),
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole('button', { name: 'Replace grant' }),
-    ).toBeInTheDocument();
-    fireEvent.click(canvas.getByRole('button', { name: 'Revoke grant' }));
+      canvas.getAllByText('Supporter', { selector: 'span' }),
+    ).not.toHaveLength(0);
+    fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));
+    await waitFor(() =>
+      expect(
+        canvas.getByText('Granted Supporter, 2 years'),
+      ).toBeInTheDocument(),
+    );
+    fireEvent.click(canvas.getByRole('tab', { name: /^Reports/ }));
+    fireEvent.click(await canvas.findByRole('button', { name: 'Revoke' }));
     await expect(
       await canvas.findByText('No complimentary Supporter.'),
     ).toBeInTheDocument();
     await expect(premiumFetch).toHaveBeenCalledWith('DELETE', {
       userId: 'ryan',
     });
-    await expect(
-      canvas.getByText(/^Revoked Supporter grant ending/),
-    ).toBeInTheDocument();
   },
 };
 
@@ -431,21 +442,36 @@ export const SupporterMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     fireEvent.click(await canvas.findByRole('button', { name: /Ryan Mercer/ }));
-    await expect(
-      await canvas.findByText('No complimentary Supporter.'),
-    ).toBeInTheDocument();
-    const weeks = canvas.getByRole('button', { name: 'Weeks' });
+    await expect(await canvas.findByText('Supporter')).toBeInTheDocument();
+    await expect(canvas.getByText('None')).toBeInTheDocument();
+    fireEvent.click(await canvas.findByRole('button', { name: /Take action/ }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: /^Grant Supporter/ }),
+    );
+    const sheet = within(
+      await screen.findByRole('dialog', { name: 'Grant Supporter' }),
+    );
+    const weeks = sheet.getByRole('button', { name: 'Weeks' });
     fireEvent.click(weeks);
     await waitFor(() => expect(weeks).toHaveAttribute('aria-pressed', 'true'));
-    fireEvent.click(canvas.getByRole('button', { name: 'Grant Supporter' }));
+    await expect(sheet.getByText(/^Ends/)).toBeInTheDocument();
+    fireEvent.click(sheet.getByRole('button', { name: 'Grant Supporter' }));
+    await waitFor(() =>
+      expect(premiumFetch).toHaveBeenCalledWith('POST', {
+        userId: 'ryan',
+        amount: 1,
+        unit: 'weeks',
+      }),
+    );
+    await expect(await canvas.findByText(/^Until /)).toBeInTheDocument();
+    fireEvent.click(await canvas.findByRole('button', { name: /Take action/ }));
     await expect(
-      await canvas.findByText(/^Complimentary Supporter until/),
+      await screen.findByRole('button', { name: /^Extend Supporter/ }),
     ).toBeInTheDocument();
-    await expect(premiumFetch).toHaveBeenCalledWith('POST', {
-      userId: 'ryan',
-      amount: 1,
-      unit: 'weeks',
-    });
+    fireEvent.click(screen.getByRole('button', { name: /^Revoke Supporter/ }));
+    await waitFor(() =>
+      expect(premiumFetch).toHaveBeenCalledWith('DELETE', { userId: 'ryan' }),
+    );
   },
 };
 

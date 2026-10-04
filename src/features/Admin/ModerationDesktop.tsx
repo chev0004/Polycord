@@ -274,7 +274,11 @@ export const UserDetail = ({
 
   return (
     <>
-      <DetailHeader user={user} onOpenRecord={onOpenRecord} />
+      <DetailHeader
+        user={user}
+        onOpenRecord={onOpenRecord}
+        showSupporter={store.meRole === 'owner'}
+      />
       <ActionBar
         store={store}
         user={user}

@@ -27,6 +27,7 @@ import {
   MdInventory2,
   MdLockOpen,
   MdOutlinedFlag,
+  MdPersonRemove,
   MdPersonSearch,
   MdPolicy,
   MdSchedule,
@@ -38,6 +39,7 @@ import {
   MdTune,
   MdVisibility,
   MdVisibilityOff,
+  MdWorkspacePremium,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
@@ -54,6 +56,7 @@ import {
   DURATION_PRESETS,
   EmptyState,
   HistoryList,
+  hasGrant,
   ProtectedNotice,
   ReasonBadge,
   ReportStack,
@@ -70,7 +73,7 @@ import {
   WarnPresets,
   WarnPreview,
 } from './ModerationParts';
-import { PremiumPanel } from './ModerationPremium';
+import { GrantFields, useGrant } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { SeedPanel } from './SeedPanel';
 import type { ModAction, ModReport, ModUser, SeedStatus } from './types';
@@ -867,7 +870,13 @@ const Dock = ({
   );
 };
 
-const Hero = ({ user }: { user: ModUser }) => {
+const Hero = ({
+  user,
+  showSupporter,
+}: {
+  user: ModUser;
+  showSupporter: boolean;
+}) => {
   const t = useTranslations('Admin');
   const [copied, setCopied] = useState(false);
   return (
@@ -881,9 +890,12 @@ const Hero = ({ user }: { user: ModUser }) => {
           <span className="text-muted text-sm">@{user.username}</span>
         </div>
       </div>
-      {user.role || hasStatusChips(user) || user.warnings > 0 ? (
+      {user.role ||
+      hasStatusChips(user) ||
+      user.warnings > 0 ||
+      (showSupporter && hasGrant(user)) ? (
         <div className="flex flex-wrap gap-1.5 [&>span]:h-[26px] [&>span]:px-2.5 [&>span]:text-xs">
-          <UserChips user={user} />
+          <UserChips user={user} showSupporter={showSupporter} />
         </div>
       ) : null}
       <button
@@ -911,7 +923,13 @@ const Hero = ({ user }: { user: ModUser }) => {
   );
 };
 
-const ProfileFacts = ({ user }: { user: ModUser }) => {
+const ProfileFacts = ({
+  user,
+  showSupporter,
+}: {
+  user: ModUser;
+  showSupporter: boolean;
+}) => {
   const t = useTranslations('Admin');
   const { date } = useModFormat();
   const labels = useLanguageLabels();
@@ -964,6 +982,16 @@ const ProfileFacts = ({ user }: { user: ModUser }) => {
         </>
       ) : null}
       {fact('factJoined', date(user.joinedAt))}
+      {showSupporter
+        ? fact(
+            'factSupporter',
+            hasGrant(user) && user.premium.grantedUntil ? (
+              t('factSupporterUntil', { date: date(user.premium.grantedUntil) })
+            ) : (
+              <span className="text-muted">{t('factSupporterNone')}</span>
+            ),
+          )
+        : null}
     </div>
   );
 };
@@ -1041,10 +1069,11 @@ const CaseFooter = ({
 }) => {
   const t = useTranslations('Admin');
   const { date } = useModFormat();
-  const [sheet, setSheet] = useState<'act' | 'warn' | 'suspend' | 'ban' | null>(
-    null,
-  );
+  const [sheet, setSheet] = useState<
+    'act' | 'warn' | 'suspend' | 'ban' | 'grant' | null
+  >(null);
   const [note, setNote] = useState('');
+  const grant = useGrant(store, user, () => setSheet(null));
   const protectedAccount = user.role !== undefined || user.id === store.meId;
   const dismiss = useRun(store, user, reportIds, onDone);
   const actions = useRun(store, user, reportIds, onDone);
@@ -1054,6 +1083,7 @@ const CaseFooter = ({
 
   const open = (next: typeof sheet) => {
     actions.reset();
+    grant.clearError();
     setSheet(next);
   };
   const run = async (action: ModAction, days?: number, text = note) => {
@@ -1195,6 +1225,84 @@ const CaseFooter = ({
                     open('ban'),
                   )}
           </SheetGroup>
+          {store.meRole === 'owner' ? (
+            <SheetGroup>
+              <SheetRow
+                icon={MdWorkspacePremium}
+                label={t(grant.granted ? 'replacePremium' : 'grantPremium')}
+                description={
+                  grant.granted && user.premium.grantedUntil
+                    ? t('extendDesc', { date: date(user.premium.grantedUntil) })
+                    : t('grantDesc')
+                }
+                chevron
+                onClick={() => open('grant')}
+              />
+              {grant.granted ? (
+                <SheetRow
+                  icon={MdPersonRemove}
+                  label={t('revokeSupporter')}
+                  description={t('revokeDesc')}
+                  danger
+                  disabled={grant.busy !== null}
+                  onClick={grant.revoke}
+                >
+                  {grant.busy === 'revoke' ? (
+                    <span className="ml-auto text-muted">
+                      <Spinner className="h-4 w-4" />
+                    </span>
+                  ) : null}
+                </SheetRow>
+              ) : null}
+            </SheetGroup>
+          ) : null}
+          {grant.error && sheet === 'act' ? (
+            <ActionError
+              mobile
+              reauth={grant.error === 'reauth'}
+              onRetry={grant.revoke}
+            />
+          ) : null}
+        </div>
+      </Sheet>
+      <Sheet
+        open={sheet === 'grant'}
+        onOpenChange={(next) => setSheet(next ? 'grant' : null)}
+        title={t(grant.granted ? 'replacePremium' : 'grantPremium')}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setSheet(null)}
+              className={mobileButton('outline')}
+            >
+              {t('cancel')}
+            </button>
+            <button
+              type="button"
+              disabled={!grant.valid || grant.busy !== null}
+              onClick={grant.grant}
+              className={mobileButton('primary')}
+            >
+              {grant.busy === 'grant' ? (
+                <Spinner className="h-4 w-4" />
+              ) : (
+                <MdWorkspacePremium size={20} />
+              )}
+              {grant.busy === 'grant'
+                ? t('working')
+                : t(grant.granted ? 'replacePremium' : 'grantPremium')}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-3.5">
+          <p className="text-[15px] text-muted leading-normal">
+            {t(grant.granted ? 'extendBody' : 'grantBody', {
+              username: user.username,
+            })}
+          </p>
+          <GrantFields grant={grant} mobile />
         </div>
       </Sheet>
       <Sheet
@@ -1448,7 +1556,7 @@ const CasePage = ({
   const profileSection = (
     <section key="profile" className="mx-4 mt-6 flex flex-col gap-2">
       <h3 className={caption}>{t('sectionProfile')}</h3>
-      <ProfileFacts user={user} />
+      <ProfileFacts user={user} showSupporter={store.meRole === 'owner'} />
     </section>
   );
 
@@ -1477,7 +1585,7 @@ const CasePage = ({
         </h1>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 [scrollbar-width:none]">
-        <Hero user={user} />
+        <Hero user={user} showSupporter={store.meRole === 'owner'} />
         {protectedAccount ? (
           <div className="mx-4 mt-3">
             <ProtectedNotice self={user.id === store.meId} large />
@@ -1486,12 +1594,6 @@ const CasePage = ({
         {isCase
           ? [reportsSection, profileSection]
           : [profileSection, reportsSection]}
-        {store.meRole === 'owner' ? (
-          <section className="mx-4 mt-6 flex flex-col gap-2">
-            <h3 className={caption}>{t('sectionPremium')}</h3>
-            <PremiumPanel store={store} user={user} mobile />
-          </section>
-        ) : null}
         <section className="mx-4 mt-6 flex flex-col gap-2">
           <h3 className={caption}>
             <span>

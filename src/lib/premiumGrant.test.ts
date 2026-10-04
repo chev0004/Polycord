@@ -47,11 +47,12 @@ test('moves a leap day grant to February 28 in common years', () => {
 
 test('accepts only whole positive amounts within each unit limit', () => {
   expect(isValidGrant(2, 'weeks')).toBe(true);
-  expect(isValidGrant(520, 'weeks')).toBe(true);
-  expect(isValidGrant(521, 'weeks')).toBe(false);
-  expect(isValidGrant(120, 'months')).toBe(true);
-  expect(isValidGrant(10, 'years')).toBe(true);
-  expect(isValidGrant(11, 'years')).toBe(false);
+  expect(isValidGrant(52, 'weeks')).toBe(true);
+  expect(isValidGrant(53, 'weeks')).toBe(false);
+  expect(isValidGrant(24, 'months')).toBe(true);
+  expect(isValidGrant(25, 'months')).toBe(false);
+  expect(isValidGrant(5, 'years')).toBe(true);
+  expect(isValidGrant(6, 'years')).toBe(false);
   expect(isValidGrant(0, 'months')).toBe(false);
   expect(isValidGrant(-1, 'months')).toBe(false);
   expect(isValidGrant(1.5, 'months')).toBe(false);

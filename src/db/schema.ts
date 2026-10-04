@@ -59,6 +59,8 @@ export const moderationActionEnum = pgEnum('moderation_action', [
   'premium_revoke',
 ]);
 
+export const grantUnitEnum = pgEnum('grant_unit', ['weeks', 'months', 'years']);
+
 export const staffRoleEnum = pgEnum('staff_role', ['moderator']);
 
 export const reportReasonEnum = pgEnum('report_reason', [
@@ -460,6 +462,8 @@ export const moderationActions = pgTable(
     action: moderationActionEnum('action').notNull(),
     note: text('note'),
     days: integer('days'),
+    grantAmount: integer('grant_amount'),
+    grantUnit: grantUnitEnum('grant_unit'),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()

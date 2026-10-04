@@ -33,6 +33,7 @@ import {
   MdSettingsBackupRestore,
   MdVisibility,
   MdVisibilityOff,
+  MdWorkspacePremium,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
@@ -123,11 +124,13 @@ export const useLogLabel = () => {
   return (entry: ModLogEntry) =>
     entry.action === 'suspend' && entry.days
       ? t('suspendedFor', { count: entry.days })
-      : entry.action === 'premium_grant' && entry.expiresAt
-        ? t('premiumGrantedUntil', { date: date(entry.expiresAt) })
-        : entry.action === 'premium_revoke' && entry.expiresAt
-          ? t('premiumRevokedFrom', { date: date(entry.expiresAt) })
-          : t(`action_${entry.action}`);
+      : entry.action === 'premium_grant' && entry.grant
+        ? t('premiumGrantedFor', entry.grant)
+        : entry.action === 'premium_grant' && entry.expiresAt
+          ? t('premiumGrantedUntil', { date: date(entry.expiresAt) })
+          : entry.action === 'premium_revoke' && entry.expiresAt
+            ? t('premiumRevokedFrom', { date: date(entry.expiresAt) })
+            : t(`action_${entry.action}`);
 };
 
 const chipBase =
@@ -176,6 +179,22 @@ export const WarnChip = ({ count }: { count: number }) => {
   );
 };
 
+export const hasGrant = (user: ModUser) =>
+  user.premium.grantedUntil !== undefined &&
+  new Date(user.premium.grantedUntil).getTime() > Date.now();
+
+export const SupporterChip = () => {
+  const t = useTranslations('Admin');
+  return (
+    <span
+      className={`${chipBase} h-[22px] bg-primary-darker px-2 text-[11px] text-primary-light`}
+    >
+      <MdWorkspacePremium size={14} className="text-primary" />
+      {t('chipSupporter')}
+    </span>
+  );
+};
+
 export const RestrictionChips = ({
   user,
   small = false,
@@ -219,11 +238,18 @@ export const RestrictionChips = ({
   );
 };
 
-export const UserChips = ({ user }: { user: ModUser }) => (
+export const UserChips = ({
+  user,
+  showSupporter = false,
+}: {
+  user: ModUser;
+  showSupporter?: boolean;
+}) => (
   <>
     {user.role ? <StaffChip role={user.role} /> : null}
     <RestrictionChips user={user} />
     {user.warnings > 0 ? <WarnChip count={user.warnings} /> : null}
+    {showSupporter && hasGrant(user) ? <SupporterChip /> : null}
   </>
 );
 
@@ -1147,9 +1173,11 @@ export const HistoryList = ({
 export const DetailHeader = ({
   user,
   onOpenRecord,
+  showSupporter = false,
 }: {
   user: ModUser;
   onOpenRecord?: () => void;
+  showSupporter?: boolean;
 }) => {
   const t = useTranslations('Admin');
   const [copied, setCopied] = useState(false);
@@ -1177,7 +1205,7 @@ export const DetailHeader = ({
           </button>
         </div>
         <div className="mt-1 flex min-h-[22px] flex-wrap gap-1.5">
-          <UserChips user={user} />
+          <UserChips user={user} showSupporter={showSupporter} />
         </div>
       </div>
       {onOpenRecord ? (
