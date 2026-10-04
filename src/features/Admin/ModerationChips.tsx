@@ -13,7 +13,7 @@ import type { ModState } from './types';
 
 const base =
   'inline-flex h-[18px] items-center gap-1 whitespace-nowrap rounded-md px-1.5 font-semibold text-[10.5px]';
-const red = `${base} bg-danger-surface text-danger`;
+const red = `${base} bg-[rgba(69,10,10,0.5)] text-danger`;
 const yellow = `${base} bg-[rgba(240,177,51,0.12)] text-discord-yellow-light`;
 
 export const ModerationChips = ({ state }: { state: ModState }) => {
