@@ -45,6 +45,7 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
+import type { WarningCategory } from '@/types';
 import {
   type ModTab,
   type Notify,
@@ -1082,12 +1083,24 @@ const useRun = (
     note: string;
     reauth: boolean;
   } | null>(null);
-  const run = async (action: ModAction, note: string, days?: number) => {
+  const run = async (
+    action: ModAction,
+    note: string,
+    days?: number,
+    category?: WarningCategory,
+  ) => {
     if (busy) return false;
     setBusy(action);
     setFailed(null);
     try {
-      await store.act({ userId: user.id, action, reportIds, note, days });
+      await store.act({
+        userId: user.id,
+        action,
+        reportIds,
+        note,
+        days,
+        category,
+      });
       onDone(action, days);
       return true;
     } catch (error) {
@@ -1134,8 +1147,13 @@ export const ActionSheets = ({
     grant.clearError();
   }, [sheet]);
   const open = (next: SheetKind) => setSheet(next);
-  const run = async (action: ModAction, days?: number, text = note) => {
-    if (await actions.run(action, text, days)) {
+  const run = async (
+    action: ModAction,
+    days?: number,
+    text = note,
+    category?: WarningCategory,
+  ) => {
+    if (await actions.run(action, text, days, category)) {
       setNote('');
       setSheet(null);
     }
@@ -1337,7 +1355,9 @@ export const ActionSheets = ({
             <button
               type="button"
               disabled={!warn.valid || actions.busy !== null}
-              onClick={() => run('warn', undefined, warn.message)}
+              onClick={() =>
+                run('warn', undefined, warn.message, warn.category)
+              }
               className={mobileButton('primary')}
             >
               {actions.busy ? (
