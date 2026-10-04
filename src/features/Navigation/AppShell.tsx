@@ -42,10 +42,19 @@ export const useNavbarBump = (
   }, [setBump, enabled, readyAt]);
 };
 
+const PendingCasesContext = createContext<(count: number) => void>(() => {});
+
+export const useSyncPendingCases = (count: number) => {
+  const setPendingCases = useContext(PendingCasesContext);
+
+  useEffect(() => setPendingCases(count), [setPendingCases, count]);
+};
+
 type AppShellProps = {
   locale: string;
   isLoggedIn: boolean;
   userAvatarUrl?: string;
+  pendingCases?: number;
   children: React.ReactNode;
 };
 
@@ -53,10 +62,14 @@ export const AppShell = ({
   locale,
   isLoggedIn,
   userAvatarUrl,
+  pendingCases,
   children,
 }: AppShellProps) => {
   const router = useRouteProgressRouter();
   const [bump, setBump] = useState<BumpAction | null>(null);
+  const [liveCases, setLiveCases] = useState(pendingCases);
+
+  useEffect(() => setLiveCases(pendingCases), [pendingCases]);
   const pathname = usePathname();
   const mobile = useIsMobile();
   const staffArea = pathname.split('/')[2] === 'admin';
@@ -66,45 +79,48 @@ export const AppShell = ({
 
   return (
     <BumpContext.Provider value={setBump}>
-      <div
-        className="flex min-h-screen flex-col bg-background-main pb-[var(--dock-space,0px)] text-foreground"
-        style={
-          docked
-            ? ({
-                '--dock-space': 'calc(env(safe-area-inset-bottom) + 88px)',
-              } as CSSProperties)
-            : undefined
-        }
-      >
-        <Navbar
-          iconUrl={userAvatarUrl}
-          isLoggedIn={isLoggedIn}
-          dockable={dockable}
-          badge={staffArea ? <StaffPill /> : undefined}
-          notifications={[]}
-          onHomeClick={() => router.push(`/${locale}`)}
-          onLoginClick={() => window.location.assign(signInHref(locale))}
-          onProfileClick={() => router.push(`/${locale}/profile`)}
-          onBumpProfileClick={bump?.onClick}
-          bumpReadyAt={bump?.readyAt}
-          onSavedClick={() => router.push(`/${locale}/saved`)}
-          onSettingsClick={() => router.push(`/${locale}/settings`)}
-          onLogoutClick={() =>
-            window.location.assign(`/api/auth/logout?locale=${locale}`)
+      <PendingCasesContext.Provider value={setLiveCases}>
+        <div
+          className="flex min-h-screen flex-col bg-background-main pb-[var(--dock-space,0px)] text-foreground"
+          style={
+            docked
+              ? ({
+                  '--dock-space': 'calc(env(safe-area-inset-bottom) + 88px)',
+                } as CSSProperties)
+              : undefined
           }
-        />
-        <div className="flex flex-1 flex-col">{children}</div>
-        <Footer locale={locale} />
-        {docked ? (
-          <MobileNavigation
-            locale={locale}
-            userAvatarUrl={userAvatarUrl}
-            onNavigate={(href) => router.push(href)}
-            onBump={bump?.onClick}
+        >
+          <Navbar
+            iconUrl={userAvatarUrl}
+            isLoggedIn={isLoggedIn}
+            dockable={dockable}
+            badge={staffArea ? <StaffPill /> : undefined}
+            notifications={[]}
+            pendingCases={liveCases}
+            onHomeClick={() => router.push(`/${locale}`)}
+            onLoginClick={() => window.location.assign(signInHref(locale))}
+            onProfileClick={() => router.push(`/${locale}/profile`)}
+            onBumpProfileClick={bump?.onClick}
             bumpReadyAt={bump?.readyAt}
+            onSavedClick={() => router.push(`/${locale}/saved`)}
+            onSettingsClick={() => router.push(`/${locale}/settings`)}
+            onLogoutClick={() =>
+              window.location.assign(`/api/auth/logout?locale=${locale}`)
+            }
           />
-        ) : null}
-      </div>
+          <div className="flex flex-1 flex-col">{children}</div>
+          <Footer locale={locale} />
+          {docked ? (
+            <MobileNavigation
+              locale={locale}
+              userAvatarUrl={userAvatarUrl}
+              onNavigate={(href) => router.push(href)}
+              onBump={bump?.onClick}
+              bumpReadyAt={bump?.readyAt}
+            />
+          ) : null}
+        </div>
+      </PendingCasesContext.Provider>
     </BumpContext.Provider>
   );
 };

@@ -449,6 +449,15 @@ export const SupporterMobile: Story = {
   },
 };
 
+export const PendingCasesBeyondLoaded: Story = {
+  args: { initial: { ...moderationSnapshot, pendingCases: 5 } },
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).getByRole('tab', { name: 'Reports 5' }),
+    ).toBeInTheDocument();
+  },
+};
+
 export const WarnComposer: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {

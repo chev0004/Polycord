@@ -6,6 +6,7 @@ import { siteContainerClass } from '@/components/Container';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Notifications } from '@/types';
 import { Inbox } from '../Inbox';
+import { AdminButton } from './AdminButton';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
 
@@ -15,6 +16,7 @@ type NavbarProps = {
   dockable?: boolean;
   badge?: React.ReactNode;
   notifications: Notifications;
+  pendingCases?: number;
   persistNotifications?: boolean;
   premium?: boolean;
   onHomeClick?: () => void;
@@ -35,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onHomeClick,
   onLoginClick,
   notifications,
+  pendingCases,
   persistNotifications = true,
   premium = false,
   onProfileClick,
@@ -74,6 +77,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
+
+          {pendingCases === undefined ? null : (
+            <AdminButton pendingCases={pendingCases} />
+          )}
 
           {docked ? null : isLoggedIn ? (
             <div

@@ -70,6 +70,8 @@
     "title": "Moderation",
     "subtitle": "Review reports and take moderation action.",
     "staffPill": "Staff",
+    "adminButton": "Admin",
+    "adminButtonLabel": "{count, plural, =0 {Admin} one {Admin, # pending case} other {Admin, # pending cases}}",
     "tabReports": "Reports",
     "tabUsers": "Users",
     "tabLog": "Activity log",

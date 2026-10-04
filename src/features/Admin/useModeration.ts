@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import type {
   ModData,
@@ -127,6 +127,12 @@ export const useModeration = (initial: ModSnapshot) => {
     [data.reports],
   );
 
+  const initialGroups = useRef(
+    groupReports(initial.reports, 'pending').length,
+  ).current;
+  const pendingCases =
+    initial.pendingCases + pendingGroups.length - initialGroups;
+
   const userLog = (userId: string): ModLogEntry[] =>
     data.log.filter((entry) => entry.userId === userId);
 
@@ -141,6 +147,7 @@ export const useModeration = (initial: ModSnapshot) => {
     ...data,
     usersById,
     pendingGroups,
+    pendingCases,
     suspicious: initial.suspicious,
     meId: initial.meId,
     meRole: initial.meRole,
