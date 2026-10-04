@@ -7,6 +7,7 @@ import type { IconType } from 'react-icons';
 import {
   MdAdminPanelSettings,
   MdArrowForward,
+  MdBlock,
   MdCheck,
   MdClose,
   MdExpandMore,
@@ -25,6 +26,7 @@ import {
   MdTune,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
   ActionBar,
@@ -1029,6 +1031,26 @@ export const ModerationDesktop = ({
                   className="PopoverContent z-50 w-[300px] rounded-[18px] border border-gray-500/50 bg-background-dark p-2 font-figtree shadow-lg"
                 >
                   <StaffPanel store={store} />
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          ) : null}
+          {store.meRole === 'owner' ? (
+            <Popover.Root>
+              <Popover.Trigger asChild>
+                <button type="button" className={modButton()}>
+                  <MdBlock size={17} />
+                  {t('manageIpBlocks')}
+                </button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  side="bottom"
+                  align="end"
+                  sideOffset={8}
+                  className="PopoverContent z-50 max-h-[80vh] w-[360px] overflow-y-auto rounded-[18px] border border-gray-500/50 bg-background-dark p-3 font-figtree shadow-lg"
+                >
+                  <IpBlocksPanel store={store} />
                 </Popover.Content>
               </Popover.Portal>
             </Popover.Root>

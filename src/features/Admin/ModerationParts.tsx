@@ -117,6 +117,8 @@ export const ACTION_TONE: Record<LogAction, string> = {
   revoke: 'bg-primary-dark',
   premium_grant: 'bg-discord-yellow',
   premium_revoke: 'bg-primary-dark',
+  ip_block: 'bg-red-400',
+  ip_unblock: 'bg-primary-dark',
 };
 
 export const useLogLabel = () => {

@@ -2,8 +2,12 @@ import { type NextRequest, NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import {
   AUTH_SESSION_COOKIE,
+  BAN_DATE_HEADER,
+  BAN_LOCALE_HEADER,
+  BAN_REFERENCE_HEADER,
   readSessionFromCookieValue,
 } from './lib/auth-session';
+import { findBan } from './lib/banGate';
 import { locales } from './utils/locales';
 
 export { locales };
@@ -28,7 +32,60 @@ const getProtectedRouteLocale = (pathname: string) => {
   return null;
 };
 
+const serviceRoutes = new Set(['/api/billing/webhook', '/api/health']);
+const nonPageRoute = /^\/(api|_next)(\/|$)|\./;
+
+const denyBanned = (
+  request: NextRequest,
+  ban: { date: Date; reference: string },
+) => {
+  const { pathname } = request.nextUrl;
+  const noStore = { 'Cache-Control': 'no-store' };
+
+  if (
+    nonPageRoute.test(pathname) ||
+    !['GET', 'HEAD'].includes(request.method)
+  ) {
+    return NextResponse.json(
+      { error: 'Forbidden' },
+      { status: 403, headers: noStore },
+    );
+  }
+
+  const pathLocale = pathname.split('/')[1];
+  const headers = new Headers(request.headers);
+  headers.set(
+    BAN_LOCALE_HEADER,
+    locales.includes(pathLocale as (typeof locales)[number])
+      ? pathLocale
+      : (request.cookies.get('NEXT_LOCALE')?.value ?? 'en'),
+  );
+  headers.set(BAN_DATE_HEADER, ban.date.toISOString());
+  headers.set(BAN_REFERENCE_HEADER, ban.reference);
+
+  return NextResponse.rewrite(new URL('/banned', request.url), {
+    status: 403,
+    headers: noStore,
+    request: { headers },
+  });
+};
+
 export default async function middleware(request: NextRequest) {
+  if (!serviceRoutes.has(request.nextUrl.pathname)) {
+    const ban = await findBan(
+      request.headers,
+      (name) => request.cookies.get(name)?.value,
+    );
+
+    if (ban) {
+      return denyBanned(request, ban);
+    }
+  }
+
+  if (nonPageRoute.test(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const locale = request.nextUrl.pathname.split('/')[1];
   if (locale && !locales.includes(locale as (typeof locales)[number])) {
     return NextResponse.rewrite(new URL('/en/missing', request.url), {
@@ -65,5 +122,6 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: ['/((?!_next/static|favicon.ico|polycord-wordmark.svg).*)'],
+  runtime: 'nodejs',
 };

@@ -1,15 +1,15 @@
 import { expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 
-test('suspended accounts cannot sign in or keep a session until the suspension ends', () => {
+test('restricted accounts cannot sign in or keep a session while suspended or banned', () => {
   expect(
     execFileSync(
       process.execPath,
-      ['run', 'tests/integration/suspension.mjs'],
+      ['run', 'tests/integration/restriction.mjs'],
       {
         encoding: 'utf8',
         timeout: 30000,
       },
     ),
-  ).toContain('suspension sign-in cases passed');
+  ).toContain('restricted sign-in cases passed');
 });

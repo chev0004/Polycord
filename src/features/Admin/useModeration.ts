@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import type {
+  IpBlock,
   ModData,
   ModLogEntry,
   ModReport,
@@ -10,6 +11,7 @@ import type {
   ModSnapshot,
   ModState,
   ModUser,
+  ObservedIp,
 } from './types';
 
 export type ReportGroup = { userId: string; reports: ModReport[] };
@@ -116,6 +118,30 @@ export const useModeration = (initial: ModSnapshot) => {
     [merge],
   );
 
+  const loadIpBlocks = useCallback(async (userId?: string) => {
+    const response = await fetch(
+      `/api/admin/ip-bans${userId ? `?userId=${userId}` : ''}`,
+    );
+    if (!response.ok) throw new Error('failed');
+    return (await response.json()) as {
+      bans: IpBlock[];
+      observed: ObservedIp[];
+    };
+  }, []);
+
+  const changeIpBlocks = useCallback(
+    async (method: 'POST' | 'DELETE', body: object) => {
+      const result: { bans: IpBlock[]; log: ModLogEntry[] } = await send(
+        '/api/admin/ip-bans',
+        method,
+        body,
+      );
+      merge({ users: [], reports: [], log: result.log });
+      return result.bans;
+    },
+    [merge],
+  );
+
   const search = useCallback(
     async (query: string): Promise<string[]> => {
       const response = await fetch(
@@ -170,6 +196,10 @@ export const useModeration = (initial: ModSnapshot) => {
     grantPremium: (userId: string, amount: number, unit: GrantUnit) =>
       changePremium('POST', { userId, amount, unit }),
     revokePremium: (userId: string) => changePremium('DELETE', { userId }),
+    loadIpBlocks,
+    blockIps: (body: { ips: string[]; userId?: string; reason?: string }) =>
+      changeIpBlocks('POST', body),
+    unblockIp: (id: string) => changeIpBlocks('DELETE', { id }),
     act,
     search,
     userLog,

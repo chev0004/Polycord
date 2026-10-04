@@ -8,10 +8,12 @@ import {
   isUserRestricted,
 } from '@/db';
 import {
+  AUTH_BAN_COOKIE,
   AUTH_ERROR_PARAM,
   AUTH_SESSION_COOKIE,
   AUTH_STATE_COOKIE,
   type CurrentUser,
+  createBanCookieValue,
   createOAuthState,
   createOAuthStateCookieValue,
   createSessionCookieValue,
@@ -96,6 +98,23 @@ export const setSessionCookie = async (
   );
 };
 
+export const setBanCookie = async (
+  response: NextResponse,
+  discordUserId: string,
+) => {
+  const value = await createBanCookieValue(discordUserId);
+
+  if (!value) {
+    return;
+  }
+
+  response.cookies.set(
+    AUTH_BAN_COOKIE,
+    value,
+    getCookieOptions(SESSION_DURATION_SECONDS),
+  );
+};
+
 export const clearSessionCookie = (response: NextResponse) => {
   response.cookies.set(AUTH_SESSION_COOKIE, '', getCookieOptions(0));
 };
@@ -114,12 +133,15 @@ export const normalizeDiscordUser = (discordUser: DiscordUser): CurrentUser => {
   };
 };
 
-export const isSuspendedIdentity = async (
+export const getIdentityRestriction = async (
   discordUserId: string,
-  user: { suspendedUntil: Date | null } | null,
+  user: { suspendedUntil: Date | null; bannedAt: Date | null } | null,
 ) => {
   const restriction = await getModerationRestrictionByDiscordId(discordUserId);
-  return [user, restriction].some((record) => record && isSuspended(record));
+  const records = [user, restriction].flatMap((record) => record ?? []);
+
+  if (records.some(({ bannedAt }) => bannedAt)) return 'banned';
+  return records.some(isSuspended) ? 'suspended' : null;
 };
 
 const getSessionAccount = cache(async () => {
@@ -135,7 +157,7 @@ const getSessionAccount = cache(async () => {
 
   const user = await getUserByDiscordId(session.id);
   return user?.id === session.accountId &&
-    !(await isSuspendedIdentity(session.id, user))
+    !(await getIdentityRestriction(session.id, user))
     ? { user, currentUser: { ...session, email: user.email ?? undefined } }
     : null;
 });

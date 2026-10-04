@@ -225,6 +225,13 @@
       "when": 1791077676078,
       "tag": "0031_supporter_grant_log",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791091203697,
+      "tag": "0032_ip_bans",
+      "breakpoints": true
     }
   ]
 }

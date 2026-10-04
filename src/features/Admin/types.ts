@@ -17,6 +17,8 @@ export const LOG_ACTIONS = [
   'revoke',
   'premium_grant',
   'premium_revoke',
+  'ip_block',
+  'ip_unblock',
 ] as const;
 
 export const OWNER_ACTIONS = ['ban', 'unban'] as const;
@@ -73,6 +75,16 @@ export type ModLogEntry = {
   expiresAt?: string;
   createdAt: string;
 };
+
+export type IpBlock = {
+  id: string;
+  ip: string;
+  reason?: string;
+  targetDiscordUserId?: string;
+  createdAt: string;
+};
+
+export type ObservedIp = { ip: string; lastSeenAt: string };
 
 export type ModSuspicious = {
   id: string;

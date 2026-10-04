@@ -57,6 +57,8 @@ export const moderationActionEnum = pgEnum('moderation_action', [
   'revoke',
   'premium_grant',
   'premium_revoke',
+  'ip_block',
+  'ip_unblock',
 ]);
 
 export const grantUnitEnum = pgEnum('grant_unit', ['weeks', 'months', 'years']);
@@ -483,6 +485,53 @@ export const moderationActions = pgTable(
   ],
 );
 
+export const ipBans = pgTable(
+  'ip_bans',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    ip: varchar('ip', { length: 45 }).notNull(),
+    targetDiscordUserId: varchar('target_discord_user_id', { length: 32 }),
+    reason: text('reason'),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    revokedBy: uuid('revoked_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('ip_bans_active_ip_idx')
+      .on(table.ip)
+      .where(sql`${table.revokedAt} is null`),
+    check(
+      'ip_bans_reason_length_check',
+      sql`${table.reason} is null or char_length(${table.reason}) <= 500`,
+    ),
+  ],
+);
+
+export const ipObservations = pgTable(
+  'ip_observations',
+  {
+    discordUserId: varchar('discord_user_id', { length: 32 }).notNull(),
+    ip: varchar('ip', { length: 45 }).notNull(),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.discordUserId, table.ip] }),
+    index('ip_observations_last_seen_at_idx').on(table.lastSeenAt),
+  ],
+);
+
 export const staffRoles = pgTable('staff_roles', {
   userId: uuid('user_id')
     .primaryKey()
@@ -737,6 +786,7 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 export type ProfileBoost = typeof profileBoosts.$inferSelect;
 export type VoiceIntro = typeof voiceIntros.$inferSelect;
+export type IpBan = typeof ipBans.$inferSelect;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;
 
