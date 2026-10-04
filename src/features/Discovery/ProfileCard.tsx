@@ -326,7 +326,7 @@ export const ProfileCard = ({
         return onBlock(profile.id);
       },
     },
-    onModerate && !mobile
+    onModerate
       ? {
           key: 'moderate',
           icon: MdOutlineShield,
@@ -470,7 +470,9 @@ export const ProfileCard = ({
                   isLoggedIn={isLoggedIn}
                   viewerTimezone={viewerTimezone}
                   onCopyUsername={onCopyUsername}
-                  menuItems={menuItems.filter(({ key }) => key !== 'view')}
+                  menuItems={menuItems.filter(
+                    ({ key }) => key !== 'view' && key !== 'moderate',
+                  )}
                 />
               </>
             ) : null}

@@ -15,6 +15,7 @@ import { siteContainerClass } from '@/components/Container';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
+import { MobileTakeAction } from '@/features/Admin/MobileTakeAction';
 import { TakeActionPanel } from '@/features/Admin/TakeActionPanel';
 import type { StaffRole } from '@/features/Admin/types';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
@@ -1022,7 +1023,17 @@ export const DiscoveryPage = ({
         )}
       </main>
 
-      {staff && moderationTarget ? (
+      {staff && moderationTarget && mobile ? (
+        <MobileTakeAction
+          profileId={moderationTarget.id}
+          displayName={moderationTarget.name}
+          meId={staff.meId}
+          meRole={staff.role}
+          addToast={addToast}
+          onClose={() => setModerationTarget(null)}
+        />
+      ) : null}
+      {staff && moderationTarget && !mobile ? (
         <TakeActionPanel
           profileId={moderationTarget.id}
           displayName={moderationTarget.name}
