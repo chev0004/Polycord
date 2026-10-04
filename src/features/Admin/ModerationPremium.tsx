@@ -14,6 +14,7 @@ import {
 import {
   ActionError,
   durationTile,
+  hasGrant,
   modButton,
   Spinner,
   SuspendEnds,
@@ -22,40 +23,32 @@ import {
 import type { ModUser } from './types';
 import { isReauthError, type ModerationStore } from './useModeration';
 
-export const PremiumPanel = ({
-  store,
-  user,
-  mobile = false,
-}: {
-  store: ModerationStore;
-  user: ModUser;
-  mobile?: boolean;
-}) => {
-  const t = useTranslations('Admin');
-  const { date, time } = useModFormat();
+export const useGrant = (
+  store: ModerationStore,
+  user: ModUser,
+  onDone?: () => void,
+) => {
   const [amount, setAmount] = useState('1');
   const [unit, setUnit] = useState<GrantUnit>('months');
   const [busy, setBusy] = useState<'grant' | 'revoke' | null>(null);
   const [error, setError] = useState<'failed' | 'reauth' | null>(null);
-  const { grantedUntil, subscriptionUntil, configured } = user.premium;
-  const granted =
-    grantedUntil !== undefined && new Date(grantedUntil).getTime() > Date.now();
-  const otherSources = [
-    subscriptionUntil
-      ? t('premiumPaidUntil', { date: date(subscriptionUntil) })
-      : null,
-    configured ? t('premiumConfigured') : null,
-  ].filter((source) => source !== null);
+  const { grantedUntil } = user.premium;
+  const granted = hasGrant(user);
   const valid = isValidGrant(Number(amount), unit);
-  const until = valid ? grantExpiry(new Date(), Number(amount), unit) : null;
-  const button = (tone: 'primary' | 'danger') =>
-    `${modButton(tone)} justify-center ${mobile ? 'h-11 rounded-full px-4 text-sm' : ''}`;
+  const until = valid
+    ? grantExpiry(
+        granted && grantedUntil ? new Date(grantedUntil) : new Date(),
+        Number(amount),
+        unit,
+      )
+    : null;
 
   const run = async (kind: 'grant' | 'revoke', change: () => Promise<void>) => {
     setBusy(kind);
     setError(null);
     try {
       await change();
+      onDone?.();
     } catch (caught) {
       setError(isReauthError(caught) ? 'reauth' : 'failed');
     } finally {
@@ -63,10 +56,99 @@ export const PremiumPanel = ({
     }
   };
 
+  return {
+    amount,
+    setAmount,
+    unit,
+    setUnit,
+    busy,
+    error,
+    clearError: () => setError(null),
+    granted,
+    valid,
+    until,
+    grant: () =>
+      run('grant', () => store.grantPremium(user.id, Number(amount), unit)),
+    revoke: () => run('revoke', () => store.revokePremium(user.id)),
+  };
+};
+
+export const GrantFields = ({
+  grant,
+  mobile = false,
+}: {
+  grant: ReturnType<typeof useGrant>;
+  mobile?: boolean;
+}) => {
+  const t = useTranslations('Admin');
+  const { amount, unit, valid, until, granted } = grant;
   return (
-    <div
-      className={`flex flex-col gap-3 ${mobile ? 'rounded-[20px] bg-background-dark p-4' : ''}`}
-    >
+    <div className="flex flex-col gap-1.5">
+      <span className="font-medium text-[13px] text-soft">
+        {t(granted ? 'premiumExtendBy' : 'premiumDuration')}
+      </span>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <NumberStepper
+          value={amount}
+          onChange={grant.setAmount}
+          min={1}
+          max={GRANT_MAX[unit]}
+          size={mobile ? 'lg' : 'md'}
+          label={t('premiumAmount')}
+          decrementLabel={t('decrease')}
+          incrementLabel={t('increase')}
+          error={!valid}
+          className="w-36"
+        />
+        {GRANT_UNITS.map((value) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={unit === value}
+            onClick={() => grant.setUnit(value)}
+            className={`${durationTile(unit === value)} flex-1 px-3 ${mobile ? 'h-11' : ''}`}
+          >
+            {t(`unit_${value}`)}
+          </button>
+        ))}
+      </div>
+      {until ? (
+        <span className="text-[12.5px] text-muted">
+          <SuspendEnds until={until} />
+        </span>
+      ) : (
+        <span className="text-[12.5px] text-red-500">
+          {t('premiumAmountInvalid', { max: GRANT_MAX[unit] })}
+        </span>
+      )}
+      {grant.error ? (
+        <ActionError mobile={mobile} reauth={grant.error === 'reauth'} />
+      ) : null}
+    </div>
+  );
+};
+
+export const PremiumPanel = ({
+  store,
+  user,
+}: {
+  store: ModerationStore;
+  user: ModUser;
+}) => {
+  const t = useTranslations('Admin');
+  const { date, time } = useModFormat();
+  const grant = useGrant(store, user);
+  const { grantedUntil, subscriptionUntil, configured } = user.premium;
+  const { granted, busy } = grant;
+  const otherSources = [
+    subscriptionUntil
+      ? t('premiumPaidUntil', { date: date(subscriptionUntil) })
+      : null,
+    configured ? t('premiumConfigured') : null,
+  ].filter((source) => source !== null);
+
+  return (
+    <div className="flex flex-col gap-3">
       <div
         aria-live="polite"
         className="flex flex-wrap items-center gap-3 rounded-[14px] bg-background-darker px-3.5 py-3"
@@ -78,7 +160,7 @@ export const PremiumPanel = ({
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1 text-[13px] text-soft">
           <span>
-            {granted
+            {granted && grantedUntil
               ? t.rich('premiumGrantActive', {
                   date: date(grantedUntil),
                   time: time(new Date(grantedUntil)),
@@ -103,70 +185,20 @@ export const PremiumPanel = ({
           <button
             type="button"
             disabled={busy !== null}
-            onClick={() => run('revoke', () => store.revokePremium(user.id))}
-            className={`${button('danger')} ${mobile ? 'w-full' : ''}`}
+            onClick={grant.revoke}
+            className={`${modButton('danger')} justify-center`}
           >
             {busy === 'revoke' ? <Spinner /> : null}
             {t('revokePremium')}
           </button>
         ) : null}
       </div>
-      <div className="flex flex-col gap-1.5">
-        <span className="font-medium text-[13px] text-soft">
-          {t('premiumDuration')}
-        </span>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <NumberStepper
-            value={amount}
-            onChange={setAmount}
-            min={1}
-            max={GRANT_MAX[unit]}
-            size={mobile ? 'lg' : 'md'}
-            label={t('premiumAmount')}
-            decrementLabel={t('decrease')}
-            incrementLabel={t('increase')}
-            error={!valid}
-            className="w-36"
-          />
-          {GRANT_UNITS.map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={unit === value}
-              onClick={() => setUnit(value)}
-              className={`${durationTile(unit === value)} flex-1 px-3 ${mobile ? 'h-11' : ''}`}
-            >
-              {t(`unit_${value}`)}
-            </button>
-          ))}
-        </div>
-        {until ? (
-          <>
-            <span className="text-[12.5px] text-muted">
-              <SuspendEnds until={until} />
-            </span>
-            {granted ? (
-              <span className="text-[12.5px] text-muted">
-                {t('premiumReplaces', { date: date(grantedUntil) })}
-              </span>
-            ) : null}
-          </>
-        ) : (
-          <span className="text-[12.5px] text-red-500">
-            {t('premiumAmountInvalid', { max: GRANT_MAX[unit] })}
-          </span>
-        )}
-      </div>
-      {error ? (
-        <ActionError mobile={mobile} reauth={error === 'reauth'} />
-      ) : null}
+      <GrantFields grant={grant} />
       <button
         type="button"
-        disabled={!valid || busy !== null}
-        onClick={() =>
-          run('grant', () => store.grantPremium(user.id, Number(amount), unit))
-        }
-        className={`${button('primary')} self-start ${mobile ? 'w-full' : ''}`}
+        disabled={!grant.valid || busy !== null}
+        onClick={grant.grant}
+        className={`${modButton('primary')} justify-center self-start`}
       >
         {busy === 'grant' ? <Spinner /> : null}
         {t(granted ? 'replacePremium' : 'grantPremium')}
