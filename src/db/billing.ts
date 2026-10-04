@@ -2,6 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 import { isPremiumDiscordId } from '@/lib/entitlements';
+import { type GrantUnit, grantExpiry } from '@/lib/premiumGrant';
 import { db } from './client';
 import { type Subscription, subscriptions, type User, users } from './schema';
 
@@ -117,22 +118,35 @@ export const getPremiumAccountByDiscordUserId = async (
   return row ?? null;
 };
 
-export const setPremiumGrant = async (
+export const extendPremiumGrant = async (
   userId: string,
-  until: Date,
+  amount: number,
+  unit: GrantUnit,
   grantedBy: string,
 ) =>
-  (
-    await db
+  db.transaction(async (tx) => {
+    const [user] = await tx
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .for('update');
+    if (!user) return null;
+    const now = new Date();
+    const from =
+      user.premiumGrantedUntil && user.premiumGrantedUntil > now
+        ? user.premiumGrantedUntil
+        : now;
+    const expiresAt = grantExpiry(from, amount, unit);
+    await tx
       .update(users)
       .set({
-        premiumGrantedUntil: until,
+        premiumGrantedUntil: expiresAt,
         premiumGrantedBy: grantedBy,
-        updatedAt: new Date(),
+        updatedAt: now,
       })
-      .where(eq(users.id, userId))
-      .returning({ id: users.id })
-  ).length > 0;
+      .where(eq(users.id, userId));
+    return expiresAt;
+  });
 
 export const revokePremiumGrant = async (userId: string) =>
   db.transaction(async (tx) => {
