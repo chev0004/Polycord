@@ -551,15 +551,6 @@ export const ProfileCard = ({
           </div>
         </div>
 
-        {!isPreview && hasModeration(profile.moderation) ? (
-          <div
-            data-moderation-chips
-            className="absolute top-[66px] right-3.5 left-[98px] flex gap-1 overflow-hidden"
-          >
-            <ModerationChips state={profile.moderation} />
-          </div>
-        ) : null}
-
         {boostedVisible ? (
           <span
             style={{ background: tintedSurface }}
@@ -643,6 +634,11 @@ export const ProfileCard = ({
             )}
           </>
         )}
+        {!isPreview && hasModeration(profile.moderation) ? (
+          <div data-moderation-chips className="mt-1.5 flex flex-wrap gap-1">
+            <ModerationChips state={profile.moderation} />
+          </div>
+        ) : null}
       </div>
       {copyFailed && profile.discordUsername ? (
         <p role="alert" className="text-danger text-sm">

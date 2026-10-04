@@ -20,6 +20,9 @@ const flagged = { ...ryan, hidden: true, warnings: 2 };
 const tomas = moderationSnapshot.users.find(
   (user) => user.id === 'tomas',
 ) as ModUser;
+const kenji = moderationSnapshot.users.find(
+  (user) => user.id === 'kenji',
+) as ModUser;
 let subject = flagged;
 
 const mockCaseApi = () => {
@@ -126,7 +129,38 @@ export const Moderator: Story = {
   },
 };
 
-export const ProtectedStaff: Story = {
+const protectedSheet = (
+  target: ModUser,
+  args: Story['args'],
+  notice: RegExp,
+): Story => ({
+  args: {
+    profileId: `profile-${target.id}`,
+    displayName: target.displayName,
+    ...args,
+  },
+  beforeEach: () => {
+    subject = target;
+    return () => {
+      subject = flagged;
+    };
+  },
+  play: async () => {
+    await screen.findByText(`@${target.username}`);
+    const sheet = within(
+      screen.getByRole('dialog', { name: target.displayName }),
+    );
+    await expect(sheet.getByText(notice)).toBeInTheDocument();
+    await expect(
+      sheet.queryByRole('button', { name: /^Suspend/ }),
+    ).not.toBeInTheDocument();
+    await expect(
+      sheet.queryByRole('button', { name: /^Warn/ }),
+    ).not.toBeInTheDocument();
+  },
+});
+
+export const OwnerModeratesModerator: Story = {
   args: { profileId: 'profile-tomas', displayName: 'Tomás Ruiz' },
   beforeEach: () => {
     subject = tomas;
@@ -137,15 +171,38 @@ export const ProtectedStaff: Story = {
   play: async () => {
     await screen.findByText('@tomas.r');
     const sheet = within(screen.getByRole('dialog', { name: 'Tomás Ruiz' }));
-    await expect(sheet.getByText(/Staff account/)).toBeInTheDocument();
     await expect(
-      sheet.queryByRole('button', { name: /^Suspend/ }),
+      sheet.queryByText(/Moderator account/),
     ).not.toBeInTheDocument();
     await expect(
-      sheet.queryByRole('button', { name: /^Warn/ }),
-    ).not.toBeInTheDocument();
+      sheet.getByRole('button', { name: /^Suspend/ }),
+    ).toBeInTheDocument();
+    await expect(
+      sheet.getByRole('button', { name: /^Warn/ }),
+    ).toBeInTheDocument();
+    await expect(
+      sheet.getByRole('button', { name: /^Ban/ }),
+    ).toBeInTheDocument();
   },
 };
+
+export const ModeratorProtectedFromModerator: Story = protectedSheet(
+  tomas,
+  { meId: 'amara', meRole: 'moderator' },
+  /Moderator account/,
+);
+
+export const ModeratorProtectedFromOwner: Story = protectedSheet(
+  kenji,
+  { meId: 'tomas', meRole: 'moderator' },
+  /Owner account/,
+);
+
+export const OwnerProtectedFromOwner: Story = protectedSheet(
+  kenji,
+  { meId: 'amara', meRole: 'owner' },
+  /Owner account/,
+);
 
 export const ChainedSheets: Story = {
   play: async ({ args }) => {
