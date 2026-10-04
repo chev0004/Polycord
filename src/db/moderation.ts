@@ -67,6 +67,14 @@ export const getReportById = async (reportId: string) => {
   return report ?? null;
 };
 
+export const countPendingCases = async () => {
+  const [row] = await db
+    .select({ cases: sql<number>`count(distinct ${reports.reportedUserId})` })
+    .from(reports)
+    .where(eq(reports.status, 'pending'));
+  return Number(row.cases);
+};
+
 export const resolveReports = async (
   reportIds: string[],
   targetUserId: string,

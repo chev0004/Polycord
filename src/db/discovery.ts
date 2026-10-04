@@ -13,7 +13,7 @@ import {
 import {
   BOOSTS_PER_PAGE,
   DISCOVERY_PAGE_SIZE,
-  discoveryGroupSizes,
+  planDiscoveryGroups,
 } from '@/features/Discovery/discoveryData';
 import type { DiscoveryTagCount } from '@/features/Discovery/discoveryTags';
 import {
@@ -250,10 +250,7 @@ export const listDiscoveryPage = async (
     offset: number,
   ) => {
     const matches = await db
-      .select({
-        id: profiles.id,
-        total: sql<number>`count(*) over ()`.mapWith(Number),
-      })
+      .select({ id: profiles.id })
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
       .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
@@ -266,10 +263,7 @@ export const listDiscoveryPage = async (
       ? await selectRows(inArray(profiles.id, ids), ordering, ids.length, 0)
       : [];
     const byId = new Map(found.map((row) => [row.profile.id, row]));
-    return {
-      rows: ids.flatMap((id) => byId.get(id) ?? []),
-      total: matches[0]?.total,
-    };
+    return ids.flatMap((id) => byId.get(id) ?? []);
   };
 
   const fetchRows = async (
@@ -278,12 +272,9 @@ export const listDiscoveryPage = async (
     limit: number,
     offset: number,
   ) => {
-    if (limit <= 0) return { rows: [], total: undefined };
+    if (limit <= 0) return [];
     if (searching) return searchRows(condition, ordering, limit, offset);
-    return {
-      rows: await selectRows(and(where, condition), ordering, limit, offset),
-      total: undefined,
-    };
+    return selectRows(and(where, condition), ordering, limit, offset);
   };
 
   const countRows = () =>
@@ -294,67 +285,78 @@ export const listDiscoveryPage = async (
       .where(where)
       .then(([summary]) => summary.total);
 
-  const countBoosts = async () => {
-    if (!interleaved) return 0;
-    const [summary] = await db
-      .select({ total: count() })
+  const matchingIds = (
+    condition: SQL | undefined,
+    ordering: SQL,
+    limit = Number.MAX_SAFE_INTEGER,
+  ) =>
+    db
+      .select({ id: profiles.id })
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
       .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
-      .where(and(where, boosted));
-    return summary.total;
+      .where(and(where, condition))
+      .orderBy(ordering)
+      .limit(limit)
+      .then((rows) => rows.map((row) => row.id));
+
+  const boostPositions = async () => {
+    if (!interleaved) return [];
+    const boostIds = await matchingIds(boosted, boostOrder);
+    if (!boostIds.length) return [];
+    const top = await matchingIds(
+      undefined,
+      order,
+      (DISCOVERY_PAGE_SIZE + BOOSTS_PER_PAGE) *
+        Math.ceil(boostIds.length / BOOSTS_PER_PAGE),
+    );
+    const positions = new Map(top.map((id, index) => [id, index]));
+    return boostIds.map((id) => positions.get(id) ?? Number.MAX_SAFE_INTEGER);
   };
 
-  const loadPage = async (page: number) => {
-    const firstGroup = stacked ? 0 : page - 1;
-    const boostCount = await countBoosts();
-    const boostFrom = Math.min(boostCount, firstGroup * BOOSTS_PER_PAGE);
-    const boostTo = Math.min(boostCount, page * BOOSTS_PER_PAGE);
-    const [boostPage, bumpPage, counted] = await Promise.all([
-      fetchRows(boosted, boostOrder, boostTo - boostFrom, boostFrom),
-      fetchRows(
-        undefined,
-        order,
-        (page - firstGroup) * DISCOVERY_PAGE_SIZE - (boostTo - boostFrom),
-        firstGroup * DISCOVERY_PAGE_SIZE - boostFrom,
-      ),
-      searching ? undefined : countRows(),
-    ]);
-    const total = counted ?? bumpPage.total ?? (await countRows());
-    const rows: typeof boostPage.rows = [];
-    let boostIndex = 0;
-    let bumpIndex = 0;
-    for (let group = firstGroup; group < page; group++) {
-      const slots = Math.min(
-        BOOSTS_PER_PAGE,
-        Math.max(0, boostCount - group * BOOSTS_PER_PAGE),
-      );
-      rows.push(
-        ...boostPage.rows.slice(boostIndex, boostIndex + slots),
-        ...bumpPage.rows.slice(
-          bumpIndex,
-          bumpIndex + DISCOVERY_PAGE_SIZE - slots,
-        ),
-      );
-      boostIndex += slots;
-      bumpIndex += DISCOVERY_PAGE_SIZE - slots;
-    }
-    return { rows, total, boosts: boostCount };
-  };
-
-  const requestedPage = stacked
-    ? Math.min(state.page, MAX_STACK_PAGES)
-    : state.page;
-  const [tags, requested] = await Promise.all([
+  const [tags, positions, total] = await Promise.all([
     listTopTags(viewerUserId),
-    loadPage(requestedPage),
+    boostPositions(),
+    countRows(),
   ]);
+  const groups = planDiscoveryGroups(positions, total);
   const page = Math.min(
-    requestedPage,
-    Math.max(1, discoveryGroupSizes(requested.boosts, requested.total).length),
+    stacked ? Math.min(state.page, MAX_STACK_PAGES) : state.page,
+    Math.max(1, groups.length),
   );
-  const { rows, total, boosts } =
-    page === requestedPage ? requested : await loadPage(page);
+  const shown = groups.slice(stacked ? 0 : page - 1, page);
+  const boostFrom = Math.min(
+    positions.length,
+    (page - shown.length) * BOOSTS_PER_PAGE,
+  );
+  const bumpFrom = shown[0]?.bumpStart ?? 0;
+  const [boostRows, bumpRows] = await Promise.all([
+    fetchRows(
+      boosted,
+      boostOrder,
+      shown.reduce((sum, group) => sum + group.boosts, 0),
+      boostFrom,
+    ),
+    fetchRows(
+      undefined,
+      order,
+      (shown.at(-1)?.bumpEnd ?? 0) - bumpFrom,
+      bumpFrom,
+    ),
+  ]);
+  const rows: typeof boostRows = [];
+  let boostIndex = 0;
+  for (const group of shown) {
+    const boostSlots = boostRows.slice(boostIndex, boostIndex + group.boosts);
+    const boostedIds = new Set(boostSlots.map((row) => row.profile.id));
+    boostIndex += group.boosts;
+    rows.push(
+      ...boostSlots,
+      ...bumpRows
+        .slice(group.bumpStart - bumpFrom, group.bumpEnd - bumpFrom)
+        .filter((row) => !boostedIds.has(row.profile.id)),
+    );
+  }
   const profileIds = rows.map((row) => row.profile.id);
   const [items, saved] = await Promise.all([
     mapDiscoveryProfiles(rows, Boolean(viewerUserId)),
@@ -373,7 +375,7 @@ export const listDiscoveryPage = async (
   return {
     profiles: items,
     total,
-    boosts,
+    groupSizes: groups.map((group) => group.size),
     page,
     tags,
     savedProfileIds: saved.map((row) => row.id),

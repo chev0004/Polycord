@@ -320,7 +320,8 @@ export const DiscoveryPage = ({
   );
 
   const totalResults = remoteData?.total ?? filteredProfiles.length;
-  const groupSizes = discoveryGroupSizes(remoteData?.boosts ?? 0, totalResults);
+  const groupSizes =
+    remoteData?.groupSizes ?? discoveryGroupSizes([], totalResults);
   const totalPages = Math.max(1, groupSizes.length);
   const safePage = Math.min(page, totalPages);
   const stacked = mobile === true;

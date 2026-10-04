@@ -35,6 +35,7 @@ import {
   MdVisibilityOff,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { NumberStepper } from '@/components/Form';
 import { getLanguageName, proficiencyOptions } from '@/constants/languages';
 import { signInHref } from '@/features/Navigation/signIn';
 import type {
@@ -414,18 +415,6 @@ export const useSuspendDays = (open: boolean) => {
     days,
     valid,
     until: valid ? new Date(Date.now() + days * 86400000) : null,
-    step: (delta: number) =>
-      setCustom(
-        String(
-          Math.max(
-            1,
-            Math.min(
-              90,
-              (Number.isInteger(customDays) ? customDays : 14) + delta,
-            ),
-          ),
-        ),
-      ),
   };
 };
 
@@ -531,15 +520,16 @@ export const SuspendDialog = ({
         </div>
         {suspend.preset === 'custom' ? (
           <div className="flex items-center gap-2.5">
-            <input
-              type="number"
+            <NumberStepper
+              value={suspend.custom}
+              onChange={suspend.setCustom}
               min={1}
               max={90}
-              value={suspend.custom}
-              aria-label={t('daysUnit')}
-              aria-invalid={!suspend.valid}
-              onChange={(event) => suspend.setCustom(event.target.value)}
-              className={`h-10 w-24 rounded-xl border bg-background-darker px-4 text-foreground text-sm outline-none ${suspend.valid ? 'border-white/[0.07] hover:border-white/[0.14] focus:border-white/[0.14]' : 'border-red-500'}`}
+              label={t('daysUnit')}
+              decrementLabel={t('fewerDays')}
+              incrementLabel={t('moreDays')}
+              error={!suspend.valid}
+              className="w-36"
             />
             <span className="text-[12.5px] text-muted">{t('daysUnit')}</span>
           </div>

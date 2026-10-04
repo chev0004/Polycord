@@ -3,6 +3,7 @@ export * from './Dropdown';
 export * from './FieldError';
 export * from './FormGroup';
 export * from './Label';
+export * from './NumberStepper';
 export * from './ScrollArea';
 export * from './Select';
 export * from './SelectItem';

@@ -984,7 +984,7 @@ export const ModerationDesktop = ({
         id: 'reports',
         icon: MdOutlinedFlag,
         label: t('tabReports'),
-        badge: store.pendingGroups.length,
+        badge: store.pendingCases,
       },
       { id: 'users', icon: MdPersonSearch, label: t('tabUsers') },
       { id: 'log', icon: MdHistory, label: t('tabLog') },

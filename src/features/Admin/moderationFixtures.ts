@@ -27,6 +27,7 @@ const user = (
 });
 
 export const moderationSnapshot: ModSnapshot = {
+  pendingCases: 2,
   meId: 'kenji',
   meRole: 'owner',
   staff: ['kenji', 'tomas'],
@@ -111,6 +112,7 @@ export const moderationSnapshot: ModSnapshot = {
 
 export const emptyModerationSnapshot: ModSnapshot = {
   ...moderationSnapshot,
+  pendingCases: 0,
   reports: moderationSnapshot.reports.filter(
     (report) => report.status !== 'pending',
   ),
