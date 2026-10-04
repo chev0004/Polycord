@@ -10,6 +10,8 @@ import {
 } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { moderationSnapshot } from '@/features/Admin/moderationFixtures';
+import type { ModUser } from '@/features/Admin/types';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { DiscoveryPage } from './DiscoveryPage';
@@ -704,5 +706,106 @@ export const MobileFilterSearchCover: Story = {
       },
       { timeout: 5000 },
     );
+  },
+};
+
+const pendingReport = moderationSnapshot.reports[0];
+
+const mockStaffApi = () => {
+  const original = globalThis.fetch;
+  const ryan = moderationSnapshot.users.find(
+    (user) => user.id === 'ryan',
+  ) as ModUser;
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) => {
+      const url = String(args[0]);
+      if (url.startsWith('/api/admin/case')) {
+        return new Response(
+          JSON.stringify({
+            userId: 'ryan',
+            users: moderationSnapshot.users,
+            reports: [pendingReport],
+            log: [],
+          }),
+        );
+      }
+      if (url !== '/api/admin/moderation') return original(...args);
+      return new Response(
+        JSON.stringify({
+          users: [{ ...ryan, warnings: 1 }],
+          reports: [{ ...pendingReport, status: 'reviewed' }],
+          log: [
+            {
+              id: 'warned',
+              action: 'warn',
+              userId: 'ryan',
+              staffId: 'kenji',
+              note: 'Please stop.',
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        }),
+      );
+    },
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+  };
+};
+
+export const StaffChipsFollowActions: Story = {
+  beforeEach: mockStaffApi,
+  args: { staff: { meId: 'kenji', role: 'owner' } },
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    const [first, ...rest] = createSampleProfiles(t);
+    return (
+      <DiscoveryPage
+        {...args}
+        profiles={[
+          {
+            ...first,
+            moderation: {
+              hidden: false,
+              suspended: false,
+              banned: false,
+              warnings: 0,
+              pendingReports: 1,
+            },
+          },
+          ...rest,
+        ]}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    if (window.innerWidth < 768) return;
+    const chipText = () =>
+      Array.from(canvasElement.querySelectorAll('[data-moderation-chips]'))
+        .map((chips) => chips.textContent)
+        .join(' ');
+
+    await expect(chipText()).toContain('1 report');
+    const card = within(canvasElement).getByText('Yuki').closest('article');
+    await userEvent.click(
+      within(card as HTMLElement).getByRole('button', { name: 'Card menu' }),
+    );
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Take action' }),
+    );
+    const panel = within(await screen.findByRole('dialog'));
+    await userEvent.click(await panel.findByRole('button', { name: 'Warn' }));
+    const composer = within(
+      await screen.findByRole('dialog', { name: /^Warn / }),
+    );
+    await userEvent.click(
+      composer.getByRole('button', { name: 'Spam or advertising' }),
+    );
+    await userEvent.click(
+      composer.getByRole('button', { name: 'Send warning' }),
+    );
+    await waitFor(() => expect(chipText()).toContain('Warned 1×'));
+    await expect(chipText()).not.toContain('1 report');
   },
 };

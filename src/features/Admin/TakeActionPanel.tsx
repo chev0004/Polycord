@@ -7,8 +7,8 @@ import { MdClose, MdOutlineShield } from 'react-icons/md';
 import { ToastStack } from '@/components/Toast';
 import { UserDetail } from './ModerationDesktop';
 import { ActionError, Spinner } from './ModerationParts';
-import type { StaffRole } from './types';
-import { useModeration } from './useModeration';
+import type { ModState, StaffRole } from './types';
+import { toModState, useModeration } from './useModeration';
 import { useModerationToasts } from './useModerationToasts';
 import { type ProfileCase, useProfileCase } from './useProfileCase';
 
@@ -16,10 +16,12 @@ const CaseBody = ({
   found,
   meId,
   meRole,
+  onStateChange,
 }: {
   found: ProfileCase;
   meId: string;
   meRole: StaffRole;
+  onStateChange?: (state: ModState) => void;
 }) => {
   const t = useTranslations('Admin');
   const store = useModeration({
@@ -35,12 +37,17 @@ const CaseBody = ({
   const { notify, toasts, dismissToast } = useModerationToasts();
   const user = store.usersById.get(found.userId);
 
-  if (!user) return null;
-
-  const reports = store.userReports(user.id);
+  const reports = user ? store.userReports(user.id) : [];
   const pendingIds = reports
     .filter((report) => report.status === 'pending')
     .map((report) => report.id);
+  const pendingCount = pendingIds.length;
+
+  useEffect(() => {
+    if (user) onStateChange?.(toModState(user, pendingCount));
+  }, [user, pendingCount, onStateChange]);
+
+  if (!user) return null;
 
   return (
     <>
@@ -68,6 +75,7 @@ export const TakeActionPanel = ({
   meId,
   meRole,
   onClose,
+  onStateChange,
   returnFocus,
 }: {
   profileId: string;
@@ -75,6 +83,7 @@ export const TakeActionPanel = ({
   meId: string;
   meRole: StaffRole;
   onClose: () => void;
+  onStateChange?: (state: ModState) => void;
   returnFocus?: HTMLElement | null;
 }) => {
   const t = useTranslations('Admin');
@@ -117,7 +126,12 @@ export const TakeActionPanel = ({
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             {found ? (
-              <CaseBody found={found} meId={meId} meRole={meRole} />
+              <CaseBody
+                found={found}
+                meId={meId}
+                meRole={meRole}
+                onStateChange={onStateChange}
+              />
             ) : failed ? (
               <div className="p-5">
                 <ActionError onRetry={load} />
