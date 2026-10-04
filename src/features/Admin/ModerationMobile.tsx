@@ -12,7 +12,6 @@ import {
 import type { IconType } from 'react-icons';
 import {
   MdAdminPanelSettings,
-  MdBlock,
   MdCampaign,
   MdCheck,
   MdChevronLeft,
@@ -1405,11 +1404,7 @@ export const ActionSheets = ({
               onClick={() => run('warn', undefined, warn.message)}
               className={mobileButton('primary')}
             >
-              {actions.busy ? (
-                <Spinner className="h-4 w-4" />
-              ) : (
-                <MdCampaign size={20} />
-              )}
+              {actions.busy ? <Spinner className="h-4 w-4" /> : null}
               {actions.busy ? t('working') : t('warnSend')}
             </button>
           </>
@@ -1537,11 +1532,7 @@ export const ActionSheets = ({
               onClick={() => run('ban', undefined, note)}
               className={mobileButton('danger')}
             >
-              {actions.busy ? (
-                <Spinner className="h-4 w-4" />
-              ) : (
-                <MdBlock size={20} />
-              )}
+              {actions.busy ? <Spinner className="h-4 w-4" /> : null}
               {actions.busy
                 ? t('working')
                 : t('banConfirm', { name: user.displayName })}
@@ -1614,7 +1605,6 @@ const CaseFooter = ({
             onClick={() => setSheet('dismiss')}
             className={mobileButton(protectedAccount ? 'primary' : 'outline')}
           >
-            <MdDone size={20} />
             {reportIds.length > 1
               ? t('dismissCount', { count: reportIds.length })
               : t('dismiss')}
