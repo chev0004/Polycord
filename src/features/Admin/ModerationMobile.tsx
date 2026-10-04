@@ -1081,6 +1081,7 @@ const useRun = (
     action: ModAction;
     days?: number;
     note: string;
+    category?: WarningCategory;
     reauth: boolean;
   } | null>(null);
   const run = async (
@@ -1104,7 +1105,13 @@ const useRun = (
       onDone(action, days);
       return true;
     } catch (error) {
-      setFailed({ action, days, note, reauth: isReauthError(error) });
+      setFailed({
+        action,
+        days,
+        note,
+        category,
+        reauth: isReauthError(error),
+      });
       return false;
     } finally {
       setBusy(null);
@@ -1207,6 +1214,7 @@ export const ActionSheets = ({
                       actions.failed?.action ?? 'warn',
                       actions.failed?.days,
                       actions.failed?.note,
+                      actions.failed?.category,
                     )
                   }
                 />
@@ -1386,7 +1394,14 @@ export const ActionSheets = ({
             <ActionError
               mobile
               reauth={actions.failed.reauth}
-              onRetry={() => run('warn', undefined, actions.failed?.note)}
+              onRetry={() =>
+                run(
+                  'warn',
+                  undefined,
+                  actions.failed?.note,
+                  actions.failed?.category,
+                )
+              }
             />
           ) : null}
         </div>
