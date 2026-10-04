@@ -7,6 +7,7 @@ import type { DiscoveryData } from '@/features/Discovery/discoveryData';
 import type { DiscoveryUrlState } from '@/features/Discovery/discoveryUrlState';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
+import { withModerationStates } from '@/lib/moderation';
 
 type DiscoveryFeedProps = {
   userId?: string;
@@ -59,6 +60,9 @@ export const DiscoveryFeed = async ({
     console.error('Failed to load public profiles:', error);
     feedError = true;
   }
+
+  if (staff)
+    data = { ...data, profiles: await withModerationStates(data.profiles) };
 
   const boostedCount = data.profiles.filter(
     (profile) => profile.boosted && !profile.synthetic,
