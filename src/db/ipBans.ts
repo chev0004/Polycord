@@ -92,8 +92,7 @@ export const listActiveIpBans = () =>
     .select()
     .from(ipBans)
     .where(isNull(ipBans.revokedAt))
-    .orderBy(desc(ipBans.createdAt))
-    .limit(200);
+    .orderBy(desc(ipBans.createdAt));
 
 export const addIpBan = async (values: {
   ip: string;
