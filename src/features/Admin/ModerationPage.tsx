@@ -24,7 +24,7 @@ export const ModerationPage = ({
 }) => {
   const t = useTranslations('Admin');
   const store = useModeration(initial);
-  useSyncPendingCases(store.pendingGroups.length);
+  useSyncPendingCases(store.pendingCases);
   const mobile = useIsMobile();
   const { toasts, addToast, dismissToast } = useToastStack();
   const [tab, setTab] = useState<ModTab>('reports');

@@ -1,6 +1,7 @@
 import 'server-only';
 
 import {
+  countPendingCases,
   hasActivePremiumGrant,
   isSubscriptionActive,
   listModerationActions,
@@ -116,11 +117,12 @@ export const loadModerationSnapshot = async (
   meId: string,
   meRole: StaffRole,
 ): Promise<ModSnapshot> => {
-  const [reports, log, suspicious, staff] = await Promise.all([
+  const [reports, log, suspicious, staff, pendingCases] = await Promise.all([
     listModerationReports(),
     listModerationActions(),
     listSuspiciousActivity(),
     listStaffUserIds(ownerDiscordIds()),
+    countPendingCases(),
   ]);
 
   return {
@@ -130,6 +132,7 @@ export const loadModerationSnapshot = async (
     ])),
     staff,
     meRole,
+    pendingCases,
     suspicious: suspicious.map((row) => ({
       id: row.id,
       action: row.action,

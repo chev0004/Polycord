@@ -86,6 +86,7 @@ export type ModData = {
 };
 
 export type ModSnapshot = ModData & {
+  pendingCases: number;
   suspicious: ModSuspicious[];
   staff: string[];
   meId: string;

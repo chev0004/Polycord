@@ -279,7 +279,7 @@ const ReportsScreen = ({
         sub={
           view === 'pending'
             ? pending.length
-              ? t('casesNeedReview', { count: pending.length })
+              ? t('casesNeedReview', { count: store.pendingCases })
               : t('nothingWaiting')
             : t('resolvedCases', { count: resolved.length })
         }
@@ -1557,7 +1557,7 @@ export const ModerationMobile = ({
           setTab(next);
           setPage(null);
         }}
-        pending={store.pendingGroups.length}
+        pending={store.pendingCases}
         seeding={Boolean(seed)}
       />
       {page ? (
