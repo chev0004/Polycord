@@ -2,12 +2,14 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import type { HTMLAttributes } from 'react';
 import {
+  MdChevronRight,
   MdClose,
+  MdGppMaybe,
   MdOutlineMarkEmailRead,
   MdOutlineMarkEmailUnread,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
-import type { Notification } from '@/types';
+import { hasNotice, isNoticePending, type Notification } from '@/types';
 
 type NotificationEntryProps = {
   notification: Notification & { read: boolean };
@@ -16,6 +18,7 @@ type NotificationEntryProps = {
   last?: boolean;
   onMarkAsRead: () => void;
   onDelete: () => void;
+  onOpenNotice?: () => void;
 } & HTMLAttributes<HTMLDivElement>;
 
 const linkClassName =
@@ -29,6 +32,8 @@ export const getNotificationMessage = (
   premium: boolean,
   t: ReturnType<typeof useTranslations<'Inbox'>>,
 ) => {
+  if (hasNotice(notification)) return t('noteFromModeration');
+
   if (notification.kind === 'warning')
     return notification.message ?? t('moderationWarning');
 
@@ -59,6 +64,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   last = false,
   onMarkAsRead,
   onDelete,
+  onOpenNotice,
   className,
   style,
   ...props
@@ -67,6 +73,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
   const locale = useLocale();
   const avatarUrl = premium ? notification.actorAvatarUrl : undefined;
   const message = getNotificationMessage(notification, premium, t);
+  const notice = hasNotice(notification);
 
   return (
     <div
@@ -82,40 +89,79 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
         />
       )}
 
-      <span
-        className={`flex-shrink-0 transition-opacity duration-150 ${notification.read ? 'opacity-60' : ''}`}
-      >
-        <Avatar avatarUrl={avatarUrl} size="sm" />
-      </span>
+      {notice ? (
+        <button
+          type="button"
+          onClick={onOpenNotice}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <span
+            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-dark text-primary-lighter transition-opacity duration-150 ${notification.read ? 'opacity-60' : ''}`}
+          >
+            <MdGppMaybe size={20} aria-hidden />
+          </span>
+          <span
+            className={`flex min-w-0 flex-1 flex-col gap-0.5 transition-opacity duration-150 ${notification.read ? 'opacity-60' : ''}`}
+          >
+            <span className="break-words font-semibold text-[15px] leading-[1.3]">
+              {message}
+            </span>
+            <span className="text-[13px] text-primary-light leading-[1.35]">
+              {t('readWarning')}
+            </span>
+            <span className="block text-muted text-xs leading-[1.35]">
+              {notification.timestamp}
+            </span>
+          </span>
+          <MdChevronRight
+            size={20}
+            aria-hidden
+            className="mr-1 flex-shrink-0 text-muted"
+          />
+        </button>
+      ) : (
+        <>
+          <span
+            className={`flex-shrink-0 transition-opacity duration-150 ${notification.read ? 'opacity-60' : ''}`}
+          >
+            <Avatar avatarUrl={avatarUrl} size="sm" />
+          </span>
+
+          <div
+            className={`flex min-w-0 flex-1 flex-col gap-0.5 transition-opacity duration-150 ${notification.read ? 'opacity-60' : ''}`}
+          >
+            <p className="break-words font-medium text-[15px] leading-[1.3] [text-wrap:pretty]">
+              {message}
+            </p>
+            {notification.kind === 'warning' ? (
+              <Link
+                href={`/${locale}/legal/guidelines`}
+                className={linkClassName}
+              >
+                {t('reviewGuidelines')}
+              </Link>
+            ) : premium && notification.actorProfileId ? (
+              <Link
+                href={`/${locale}/u/${notification.actorProfileId}`}
+                className={linkClassName}
+              >
+                {t('viewProfile')}
+              </Link>
+            ) : premium && !notification.isGuest ? (
+              <p className="text-muted text-xs leading-[1.35]">
+                {t('profileUnavailable')}
+              </p>
+            ) : null}
+            <span className="block text-muted text-xs leading-[1.35]">
+              {notification.timestamp}
+            </span>
+          </div>
+        </>
+      )}
 
       <div
-        className={`flex min-w-0 flex-1 flex-col gap-0.5 transition-opacity duration-150 ${notification.read ? 'opacity-60' : ''}`}
+        className={`flex flex-shrink-0 gap-0.5 ${isNoticePending(notification) ? 'hidden' : ''}`}
       >
-        <p className="break-words font-medium text-[15px] leading-[1.3] [text-wrap:pretty]">
-          {message}
-        </p>
-        {notification.kind === 'warning' ? (
-          <Link href={`/${locale}/legal/guidelines`} className={linkClassName}>
-            {t('reviewGuidelines')}
-          </Link>
-        ) : premium && notification.actorProfileId ? (
-          <Link
-            href={`/${locale}/u/${notification.actorProfileId}`}
-            className={linkClassName}
-          >
-            {t('viewProfile')}
-          </Link>
-        ) : premium && !notification.isGuest ? (
-          <p className="text-muted text-xs leading-[1.35]">
-            {t('profileUnavailable')}
-          </p>
-        ) : null}
-        <span className="block text-muted text-xs leading-[1.35]">
-          {notification.timestamp}
-        </span>
-      </div>
-
-      <div className="flex flex-shrink-0 gap-0.5">
         <button
           type="button"
           onClick={onMarkAsRead}

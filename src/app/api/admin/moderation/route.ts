@@ -54,7 +54,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const { userId, reportId, action, days, note } = payload.data;
+  const { userId, reportId, action, days, note, category } = payload.data;
   const ownerOnly = (OWNER_ACTIONS as readonly string[]).includes(action);
 
   if (ownerOnly && role !== 'owner') {
@@ -102,6 +102,7 @@ export const POST = async (request: Request) => {
         kind: 'warning',
         isGuest: false,
         message: note,
+        warningCategory: category,
       });
       break;
     case 'hide_profile':

@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { StaffPill } from '@/features/Admin/StaffPill';
 import { Footer } from '@/features/Footer';
+import { WarningNoticeHost } from '@/features/Inbox/WarningNoticeHost';
 import { Navbar } from '@/features/Navbar';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { MobileNavigation } from './MobileNavigation';
@@ -77,7 +78,7 @@ export const AppShell = ({
     isLoggedIn && !pathname.endsWith('/onboarding') && !staffArea;
   const docked = dockable && mobile === true;
 
-  return (
+  const shell = (
     <BumpContext.Provider value={setBump}>
       <PendingCasesContext.Provider value={setLiveCases}>
         <div
@@ -123,4 +124,6 @@ export const AppShell = ({
       </PendingCasesContext.Provider>
     </BumpContext.Provider>
   );
+
+  return isLoggedIn ? <WarningNoticeHost>{shell}</WarningNoticeHost> : shell;
 };

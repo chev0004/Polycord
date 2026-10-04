@@ -157,9 +157,6 @@ try {
     windowStart: new Date(),
     count: 1,
   });
-  await db
-    .insert(schema.moderationRestrictions)
-    .values({ discordUserId: identity.id, bannedAt: new Date() });
 
   const sessions = await Promise.all([
     createSessionCookieValue(identity, user.id),
@@ -328,45 +325,56 @@ try {
   process.env.DISCORD_CLIENT_SECRET = 'isolated-secret';
   process.env.DISCORD_REDIRECT_URI =
     'http://localhost/api/auth/discord/callback';
-  cookie = await createOAuthStateCookieValue({
-    nonce: 'isolated-state',
-    redirectTo: '/en/profile',
-  });
   const { NextRequest } = await import('next/server');
   const { GET: callback } = await import(
     '../../src/app/api/auth/discord/callback/route'
   );
   const originalFetch = globalThis.fetch;
-  let freshSession;
-  try {
-    globalThis.fetch = async (url) => {
-      if (url === 'https://discord.com/api/oauth2/token')
-        return Response.json({ access_token: 'isolated-token' });
-      assert.equal(url, 'https://discord.com/api/users/@me');
-      return Response.json({ id: identity.id, username: identity.name });
-    };
-    const signedIn = await callback(
-      new NextRequest(
-        'http://localhost/api/auth/discord/callback?code=isolated-code&state=isolated-state',
-      ),
-    );
-    assert.equal(
-      signedIn.headers.get('location'),
-      'http://localhost/en/profile',
-    );
-    freshSession = signedIn.cookies.get('polycord_session').value;
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  const signIn = async () => {
+    cookie = await createOAuthStateCookieValue({
+      nonce: 'isolated-state',
+      redirectTo: '/en/profile',
+    });
+    try {
+      globalThis.fetch = async (url) => {
+        if (url === 'https://discord.com/api/oauth2/token')
+          return Response.json({ access_token: 'isolated-token' });
+        assert.equal(url, 'https://discord.com/api/users/@me');
+        return Response.json({ id: identity.id, username: identity.name });
+      };
+      return await callback(
+        new NextRequest(
+          'http://localhost/api/auth/discord/callback?code=isolated-code&state=isolated-state',
+        ),
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  };
+  const signedIn = await signIn();
+  assert.equal(signedIn.headers.get('location'), 'http://localhost/en/profile');
+  const freshSession = signedIn.cookies.get('polycord_session').value;
   user = await getUserByDiscordId(identity.id);
   assert.notEqual(user.id, originalId);
-  assert.ok(user.bannedAt);
+  assert.equal(user.bannedAt, null);
   for (cookie of sessions) assert.equal(await getCurrentUser(), null);
   assert.equal(await deleteAccountByUserId(originalId), false);
   cookie = freshSession;
   assert.equal((await getCurrentUser()).accountId, user.id);
-  assert.equal(await getActiveUser(), null);
+  assert.equal((await getActiveUser()).accountId, user.id);
   assert.equal((await getAccountExportByUserId(user.id)).profile, null);
+
+  await db
+    .insert(schema.moderationRestrictions)
+    .values({ discordUserId: identity.id, bannedAt: new Date() });
+  assert.equal(await getCurrentUser(), null);
+  assert.equal(await getActiveUser(), null);
+  const rejected = await signIn();
+  assert.equal(
+    new URL(rejected.headers.get('location')).searchParams.get('authError'),
+    'banned',
+  );
+  assert.equal(rejected.cookies.get('polycord_session'), undefined);
   console.log('account lifecycle passed');
 } finally {
   await db

@@ -1,13 +1,24 @@
-import { beforeAll, describe, expect, it } from 'bun:test';
+import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { NextRequest } from 'next/server';
 import {
   AUTH_SESSION_COOKIE,
   createSessionCookieValue,
 } from './lib/auth-session';
-import middleware from './middleware';
 
-const requestFor = (path: string, sessionCookie?: string) => {
-  const request = new NextRequest(new URL(`http://localhost:3000${path}`));
+let ban: { date: Date; reference: string } | null = null;
+
+mock.module('./lib/banGate', () => ({ findBan: async () => ban }));
+
+const { default: middleware } = await import('./middleware');
+
+beforeEach(() => {
+  ban = null;
+});
+
+const requestFor = (path: string, sessionCookie?: string, method = 'GET') => {
+  const request = new NextRequest(new URL(`http://localhost:3000${path}`), {
+    method,
+  });
 
   if (sessionCookie) {
     request.cookies.set(AUTH_SESSION_COOKIE, sessionCookie);
@@ -60,5 +71,57 @@ describe('route guards', () => {
     const response = await middleware(requestFor('/en'));
 
     expect(response.headers.get('location')).toBe(null);
+  });
+});
+
+describe('ban gate', () => {
+  beforeEach(() => {
+    ban = { date: new Date('2026-10-04T00:00:00Z'), reference: 'PC-TEST-0001' };
+  });
+
+  it('rewrites page requests to the banned screen with a 403', async () => {
+    const response = await middleware(requestFor('/ja/u/someone'));
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get('x-middleware-rewrite')).toBe(
+      'http://localhost:3000/banned',
+    );
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(
+      response.headers.get('x-middleware-request-x-polycord-ban-locale'),
+    ).toBe('ja');
+    expect(
+      response.headers.get('x-middleware-request-x-polycord-ban-reference'),
+    ).toBe('PC-TEST-0001');
+  });
+
+  it('answers apis, files and writes with a bare 403', async () => {
+    for (const [path, method] of [
+      ['/api/discovery', 'GET'],
+      ['/api/saved', 'POST'],
+      ['/robots.txt', 'GET'],
+      ['/_next/image', 'GET'],
+      ['/en', 'POST'],
+    ]) {
+      const response = await middleware(requestFor(path, undefined, method));
+
+      expect(response.status, `${method} ${path}`).toBe(403);
+      expect(response.headers.get('x-middleware-rewrite')).toBeNull();
+    }
+  });
+
+  it('keeps health and the billing webhook reachable', async () => {
+    for (const path of ['/api/health', '/api/billing/webhook']) {
+      const response = await middleware(requestFor(path, undefined, 'POST'));
+
+      expect(response.status, path).toBe(200);
+    }
+  });
+
+  it('passes unbanned visitors through', async () => {
+    ban = null;
+    const response = await middleware(requestFor('/api/discovery'));
+
+    expect(response.status).toBe(200);
   });
 });

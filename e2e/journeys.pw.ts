@@ -180,7 +180,7 @@ test('saved profile search, filters and sorting stay within the saved list', asy
   }
 });
 
-test('suspended and banned accounts keep reading but cannot write', async ({
+test('suspended accounts keep reading but cannot write and banned accounts are denied', async ({
   context,
 }) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
@@ -209,23 +209,33 @@ test('suspended and banned accounts keep reading but cannot write', async ({
         })
       ).status(),
     ).toBe(200);
-    for (const restrict of [
-      () =>
-        sql`update users set suspended_until = now() + interval '1 day' where id = ${member.id}`,
-      () =>
-        sql`update users set suspended_until = null, banned_at = now() where id = ${member.id}`,
-    ]) {
+    for (const [restrict, readStatus, writeStatus] of [
+      [
+        () =>
+          sql`update users set suspended_until = now() + interval '1 day' where id = ${member.id}`,
+        200,
+        401,
+      ],
+      [
+        () =>
+          sql`update users set suspended_until = null, banned_at = now() where id = ${member.id}`,
+        403,
+        403,
+      ],
+    ] as const) {
       await restrict();
       const page = await context.newPage();
       const response = await page.goto(`/en/u/${target.id}`);
-      expect(response?.status()).toBe(200);
+      expect(response?.status()).toBe(readStatus);
       for (const [path, data] of [
         ['/api/saved', { profileId: target.id }],
         ['/api/block', { profileId: target.id }],
         ['/api/report', { profileId: target.id, reason: 'spam' }],
         ['/api/settings', {}],
       ] as const) {
-        expect((await context.request.post(path, { data })).status()).toBe(401);
+        expect((await context.request.post(path, { data })).status()).toBe(
+          writeStatus,
+        );
       }
       await page.close();
     }

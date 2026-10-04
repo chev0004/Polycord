@@ -39,6 +39,7 @@ import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { getLanguageName, proficiencyOptions } from '@/constants/languages';
 import { signInHref } from '@/features/Navigation/signIn';
+import type { WarningCategory } from '@/types';
 import { protectionOf } from './permissions';
 import type {
   LogAction,
@@ -117,6 +118,8 @@ export const ACTION_TONE: Record<LogAction, string> = {
   revoke: 'bg-primary-dark',
   premium_grant: 'bg-discord-yellow',
   premium_revoke: 'bg-primary-dark',
+  ip_block: 'bg-red-400',
+  ip_unblock: 'bg-primary-dark',
 };
 
 export const useLogLabel = () => {
@@ -693,12 +696,17 @@ export const useWarnMessage = (open: boolean) => {
   }, [open]);
 
   const message = text.trim();
+  const category =
+    choice !== null && choice !== 'custom' && message === t(`warnText${choice}`)
+      ? (choice.toLowerCase() as WarningCategory)
+      : undefined;
 
   return {
     choice,
     text,
     setText,
     message,
+    category,
     valid: message.length > 0,
     pick: (next: WarnChoice) => {
       setChoice(next);
@@ -771,7 +779,7 @@ export const WarnDialog = ({
   open: boolean;
   user: ModUser;
   onCancel: () => void;
-  onConfirm: (message: string) => void;
+  onConfirm: (message: string, category?: WarningCategory) => void;
 }) => {
   const t = useTranslations('Admin');
   const warn = useWarnMessage(open);
@@ -801,7 +809,7 @@ export const WarnDialog = ({
         <button
           type="button"
           disabled={!warn.valid}
-          onClick={() => onConfirm(warn.message)}
+          onClick={() => onConfirm(warn.message, warn.category)}
           className={modButton('primary')}
         >
           <MdCampaign size={17} />
@@ -914,6 +922,7 @@ export const ActionBar = ({
     action: ModAction;
     days?: number;
     note: string;
+    category?: WarningCategory;
     reauth: boolean;
   } | null>(null);
   const [dialog, setDialog] = useState<
@@ -928,7 +937,12 @@ export const ActionBar = ({
     setNote('');
     setDialog(next);
   };
-  const run = async (action: ModAction, days?: number, runNote = '') => {
+  const run = async (
+    action: ModAction,
+    days?: number,
+    runNote = '',
+    category?: WarningCategory,
+  ) => {
     if (busy) return;
     setBusy(action);
     setFailed(null);
@@ -940,11 +954,18 @@ export const ActionBar = ({
         reportIds,
         note: runNote,
         days,
+        category,
       });
       setNote('');
       onDone({ action, days });
     } catch (error) {
-      setFailed({ action, days, note: runNote, reauth: isReauthError(error) });
+      setFailed({
+        action,
+        days,
+        note: runNote,
+        category,
+        reauth: isReauthError(error),
+      });
     } finally {
       setBusy(null);
     }
@@ -1058,7 +1079,9 @@ export const ActionBar = ({
         <div className="px-4 pb-3 md:px-5">
           <ActionError
             reauth={failed.reauth}
-            onRetry={() => run(failed.action, failed.days, failed.note)}
+            onRetry={() =>
+              run(failed.action, failed.days, failed.note, failed.category)
+            }
           />
         </div>
       ) : null}
@@ -1084,7 +1107,9 @@ export const ActionBar = ({
         open={dialog === 'warn'}
         user={user}
         onCancel={() => setDialog(null)}
-        onConfirm={(message) => run('warn', undefined, message)}
+        onConfirm={(message, category) =>
+          run('warn', undefined, message, category)
+        }
       />
       <SuspendDialog
         open={dialog === 'suspend'}

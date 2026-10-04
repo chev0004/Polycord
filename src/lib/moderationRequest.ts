@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MODERATION_ACTIONS } from '@/features/Admin/types';
+import { WARNING_CATEGORIES } from '@/types';
 
 export const NOTE_MAX_LENGTH = 500;
 
@@ -10,6 +11,7 @@ export const moderationSchema = z
     reportIds: z.array(z.string().uuid()).max(1000).default([]),
     action: z.enum(MODERATION_ACTIONS),
     days: z.number().int().min(1).max(90).optional(),
+    category: z.enum(WARNING_CATEGORIES).optional(),
     note: z
       .string()
       .trim()

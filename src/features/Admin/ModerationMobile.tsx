@@ -45,12 +45,14 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
+import type { WarningCategory } from '@/types';
 import {
   type ModTab,
   type Notify,
   type UsersQuery,
   useEventLabel,
 } from './ModerationDesktop';
+import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
   ActionError,
@@ -418,6 +420,7 @@ const UsersScreen = ({
 }) => {
   const t = useTranslations('Admin');
   const [staffOpen, setStaffOpen] = useState(false);
+  const [ipBlocksOpen, setIpBlocksOpen] = useState(false);
   const trimmed = users.query.trim();
   const list = (trimmed ? (users.results ?? []) : store.recentUserIds).flatMap(
     (id) => store.usersById.get(id) ?? [],
@@ -459,6 +462,13 @@ const UsersScreen = ({
               chevron
               onClick={() => setStaffOpen(true)}
             />
+            <SheetRow
+              icon={MdBlock}
+              label={t('manageIpBlocks')}
+              description={t('ipBlocksHint')}
+              chevron
+              onClick={() => setIpBlocksOpen(true)}
+            />
           </div>
         ) : null}
         {users.searching ? (
@@ -498,6 +508,13 @@ const UsersScreen = ({
         title={t('staffTitle')}
       >
         <StaffPanel store={store} mobile />
+      </Sheet>
+      <Sheet
+        open={ipBlocksOpen}
+        onOpenChange={setIpBlocksOpen}
+        title={t('manageIpBlocks')}
+      >
+        <IpBlocksPanel store={store} mobile />
       </Sheet>
     </>
   );
@@ -1061,18 +1078,37 @@ const useRun = (
     action: ModAction;
     days?: number;
     note: string;
+    category?: WarningCategory;
     reauth: boolean;
   } | null>(null);
-  const run = async (action: ModAction, note: string, days?: number) => {
+  const run = async (
+    action: ModAction,
+    note: string,
+    days?: number,
+    category?: WarningCategory,
+  ) => {
     if (busy) return false;
     setBusy(action);
     setFailed(null);
     try {
-      await store.act({ userId: user.id, action, reportIds, note, days });
+      await store.act({
+        userId: user.id,
+        action,
+        reportIds,
+        note,
+        days,
+        category,
+      });
       onDone(action, days);
       return true;
     } catch (error) {
-      setFailed({ action, days, note, reauth: isReauthError(error) });
+      setFailed({
+        action,
+        days,
+        note,
+        category,
+        reauth: isReauthError(error),
+      });
       return false;
     } finally {
       setBusy(null);
@@ -1193,8 +1229,13 @@ export const ActionSheets = ({
     setNote('');
     setSheet(next);
   };
-  const run = async (action: ModAction, days?: number, text = '') => {
-    if (await actions.run(action, text, days)) {
+  const run = async (
+    action: ModAction,
+    days?: number,
+    text = '',
+    category?: WarningCategory,
+  ) => {
+    if (await actions.run(action, text, days, category)) {
       setNote('');
       setSheet(null);
     }
@@ -1253,6 +1294,7 @@ export const ActionSheets = ({
                       actions.failed?.action ?? 'warn',
                       actions.failed?.days,
                       actions.failed?.note,
+                      actions.failed?.category,
                     )
                   }
                 />
@@ -1404,7 +1446,9 @@ export const ActionSheets = ({
             <button
               type="button"
               disabled={!warn.valid || actions.busy !== null}
-              onClick={() => run('warn', undefined, warn.message)}
+              onClick={() =>
+                run('warn', undefined, warn.message, warn.category)
+              }
               className={mobileButton('primary')}
             >
               {actions.busy ? (
@@ -1433,7 +1477,14 @@ export const ActionSheets = ({
             <ActionError
               mobile
               reauth={actions.failed.reauth}
-              onRetry={() => run('warn', undefined, actions.failed?.note)}
+              onRetry={() =>
+                run(
+                  'warn',
+                  undefined,
+                  actions.failed?.note,
+                  actions.failed?.category,
+                )
+              }
             />
           ) : null}
         </div>

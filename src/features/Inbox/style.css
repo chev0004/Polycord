@@ -38,3 +38,41 @@
     transform: translateY(0);
   }
 }
+
+.WarningNotice {
+  animation: warningNoticeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.WarningNotice[data-nudge] {
+  animation: warningNoticeNudge 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 767px) {
+  .WarningNotice {
+    animation-name: warningNoticeSlideUp;
+    animation-duration: 0.45s;
+  }
+
+  .WarningNotice[data-nudge] {
+    animation: none;
+  }
+}
+
+@keyframes warningNoticeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+@keyframes warningNoticeNudge {
+  40% {
+    transform: scale(1.012);
+  }
+}
+
+@keyframes warningNoticeSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+}

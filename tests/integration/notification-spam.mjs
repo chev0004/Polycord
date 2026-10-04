@@ -45,7 +45,7 @@ const post = (handler, path, profileId, ip = '203.0.113.1') =>
   handler(
     new Request(`http://localhost${path}`, {
       method: 'POST',
-      headers: { 'x-forwarded-for': ip },
+      headers: { 'x-nf-client-connection-ip': ip },
       body: JSON.stringify({ profileId }),
     }),
   );

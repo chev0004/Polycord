@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import {
+  MdChevronRight,
   MdDeleteOutline,
+  MdGppMaybe,
   MdOutlineMarkEmailRead,
   MdOutlineMarkEmailUnread,
   MdOutlinePersonOutline,
@@ -14,9 +16,10 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { ActionSheet, type ActionSheetItem } from '@/components/Sheet';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
-import type { Notifications } from '@/types';
+import { hasNotice, type Notifications } from '@/types';
 import { getNotificationMessage } from './NotificationEntry';
 import { formatRelativeTime, useInbox } from './useInbox';
+import { useOpenNotice } from './WarningNoticeHost';
 
 const rowClassName =
   'flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-overlay focus-visible:bg-overlay active:bg-overlay';
@@ -38,11 +41,13 @@ export const InboxPage = ({
     premium,
     persist,
   });
+  const openNotice = useOpenNotice();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const active = inbox.notifications.find((n) => n.id === activeId);
 
-  const openNotification = (id: string, read: boolean) => {
+  const openNotification = (id: string, read: boolean, notice: boolean) => {
+    if (notice) return openNotice(id);
     setActiveId(id);
     setOpen(true);
     if (!read) void inbox.setRead(id, true);
@@ -136,22 +141,37 @@ export const InboxPage = ({
                 <button
                   type="button"
                   onClick={() =>
-                    openNotification(notification.id, notification.read)
+                    openNotification(
+                      notification.id,
+                      notification.read,
+                      hasNotice(notification),
+                    )
                   }
                   className={rowClassName}
                 >
-                  <Avatar
-                    avatarUrl={
-                      inbox.premium ? notification.actorAvatarUrl : undefined
-                    }
-                    size="sm"
-                  />
+                  {hasNotice(notification) ? (
+                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-dark text-primary-lighter">
+                      <MdGppMaybe size={20} aria-hidden />
+                    </span>
+                  ) : (
+                    <Avatar
+                      avatarUrl={
+                        inbox.premium ? notification.actorAvatarUrl : undefined
+                      }
+                      size="sm"
+                    />
+                  )}
                   <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
                     <span
                       className={`break-words text-sm leading-snug ${notification.read ? '' : 'font-semibold'}`}
                     >
                       {getNotificationMessage(notification, inbox.premium, t)}
                     </span>
+                    {hasNotice(notification) ? (
+                      <span className="font-semibold text-[13px] text-primary-light">
+                        {t('readWarning')}
+                      </span>
+                    ) : null}
                     <span className="text-muted text-xs">
                       {notification.createdAt
                         ? formatRelativeTime(notification.createdAt, t)
@@ -163,6 +183,13 @@ export const InboxPage = ({
                       <span className="sr-only">{t('unread')}</span>
                     </span>
                   )}
+                  {hasNotice(notification) ? (
+                    <MdChevronRight
+                      size={20}
+                      aria-hidden
+                      className="flex-shrink-0 text-muted"
+                    />
+                  ) : null}
                 </button>
               </li>
             ))}
