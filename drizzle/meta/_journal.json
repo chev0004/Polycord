@@ -232,6 +232,13 @@
       "when": 1791091203697,
       "tag": "0032_ip_bans",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791092053578,
+      "tag": "0033_warning_notice",
+      "breakpoints": true
     }
   ]
 }

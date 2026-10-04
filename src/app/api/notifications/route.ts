@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import {
+  acknowledgeNotice,
   clearNotifications,
   createNotification,
   deleteNotification,
@@ -67,6 +68,8 @@ export const GET = async () => {
             premium && !row.isGuest ? (actorProfileId ?? undefined) : undefined,
           isGuest: row.isGuest,
           message: row.message ?? undefined,
+          warningCategory: row.warningCategory ?? undefined,
+          acknowledgedAt: row.acknowledgedAt?.toISOString(),
           read: row.read,
           createdAt: row.createdAt.toISOString(),
         })),
@@ -164,6 +167,12 @@ export const PATCH = async (request: Request) => {
   }
 
   const id = z.uuid().safeParse(body.id);
+
+  if (id.success && body.acknowledge === true) {
+    return (await acknowledgeNotice(currentUser.accountId, id.data))
+      ? NextResponse.json({ ok: true })
+      : NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
   if (!id.success || typeof body.read !== 'boolean') {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
