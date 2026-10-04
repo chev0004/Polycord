@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import {
   type PointerEvent,
   type ReactNode,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -870,58 +871,85 @@ const Dock = ({
   );
 };
 
+const DiscordIdRow = ({ user }: { user: ModUser }) => {
+  const t = useTranslations('Admin');
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard?.writeText(user.discordId).catch(() => {});
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1200);
+      }}
+      className="flex h-11 w-full items-center justify-between gap-2.5 rounded-xl bg-background-darker pr-1.5 pl-3.5 text-muted"
+    >
+      <span className="font-semibold text-subtle text-xs">
+        {t('discordId')}
+      </span>
+      <span className="flex items-center gap-1.5 text-gray-200">
+        <span className="font-mono text-xs">{user.discordId}</span>
+        <span
+          className={`flex w-8 justify-center ${copied ? 'text-discord-blue-light' : ''}`}
+        >
+          {copied ? <MdCheck size={18} /> : <MdContentCopy size={18} />}
+        </span>
+      </span>
+    </button>
+  );
+};
+
+const StatusChips = ({
+  user,
+  showSupporter,
+}: {
+  user: ModUser;
+  showSupporter: boolean;
+}) =>
+  user.role ||
+  hasStatusChips(user) ||
+  user.warnings > 0 ||
+  (showSupporter && hasGrant(user)) ? (
+    <div className="flex flex-wrap gap-1.5 [&>span]:h-[26px] [&>span]:px-2.5 [&>span]:text-xs">
+      <UserChips user={user} showSupporter={showSupporter} />
+    </div>
+  ) : null;
+
 const Hero = ({
   user,
   showSupporter,
 }: {
   user: ModUser;
   showSupporter: boolean;
-}) => {
-  const t = useTranslations('Admin');
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="mx-4 mt-0.5 flex flex-col gap-3.5 rounded-3xl bg-background-dark p-[18px]">
-      <div className="flex min-w-0 items-center gap-3.5">
-        <Avatar avatarUrl={user.avatarUrl} size="md" />
-        <div className="flex min-w-0 flex-col gap-[3px]">
-          <h2 className="font-bold text-[21px] leading-tight">
-            {user.displayName}
-          </h2>
-          <span className="text-muted text-sm">@{user.username}</span>
-        </div>
+}) => (
+  <div className="mx-4 mt-0.5 flex flex-col gap-3.5 rounded-3xl bg-background-dark p-[18px]">
+    <div className="flex min-w-0 items-center gap-3.5">
+      <Avatar avatarUrl={user.avatarUrl} size="md" />
+      <div className="flex min-w-0 flex-col gap-[3px]">
+        <h2 className="font-bold text-[21px] leading-tight">
+          {user.displayName}
+        </h2>
+        <span className="text-muted text-sm">@{user.username}</span>
       </div>
-      {user.role ||
-      hasStatusChips(user) ||
-      user.warnings > 0 ||
-      (showSupporter && hasGrant(user)) ? (
-        <div className="flex flex-wrap gap-1.5 [&>span]:h-[26px] [&>span]:px-2.5 [&>span]:text-xs">
-          <UserChips user={user} showSupporter={showSupporter} />
-        </div>
-      ) : null}
-      <button
-        type="button"
-        onClick={() => {
-          navigator.clipboard?.writeText(user.discordId).catch(() => {});
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1200);
-        }}
-        className="flex h-11 w-full items-center justify-between gap-2.5 rounded-xl bg-background-darker pr-1.5 pl-3.5 text-muted"
-      >
-        <span className="font-semibold text-subtle text-xs">
-          {t('discordId')}
-        </span>
-        <span className="flex items-center gap-1.5 text-gray-200">
-          <span className="font-mono text-xs">{user.discordId}</span>
-          <span
-            className={`flex w-8 justify-center ${copied ? 'text-discord-blue-light' : ''}`}
-          >
-            {copied ? <MdCheck size={18} /> : <MdContentCopy size={18} />}
-          </span>
-        </span>
-      </button>
     </div>
-  );
-};
+    <StatusChips user={user} showSupporter={showSupporter} />
+    <DiscordIdRow user={user} />
+  </div>
+);
+
+const SheetUserInfo = ({
+  user,
+  showSupporter,
+}: {
+  user: ModUser;
+  showSupporter: boolean;
+}) => (
+  <div className="flex flex-col gap-3">
+    <span className="text-muted text-sm">@{user.username}</span>
+    <StatusChips user={user} showSupporter={showSupporter} />
+    <DiscordIdRow user={user} />
+  </div>
+);
 
 const ProfileFacts = ({
   user,
@@ -1056,36 +1084,39 @@ const useRun = (
   return { busy, failed, run, reset: () => setFailed(null) };
 };
 
-const CaseFooter = ({
+type SheetKind = 'act' | 'warn' | 'suspend' | 'ban' | 'grant';
+
+export const ActionSheets = ({
   store,
   user,
   reportIds,
   onDone,
+  sheet,
+  setSheet,
 }: {
   store: ModerationStore;
   user: ModUser;
   reportIds: string[];
   onDone: (action: ModAction, days?: number) => void;
+  sheet: SheetKind | null;
+  setSheet: (sheet: SheetKind | null) => void;
 }) => {
   const t = useTranslations('Admin');
   const { date } = useModFormat();
-  const [sheet, setSheet] = useState<
-    'act' | 'warn' | 'suspend' | 'ban' | 'grant' | null
-  >(null);
   const [note, setNote] = useState('');
   const grant = useGrant(store, user, () => setSheet(null));
-  const protectedAccount = user.role !== undefined || user.id === store.meId;
-  const dismiss = useRun(store, user, reportIds, onDone);
   const actions = useRun(store, user, reportIds, onDone);
   const suspend = useSuspendDays(sheet === 'suspend');
   const warn = useWarnMessage(sheet === 'warn');
   const suspended = isSuspended(user);
 
-  const open = (next: typeof sheet) => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset errors only when the sheet opens
+  useEffect(() => {
+    if (sheet !== 'act') return;
     actions.reset();
     grant.clearError();
-    setSheet(next);
-  };
+  }, [sheet]);
+  const open = (next: SheetKind) => setSheet(next);
   const run = async (action: ModAction, days?: number, text = note) => {
     if (await actions.run(action, text, days)) {
       setNote('');
@@ -1120,51 +1151,13 @@ const CaseFooter = ({
 
   return (
     <>
-      {dismiss.failed ? (
-        <ActionError
-          mobile
-          reauth={dismiss.failed.reauth}
-          onRetry={() => dismiss.run('dismiss', '')}
-        />
-      ) : null}
-      <div className="flex gap-2.5">
-        {reportIds.length ? (
-          <button
-            type="button"
-            disabled={dismiss.busy !== null}
-            onClick={() => dismiss.run('dismiss', '')}
-            className={mobileButton(protectedAccount ? 'primary' : 'outline')}
-          >
-            {dismiss.busy ? (
-              <Spinner className="h-4 w-4" />
-            ) : (
-              <MdDone size={20} />
-            )}
-            {dismiss.busy
-              ? t('working')
-              : reportIds.length > 1
-                ? t('dismissCount', { count: reportIds.length })
-                : t('dismiss')}
-          </button>
-        ) : null}
-        {protectedAccount ? null : (
-          <button
-            type="button"
-            disabled={dismiss.busy !== null}
-            onClick={() => open('act')}
-            className={mobileButton('primary')}
-          >
-            <MdGavel size={20} />
-            {t('takeAction')}
-          </button>
-        )}
-      </div>
       <Sheet
         open={sheet === 'act'}
         onOpenChange={(next) => setSheet(next ? 'act' : null)}
         title={user.displayName}
       >
         <div className="flex flex-col gap-3.5">
+          <SheetUserInfo user={user} showSupporter={store.meRole === 'owner'} />
           <Note value={note} onChange={setNote} />
           {actions.failed ? (
             <ActionError
@@ -1267,13 +1260,13 @@ const CaseFooter = ({
       </Sheet>
       <Sheet
         open={sheet === 'grant'}
-        onOpenChange={(next) => setSheet(next ? 'grant' : null)}
+        onOpenChange={(next) => setSheet(next ? 'grant' : 'act')}
         title={t(grant.granted ? 'replacePremium' : 'grantPremium')}
         footer={
           <>
             <button
               type="button"
-              onClick={() => setSheet(null)}
+              onClick={() => setSheet('act')}
               className={mobileButton('outline')}
             >
               {t('cancel')}
@@ -1307,13 +1300,13 @@ const CaseFooter = ({
       </Sheet>
       <Sheet
         open={sheet === 'warn'}
-        onOpenChange={(next) => setSheet(next ? 'warn' : null)}
+        onOpenChange={(next) => setSheet(next ? 'warn' : 'act')}
         title={t('warnTitle', { name: user.displayName })}
         footer={
           <>
             <button
               type="button"
-              onClick={() => setSheet(null)}
+              onClick={() => setSheet('act')}
               className={mobileButton('outline')}
             >
               {t('cancel')}
@@ -1357,13 +1350,13 @@ const CaseFooter = ({
       </Sheet>
       <Sheet
         open={sheet === 'suspend'}
-        onOpenChange={(next) => setSheet(next ? 'suspend' : null)}
+        onOpenChange={(next) => setSheet(next ? 'suspend' : 'act')}
         title={t('suspendTitle', { name: user.displayName })}
         footer={
           <>
             <button
               type="button"
-              onClick={() => setSheet(null)}
+              onClick={() => setSheet('act')}
               className={mobileButton('outline')}
             >
               {t('cancel')}
@@ -1439,13 +1432,13 @@ const CaseFooter = ({
       </Sheet>
       <Sheet
         open={sheet === 'ban'}
-        onOpenChange={(next) => setSheet(next ? 'ban' : null)}
+        onOpenChange={(next) => setSheet(next ? 'ban' : 'act')}
         title={t('banTitle', { name: user.displayName })}
         footer={
           <>
             <button
               type="button"
-              onClick={() => setSheet(null)}
+              onClick={() => setSheet('act')}
               className={mobileButton('outline')}
             >
               {t('cancel')}
@@ -1487,6 +1480,75 @@ const CaseFooter = ({
           ) : null}
         </div>
       </Sheet>
+    </>
+  );
+};
+
+const CaseFooter = ({
+  store,
+  user,
+  reportIds,
+  onDone,
+}: {
+  store: ModerationStore;
+  user: ModUser;
+  reportIds: string[];
+  onDone: (action: ModAction, days?: number) => void;
+}) => {
+  const t = useTranslations('Admin');
+  const [sheet, setSheet] = useState<SheetKind | null>(null);
+  const protectedAccount = user.role !== undefined || user.id === store.meId;
+  const dismiss = useRun(store, user, reportIds, onDone);
+
+  return (
+    <>
+      {dismiss.failed ? (
+        <ActionError
+          mobile
+          reauth={dismiss.failed.reauth}
+          onRetry={() => dismiss.run('dismiss', '')}
+        />
+      ) : null}
+      <div className="flex gap-2.5">
+        {reportIds.length ? (
+          <button
+            type="button"
+            disabled={dismiss.busy !== null}
+            onClick={() => dismiss.run('dismiss', '')}
+            className={mobileButton(protectedAccount ? 'primary' : 'outline')}
+          >
+            {dismiss.busy ? (
+              <Spinner className="h-4 w-4" />
+            ) : (
+              <MdDone size={20} />
+            )}
+            {dismiss.busy
+              ? t('working')
+              : reportIds.length > 1
+                ? t('dismissCount', { count: reportIds.length })
+                : t('dismiss')}
+          </button>
+        ) : null}
+        {protectedAccount ? null : (
+          <button
+            type="button"
+            disabled={dismiss.busy !== null}
+            onClick={() => setSheet('act')}
+            className={mobileButton('primary')}
+          >
+            <MdGavel size={20} />
+            {t('takeAction')}
+          </button>
+        )}
+      </div>
+      <ActionSheets
+        store={store}
+        user={user}
+        reportIds={reportIds}
+        onDone={onDone}
+        sheet={sheet}
+        setSheet={setSheet}
+      />
     </>
   );
 };
