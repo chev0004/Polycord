@@ -332,7 +332,7 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     await page
       .getByRole('searchbox', { name: 'Search users' })
       .fill(`${prefix} Reported`);
-    await page.getByRole('button', { name: /^Suspend…/ }).click();
+    await page.getByRole('button', { name: 'Suspend' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: '30 days' }).click();
     await dialog.getByRole('textbox', { name: 'Note' }).fill('Repeated spam');

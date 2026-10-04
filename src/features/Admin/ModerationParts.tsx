@@ -1182,7 +1182,7 @@ export const DetailHeader = ({
             {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
           </button>
         </div>
-        <div className="mt-1 flex flex-wrap gap-1.5">
+        <div className="mt-1 flex min-h-[22px] flex-wrap gap-1.5">
           <UserChips user={user} />
         </div>
       </div>
