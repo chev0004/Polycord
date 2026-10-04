@@ -31,10 +31,19 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  const expiresAt = grantExpiry(new Date(), body.amount, body.unit);
-  if (!(await setPremiumGrant(body.userId, expiresAt, currentUser.accountId))) {
+  const [target] = await listModerationUsers([body.userId]);
+  if (!target) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
+
+  const now = new Date();
+  const current = target.user.premiumGrantedUntil;
+  const expiresAt = grantExpiry(
+    current && current > now ? current : now,
+    body.amount,
+    body.unit,
+  );
+  await setPremiumGrant(body.userId, expiresAt, currentUser.accountId);
 
   return respond(
     body.userId,
@@ -42,6 +51,7 @@ export const POST = async (request: Request) => {
       adminUserId: currentUser.accountId,
       targetUserId: body.userId,
       action: 'premium_grant',
+      grant: { amount: body.amount, unit: body.unit },
       expiresAt,
     }),
   );

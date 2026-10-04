@@ -1,3 +1,5 @@
+import type { GrantUnit } from '@/lib/premiumGrant';
+
 export const MODERATION_ACTIONS = [
   'dismiss',
   'warn',
@@ -67,6 +69,7 @@ export type ModLogEntry = {
   staffId?: string;
   note?: string;
   days?: number;
+  grant?: { amount: number; unit: GrantUnit };
   expiresAt?: string;
   createdAt: string;
 };

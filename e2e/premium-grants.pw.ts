@@ -91,7 +91,7 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
     for (const invalid of [
       { ...sixMonths, amount: 0 },
       { ...sixMonths, amount: 1.5 },
-      { ...sixMonths, amount: 121 },
+      { ...sixMonths, amount: 25 },
       { ...sixMonths, unit: 'days' },
     ])
       expect((await grant(ownerContext, invalid)).status()).toBe(400);
@@ -127,6 +127,21 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
       expiresAt: row.premium_granted_until.toISOString(),
     });
     expect(
+      (
+        await grant(ownerContext, {
+          userId: member.id,
+          amount: 2,
+          unit: 'weeks',
+        })
+      ).status(),
+    ).toBe(200);
+    const [extended] =
+      await sql`select premium_granted_until from users where id = ${member.id}`;
+    expect(
+      extended.premium_granted_until.getTime() -
+        row.premium_granted_until.getTime(),
+    ).toBe(14 * 86400000);
+    expect(
       await sql`select 1 from subscriptions where user_id in ${sql([member.id, dummy.id])}`,
     ).toHaveLength(0);
     expect(await premiumCard(memberContext, `${prefix} Member`)).toBe(true);
@@ -150,11 +165,20 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
     expect(await premiumCard(memberContext, `${prefix} Member`)).toBeFalsy();
     expect((await revoke(ownerContext, member.id)).status()).toBe(404);
     const logged =
-      await sql`select action, admin_user_id, expires_at from moderation_actions where target_user_id = ${member.id} order by created_at`;
+      await sql`select action, admin_user_id, expires_at, grant_amount, grant_unit from moderation_actions where target_user_id = ${member.id} order by created_at`;
     expect(logged.map(({ action }) => action)).toEqual([
       'premium_grant',
       'premium_grant',
+      'premium_grant',
       'premium_revoke',
+    ]);
+    expect(
+      logged.map(({ grant_amount, grant_unit }) => [grant_amount, grant_unit]),
+    ).toEqual([
+      [6, 'months'],
+      [2, 'weeks'],
+      [6, 'months'],
+      [null, null],
     ]);
     expect(
       logged.every(
@@ -162,7 +186,7 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
           admin_user_id === owner.id && expires_at instanceof Date,
       ),
     ).toBe(true);
-    expect(logged[2].expires_at).toEqual(logged[1].expires_at);
+    expect(logged[3].expires_at).toEqual(logged[2].expires_at);
 
     expect(
       (
@@ -201,9 +225,10 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
     await expect(
       ownerPage.getByText(/^Complimentary Supporter until/),
     ).toBeVisible();
-    await expect(ownerPage.getByText(/^Granted Supporter until/)).toHaveCount(
-      3,
-    );
+    await expect(ownerPage.getByText(/^Granted Supporter, /)).toHaveCount(4);
+    await expect(
+      ownerPage.getByText('Granted Supporter, 2 years'),
+    ).toBeVisible();
     await ownerPage.reload();
     await ownerPage.getByRole('tab', { name: 'Users' }).click();
     await ownerPage
@@ -212,7 +237,7 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
     await expect(
       ownerPage.getByText(/^Complimentary Supporter until/),
     ).toBeVisible();
-    await ownerPage.getByRole('button', { name: 'Revoke grant' }).click();
+    await ownerPage.getByRole('button', { name: 'Revoke' }).click();
     await expect(
       ownerPage.getByText('No complimentary Supporter.'),
     ).toBeVisible();

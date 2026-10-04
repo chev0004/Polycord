@@ -86,6 +86,10 @@ export const toModLogEntry = (entry: ModerationAction): ModLogEntry => ({
   staffId: entry.adminUserId ?? undefined,
   note: entry.note ?? undefined,
   days: entry.days ?? undefined,
+  grant:
+    entry.grantAmount && entry.grantUnit
+      ? { amount: entry.grantAmount, unit: entry.grantUnit }
+      : undefined,
   expiresAt: entry.expiresAt?.toISOString(),
   createdAt: entry.createdAt.toISOString(),
 });
