@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from '@storybook/test';
+import { expect, fn, userEvent, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { NotificationEntry } from './NotificationEntry';
@@ -127,3 +127,45 @@ export const ShareFree = shareStory(
   false,
   'Someone shared your profile',
 );
+
+const noticeStory = (acknowledgedAt?: string): Story => {
+  const onOpenNotice = fn();
+  return {
+    render: () => (
+      <NotificationEntry
+        notification={{
+          id: 'notice',
+          kind: 'warning',
+          warningCategory: 'harassment',
+          message: 'Harassment',
+          acknowledgedAt,
+          timestamp: '2 minutes ago',
+          read: acknowledgedAt !== undefined,
+        }}
+        onMarkAsRead={() => {}}
+        onDelete={() => {}}
+        onOpenNotice={onOpenNotice}
+      />
+    ),
+    play: async ({ canvasElement }) => {
+      const canvas = within(canvasElement);
+      await expect(
+        canvas.getByText('Note from moderation'),
+      ).toBeInTheDocument();
+      await expect(canvas.getByText('Read warning')).toBeInTheDocument();
+      await expect(
+        canvas.queryByText('Review community guidelines'),
+      ).toBeNull();
+      const actions = canvas.queryByTitle('Delete');
+      if (acknowledgedAt) await expect(actions).not.toBeNull();
+      else await expect(actions as HTMLElement).not.toBeVisible();
+      await userEvent.click(
+        canvas.getByRole('button', { name: /Note from moderation/ }),
+      );
+      await expect(onOpenNotice).toHaveBeenCalledOnce();
+    },
+  };
+};
+
+export const ModerationNote = noticeStory();
+export const ModerationNoteAcknowledged = noticeStory(new Date().toISOString());
