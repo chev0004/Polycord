@@ -19,6 +19,10 @@ export type OAuthStatePayload = {
 
 export const AUTH_SESSION_COOKIE = 'polycord_session';
 export const AUTH_STATE_COOKIE = 'polycord_oauth_state';
+export const AUTH_BAN_COOKIE = 'polycord_banned';
+export const BAN_LOCALE_HEADER = 'x-polycord-ban-locale';
+export const BAN_DATE_HEADER = 'x-polycord-ban-date';
+export const BAN_REFERENCE_HEADER = 'x-polycord-ban-reference';
 export const AUTH_ERROR_PARAM = 'authError';
 
 export const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 30;
@@ -208,4 +212,37 @@ export const readSessionFromCookieValue = async (value: string) => {
     issuedAt:
       session.issuedAt ?? session.expiresAt - SESSION_DURATION_SECONDS * 1000,
   };
+};
+
+export const createBanCookieValue = async (discordUserId: string) => {
+  const secret = getAuthSecret();
+
+  if (!secret) {
+    return null;
+  }
+
+  return signPayload(
+    {
+      discordUserId,
+      expiresAt: Date.now() + SESSION_DURATION_SECONDS * 1000,
+    },
+    secret,
+  );
+};
+
+export const readBanCookieValue = async (value: string) => {
+  const secret = getAuthSecret();
+
+  if (!secret) {
+    return null;
+  }
+
+  const marker = await verifyPayload<{
+    discordUserId: string;
+    expiresAt: number;
+  }>(value, secret);
+
+  return marker?.discordUserId && marker.expiresAt > Date.now()
+    ? marker.discordUserId
+    : null;
 };

@@ -8,6 +8,7 @@ let account;
 let restriction;
 let cookieJar = {};
 const upserts = [];
+const observations = [];
 mock.module('next/headers', () => ({
   cookies: async () => ({
     get: (name) => (name in cookieJar ? { value: cookieJar[name] } : undefined),
@@ -20,6 +21,9 @@ mock.module('@/db', () => ({
   isSuspended: (row) =>
     row.suspendedUntil !== null && row.suspendedUntil.getTime() > Date.now(),
   isUserRestricted: () => false,
+  recordIpObservation: async (...values) => {
+    observations.push(values);
+  },
   upsertDiscordUser: async () => {
     upserts.push(1);
     return { id: 'account-1' };
@@ -49,10 +53,12 @@ globalThis.fetch = async (url) =>
 const { GET } = await import('../../src/app/api/auth/discord/callback/route');
 const { getCurrentUser } = await import('../../src/lib/auth');
 const {
+  AUTH_BAN_COOKIE,
   AUTH_SESSION_COOKIE,
   AUTH_STATE_COOKIE,
   createOAuthStateCookieValue,
   createSessionCookieValue,
+  readBanCookieValue,
 } = await import('../../src/lib/auth-session');
 
 const reset = () => {
@@ -64,6 +70,7 @@ const reset = () => {
   };
   restriction = null;
   upserts.length = 0;
+  observations.length = 0;
 };
 
 const signIn = async () => {
@@ -143,4 +150,36 @@ restriction = restrictionOf({ hiddenByModeration: true });
 expect((await signIn()).cookies.get(AUTH_SESSION_COOKIE)).toBeDefined();
 expect(await sessionUser()).not.toBeNull();
 
-console.log('suspension sign-in cases passed');
+reset();
+account.bannedAt = new Date();
+{
+  const response = await signIn();
+  expect(response.headers.get('location')).toContain('authError=banned');
+  expect(response.cookies.get(AUTH_SESSION_COOKIE)).toBeUndefined();
+  expect(upserts).toHaveLength(0);
+  expect(observations).toEqual([[discordUser.id, '127.0.0.1']]);
+  expect(
+    await readBanCookieValue(response.cookies.get(AUTH_BAN_COOKIE).value),
+  ).toBe(discordUser.id);
+  expect(await sessionUser()).toBeNull();
+}
+
+reset();
+account = null;
+restriction = restrictionOf({ bannedAt: new Date() });
+{
+  const response = await signIn();
+  expect(response.headers.get('location')).toContain('authError=banned');
+  expect(response.cookies.get(AUTH_SESSION_COOKIE)).toBeUndefined();
+  expect(response.cookies.get(AUTH_BAN_COOKIE)).toBeDefined();
+}
+
+reset();
+restriction = restrictionOf({ bannedAt: new Date() });
+expect(await sessionUser()).toBeNull();
+
+reset();
+expect((await signIn()).cookies.get(AUTH_BAN_COOKIE)).toBeUndefined();
+expect(observations).toEqual([[discordUser.id, '127.0.0.1']]);
+
+console.log('restricted sign-in cases passed');
