@@ -5,8 +5,8 @@ import { Sheet } from '@/components/Sheet';
 import type { ToastData } from '@/hooks/useToast';
 import { ActionSheets } from './ModerationMobile';
 import { ActionError, Spinner } from './ModerationParts';
-import type { StaffRole } from './types';
-import { useModeration } from './useModeration';
+import type { ModState, StaffRole } from './types';
+import { toModState, useModeration } from './useModeration';
 import { useModerationNotify } from './useModerationToasts';
 import { type ProfileCase, useProfileCase } from './useProfileCase';
 
@@ -18,12 +18,14 @@ const MobileCase = ({
   meRole,
   addToast,
   onClose,
+  onStateChange,
 }: {
   found: ProfileCase;
   meId: string;
   meRole: StaffRole;
   addToast: (toast: Omit<ToastData, 'id'>) => void;
   onClose: () => void;
+  onStateChange?: (state: ModState) => void;
 }) => {
   const store = useModeration({
     users: found.users,
@@ -47,12 +49,19 @@ const MobileCase = ({
     return () => clearTimeout(timer);
   }, [sheet, onClose]);
 
-  if (!user) return null;
+  const reportIds = user
+    ? store
+        .userReports(user.id)
+        .filter((report) => report.status === 'pending')
+        .map((report) => report.id)
+    : [];
+  const pendingCount = reportIds.length;
 
-  const reportIds = store
-    .userReports(user.id)
-    .filter((report) => report.status === 'pending')
-    .map((report) => report.id);
+  useEffect(() => {
+    if (user) onStateChange?.(toModState(user, pendingCount));
+  }, [user, pendingCount, onStateChange]);
+
+  if (!user) return null;
 
   return (
     <ActionSheets
@@ -79,6 +88,7 @@ export const MobileTakeAction = ({
   meRole,
   addToast,
   onClose,
+  onStateChange,
 }: {
   profileId: string;
   displayName: string;
@@ -86,6 +96,7 @@ export const MobileTakeAction = ({
   meRole: StaffRole;
   addToast: (toast: Omit<ToastData, 'id'>) => void;
   onClose: () => void;
+  onStateChange?: (state: ModState) => void;
 }) => {
   const { found, failed, load } = useProfileCase(profileId);
 
@@ -97,6 +108,7 @@ export const MobileTakeAction = ({
         meRole={meRole}
         addToast={addToast}
         onClose={onClose}
+        onStateChange={onStateChange}
       />
     );
   }

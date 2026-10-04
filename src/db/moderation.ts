@@ -12,6 +12,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
+import type { ModState } from '@/features/Admin/types';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import { db } from './client';
 import {
@@ -243,6 +244,61 @@ export const listModerationUsers = async (userIds: string[]) => {
     warnings:
       warnings.find((warning) => warning.userId === user.id)?.count ?? 0,
   }));
+};
+
+export const listModerationStatesByProfileId = async (profileIds: string[]) => {
+  if (!profileIds.length) return new Map<string, ModState>();
+
+  const rows = await db
+    .select({
+      profileId: profiles.id,
+      userId: users.id,
+      hidden: profiles.hiddenByModeration,
+      bannedAt: users.bannedAt,
+      suspendedUntil: users.suspendedUntil,
+    })
+    .from(profiles)
+    .innerJoin(users, eq(profiles.userId, users.id))
+    .where(inArray(profiles.id, profileIds));
+  const userIds = rows.map(({ userId }) => userId);
+  const [warned, pending] = await Promise.all([
+    db
+      .select({ userId: moderationActions.targetUserId, count: count() })
+      .from(moderationActions)
+      .where(
+        and(
+          inArray(moderationActions.targetUserId, userIds),
+          eq(moderationActions.action, 'warn'),
+        ),
+      )
+      .groupBy(moderationActions.targetUserId),
+    db
+      .select({ userId: reports.reportedUserId, count: count() })
+      .from(reports)
+      .where(
+        and(
+          inArray(reports.reportedUserId, userIds),
+          eq(reports.status, 'pending'),
+        ),
+      )
+      .groupBy(reports.reportedUserId),
+  ]);
+  const now = Date.now();
+
+  return new Map<string, ModState>(
+    rows.map((row) => [
+      row.profileId,
+      {
+        hidden: row.hidden,
+        suspended: (row.suspendedUntil?.getTime() ?? 0) > now,
+        banned: row.bannedAt !== null,
+        warnings:
+          warned.find(({ userId }) => userId === row.userId)?.count ?? 0,
+        pendingReports:
+          pending.find(({ userId }) => userId === row.userId)?.count ?? 0,
+      },
+    ]),
+  );
 };
 
 export const searchModerationUserIds = async (query: string) => {

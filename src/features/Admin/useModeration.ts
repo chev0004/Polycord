@@ -8,6 +8,7 @@ import type {
   ModReport,
   ModRequest,
   ModSnapshot,
+  ModState,
   ModUser,
 } from './types';
 
@@ -24,6 +25,17 @@ const mergeById = <T extends { id: string }>(current: T[], next: T[]) => [
 export const isSuspended = (user: ModUser) =>
   user.suspendedUntil !== undefined &&
   new Date(user.suspendedUntil).getTime() > Date.now();
+
+export const toModState = (
+  user: ModUser,
+  pendingReports: number,
+): ModState => ({
+  hidden: user.hidden,
+  suspended: isSuspended(user),
+  banned: user.bannedAt !== undefined,
+  warnings: user.warnings,
+  pendingReports,
+});
 
 export const hasStatusChips = (user: ModUser) =>
   user.role !== undefined ||

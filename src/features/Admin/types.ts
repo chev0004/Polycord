@@ -96,6 +96,14 @@ export type ModSnapshot = ModData & {
   meRole: StaffRole;
 };
 
+export type ModState = {
+  hidden: boolean;
+  suspended: boolean;
+  banned: boolean;
+  warnings: number;
+  pendingReports: number;
+};
+
 export type ModRequest = {
   userId: string;
   action: ModAction;
