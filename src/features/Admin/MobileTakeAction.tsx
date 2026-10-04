@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Sheet } from '@/components/Sheet';
 import type { ToastData } from '@/hooks/useToast';
-import { ActionSheets } from './ModerationMobile';
+import { ActionSheets, type SheetKind } from './ModerationMobile';
 import { ActionError, Spinner } from './ModerationParts';
 import type { ModState, StaffRole } from './types';
 import { toModState, useModeration } from './useModeration';
@@ -38,9 +38,7 @@ const MobileCase = ({
     meRole,
   });
   const notify = useModerationNotify(addToast);
-  const [sheet, setSheet] = useState<
-    'act' | 'warn' | 'suspend' | 'ban' | 'grant' | null
-  >('act');
+  const [sheet, setSheet] = useState<SheetKind | null>('act');
   const user = store.usersById.get(found.userId);
 
   useEffect(() => {
