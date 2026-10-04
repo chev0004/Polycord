@@ -362,6 +362,30 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     await expect(
       page.getByText('Suspended user · 30 days').first(),
     ).toBeVisible();
+    await page.goto(`/en?q=${encodeURIComponent(`${prefix} Reported`)}`);
+    await page.getByRole('button', { name: 'Card menu' }).first().click();
+    await page.getByRole('button', { name: 'Take action' }).click();
+    const panel = page.getByRole('dialog', {
+      name: `Moderate ${prefix} Reported`,
+    });
+    await expect(
+      panel.getByRole('heading', { name: `${prefix} Reported`, exact: true }),
+    ).toBeVisible();
+    await panel.getByRole('button', { name: 'Hide profile' }).click();
+    await expect
+      .poll(
+        async () =>
+          (
+            await sql`select hidden_by_moderation from profiles where user_id = ${reported.id}`
+          )[0].hidden_by_moderation,
+      )
+      .toBe(true);
+    await expect(
+      panel.getByRole('button', { name: 'Unhide profile' }),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(page).toHaveURL(/\/en\?q=/);
     await page.goto('/en/analytics');
     await expect(
       page.getByRole('heading', { name: 'Product analytics' }),

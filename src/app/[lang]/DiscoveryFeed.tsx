@@ -1,6 +1,7 @@
 import { after } from 'next/server';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { listDiscoveryPage } from '@/db/discovery';
+import type { StaffRole } from '@/features/Admin/types';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
 import type { DiscoveryData } from '@/features/Discovery/discoveryData';
 import type { DiscoveryUrlState } from '@/features/Discovery/discoveryUrlState';
@@ -20,6 +21,7 @@ type DiscoveryFeedProps = {
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern;
   userAvatarUrl?: string;
+  staff?: { meId: string; role: StaffRole };
 };
 
 export const DiscoveryFeed = async ({
@@ -35,6 +37,7 @@ export const DiscoveryFeed = async ({
   viewerTimezone,
   viewerAvailability,
   userAvatarUrl,
+  staff,
 }: DiscoveryFeedProps) => {
   let data: DiscoveryData = {
     profiles: [],
@@ -86,6 +89,7 @@ export const DiscoveryFeed = async ({
       viewerTimezone={viewerTimezone}
       viewerAvailability={viewerAvailability}
       userAvatarUrl={userAvatarUrl}
+      staff={staff}
     />
   );
 };
