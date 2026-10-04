@@ -147,6 +147,32 @@ export const Owner: Story = {
   },
 };
 
+export const ConfirmButtonsHaveNoIcons: Story = {
+  beforeEach: mockPanelApi('ryan'),
+  play: async () => {
+    const panel = within(await screen.findByRole('dialog'));
+    await panel.findByRole('heading', { name: 'Ryan Mercer' });
+    for (const [action, title, confirm] of [
+      ['Warn', 'Warn Ryan Mercer', 'Send warning'],
+      ['Suspend', 'Suspend Ryan Mercer', /^Suspend for/],
+      ['Ban', 'Ban Ryan Mercer?', 'Ban Ryan Mercer'],
+    ] as const) {
+      await userEvent.click(panel.getByRole('button', { name: action }));
+      const dialog = within(await screen.findByRole('dialog', { name: title }));
+      await expect(
+        dialog.getByRole('button', { name: confirm }).querySelector('svg'),
+      ).toBeNull();
+      await userEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog', { name: title })).toBeNull(),
+      );
+    }
+    await expect(
+      panel.getByRole('button', { name: /^Dismiss 2/ }).querySelector('svg'),
+    ).toBeNull();
+  },
+};
+
 export const Moderator: Story = {
   args: { meId: 'tomas', meRole: 'moderator' },
   beforeEach: mockPanelApi('ryan'),

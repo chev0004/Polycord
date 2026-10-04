@@ -23,7 +23,6 @@ import {
   MdCampaign,
   MdCheck,
   MdContentCopy,
-  MdDone,
   MdErrorOutline,
   MdGavel,
   MdLockOpen,
@@ -663,7 +662,6 @@ export const SuspendDialog = ({
           onClick={() => onConfirm(suspend.days)}
           className={modButton('dangerFill')}
         >
-          <MdSchedule size={17} />
           {suspend.valid
             ? t('suspendConfirm', { count: suspend.days })
             : t('suspendConfirmInvalid')}
@@ -812,7 +810,6 @@ export const WarnDialog = ({
           onClick={() => onConfirm(warn.message, warn.category)}
           className={modButton('primary')}
         >
-          <MdCampaign size={17} />
           {t('warnSend')}
         </button>
       </div>
@@ -868,7 +865,6 @@ export const BanDialog = ({
           onClick={onConfirm}
           className={modButton('dangerFill')}
         >
-          <MdBlock size={17} />
           {t('banConfirm', { name: user.displayName })}
         </button>
       </div>
@@ -1097,7 +1093,7 @@ export const ActionBar = ({
             onClick={() => open('dismiss')}
             className={`${modButton('primary')} ${busy === 'dismiss' ? 'disabled:opacity-100' : ''}`}
           >
-            {busy === 'dismiss' ? <Spinner /> : <MdDone size={17} />}
+            {busy === 'dismiss' ? <Spinner /> : null}
             {busy === 'dismiss' ? t('working') : dismissLabel}
             {busy !== 'dismiss' ? <Kbd dark>D</Kbd> : null}
           </button>

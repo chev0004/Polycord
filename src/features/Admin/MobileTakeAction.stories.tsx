@@ -223,6 +223,9 @@ export const ChainedSheets: Story = {
     const ban = within(
       await screen.findByRole('dialog', { name: 'Ban Ryan Mercer?' }),
     );
+    await expect(
+      ban.getByRole('button', { name: 'Ban Ryan Mercer' }).querySelector('svg'),
+    ).toBeNull();
     await userEvent.click(ban.getByRole('button', { name: 'Cancel' }));
     await expect(
       await screen.findByRole('dialog', { name: 'Ryan Mercer' }),
