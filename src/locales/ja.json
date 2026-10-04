@@ -282,6 +282,8 @@
     "premiumStaysActive": "他の方法でサポーターが有効な間は、この付与を取り消してもサポーターは終了しません。",
     "premiumDuration": "付与期間",
     "premiumAmount": "付与の長さ",
+    "decrease": "減らす",
+    "increase": "増やす",
     "unit_weeks": "週",
     "unit_months": "か月",
     "unit_years": "年",

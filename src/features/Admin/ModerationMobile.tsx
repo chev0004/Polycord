@@ -10,7 +10,6 @@ import {
 } from 'react';
 import type { IconType } from 'react-icons';
 import {
-  MdAdd,
   MdAdminPanelSettings,
   MdBlock,
   MdCampaign,
@@ -30,7 +29,6 @@ import {
   MdOutlinedFlag,
   MdPersonSearch,
   MdPolicy,
-  MdRemove,
   MdSchedule,
   MdSearch,
   MdSettingsBackupRestore,
@@ -42,6 +40,7 @@ import {
   MdVisibilityOff,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { NumberStepper } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
 import {
   type ModTab,
@@ -1231,36 +1230,20 @@ const CaseFooter = ({
             ))}
           </div>
           {suspend.preset === 'custom' ? (
-            <div className="flex items-center gap-2.5 rounded-[14px] bg-background-darker p-1.5">
-              <button
-                type="button"
-                onClick={() => suspend.step(-1)}
-                disabled={suspend.valid && suspend.days <= 1}
-                aria-label={t('fewerDays')}
-                className="grid h-11 w-11 place-items-center rounded-full bg-background-dark text-foreground disabled:opacity-35"
-              >
-                <MdRemove size={22} />
-              </button>
-              <input
-                type="number"
-                inputMode="numeric"
+            <div className="flex items-center gap-2.5">
+              <NumberStepper
+                value={suspend.custom}
+                onChange={suspend.setCustom}
                 min={1}
                 max={90}
-                value={suspend.custom}
-                onChange={(event) => suspend.setCustom(event.target.value)}
-                aria-label={t('daysUnit')}
-                className="min-w-0 flex-1 bg-transparent text-center font-bold text-[22px] text-foreground tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                size="lg"
+                label={t('daysUnit')}
+                decrementLabel={t('fewerDays')}
+                incrementLabel={t('moreDays')}
+                error={!suspend.valid}
+                className="flex-1"
               />
-              <span className="pr-2.5 text-muted text-sm">{t('daysUnit')}</span>
-              <button
-                type="button"
-                onClick={() => suspend.step(1)}
-                disabled={suspend.valid && suspend.days >= 90}
-                aria-label={t('moreDays')}
-                className="grid h-11 w-11 place-items-center rounded-full bg-background-dark text-foreground disabled:opacity-35"
-              >
-                <MdAdd size={22} />
-              </button>
+              <span className="text-muted text-sm">{t('daysUnit')}</span>
             </div>
           ) : null}
           {suspend.until ? (

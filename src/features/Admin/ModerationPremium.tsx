@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MdWorkspacePremium } from 'react-icons/md';
+import { NumberStepper } from '@/components/Form';
 import {
   GRANT_MAX,
   GRANT_UNITS,
@@ -115,16 +116,17 @@ export const PremiumPanel = ({
           {t('premiumDuration')}
         </span>
         <div className="flex flex-wrap items-center gap-1.5">
-          <input
-            type="number"
-            inputMode="numeric"
+          <NumberStepper
+            value={amount}
+            onChange={setAmount}
             min={1}
             max={GRANT_MAX[unit]}
-            value={amount}
-            aria-label={t('premiumAmount')}
-            aria-invalid={!valid}
-            onChange={(event) => setAmount(event.target.value)}
-            className={`w-20 rounded-lg border bg-background-darker px-3 text-foreground text-sm outline-none ${mobile ? 'h-11' : 'h-[38px]'} ${valid ? 'border-white/[0.07] hover:border-white/[0.14] focus:border-white/[0.14]' : 'border-red-500'}`}
+            size={mobile ? 'lg' : 'md'}
+            label={t('premiumAmount')}
+            decrementLabel={t('decrease')}
+            incrementLabel={t('increase')}
+            error={!valid}
+            className="w-36"
           />
           {GRANT_UNITS.map((value) => (
             <button

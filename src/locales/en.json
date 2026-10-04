@@ -282,6 +282,8 @@
     "premiumStaysActive": "Revoking this grant won't end Supporter while another source is active.",
     "premiumDuration": "Grant for",
     "premiumAmount": "Grant length",
+    "decrease": "Decrease",
+    "increase": "Increase",
     "unit_weeks": "Weeks",
     "unit_months": "Months",
     "unit_years": "Years",
