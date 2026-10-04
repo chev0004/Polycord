@@ -39,6 +39,7 @@ import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { getLanguageName, proficiencyOptions } from '@/constants/languages';
 import { signInHref } from '@/features/Navigation/signIn';
+import { protectionOf } from './permissions';
 import type {
   LogAction,
   ModAction,
@@ -399,11 +400,17 @@ export const ActionError = ({
   );
 };
 
+const PROTECTED_KEYS = {
+  self: 'protectedSelf',
+  owner: 'protectedOwner',
+  staff: 'protectedStaff',
+} as const;
+
 export const ProtectedNotice = ({
-  self,
+  kind,
   large = false,
 }: {
-  self: boolean;
+  kind: NonNullable<ReturnType<typeof protectionOf>>;
   large?: boolean;
 }) => {
   const t = useTranslations('Admin');
@@ -413,7 +420,7 @@ export const ProtectedNotice = ({
     >
       <MdAdminPanelSettings size={20} className="shrink-0 text-primary" />
       <span>
-        {t.rich(self ? 'protectedSelf' : 'protectedStaff', {
+        {t.rich(PROTECTED_KEYS[kind], {
           b: (chunks) => (
             <b className="font-semibold text-foreground">{chunks}</b>
           ),
@@ -841,7 +848,8 @@ export const ActionBar = ({
     reauth: boolean;
   } | null>(null);
   const [dialog, setDialog] = useState<'warn' | 'suspend' | 'ban' | null>(null);
-  const protectedAccount = user.role !== undefined || user.id === store.meId;
+  const protection = protectionOf(store, user);
+  const protectedAccount = protection !== null;
   const suspended = isSuspended(user);
 
   const run = async (action: ModAction, days?: number, runNote = note) => {
@@ -932,7 +940,7 @@ export const ActionBar = ({
     <div className="flex flex-col border-line border-b bg-background-dark">
       {protectedAccount ? (
         <div className="px-4 py-3 md:px-5">
-          <ProtectedNotice self={user.id === store.meId} />
+          <ProtectedNotice kind={protection} />
         </div>
       ) : (
         <div role="toolbar" aria-label={t('actionsLabel')} className="flex">

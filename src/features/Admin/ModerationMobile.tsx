@@ -77,6 +77,7 @@ import {
 } from './ModerationParts';
 import { GrantFields, useGrant } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
+import { protectionOf } from './permissions';
 import { SeedPanel } from './SeedPanel';
 import type { ModAction, ModReport, ModUser, SeedStatus } from './types';
 import { LOG_ACTIONS } from './types';
@@ -1125,7 +1126,8 @@ export const ActionSheets = ({
   const suspend = useSuspendDays(sheet === 'suspend');
   const warn = useWarnMessage(sheet === 'warn');
   const suspended = isSuspended(user);
-  const protectedAccount = user.role !== undefined || user.id === store.meId;
+  const protection = protectionOf(store, user);
+  const protectedAccount = protection !== null;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset errors only when the sheet opens
   useEffect(() => {
@@ -1176,7 +1178,7 @@ export const ActionSheets = ({
         <div className="flex flex-col gap-3.5">
           <SheetUserInfo user={user} showSupporter={store.meRole === 'owner'} />
           {protectedAccount ? (
-            <ProtectedNotice self={user.id === store.meId} large />
+            <ProtectedNotice kind={protection} large />
           ) : (
             <>
               <Note value={note} onChange={setNote} />
@@ -1520,7 +1522,8 @@ const CaseFooter = ({
 }) => {
   const t = useTranslations('Admin');
   const [sheet, setSheet] = useState<SheetKind | null>(null);
-  const protectedAccount = user.role !== undefined || user.id === store.meId;
+  const protection = protectionOf(store, user);
+  const protectedAccount = protection !== null;
   const dismiss = useRun(store, user, reportIds, onDone);
 
   return (
@@ -1604,7 +1607,8 @@ const CasePage = ({
   const reportIds =
     isCase && page.view === 'pending' ? reports.map((report) => report.id) : [];
   const history = store.userLog(user.id);
-  const protectedAccount = user.role !== undefined || user.id === store.meId;
+  const protection = protectionOf(store, user);
+  const protectedAccount = protection !== null;
 
   const reportsSection = (
     <section key="reports" className="mx-4 mt-6 flex flex-col gap-2">
@@ -1673,7 +1677,7 @@ const CasePage = ({
         <Hero user={user} showSupporter={store.meRole === 'owner'} />
         {protectedAccount ? (
           <div className="mx-4 mt-3">
-            <ProtectedNotice self={user.id === store.meId} large />
+            <ProtectedNotice kind={protection} large />
           </div>
         ) : null}
         {isCase

@@ -786,7 +786,7 @@ export const StaffChipsFollowActions: Story = {
         .map((chips) => chips.textContent)
         .join(' ');
 
-    await expect(chipText()).toContain('1 report');
+    await expect(chipText()).toContain('1 pending report');
     const card = within(canvasElement).getByText('Yuki').closest('article');
     await userEvent.click(
       within(card as HTMLElement).getByRole('button', { name: 'Card menu' }),
@@ -806,6 +806,6 @@ export const StaffChipsFollowActions: Story = {
       composer.getByRole('button', { name: 'Send warning' }),
     );
     await waitFor(() => expect(chipText()).toContain('Warned 1×'));
-    await expect(chipText()).not.toContain('1 report');
+    await expect(chipText()).not.toContain('1 pending report');
   },
 };

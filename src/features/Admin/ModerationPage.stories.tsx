@@ -236,15 +236,13 @@ export const DummyDataMobile: Story = {
   },
 };
 
-export const StaffProtected: Story = {
+export const OwnerModeratesModerator: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /Tomás Ruiz/ }));
+    await canvas.findByRole('button', { name: /^Warn/ });
     await expect(
-      await canvas.findByText(/Staff can't be actioned/),
-    ).toBeInTheDocument();
-    await expect(
-      canvas.queryByRole('button', { name: /^Warn/ }),
+      canvas.queryByText(/Only owners can take action on moderators/),
     ).not.toBeInTheDocument();
   },
 };
