@@ -7,6 +7,7 @@ import {
   isSubscriptionActive,
   listModerationActions,
   listModerationReports,
+  listModerationStatesByProfileId,
   listModerationUsers,
   listReportsAgainstUsers,
   listStaffUserIds,
@@ -116,6 +117,18 @@ const withUsers = async (
     reports: reports.map(toModReport),
     log: log.map(toModLogEntry),
   };
+};
+
+export const withModerationStates = async <T extends { id: string }>(
+  profiles: T[],
+) => {
+  const states = await listModerationStatesByProfileId(
+    profiles.map(({ id }) => id),
+  );
+  return profiles.map((profile) => ({
+    ...profile,
+    moderation: states.get(profile.id),
+  }));
 };
 
 export const loadProfileCase = async (profileId: string) => {

@@ -37,6 +37,11 @@ import {
   type LanguageCode,
   type Proficiency,
 } from '@/constants/languages';
+import {
+  hasModeration,
+  ModerationChips,
+} from '@/features/Admin/ModerationChips';
+import type { ModState } from '@/features/Admin/types';
 import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -48,6 +53,7 @@ import {
   getFreeCardTheme,
   tintedSurface,
 } from './cardTheme';
+
 import { DummyChip } from './DummyChip';
 import { MobileNameCopy, MobileProfileSheet } from './MobileProfileSheet';
 import { recordProfileView } from './profileViewRequest';
@@ -83,6 +89,7 @@ export type DiscoveryProfile = {
   voiceIntroSeconds?: number;
   voiceIntroSrc?: string;
   synthetic?: boolean;
+  moderation?: ModState;
 };
 
 type ProfileCardProps = {
@@ -543,6 +550,15 @@ export const ProfileCard = ({
             )}
           </div>
         </div>
+
+        {!isPreview && hasModeration(profile.moderation) ? (
+          <div
+            data-moderation-chips
+            className="absolute top-[66px] right-3.5 left-[98px] flex gap-1 overflow-hidden"
+          >
+            <ModerationChips state={profile.moderation} />
+          </div>
+        ) : null}
 
         {boostedVisible ? (
           <span

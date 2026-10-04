@@ -17,7 +17,7 @@ import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
 import { MobileTakeAction } from '@/features/Admin/MobileTakeAction';
 import { TakeActionPanel } from '@/features/Admin/TakeActionPanel';
-import type { StaffRole } from '@/features/Admin/types';
+import type { ModState, StaffRole } from '@/features/Admin/types';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
 import {
@@ -224,6 +224,9 @@ export const DiscoveryPage = ({
     id: string;
     name?: string;
   } | null>(null);
+  const [moderationOverrides, setModerationOverrides] = useState<
+    Record<string, ModState>
+  >({});
   const [moderationTarget, setModerationTarget] = useState<{
     id: string;
     name: string;
@@ -344,6 +347,17 @@ export const DiscoveryPage = ({
             safePage * DISCOVERY_PAGE_SIZE,
           ),
     [filteredProfiles, safePage, remoteData, profileItems, stacked],
+  );
+  const displayedItems = useMemo(
+    () =>
+      Object.keys(moderationOverrides).length
+        ? pageItems.map((profile) =>
+            moderationOverrides[profile.id]
+              ? { ...profile, moderation: moderationOverrides[profile.id] }
+              : profile,
+          )
+        : pageItems,
+    [pageItems, moderationOverrides],
   );
   const stackPending =
     stacked &&
@@ -665,6 +679,15 @@ export const DiscoveryPage = ({
     });
   };
 
+  const handleModerationChange = useCallback(
+    (state: ModState) => {
+      const id = moderationTarget?.id;
+      if (id)
+        setModerationOverrides((current) => ({ ...current, [id]: state }));
+    },
+    [moderationTarget?.id],
+  );
+
   const handleSubmitReport = async (
     reason: ReportReason,
     details: string,
@@ -966,7 +989,7 @@ export const DiscoveryPage = ({
               <ProfileGridSkeleton />
             ) : (
               <ProfileGrid
-                profiles={pageItems}
+                profiles={displayedItems}
                 isLoggedIn={isLoggedIn}
                 savedProfileIds={remoteData?.savedProfileIds ?? savedProfileIds}
                 currentProfileId={currentProfileId}
@@ -1031,6 +1054,7 @@ export const DiscoveryPage = ({
           meRole={staff.role}
           addToast={addToast}
           onClose={() => setModerationTarget(null)}
+          onStateChange={handleModerationChange}
         />
       ) : null}
       {staff && moderationTarget && !mobile ? (
@@ -1041,6 +1065,7 @@ export const DiscoveryPage = ({
           meRole={staff.role}
           returnFocus={moderationTarget.trigger}
           onClose={() => setModerationTarget(null)}
+          onStateChange={handleModerationChange}
         />
       ) : null}
 
