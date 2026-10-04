@@ -648,7 +648,9 @@ export const DismissMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     fireEvent.click(await canvas.findByRole('button', { name: /Ryan Mercer/ }));
-    fireEvent.click(await canvas.findByRole('button', { name: 'Dismiss 2' }));
+    const dismiss = await canvas.findByRole('button', { name: 'Dismiss 2' });
+    await expect(dismiss.querySelector('svg')).toBeNull();
+    fireEvent.click(dismiss);
     let dialog = within(
       await screen.findByRole('dialog', { name: 'Dismiss 2 reports?' }),
     );
@@ -728,6 +730,11 @@ export const WarnMobile: Story = {
     await expect(
       warning.getByRole('button', { name: 'Send warning' }),
     ).toBeDisabled();
+    await expect(
+      warning
+        .getByRole('button', { name: 'Send warning' })
+        .querySelector('svg'),
+    ).toBeNull();
     fireEvent.click(warning.getByRole('button', { name: 'Harassment' }));
     fireEvent.change(warning.getByRole('textbox', { name: 'Message' }), {
       target: { value: 'Stop contacting members who said no.' },
@@ -757,6 +764,9 @@ export const ActionStrip: Story = {
     await expect(
       canvas.getByRole('button', { name: /^Dismiss 2/ }),
     ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: /^Dismiss 2/ }).querySelector('svg'),
+    ).toBeNull();
     fireEvent.click(canvas.getByRole('tab', { name: /^Resolved/ }));
     await waitFor(() =>
       expect(canvas.queryByText(/pending reports?$/)).not.toBeInTheDocument(),
