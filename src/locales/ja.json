@@ -115,7 +115,7 @@
     "chipStaff": "スタッフ",
     "chipOwner": "オーナー",
     "chipWarned": "警告 {count}回",
-    "chipPendingReports": "報告{count}件",
+    "chipPendingReports": "保留中の報告{count}件",
     "actionsLabel": "モデレーション操作",
     "pendingReports": "保留中の報告{count}件",
     "reportCount": "{count}件の報告",
