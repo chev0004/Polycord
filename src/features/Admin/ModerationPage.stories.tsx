@@ -620,7 +620,7 @@ export const DismissStaffReport: Story = {
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /Tomás Ruiz/ }));
     fireEvent.click(
-      await canvas.findByRole('button', { name: /^Dismiss report/ }),
+      await canvas.findByRole('button', { name: /^Dismiss(?!\s\d)/ }),
     );
     const dialog = within(
       await screen.findByRole('dialog', { name: 'Dismiss report?' }),
