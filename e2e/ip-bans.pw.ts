@@ -83,9 +83,9 @@ test.describe('ip bans', () => {
     }
 
     const english = await request.get('/en', from(BLOCKED));
-    expect(await english.text()).toContain('Your Account Has Been Banned');
+    expect(await english.text()).toContain('You Have Been Banned');
     const japanese = await (await request.get('/ja', from(BLOCKED))).text();
-    expect(japanese).toContain('アカウントが利用停止されました');
+    expect(japanese).toContain('利用停止になりました');
     expect(japanese).toMatch(/PC-[0-9A-Z]{4}-[0-9A-Z]{4}/);
 
     expect((await request.get('/en', from(OTHER))).status()).toBe(200);
@@ -222,7 +222,7 @@ test.describe('ip bans', () => {
     for (const ip of [undefined, OTHER]) {
       const response = await request.get('/en', from(ip, withSession(member)));
       expect(response.status()).toBe(403);
-      expect(await response.text()).toContain('Your Account Has Been Banned');
+      expect(await response.text()).toContain('You Have Been Banned');
       const api = await request.get(
         '/api/discovery',
         from(ip, withSession(member)),

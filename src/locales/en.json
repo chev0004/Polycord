@@ -1113,9 +1113,8 @@
   "Banned": {
     "wordmarkAlt": "Polycord",
     "eyebrow": "Note from moderation",
-    "title": "Your Account Has Been Banned",
-    "paragraphOne": "After a review of reports about your account, we found that you continued to insult, harass, or contact members who did not want to be contacted after you were warned. This is covered in the Community Guidelines (\"Be respectful\" and \"What is not allowed\").",
-    "paragraphTwo": "You can no longer use Polycord. This applies whether or not you are signed in, and every page on the site shows this notice. Your profile has been removed.",
+    "title": "You Have Been Banned",
+    "paragraph": "After a review of reports about your account, we found that you continued to insult, harass, or contact members who did not want to be contacted after you were warned. This is covered in the Community Guidelines (\"Be respectful\" and \"What is not allowed\").",
     "reasonLabel": "Reason",
     "reason": "Harassment",
     "dateLabel": "Date",
