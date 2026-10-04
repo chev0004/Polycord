@@ -396,15 +396,20 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     await expect(
       panel.getByRole('heading', { name: `${prefix} Reported`, exact: true }),
     ).toBeVisible();
+    const hiddenByModeration = async () =>
+      (
+        await sql`select hidden_by_moderation from profiles where user_id = ${reported.id}`
+      )[0].hidden_by_moderation;
+    const confirmHide = page.getByRole('dialog', {
+      name: `Hide ${prefix} Reported's profile?`,
+    });
     await panel.getByRole('button', { name: 'Hide profile' }).click();
-    await expect
-      .poll(
-        async () =>
-          (
-            await sql`select hidden_by_moderation from profiles where user_id = ${reported.id}`
-          )[0].hidden_by_moderation,
-      )
-      .toBe(true);
+    await confirmHide.getByRole('button', { name: 'Cancel' }).click();
+    await expect(confirmHide).toBeHidden();
+    expect(await hiddenByModeration()).toBe(false);
+    await panel.getByRole('button', { name: 'Hide profile' }).click();
+    await confirmHide.getByRole('button', { name: 'Hide profile' }).click();
+    await expect.poll(hiddenByModeration).toBe(true);
     await expect(
       panel.getByRole('button', { name: 'Unhide profile' }),
     ).toBeVisible();

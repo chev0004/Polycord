@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   expect,
+  fireEvent,
   fn,
   screen,
   userEvent,
@@ -99,9 +100,25 @@ export const Owner: Story = {
       panel.getByRole('button', { name: 'Ban' }),
     ).toBeInTheDocument();
     await userEvent.click(panel.getByRole('button', { name: 'Hide profile' }));
+    const confirmation = within(
+      await screen.findByRole('dialog', {
+        name: "Hide Ryan Mercer's profile?",
+      }),
+    );
+    await expect(actionFetch).not.toHaveBeenCalled();
+    fireEvent.change(confirmation.getByRole('textbox', { name: 'Note' }), {
+      target: { value: 'Removed unsolicited advertising.' },
+    });
+    await userEvent.click(
+      confirmation.getByRole('button', { name: 'Hide profile' }),
+    );
     await waitFor(() =>
       expect(actionFetch).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'ryan', action: 'hide_profile' }),
+        expect.objectContaining({
+          userId: 'ryan',
+          action: 'hide_profile',
+          note: 'Removed unsolicited advertising.',
+        }),
       ),
     );
     await expect(
@@ -110,6 +127,23 @@ export const Owner: Story = {
     await expect(
       panel.getByRole('heading', { name: 'Ryan Mercer' }),
     ).toBeInTheDocument();
+    await userEvent.click(
+      panel.getByRole('button', { name: 'Unhide profile' }),
+    );
+    const unhide = within(
+      await screen.findByRole('dialog', {
+        name: "Unhide Ryan Mercer's profile?",
+      }),
+    );
+    await expect(unhide.getByRole('textbox', { name: 'Note' })).toHaveValue('');
+    await userEvent.click(
+      unhide.getByRole('button', { name: 'Unhide profile' }),
+    );
+    await waitFor(() => expect(actionFetch).toHaveBeenCalledTimes(2));
+    await expect(actionFetch).toHaveBeenLastCalledWith(
+      expect.objectContaining({ userId: 'ryan', action: 'unhide_profile' }),
+    );
+    await expect(actionFetch.mock.lastCall?.[0].note).toBeUndefined();
   },
 };
 

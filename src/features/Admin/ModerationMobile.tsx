@@ -56,6 +56,7 @@ import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
   ActionError,
+  type ConfirmAction,
   DURATION_PRESETS,
   EmptyState,
   HistoryList,
@@ -68,6 +69,7 @@ import {
   StaffChip,
   SuspendEnds,
   UserChips,
+  useActionConfirmation,
   useLanguageLabels,
   useLogLabel,
   useModFormat,
@@ -254,15 +256,13 @@ const ReportsScreen = ({
   view,
   setView,
   openCase,
-  quickDismiss,
-  busyId,
+  dismissCase,
 }: {
   store: ModerationStore;
   view: 'pending' | 'resolved';
   setView: (view: 'pending' | 'resolved') => void;
   openCase: (userId: string) => void;
-  quickDismiss: (group: ReportGroup) => void;
-  busyId: string | null;
+  dismissCase: (group: ReportGroup) => void;
 }) => {
   const t = useTranslations('Admin');
   const { relative } = useModFormat();
@@ -314,9 +314,9 @@ const ReportsScreen = ({
                   <SwipeRow
                     key={entry.userId}
                     label={user.displayName}
-                    enabled={view === 'pending' && busyId !== entry.userId}
+                    enabled={view === 'pending'}
                     onOpen={() => openCase(entry.userId)}
-                    onDismiss={() => quickDismiss(entry)}
+                    onDismiss={() => dismissCase(entry)}
                   >
                     <span className={avatar40}>
                       <Avatar avatarUrl={user.avatarUrl} size="sm" />
@@ -347,11 +347,7 @@ const ReportsScreen = ({
                     </span>
                     <span className="flex flex-col items-end gap-2 pt-0.5">
                       <span className="whitespace-nowrap text-subtle text-xs">
-                        {busyId === entry.userId ? (
-                          <Spinner />
-                        ) : (
-                          relative(entry.reports[0].createdAt)
-                        )}
+                        {relative(entry.reports[0].createdAt)}
                       </span>
                       <span
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 font-bold text-[11px] ${entry.reports.length > 1 ? 'bg-discord-blue text-white' : 'bg-background-darker text-primary-light'}`}
@@ -1121,7 +1117,80 @@ const useRun = (
   return { busy, failed, run, reset: () => setFailed(null) };
 };
 
-type SheetKind = 'act' | 'warn' | 'suspend' | 'ban' | 'grant';
+export type SheetKind =
+  | 'act'
+  | 'warn'
+  | 'suspend'
+  | 'ban'
+  | 'grant'
+  | ConfirmAction;
+
+const ConfirmActionSheet = ({
+  action,
+  user,
+  count,
+  note,
+  onNote,
+  onCancel,
+  onConfirm,
+  actions,
+}: {
+  action: ConfirmAction;
+  user: ModUser;
+  count: number;
+  note: string;
+  onNote: (note: string) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+  actions: ReturnType<typeof useRun>;
+}) => {
+  const t = useTranslations('Admin');
+  const confirmation = useActionConfirmation(action, user, count);
+  return (
+    <Sheet
+      open
+      onOpenChange={(next) => (next ? null : onCancel())}
+      title={confirmation.title}
+      footer={
+        <>
+          <button
+            type="button"
+            disabled={actions.busy !== null}
+            onClick={onCancel}
+            className={mobileButton('outline')}
+          >
+            {t('cancel')}
+          </button>
+          <button
+            type="button"
+            disabled={actions.busy !== null}
+            onClick={onConfirm}
+            className={mobileButton(
+              action === 'hide_profile' ? 'danger' : 'primary',
+            )}
+          >
+            {actions.busy ? <Spinner className="h-4 w-4" /> : null}
+            {actions.busy ? t('working') : confirmation.label}
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-3.5">
+        <p className="text-[15px] text-muted leading-normal">
+          {confirmation.body}
+        </p>
+        <Note value={note} onChange={onNote} />
+        {actions.failed ? (
+          <ActionError
+            mobile
+            reauth={actions.failed.reauth}
+            onRetry={onConfirm}
+          />
+        ) : null}
+      </div>
+    </Sheet>
+  );
+};
 
 export const ActionSheets = ({
   store,
@@ -1151,15 +1220,19 @@ export const ActionSheets = ({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset errors only when the sheet opens
   useEffect(() => {
-    if (sheet !== 'act') return;
+    setNote('');
+    if (sheet !== 'act' && sheet !== 'dismiss') return;
     actions.reset();
     grant.clearError();
   }, [sheet]);
-  const open = (next: SheetKind) => setSheet(next);
+  const open = (next: SheetKind) => {
+    setNote('');
+    setSheet(next);
+  };
   const run = async (
     action: ModAction,
     days?: number,
-    text = note,
+    text = '',
     category?: WarningCategory,
   ) => {
     if (await actions.run(action, text, days, category)) {
@@ -1182,7 +1255,13 @@ export const ActionSheets = ({
       description={description}
       danger={danger}
       disabled={actions.busy !== null && actions.busy !== action}
-      chevron={action === 'warn' || action === 'suspend' || action === 'ban'}
+      chevron={
+        action === 'warn' ||
+        action === 'suspend' ||
+        action === 'ban' ||
+        action === 'hide_profile' ||
+        action === 'unhide_profile'
+      }
       onClick={onClick}
     >
       {actions.busy === action ? (
@@ -1206,7 +1285,6 @@ export const ActionSheets = ({
             <ProtectedNotice kind={protection} large />
           ) : (
             <>
-              <Note value={note} onChange={setNote} />
               {actions.failed ? (
                 <ActionError
                   mobile
@@ -1231,6 +1309,8 @@ export const ActionSheets = ({
                       MdVisibility,
                       t('unhideProfile'),
                       t('unhideDesc'),
+                      false,
+                      () => open('unhide_profile'),
                     )
                   : row(
                       'hide_profile',
@@ -1238,6 +1318,7 @@ export const ActionSheets = ({
                       t('hideProfile'),
                       t('hideDesc'),
                       true,
+                      () => open('hide_profile'),
                     )}
                 {suspended && user.suspendedUntil
                   ? row(
@@ -1424,7 +1505,7 @@ export const ActionSheets = ({
             <button
               type="button"
               disabled={!suspend.valid || actions.busy !== null}
-              onClick={() => run('suspend', suspend.days)}
+              onClick={() => run('suspend', suspend.days, note)}
               className={mobileButton('danger')}
             >
               {actions.busy ? <Spinner className="h-4 w-4" /> : null}
@@ -1485,7 +1566,7 @@ export const ActionSheets = ({
             <ActionError
               mobile
               reauth={actions.failed.reauth}
-              onRetry={() => run('suspend', actions.failed?.days)}
+              onRetry={() => run('suspend', actions.failed?.days, note)}
             />
           ) : null}
         </div>
@@ -1506,7 +1587,7 @@ export const ActionSheets = ({
             <button
               type="button"
               disabled={actions.busy !== null}
-              onClick={() => run('ban')}
+              onClick={() => run('ban', undefined, note)}
               className={mobileButton('danger')}
             >
               {actions.busy ? (
@@ -1535,11 +1616,29 @@ export const ActionSheets = ({
             <ActionError
               mobile
               reauth={actions.failed.reauth}
-              onRetry={() => run('ban')}
+              onRetry={() => run('ban', undefined, note)}
             />
           ) : null}
         </div>
       </Sheet>
+      {sheet === 'hide_profile' ||
+      sheet === 'unhide_profile' ||
+      sheet === 'dismiss' ? (
+        <ConfirmActionSheet
+          action={sheet}
+          user={user}
+          count={reportIds.length}
+          note={note}
+          onNote={setNote}
+          onCancel={() => {
+            setNote('');
+            actions.reset();
+            setSheet(sheet === 'dismiss' ? null : 'act');
+          }}
+          onConfirm={() => run(sheet, undefined, note)}
+          actions={actions}
+        />
+      ) : null}
     </>
   );
 };
@@ -1559,41 +1658,25 @@ const CaseFooter = ({
   const [sheet, setSheet] = useState<SheetKind | null>(null);
   const protection = protectionOf(store, user);
   const protectedAccount = protection !== null;
-  const dismiss = useRun(store, user, reportIds, onDone);
 
   return (
     <>
-      {dismiss.failed ? (
-        <ActionError
-          mobile
-          reauth={dismiss.failed.reauth}
-          onRetry={() => dismiss.run('dismiss', '')}
-        />
-      ) : null}
       <div className="flex gap-2.5">
         {reportIds.length ? (
           <button
             type="button"
-            disabled={dismiss.busy !== null}
-            onClick={() => dismiss.run('dismiss', '')}
+            onClick={() => setSheet('dismiss')}
             className={mobileButton(protectedAccount ? 'primary' : 'outline')}
           >
-            {dismiss.busy ? (
-              <Spinner className="h-4 w-4" />
-            ) : (
-              <MdDone size={20} />
-            )}
-            {dismiss.busy
-              ? t('working')
-              : reportIds.length > 1
-                ? t('dismissCount', { count: reportIds.length })
-                : t('dismiss')}
+            <MdDone size={20} />
+            {reportIds.length > 1
+              ? t('dismissCount', { count: reportIds.length })
+              : t('dismiss')}
           </button>
         ) : null}
         {protectedAccount ? null : (
           <button
             type="button"
-            disabled={dismiss.busy !== null}
             onClick={() => setSheet('act')}
             className={mobileButton('primary')}
           >
@@ -1768,7 +1851,7 @@ export const ModerationMobile = ({
   const [view, setView] = useState<'pending' | 'resolved'>('pending');
   const [page, setPage] = useState<Page | null>(null);
   const [closing, setClosing] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);
 
   const back = () => {
     setClosing(true);
@@ -1778,29 +1861,9 @@ export const ModerationMobile = ({
     }, 280);
   };
   const openUser = (userId: string) => setPage({ kind: 'user', userId, view });
-  const quickDismiss = async (entry: ReportGroup) => {
-    const user = store.usersById.get(entry.userId);
-    if (!user) return;
-    setBusyId(entry.userId);
-    const reportIds = entry.reports.map((report) => report.id);
-    try {
-      await store.act({
-        userId: entry.userId,
-        action: 'dismiss',
-        reportIds,
-        note: '',
-      });
-      notify(user, 'dismiss', { reports: reportIds.length, resolved: true });
-    } catch {
-      notify(user, 'dismiss', {
-        reports: reportIds.length,
-        resolved: false,
-        failed: true,
-      });
-    } finally {
-      setBusyId(null);
-    }
-  };
+  const dismissUser = dismissEntry
+    ? store.usersById.get(dismissEntry.userId)
+    : null;
 
   return (
     <div className="pb-[calc(env(safe-area-inset-bottom)+96px)] font-figtree text-foreground">
@@ -1810,8 +1873,7 @@ export const ModerationMobile = ({
           view={view}
           setView={setView}
           openCase={(userId) => setPage({ kind: 'case', userId, view })}
-          quickDismiss={quickDismiss}
-          busyId={busyId}
+          dismissCase={setDismissEntry}
         />
       ) : null}
       {tab === 'users' ? (
@@ -1844,6 +1906,22 @@ export const ModerationMobile = ({
           onBack={back}
           onOpenUser={openUser}
           notify={notify}
+        />
+      ) : null}
+      {dismissEntry && dismissUser ? (
+        <ActionSheets
+          key={dismissUser.id}
+          store={store}
+          user={dismissUser}
+          reportIds={dismissEntry.reports.map((report) => report.id)}
+          onDone={() =>
+            notify(dismissUser, 'dismiss', {
+              reports: dismissEntry.reports.length,
+              resolved: true,
+            })
+          }
+          sheet="dismiss"
+          setSheet={() => setDismissEntry(null)}
         />
       ) : null}
     </div>
