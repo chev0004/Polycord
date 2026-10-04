@@ -34,6 +34,7 @@ export default defineConfig({
       POLYCORD_ADMIN_USER_IDS: 'e2e-admin',
       POLYCORD_SEED_ENABLED: 'true',
       POLYCORD_ENVIRONMENT: 'local',
+      POLYCORD_CLIENT_IP_HEADER: 'x-test-client-ip',
       DISCORD_CLIENT_ID: 'e2e',
       DISCORD_CLIENT_SECRET: 'e2e',
       DISCORD_REDIRECT_URI: 'http://localhost:3119/api/auth/discord/callback',

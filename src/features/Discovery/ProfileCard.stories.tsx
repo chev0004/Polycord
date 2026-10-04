@@ -914,21 +914,26 @@ export const ModerationChipsForStaff: Story = {
     await expect(chips.getByText('Banned')).toBeInTheDocument();
     await expect(chips.getByText('Suspended')).toBeInTheDocument();
     await expect(chips.getByText('Hidden')).toBeInTheDocument();
-    await expect(chips.getByText('3 reports')).toBeInTheDocument();
+    await expect(chips.getByText('3 pending reports')).toBeInTheDocument();
     await expect(chips.getByText('Warned 2×')).toBeInTheDocument();
-    await expect(flagged.getBoundingClientRect().height).toBe(
+    await expect(flagged.getBoundingClientRect().height).toBeGreaterThan(
       plain.getBoundingClientRect().height,
     );
 
     const box = (
       flagged.querySelector('[data-moderation-chips]') as HTMLElement
     ).getBoundingClientRect();
+    const copy = within(flagged)
+      .getByRole('button', { name: /^Copy.*username/ })
+      .getBoundingClientRect();
+    await expect(box.top).toBeGreaterThanOrEqual(copy.bottom);
     for (const chip of Array.from(
       flagged.querySelectorAll('[data-moderation-chips] > span'),
     )) {
       const rect = chip.getBoundingClientRect();
       await expect(rect.right).toBeLessThanOrEqual(box.right);
       await expect(rect.left).toBeGreaterThanOrEqual(box.left);
+      await expect(chip.scrollWidth).toBeLessThanOrEqual(chip.clientWidth + 1);
     }
   },
 };

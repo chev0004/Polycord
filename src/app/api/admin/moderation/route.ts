@@ -9,10 +9,16 @@ import {
   setUserBanned,
   setUserSuspendedUntil,
 } from '@/db';
+import { canModerate } from '@/features/Admin/permissions';
 import { OWNER_ACTIONS } from '@/features/Admin/types';
 import { getStaffRole, isSameOrigin, needsReauth } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
-import { toModLogEntry, toModReport, toModUser } from '@/lib/moderation';
+import {
+  staffRoleOf,
+  toModLogEntry,
+  toModReport,
+  toModUser,
+} from '@/lib/moderation';
 import { moderationSchema } from '@/lib/moderationRequest';
 
 export const POST = async (request: Request) => {
@@ -48,7 +54,7 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const { userId, reportId, action, days, note } = payload.data;
+  const { userId, reportId, action, days, note, category } = payload.data;
   const ownerOnly = (OWNER_ACTIONS as readonly string[]).includes(action);
 
   if (ownerOnly && role !== 'owner') {
@@ -71,7 +77,8 @@ export const POST = async (request: Request) => {
 
   if (
     action !== 'dismiss' &&
-    (toModUser(target).role || target.user.id === currentUser.accountId)
+    (target.user.id === currentUser.accountId ||
+      !canModerate(role, staffRoleOf(target)))
   ) {
     return NextResponse.json(
       { error: 'Staff cannot be actioned' },
@@ -95,6 +102,7 @@ export const POST = async (request: Request) => {
         kind: 'warning',
         isGuest: false,
         message: note,
+        warningCategory: category,
       });
       break;
     case 'hide_profile':

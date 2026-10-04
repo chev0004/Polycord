@@ -38,6 +38,8 @@ import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { getLanguageName, proficiencyOptions } from '@/constants/languages';
 import { signInHref } from '@/features/Navigation/signIn';
+import type { WarningCategory } from '@/types';
+import { protectionOf } from './permissions';
 import type {
   LogAction,
   ModAction,
@@ -115,6 +117,8 @@ export const ACTION_TONE: Record<LogAction, string> = {
   revoke: 'bg-primary-dark',
   premium_grant: 'bg-discord-yellow',
   premium_revoke: 'bg-primary-dark',
+  ip_block: 'bg-red-400',
+  ip_unblock: 'bg-primary-dark',
 };
 
 export const useLogLabel = () => {
@@ -396,11 +400,17 @@ export const ActionError = ({
   );
 };
 
+const PROTECTED_KEYS = {
+  self: 'protectedSelf',
+  owner: 'protectedOwner',
+  staff: 'protectedStaff',
+} as const;
+
 export const ProtectedNotice = ({
-  self,
+  kind,
   large = false,
 }: {
-  self: boolean;
+  kind: NonNullable<ReturnType<typeof protectionOf>>;
   large?: boolean;
 }) => {
   const t = useTranslations('Admin');
@@ -410,7 +420,7 @@ export const ProtectedNotice = ({
     >
       <MdAdminPanelSettings size={20} className="shrink-0 text-primary" />
       <span>
-        {t.rich(self ? 'protectedSelf' : 'protectedStaff', {
+        {t.rich(PROTECTED_KEYS[kind], {
           b: (chunks) => (
             <b className="font-semibold text-foreground">{chunks}</b>
           ),
@@ -684,12 +694,17 @@ export const useWarnMessage = (open: boolean) => {
   }, [open]);
 
   const message = text.trim();
+  const category =
+    choice !== null && choice !== 'custom' && message === t(`warnText${choice}`)
+      ? (choice.toLowerCase() as WarningCategory)
+      : undefined;
 
   return {
     choice,
     text,
     setText,
     message,
+    category,
     valid: message.length > 0,
     pick: (next: WarnChoice) => {
       setChoice(next);
@@ -762,7 +777,7 @@ export const WarnDialog = ({
   open: boolean;
   user: ModUser;
   onCancel: () => void;
-  onConfirm: (message: string) => void;
+  onConfirm: (message: string, category?: WarningCategory) => void;
 }) => {
   const t = useTranslations('Admin');
   const warn = useWarnMessage(open);
@@ -792,7 +807,7 @@ export const WarnDialog = ({
         <button
           type="button"
           disabled={!warn.valid}
-          onClick={() => onConfirm(warn.message)}
+          onClick={() => onConfirm(warn.message, warn.category)}
           className={modButton('primary')}
         >
           {t('warnSend')}
@@ -903,12 +918,14 @@ export const ActionBar = ({
     action: ModAction;
     days?: number;
     note: string;
+    category?: WarningCategory;
     reauth: boolean;
   } | null>(null);
   const [dialog, setDialog] = useState<
     'warn' | 'suspend' | 'ban' | ConfirmAction | null
   >(null);
-  const protectedAccount = user.role !== undefined || user.id === store.meId;
+  const protection = protectionOf(store, user);
+  const protectedAccount = protection !== null;
   const suspended = isSuspended(user);
 
   const open = (next: NonNullable<typeof dialog>) => {
@@ -916,7 +933,12 @@ export const ActionBar = ({
     setNote('');
     setDialog(next);
   };
-  const run = async (action: ModAction, days?: number, runNote = '') => {
+  const run = async (
+    action: ModAction,
+    days?: number,
+    runNote = '',
+    category?: WarningCategory,
+  ) => {
     if (busy) return;
     setBusy(action);
     setFailed(null);
@@ -928,11 +950,18 @@ export const ActionBar = ({
         reportIds,
         note: runNote,
         days,
+        category,
       });
       setNote('');
       onDone({ action, days });
     } catch (error) {
-      setFailed({ action, days, note: runNote, reauth: isReauthError(error) });
+      setFailed({
+        action,
+        days,
+        note: runNote,
+        category,
+        reauth: isReauthError(error),
+      });
     } finally {
       setBusy(null);
     }
@@ -1004,7 +1033,7 @@ export const ActionBar = ({
     <div className="flex flex-col border-line border-b bg-background-dark">
       {protectedAccount ? (
         <div className="px-4 py-3 md:px-5">
-          <ProtectedNotice self={user.id === store.meId} />
+          <ProtectedNotice kind={protection} />
         </div>
       ) : (
         <div role="toolbar" aria-label={t('actionsLabel')} className="flex">
@@ -1046,7 +1075,9 @@ export const ActionBar = ({
         <div className="px-4 pb-3 md:px-5">
           <ActionError
             reauth={failed.reauth}
-            onRetry={() => run(failed.action, failed.days, failed.note)}
+            onRetry={() =>
+              run(failed.action, failed.days, failed.note, failed.category)
+            }
           />
         </div>
       ) : null}
@@ -1072,7 +1103,9 @@ export const ActionBar = ({
         open={dialog === 'warn'}
         user={user}
         onCancel={() => setDialog(null)}
-        onConfirm={(message) => run('warn', undefined, message)}
+        onConfirm={(message, category) =>
+          run('warn', undefined, message, category)
+        }
       />
       <SuspendDialog
         open={dialog === 'suspend'}

@@ -7,6 +7,7 @@ import {
   peekRateLimit,
   type RateLimitResult,
 } from '@/db';
+import { clientIp } from './clientIp';
 
 export type RateLimitAction =
   | 'report'
@@ -92,8 +93,7 @@ export const isRateLimited = async (
   return !result.allowed;
 };
 
-export const requestIp = (request: Request) =>
-  request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
+export const requestIp = (request: Request) => clientIp(request.headers);
 
 export const rateLimitedResponse = (retryAfterMs: number) =>
   NextResponse.json(

@@ -76,6 +76,14 @@ export const DELETE = async (request: Request) => {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
+  const [target] = await listModerationUsers([body.userId]);
+
+  if (target && staffRoleOf(target) === 'owner') {
+    return NextResponse.json(
+      { error: 'Cannot change an owner' },
+      { status: 409 },
+    );
+  }
   if (!(await revokeModerator(body.userId))) {
     return NextResponse.json({ error: 'Not a moderator' }, { status: 404 });
   }

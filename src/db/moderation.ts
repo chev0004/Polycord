@@ -161,7 +161,7 @@ export const setUserBanned = async (userId: string, banned: boolean) =>
 
 export const logModerationAction = async (values: {
   adminUserId: string;
-  targetUserId: string;
+  targetUserId: string | null;
   reportId?: string | null;
   action: ModerationActionKind;
   note?: string | null;
@@ -354,9 +354,10 @@ export const revokeModerator = async (userId: string) =>
   (await db.delete(staffRoles).where(eq(staffRoles.userId, userId)).returning())
     .length > 0;
 
+export const isSuspended = (user: { suspendedUntil: Date | null }) =>
+  user.suspendedUntil !== null && user.suspendedUntil.getTime() > Date.now();
+
 export const isUserRestricted = (user: {
   suspendedUntil: Date | null;
   bannedAt: Date | null;
-}) =>
-  user.bannedAt !== null ||
-  (user.suspendedUntil !== null && user.suspendedUntil.getTime() > Date.now());
+}) => user.bannedAt !== null || isSuspended(user);

@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import {
   getUserByDiscordId,
   getUserSettingsByUserId,
+  recordIpObservation,
   upsertDiscordUser,
   upsertUserSettings,
 } from '@/db';
@@ -11,8 +12,10 @@ import { trackEvent } from '@/lib/analytics/track.server';
 import {
   AUTH_ERROR_PARAM,
   clearOAuthStateCookie,
+  getIdentityRestriction,
   normalizeDiscordUser,
   readOAuthStateCookie,
+  setBanCookie,
   setSessionCookie,
 } from '@/lib/auth';
 import { enforceRateLimit, isRateLimited, requestIp } from '@/lib/rateLimit';
@@ -141,6 +144,24 @@ export const GET = async (request: NextRequest) => {
 
     const currentUser = normalizeDiscordUser(discordUser);
     const existingUser = await getUserByDiscordId(currentUser.id);
+
+    if (ip) {
+      await recordIpObservation(currentUser.id, ip);
+    }
+
+    const restriction = await getIdentityRestriction(
+      currentUser.id,
+      existingUser,
+    );
+
+    if (restriction) {
+      const denied = redirectWithError(request, redirectTo, restriction);
+      if (restriction === 'banned') {
+        await setBanCookie(denied, currentUser.id);
+      }
+      return denied;
+    }
+
     const user = await upsertDiscordUser(currentUser);
     const settings = await getUserSettingsByUserId(user.id);
     const requestedLocale = localeFromPath(redirectTo) ?? 'en';

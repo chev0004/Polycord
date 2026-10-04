@@ -7,6 +7,7 @@ let redirectTo;
 const writes = [];
 mock.module('@/db', () => ({
   getUserByDiscordId: async () => ({ id: 'account-1' }),
+  recordIpObservation: async () => {},
   upsertDiscordUser: async () => ({ id: 'account-1' }),
   getUserSettingsByUserId: async () => settings,
   upsertUserSettings: async (...values) => writes.push(values),
@@ -14,8 +15,10 @@ mock.module('@/db', () => ({
 mock.module('@/lib/auth', () => ({
   AUTH_ERROR_PARAM: 'authError',
   clearOAuthStateCookie: () => {},
+  getIdentityRestriction: async () => null,
   normalizeDiscordUser: (user) => user,
   readOAuthStateCookie: async () => ({ nonce: 'state-1', redirectTo }),
+  setBanCookie: async () => {},
   setSessionCookie: async () => {},
 }));
 mock.module('@/lib/analytics/track.server', () => ({
