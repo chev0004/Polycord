@@ -422,9 +422,9 @@ test('owners grant and revoke moderators with owner-only actions guarded', async
   const accounts = await sql<
     Account[]
   >`insert into users (discord_user_id, discord_username, display_name)
-    values ('e2e-admin', 'e2e-admin', 'E2E Owner'), (${`${prefix}-mod`}, ${`${prefix}-mod`}, ${`${prefix} Moderator`}), (${`${prefix}-target`}, ${`${prefix}-target`}, ${`${prefix} Target`})
+    values ('e2e-admin', 'e2e-admin', 'E2E Owner'), (${`${prefix}-mod`}, ${`${prefix}-mod`}, ${`${prefix} Moderator`}), (${`${prefix}-target`}, ${`${prefix}-target`}, ${`${prefix} Target`}), (${`${prefix}-mod2`}, ${`${prefix}-mod2`}, ${`${prefix} Second Moderator`})
     returning id, discord_user_id as "discordUserId"`;
-  const [owner, moderator, target] = accounts;
+  const [owner, moderator, target, otherModerator] = accounts;
   const ownerContext = await browser.newContext({
     baseURL: 'http://localhost:3119',
   });
@@ -479,6 +479,71 @@ test('owners grant and revoke moderators with owner-only actions guarded', async
         })
       ).status(),
     ).toBe(200);
+    expect(
+      (
+        await post(ownerContext, '/api/admin/staff', {
+          userId: otherModerator.id,
+        })
+      ).status(),
+    ).toBe(200);
+    for (const userId of [otherModerator.id, owner.id]) {
+      expect(
+        (
+          await post(modContext, '/api/admin/moderation', {
+            userId,
+            action: 'warn',
+            note: 'Please be kind.',
+          })
+        ).status(),
+      ).toBe(403);
+    }
+    expect(
+      (
+        await post(modContext, '/api/admin/staff', {
+          userId: otherModerator.id,
+        })
+      ).status(),
+    ).toBe(403);
+    expect(
+      (
+        await modContext.request.delete('/api/admin/staff', {
+          headers,
+          data: { userId: otherModerator.id },
+        })
+      ).status(),
+    ).toBe(403);
+    for (const data of [
+      { action: 'warn', note: 'Please be kind.' },
+      { action: 'hide_profile' },
+      { action: 'suspend', days: 1 },
+      { action: 'ban' },
+    ]) {
+      expect(
+        (
+          await post(ownerContext, '/api/admin/moderation', {
+            userId: otherModerator.id,
+            ...data,
+          })
+        ).status(),
+      ).toBe(200);
+    }
+    expect(
+      (
+        await post(ownerContext, '/api/admin/moderation', {
+          userId: owner.id,
+          action: 'warn',
+          note: 'Please be kind.',
+        })
+      ).status(),
+    ).toBe(403);
+    expect(
+      (
+        await ownerContext.request.delete('/api/admin/staff', {
+          headers,
+          data: { userId: owner.id },
+        })
+      ).status(),
+    ).toBe(409);
     await modPage.goto('/en/analytics');
     await expect(modPage).toHaveURL('/en');
 
