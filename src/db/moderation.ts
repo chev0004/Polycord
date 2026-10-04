@@ -161,7 +161,7 @@ export const setUserBanned = async (userId: string, banned: boolean) =>
 
 export const logModerationAction = async (values: {
   adminUserId: string;
-  targetUserId: string;
+  targetUserId: string | null;
   reportId?: string | null;
   action: ModerationActionKind;
   note?: string | null;
