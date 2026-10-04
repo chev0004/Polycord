@@ -65,9 +65,20 @@ export const IpBlocksPanel = ({
     };
   }, [query, account, search]);
 
+  useEffect(() => {
+    setObserved([]);
+    if (!account) return;
+    let current = true;
+    loadIpBlocks(account)
+      .then((result) => current && setObserved(result.observed))
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+  }, [account, loadIpBlocks]);
+
   const clearAccount = () => {
     setAccount(null);
-    setObserved([]);
     setPicked([]);
     setQuery('');
   };
@@ -86,15 +97,10 @@ export const IpBlocksPanel = ({
     }
   };
 
-  const choose = async (userId: string, username: string) => {
+  const choose = (userId: string, username: string) => {
     setAccount(userId);
     setQuery(username);
     setPicked([]);
-    setObserved(
-      await loadIpBlocks(userId)
-        .then((result) => result.observed)
-        .catch(() => []),
-    );
   };
 
   const block = async () => {
