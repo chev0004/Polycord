@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import {
   createNotification,
   getReportById,
@@ -10,22 +9,11 @@ import {
   setUserBanned,
   setUserSuspendedUntil,
 } from '@/db';
-import { MODERATION_ACTIONS, OWNER_ACTIONS } from '@/features/Admin/types';
+import { OWNER_ACTIONS } from '@/features/Admin/types';
 import { getStaffRole, isSameOrigin, needsReauth } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { toModLogEntry, toModReport, toModUser } from '@/lib/moderation';
-
-const moderationSchema = z
-  .object({
-    userId: z.string().uuid().optional(),
-    reportId: z.string().uuid().optional(),
-    reportIds: z.array(z.string().uuid()).max(1000).default([]),
-    action: z.enum(MODERATION_ACTIONS),
-    days: z.number().int().min(1).max(90).optional(),
-    note: z.string().max(500).optional(),
-  })
-  .refine((value) => value.userId || value.reportId)
-  .refine((value) => value.action !== 'suspend' || value.days !== undefined);
+import { moderationSchema } from '@/lib/moderationRequest';
 
 export const POST = async (request: Request) => {
   const currentUser = await getCurrentUser();
@@ -50,7 +38,14 @@ export const POST = async (request: Request) => {
   const payload = moderationSchema.safeParse(body);
 
   if (!payload.success) {
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    return NextResponse.json(
+      {
+        error:
+          payload.error.issues.find((issue) => issue.path[0] === 'note')
+            ?.message ?? 'Invalid action',
+      },
+      { status: 400 },
+    );
   }
 
   const { userId, reportId, action, days, note } = payload.data;
@@ -99,6 +94,7 @@ export const POST = async (request: Request) => {
         userId: target.user.id,
         kind: 'warning',
         isGuest: false,
+        message: note,
       });
       break;
     case 'hide_profile':

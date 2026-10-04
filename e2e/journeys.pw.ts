@@ -287,7 +287,7 @@ test('admins moderate a report while members cannot reach admin tools', async ({
         (
           await moderator.request.post('/api/admin/moderation', {
             headers: { Origin: origin },
-            data: { userId, action: 'warn' },
+            data: { userId, action: 'warn', note: 'Please be kind.' },
           })
         ).status(),
       ).toBe(403);
@@ -304,14 +304,21 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     await expect(page.getByText('Posting links')).toBeVisible();
     await expect(page.getByText('Rude replies')).toBeVisible();
     await page.getByRole('button', { name: /^Warn/ }).click();
+    const warning = page.getByRole('dialog');
+    await expect(
+      warning.getByRole('button', { name: 'Send warning' }),
+    ).toBeDisabled();
+    await warning.getByRole('button', { name: 'Spam or advertising' }).click();
+    await warning.getByRole('button', { name: 'Send warning' }).click();
     await expect
-      .poll(
-        async () =>
-          (
-            await sql`select 1 from notifications where user_id = ${reported.id} and kind = 'warning'`
-          ).length,
+      .poll(async () =>
+        (
+          await sql`select message from notifications where user_id = ${reported.id} and kind = 'warning'`
+        ).map((row) => row.message),
       )
-      .toBe(1);
+      .toEqual([
+        'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
+      ]);
     await expect
       .poll(async () =>
         (
@@ -429,6 +436,7 @@ test('owners grant and revoke moderators with owner-only actions guarded', async
         await post(modContext, '/api/admin/moderation', {
           userId: target.id,
           action: 'warn',
+          note: 'Please be kind.',
         })
       ).status(),
     ).toBe(200);

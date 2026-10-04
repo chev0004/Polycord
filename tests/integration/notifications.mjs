@@ -255,6 +255,20 @@ try {
     body.notifications.find((row) => row.id === copy.id).actorName,
     undefined,
   );
+  const written = await createNotification({
+    userId: owner.id,
+    kind: 'warning',
+    message: 'Please remove the advertising from your profile.',
+  });
+  body = await (await GET()).json();
+  assert.equal(
+    body.notifications.find((row) => row.id === written.id).message,
+    'Please remove the advertising from your profile.',
+  );
+  assert.equal(
+    body.notifications.find((row) => row.id === warning.id).message,
+    undefined,
+  );
   await DELETE(request('DELETE', { all: true }));
   assert.deepEqual((await (await GET()).json()).notifications, []);
   currentUser = null;
