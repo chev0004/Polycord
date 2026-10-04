@@ -2,16 +2,15 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { MdClose, MdOutlineShield } from 'react-icons/md';
 import { ToastStack } from '@/components/Toast';
 import { UserDetail } from './ModerationDesktop';
 import { ActionError, Spinner } from './ModerationParts';
-import type { ModData, StaffRole } from './types';
+import type { StaffRole } from './types';
 import { useModeration } from './useModeration';
 import { useModerationToasts } from './useModerationToasts';
-
-type ProfileCase = ModData & { userId: string };
+import { type ProfileCase, useProfileCase } from './useProfileCase';
 
 const CaseBody = ({
   found,
@@ -79,26 +78,7 @@ export const TakeActionPanel = ({
   returnFocus?: HTMLElement | null;
 }) => {
   const t = useTranslations('Admin');
-  const [found, setFound] = useState<ProfileCase | null>(null);
-  const [failed, setFailed] = useState(false);
-
-  const load = useCallback(async () => {
-    setFailed(false);
-    try {
-      const response = await fetch(
-        `/api/admin/case?profileId=${encodeURIComponent(profileId)}`,
-        { cache: 'no-store' },
-      );
-      if (!response.ok) throw new Error('Case request failed');
-      setFound(await response.json());
-    } catch {
-      setFailed(true);
-    }
-  }, [profileId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { found, failed, load } = useProfileCase(profileId);
 
   useEffect(() => {
     document.body.classList.add('mdr-open');

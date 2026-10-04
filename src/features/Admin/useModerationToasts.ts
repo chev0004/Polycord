@@ -1,12 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useToastStack } from '@/hooks/useToast';
+import { type ToastData, useToastStack } from '@/hooks/useToast';
 import type { Notify } from './ModerationDesktop';
 
-export const useModerationToasts = () => {
+export const useModerationNotify = (
+  addToast: (toast: Omit<ToastData, 'id'>) => void,
+) => {
   const t = useTranslations('Admin');
-  const { toasts, addToast, dismissToast } = useToastStack();
 
   const notify: Notify = (user, action, { days, reports, resolved, failed }) =>
     addToast({
@@ -27,6 +28,13 @@ export const useModerationToasts = () => {
       iconUrl: user.avatarUrl,
       duration: 4000,
     });
+
+  return notify;
+};
+
+export const useModerationToasts = () => {
+  const { toasts, addToast, dismissToast } = useToastStack();
+  const notify = useModerationNotify(addToast);
 
   return { notify, toasts, dismissToast };
 };
