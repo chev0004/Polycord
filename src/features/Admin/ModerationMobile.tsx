@@ -1109,6 +1109,7 @@ export const ActionSheets = ({
   const suspend = useSuspendDays(sheet === 'suspend');
   const warn = useWarnMessage(sheet === 'warn');
   const suspended = isSuspended(user);
+  const protectedAccount = user.role !== undefined || user.id === store.meId;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset errors only when the sheet opens
   useEffect(() => {
@@ -1158,66 +1159,72 @@ export const ActionSheets = ({
       >
         <div className="flex flex-col gap-3.5">
           <SheetUserInfo user={user} showSupporter={store.meRole === 'owner'} />
-          <Note value={note} onChange={setNote} />
-          {actions.failed ? (
-            <ActionError
-              mobile
-              reauth={actions.failed.reauth}
-              onRetry={() =>
-                run(
-                  actions.failed?.action ?? 'warn',
-                  actions.failed?.days,
-                  actions.failed?.note,
-                )
-              }
-            />
-          ) : null}
-          <SheetGroup>
-            {row('warn', MdCampaign, t('warn'), t('warnDesc'), true, () =>
-              open('warn'),
-            )}
-            {user.hidden
-              ? row(
-                  'unhide_profile',
-                  MdVisibility,
-                  t('unhideProfile'),
-                  t('unhideDesc'),
-                )
-              : row(
-                  'hide_profile',
-                  MdVisibilityOff,
-                  t('hideProfile'),
-                  t('hideDesc'),
-                  true,
+          {protectedAccount ? (
+            <ProtectedNotice self={user.id === store.meId} large />
+          ) : (
+            <>
+              <Note value={note} onChange={setNote} />
+              {actions.failed ? (
+                <ActionError
+                  mobile
+                  reauth={actions.failed.reauth}
+                  onRetry={() =>
+                    run(
+                      actions.failed?.action ?? 'warn',
+                      actions.failed?.days,
+                      actions.failed?.note,
+                    )
+                  }
+                />
+              ) : null}
+              <SheetGroup>
+                {row('warn', MdCampaign, t('warn'), t('warnDesc'), true, () =>
+                  open('warn'),
                 )}
-            {suspended && user.suspendedUntil
-              ? row(
-                  'unsuspend',
-                  MdLockOpen,
-                  t('liftSuspension'),
-                  t('liftDesc', { date: date(user.suspendedUntil) }),
-                )
-              : row(
-                  'suspend',
-                  MdSchedule,
-                  t('suspend'),
-                  t('suspendDesc'),
-                  true,
-                  () => open('suspend'),
-                )}
-            {store.meRole !== 'owner'
-              ? null
-              : user.bannedAt
-                ? row(
-                    'unban',
-                    MdSettingsBackupRestore,
-                    t('unban'),
-                    t('unbanDesc'),
-                  )
-                : row('ban', MdGavel, t('ban'), t('banDesc'), true, () =>
-                    open('ban'),
-                  )}
-          </SheetGroup>
+                {user.hidden
+                  ? row(
+                      'unhide_profile',
+                      MdVisibility,
+                      t('unhideProfile'),
+                      t('unhideDesc'),
+                    )
+                  : row(
+                      'hide_profile',
+                      MdVisibilityOff,
+                      t('hideProfile'),
+                      t('hideDesc'),
+                      true,
+                    )}
+                {suspended && user.suspendedUntil
+                  ? row(
+                      'unsuspend',
+                      MdLockOpen,
+                      t('liftSuspension'),
+                      t('liftDesc', { date: date(user.suspendedUntil) }),
+                    )
+                  : row(
+                      'suspend',
+                      MdSchedule,
+                      t('suspend'),
+                      t('suspendDesc'),
+                      true,
+                      () => open('suspend'),
+                    )}
+                {store.meRole !== 'owner'
+                  ? null
+                  : user.bannedAt
+                    ? row(
+                        'unban',
+                        MdSettingsBackupRestore,
+                        t('unban'),
+                        t('unbanDesc'),
+                      )
+                    : row('ban', MdGavel, t('ban'), t('banDesc'), true, () =>
+                        open('ban'),
+                      )}
+              </SheetGroup>
+            </>
+          )}
           {store.meRole === 'owner' ? (
             <SheetGroup>
               <SheetRow
