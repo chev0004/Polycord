@@ -12,6 +12,7 @@ import {
 import type { IconType } from 'react-icons';
 import {
   MdAdminPanelSettings,
+  MdBlock,
   MdCampaign,
   MdCheck,
   MdChevronLeft,
