@@ -20,6 +20,7 @@ export const WarningNoticeHost = ({ children }: { children: ReactNode }) => {
     <OpenNoticeContext.Provider value={setOpenId}>
       {children}
       <WarningNotice
+        key={shown?.id}
         open={shown !== undefined}
         acknowledged={shown?.acknowledgedAt !== undefined}
         busy={inbox.pending}

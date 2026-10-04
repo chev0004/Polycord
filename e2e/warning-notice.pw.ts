@@ -113,6 +113,28 @@ for (const [name, viewport] of [
   });
 }
 
+test('a second pending warning needs its own acknowledgement', async ({
+  page,
+  context,
+}) => {
+  const { member } = await warnedMember();
+  try {
+    await sql`insert into notifications (user_id, kind, message, warning_category)
+      values (${member.id}, 'warning', 'Harassment', 'harassment')`;
+    await signIn(context, member);
+    await page.goto('/en');
+    await expect(dialog(page)).toBeVisible();
+
+    await acknowledgement(page).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.getByRole('checkbox')).not.toBeChecked();
+    await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
+    await expect(dialog(page)).toBeVisible();
+  } finally {
+    await sql`delete from users where id = ${member.id}`;
+  }
+});
+
 test('the inbox row stays pinned until acknowledged and then reopens the notice read-only', async ({
   page,
   context,
