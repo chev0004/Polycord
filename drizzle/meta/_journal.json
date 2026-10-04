@@ -218,6 +218,13 @@
       "when": 1791069204867,
       "tag": "0030_warning_message",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1791077676078,
+      "tag": "0031_supporter_grant_log",
+      "breakpoints": true
     }
   ]
 }

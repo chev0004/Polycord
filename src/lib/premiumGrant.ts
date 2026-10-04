@@ -5,9 +5,9 @@ export const GRANT_UNITS = ['weeks', 'months', 'years'] as const;
 export type GrantUnit = (typeof GRANT_UNITS)[number];
 
 export const GRANT_MAX: Record<GrantUnit, number> = {
-  weeks: 520,
-  months: 120,
-  years: 10,
+  weeks: 52,
+  months: 24,
+  years: 5,
 };
 
 export const isValidGrant = (amount: number, unit: GrantUnit) =>

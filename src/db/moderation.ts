@@ -12,6 +12,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
+import type { GrantUnit } from '@/lib/premiumGrant';
 import { db } from './client';
 import {
   listTargetLanguagesByProfileIds,
@@ -164,6 +165,7 @@ export const logModerationAction = async (values: {
   action: ModerationActionKind;
   note?: string | null;
   days?: number;
+  grant?: { amount: number; unit: GrantUnit };
   expiresAt?: Date;
 }) => {
   const [action] = await db
@@ -175,6 +177,8 @@ export const logModerationAction = async (values: {
       action: values.action,
       note: values.note?.trim() ? values.note.trim() : null,
       days: values.days ?? null,
+      grantAmount: values.grant?.amount ?? null,
+      grantUnit: values.grant?.unit ?? null,
       expiresAt: values.expiresAt ?? null,
     })
     .returning();
