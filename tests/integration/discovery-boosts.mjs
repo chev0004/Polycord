@@ -93,7 +93,7 @@ try {
   }
   const first = await load('page=1');
   assert.equal(first.total, 30);
-  assert.equal(first.boosts, 6);
+  assert.deepEqual(first.groupSizes, [9, 9, 9, 9]);
   assert.equal((await load('page=999')).page, 4);
   assert.deepEqual(
     await ids('page=1&sort=name-asc'),
@@ -103,7 +103,7 @@ try {
   await boost(16, -1);
   assert.deepEqual(await ids('page=2'), at(0, 6, 7, 8, 9, 10, 11, 12, 13));
   assert.deepEqual(await ids('page=3'), at(14, 15, 16, 17, 18, 19, 20, 21, 22));
-  assert.equal((await load('page=1')).boosts, 4);
+  assert.deepEqual((await load('page=1')).groupSizes, [9, 9, 9, 7]);
   await db
     .update(profiles)
     .set({ boostedUntil: null })
@@ -114,7 +114,38 @@ try {
       ),
     );
   assert.deepEqual(await ids('page=1'), at(0, 1, 2, 3, 4, 5, 6, 7, 8));
-  assert.equal((await load('page=1')).boosts, 0);
+  assert.deepEqual((await load('page=1')).groupSizes, [9, 9, 9, 3]);
+  for (const [index, hours] of [
+    [0, 9],
+    [19, 8],
+    [18, 7],
+  ])
+    await boost(index, hours);
+  for (const search of ['', '&q=Fixture']) {
+    assert.deepEqual(
+      await ids(`page=1${search}`),
+      at(0, 19, 18, 1, 2, 3, 4, 5, 6),
+    );
+    assert.deepEqual(
+      await ids(`page=2${search}`),
+      at(7, 8, 9, 10, 11, 12, 13, 14, 15),
+    );
+    assert.deepEqual(await ids(`page=4${search}`), at(25, 26, 27, 28, 29));
+    assert.deepEqual(await ids(`page=2${search}`, true), [
+      ...at(0, 19, 18, 1, 2, 3, 4, 5, 6),
+      ...at(7, 8, 9, 10, 11, 12, 13, 14, 15),
+    ]);
+  }
+  assert.deepEqual((await load('page=1')).groupSizes, [9, 9, 9, 5]);
+  await db
+    .update(profiles)
+    .set({ boostedUntil: null })
+    .where(
+      inArray(
+        profiles.id,
+        items.map((item) => item.id),
+      ),
+    );
   await db
     .update(profiles)
     .set({ tags: [`${prefix}b`] })
@@ -136,15 +167,15 @@ try {
   const sizes = [];
   for (const page of [1, 2, 3, 4])
     sizes.push((await loadAll(page)).profiles.length);
-  assert.deepEqual(sizes, [9, 6, 3, 3]);
-  assert.equal((await loadAll(1)).boosts, 9);
+  assert.deepEqual(sizes, [9, 3, 3, 3]);
+  assert.deepEqual((await loadAll(1)).groupSizes, [9, 3, 3]);
   assert.equal((await loadAll(3)).page, 3);
   assert.equal((await loadAll(4)).page, 3);
   assert.deepEqual(
     (await loadAll(3)).profiles.map((profile) => profile.id),
     at(6, 7, 8),
   );
-  assert.equal((await loadAll(3, true)).profiles.length, 18);
+  assert.equal((await loadAll(3, true)).profiles.length, 15);
   console.log('discovery boost interleaving passed');
 } finally {
   await db.delete(users).where(
