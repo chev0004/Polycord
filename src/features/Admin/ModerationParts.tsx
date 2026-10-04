@@ -1031,7 +1031,7 @@ export const ReportStack = ({
 }: {
   store: ModerationStore;
   reports: ModReport[];
-  onOpenUser: (userId: string) => void;
+  onOpenUser?: (userId: string) => void;
   mobile?: boolean;
 }) => {
   const t = useTranslations('Admin');
@@ -1077,13 +1077,17 @@ export const ReportStack = ({
               {t('reportedBy')}
               {reporter ? (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => onOpenUser(reporter.id)}
-                    className="text-muted underline decoration-line-strong underline-offset-2 hover:text-foreground"
-                  >
-                    {reporter.displayName}
-                  </button>
+                  {onOpenUser ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenUser(reporter.id)}
+                      className="text-muted underline decoration-line-strong underline-offset-2 hover:text-foreground"
+                    >
+                      {reporter.displayName}
+                    </button>
+                  ) : (
+                    <span className="text-muted">{reporter.displayName}</span>
+                  )}
                   <span>@{reporter.username}</span>
                 </>
               ) : (

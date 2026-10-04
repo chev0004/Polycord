@@ -2,6 +2,7 @@ import 'server-only';
 
 import {
   countPendingCases,
+  getProfileById,
   hasActivePremiumGrant,
   isSubscriptionActive,
   listModerationActions,
@@ -115,6 +116,19 @@ const withUsers = async (
     reports: reports.map(toModReport),
     log: log.map(toModLogEntry),
   };
+};
+
+export const loadProfileCase = async (profileId: string) => {
+  const found = await getProfileById(profileId);
+  if (!found) return null;
+
+  const userId = found.user.id;
+  const [reports, log] = await Promise.all([
+    listReportsAgainstUsers([userId]),
+    listModerationActions([userId]),
+  ]);
+
+  return { userId, ...(await withUsers(reports, log, [userId])) };
 };
 
 export const loadModerationSnapshot = async (

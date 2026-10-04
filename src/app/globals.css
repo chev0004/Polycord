@@ -439,3 +439,17 @@
   }
 }
 /* biome-ignore-end lint/complexity/noImportantStyles: reduced motion must override component animations */
+
+body.mdr-open .ToastViewport {
+  right: min(460px, 100vw);
+  z-index: 95;
+}
+
+@media (max-width: 860px) {
+  body.mdr-open .ToastViewport {
+    right: 0;
+    top: 0;
+    bottom: auto;
+    flex-direction: column;
+  }
+}

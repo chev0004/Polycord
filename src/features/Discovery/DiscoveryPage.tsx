@@ -15,6 +15,8 @@ import { siteContainerClass } from '@/components/Container';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
+import { TakeActionPanel } from '@/features/Admin/TakeActionPanel';
+import type { StaffRole } from '@/features/Admin/types';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
 import {
@@ -96,6 +98,7 @@ type DiscoveryPageProps = {
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern | null;
   userAvatarUrl?: string;
+  staff?: { meId: string; role: StaffRole };
   onBumpProfile?: () => Promise<BumpProfileResponse>;
 };
 
@@ -167,6 +170,7 @@ export const DiscoveryPage = ({
   viewerTimezone,
   viewerAvailability,
   userAvatarUrl,
+  staff,
   onBumpProfile,
 }: DiscoveryPageProps) => {
   const router = useRouteProgressRouter();
@@ -218,6 +222,11 @@ export const DiscoveryPage = ({
   const [reportTarget, setReportTarget] = useState<{
     id: string;
     name?: string;
+  } | null>(null);
+  const [moderationTarget, setModerationTarget] = useState<{
+    id: string;
+    name: string;
+    trigger: HTMLElement | null;
   } | null>(null);
   const { toasts, addToast, dismissToast } = useToastStack();
 
@@ -643,6 +652,18 @@ export const DiscoveryPage = ({
     setReportTarget({ id: profileId, name: target?.displayName });
   };
 
+  const handleModerateProfile = (
+    profileId: string,
+    trigger: HTMLElement | null,
+  ) => {
+    const target = profileItems.find((profile) => profile.id === profileId);
+    setModerationTarget({
+      id: profileId,
+      name: target?.displayName ?? '',
+      trigger,
+    });
+  };
+
   const handleSubmitReport = async (
     reason: ReportReason,
     details: string,
@@ -955,6 +976,7 @@ export const DiscoveryPage = ({
                 }}
                 onViewProfile={handleViewProfile}
                 onShare={handleShareProfile}
+                onModerate={staff ? handleModerateProfile : undefined}
                 onReport={handleReportProfile}
                 onBlock={handleBlockProfile}
                 onTagClick={(tag) => handleAddTagFilter(tag)}
@@ -999,6 +1021,17 @@ export const DiscoveryPage = ({
           </>
         )}
       </main>
+
+      {staff && moderationTarget ? (
+        <TakeActionPanel
+          profileId={moderationTarget.id}
+          displayName={moderationTarget.name}
+          meId={staff.meId}
+          meRole={staff.role}
+          returnFocus={moderationTarget.trigger}
+          onClose={() => setModerationTarget(null)}
+        />
+      ) : null}
 
       <ReportDialog
         open={reportTarget !== null}

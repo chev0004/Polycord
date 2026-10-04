@@ -1,19 +1,14 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { ToastStack } from '@/components/Toast';
 import { useSyncPendingCases } from '@/features/Navigation/AppShell';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import { useToastStack } from '@/hooks/useToast';
-import {
-  ModerationDesktop,
-  type ModTab,
-  type Notify,
-} from './ModerationDesktop';
+import { ModerationDesktop, type ModTab } from './ModerationDesktop';
 import { ModerationMobile } from './ModerationMobile';
 import type { ModSnapshot, SeedStatus } from './types';
 import { useModeration } from './useModeration';
+import { useModerationToasts } from './useModerationToasts';
 
 export const ModerationPage = ({
   initial,
@@ -22,11 +17,10 @@ export const ModerationPage = ({
   initial: ModSnapshot;
   seed?: SeedStatus | null;
 }) => {
-  const t = useTranslations('Admin');
   const store = useModeration(initial);
   useSyncPendingCases(store.pendingCases);
   const mobile = useIsMobile();
-  const { toasts, addToast, dismissToast } = useToastStack();
+  const { notify, toasts, dismissToast } = useModerationToasts();
   const [tab, setTab] = useState<ModTab>('reports');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
@@ -56,26 +50,6 @@ export const ModerationPage = ({
       clearTimeout(timer);
     };
   }, [query, search]);
-
-  const notify: Notify = (user, action, { days, reports, resolved, failed }) =>
-    addToast({
-      variant: failed ? 'error' : undefined,
-      title: failed
-        ? t('actionFailed')
-        : t(`toast_${action}`, {
-            name: user.displayName,
-            count: action === 'dismiss' ? reports : (days ?? 0),
-          }),
-      description: failed
-        ? ''
-        : resolved && reports
-          ? action === 'dismiss'
-            ? t('toastMovedResolved')
-            : t('toastReviewed', { count: reports })
-          : t('toastLogged'),
-      iconUrl: user.avatarUrl,
-      duration: 4000,
-    });
 
   const users = {
     query,

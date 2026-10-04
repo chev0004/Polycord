@@ -13,6 +13,7 @@ import {
   MdFlag,
   MdLocationOn,
   MdMoreVert,
+  MdOutlineShield,
   MdPersonOutline,
   MdShare,
 } from 'react-icons/md';
@@ -107,6 +108,7 @@ type ProfileCardProps = {
   onReport?: (profileId: string) => void;
   onBlock?: (profileId: string) => void | Promise<void>;
   onShare?: (profileId: string) => void;
+  onModerate?: (profileId: string, trigger: HTMLElement | null) => void;
   onToggleSave?: (profileId: string) => void;
 };
 
@@ -150,6 +152,7 @@ export const ProfileCard = ({
   onReport,
   onBlock,
   onShare,
+  onModerate,
   onToggleSave,
 }: ProfileCardProps) => {
   const t = useTranslations('Discovery');
@@ -177,6 +180,7 @@ export const ProfileCard = ({
   const languageTrigger = useRef<HTMLButtonElement>(null);
   const closedOutOfView = useRef(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuTrigger = useRef<HTMLButtonElement>(null);
   const mobile = useIsMobile();
   const timeFormat = useTimeFormat();
   const languageDisplay = useLanguageDisplay();
@@ -322,6 +326,14 @@ export const ProfileCard = ({
         return onBlock(profile.id);
       },
     },
+    onModerate && !mobile
+      ? {
+          key: 'moderate',
+          icon: MdOutlineShield,
+          label: t('moderateProfile'),
+          onSelect: () => onModerate(profile.id, menuTrigger.current),
+        }
+      : undefined,
   ].filter((item) => item !== undefined);
 
   const renderTag = (value: string, key?: string) => (
@@ -466,6 +478,7 @@ export const ProfileCard = ({
               <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <Popover.Trigger asChild>
                   <button
+                    ref={menuTrigger}
                     type="button"
                     suppressHydrationWarning
                     className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground focus-visible:bg-black/50"
@@ -489,7 +502,8 @@ export const ProfileCard = ({
                           index,
                         ) => (
                           <Fragment key={key}>
-                            {danger && !menuItems[index - 1]?.danger ? (
+                            {(danger && !menuItems[index - 1]?.danger) ||
+                            key === 'moderate' ? (
                               <div className={menuDividerClass} />
                             ) : null}
                             <button
@@ -498,7 +512,7 @@ export const ProfileCard = ({
                                 onSelect();
                                 setIsMenuOpen(false);
                               }}
-                              className={`${menuItemClass} hover:bg-background-main ${danger ? 'text-danger' : 'text-foreground'}`}
+                              className={`${menuItemClass} hover:bg-background-main ${danger ? 'text-danger' : key === 'moderate' ? 'text-primary-light' : 'text-foreground'}`}
                             >
                               {Icon ? (
                                 <Icon
@@ -506,9 +520,11 @@ export const ProfileCard = ({
                                   className={
                                     danger
                                       ? 'text-danger'
-                                      : key === 'save' && isSaved
-                                        ? 'text-[var(--ct-accent,var(--color-primary))]'
-                                        : 'text-muted'
+                                      : key === 'moderate'
+                                        ? 'text-primary'
+                                        : key === 'save' && isSaved
+                                          ? 'text-[var(--ct-accent,var(--color-primary))]'
+                                          : 'text-muted'
                                   }
                                 />
                               ) : null}

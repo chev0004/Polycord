@@ -730,6 +730,28 @@ export const MenuOpen: Story = {
     await expect(
       await body.findByRole('button', { name: 'Block user' }),
     ).toBeInTheDocument();
+    await expect(
+      body.queryByRole('button', { name: 'Take action' }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const StaffMenu: Story = {
+  render: (args) => {
+    const t = useTranslations('DiscoveryStories');
+    return <ProfileCard {...args} profile={createMockProfile(t)} />;
+  },
+  args: { onModerate: fn() },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const trigger = canvas.getByRole('button', { name: 'Card menu' });
+
+    await userEvent.click(trigger);
+    await userEvent.click(
+      await body.findByRole('button', { name: 'Take action' }),
+    );
+    await expect(args.onModerate).toHaveBeenCalledWith('1', trigger);
   },
 };
 

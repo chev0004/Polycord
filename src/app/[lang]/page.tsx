@@ -5,8 +5,10 @@ import {
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
 } from '@/db';
+import type { StaffRole } from '@/features/Admin/types';
 import { parseDiscoveryState } from '@/features/Discovery/discoveryUrlState';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
+import { getStaffRole } from '@/lib/admin';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
@@ -35,9 +37,12 @@ export default async function Home({
   let viewerTimezone: string | undefined;
   let viewerAvailability: AvailabilityPattern | undefined;
   let viewerUserId: string | undefined;
+  let staff: { meId: string; role: StaffRole } | undefined;
 
   if (user) {
     viewerUserId = user.accountId;
+    const role = await getStaffRole(user);
+    staff = role ? { meId: user.accountId, role } : undefined;
     const profile = await getProfileByUserId(user.accountId);
     needsOnboarding = !profile;
     currentProfileId = profile?.profile.id;
@@ -81,6 +86,7 @@ export default async function Home({
       viewerTimezone={viewerTimezone}
       viewerAvailability={viewerAvailability}
       userAvatarUrl={user?.avatarUrl}
+      staff={staff}
     />
   );
 }
