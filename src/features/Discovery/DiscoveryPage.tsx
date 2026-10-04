@@ -906,8 +906,20 @@ export const DiscoveryPage = ({
             className="mb-6 rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
             role="alert"
           >
-            <p className="font-semibold">{t('authErrorTitle')}</p>
-            <p className="mt-1 text-danger">{t('authErrorDescription')}</p>
+            <p className="font-semibold">
+              {t(
+                authError === 'suspended'
+                  ? 'authErrorSuspendedTitle'
+                  : 'authErrorTitle',
+              )}
+            </p>
+            <p className="mt-1 text-danger">
+              {t(
+                authError === 'suspended'
+                  ? 'authErrorSuspendedDescription'
+                  : 'authErrorDescription',
+              )}
+            </p>
           </div>
         ) : null}
 
