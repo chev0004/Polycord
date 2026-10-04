@@ -919,5 +919,24 @@ export const ModerationChipsForStaff: Story = {
     await expect(flagged.getBoundingClientRect().height).toBe(
       plain.getBoundingClientRect().height,
     );
+
+    const box = (
+      flagged.querySelector('[data-moderation-chips]') as HTMLElement
+    ).getBoundingClientRect();
+    const pill = (
+      flagged.querySelector('[data-bump-pill]') as HTMLElement
+    ).getBoundingClientRect();
+    for (const chip of Array.from(
+      flagged.querySelectorAll('[data-moderation-chips] > span'),
+    )) {
+      const rect = chip.getBoundingClientRect();
+      await expect(rect.right).toBeLessThanOrEqual(box.right);
+      await expect(rect.right).toBeLessThanOrEqual(pill.left);
+    }
   },
+};
+
+export const ModerationChipsForStaffMobile: Story = {
+  ...ModerationChipsForStaff,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
 };
