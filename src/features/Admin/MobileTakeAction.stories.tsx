@@ -17,6 +17,10 @@ const ryan = moderationSnapshot.users.find(
   (user) => user.id === 'ryan',
 ) as ModUser;
 const flagged = { ...ryan, hidden: true, warnings: 2 };
+const tomas = moderationSnapshot.users.find(
+  (user) => user.id === 'tomas',
+) as ModUser;
+let subject = flagged;
 
 const mockCaseApi = () => {
   const original = globalThis.fetch;
@@ -27,13 +31,15 @@ const mockCaseApi = () => {
       if (url.startsWith('/api/admin/case')) {
         return new Response(
           JSON.stringify({
-            userId: 'ryan',
+            userId: subject.id,
             users: [
-              ...moderationSnapshot.users.filter((user) => user.id !== 'ryan'),
-              flagged,
+              ...moderationSnapshot.users.filter(
+                (user) => user.id !== subject.id,
+              ),
+              subject,
             ],
             reports: moderationSnapshot.reports.filter(
-              (report) => report.userId === 'ryan',
+              (report) => report.userId === subject.id,
             ),
             log: [],
           }),
@@ -116,6 +122,27 @@ export const Moderator: Story = {
     ).not.toBeInTheDocument();
     await expect(
       sheet.queryByRole('button', { name: /Supporter/ }),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const ProtectedStaff: Story = {
+  args: { profileId: 'profile-tomas', displayName: 'Tomás Ruiz' },
+  beforeEach: () => {
+    subject = tomas;
+    return () => {
+      subject = flagged;
+    };
+  },
+  play: async () => {
+    await screen.findByText('@tomas.r');
+    const sheet = within(screen.getByRole('dialog', { name: 'Tomás Ruiz' }));
+    await expect(sheet.getByText(/Staff account/)).toBeInTheDocument();
+    await expect(
+      sheet.queryByRole('button', { name: /^Suspend/ }),
+    ).not.toBeInTheDocument();
+    await expect(
+      sheet.queryByRole('button', { name: /^Warn/ }),
     ).not.toBeInTheDocument();
   },
 };
