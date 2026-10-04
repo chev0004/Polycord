@@ -354,9 +354,10 @@ export const revokeModerator = async (userId: string) =>
   (await db.delete(staffRoles).where(eq(staffRoles.userId, userId)).returning())
     .length > 0;
 
+export const isSuspended = (user: { suspendedUntil: Date | null }) =>
+  user.suspendedUntil !== null && user.suspendedUntil.getTime() > Date.now();
+
 export const isUserRestricted = (user: {
   suspendedUntil: Date | null;
   bannedAt: Date | null;
-}) =>
-  user.bannedAt !== null ||
-  (user.suspendedUntil !== null && user.suspendedUntil.getTime() > Date.now());
+}) => user.bannedAt !== null || isSuspended(user);

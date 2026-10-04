@@ -4,6 +4,7 @@ import { cache } from 'react';
 import {
   getModerationRestrictionByDiscordId,
   getUserByDiscordId,
+  isSuspended,
   isUserRestricted,
 } from '@/db';
 import {
@@ -113,6 +114,14 @@ export const normalizeDiscordUser = (discordUser: DiscordUser): CurrentUser => {
   };
 };
 
+export const isSuspendedIdentity = async (
+  discordUserId: string,
+  user: { suspendedUntil: Date | null } | null,
+) => {
+  const restriction = await getModerationRestrictionByDiscordId(discordUserId);
+  return [user, restriction].some((record) => record && isSuspended(record));
+};
+
 const getSessionAccount = cache(async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
@@ -125,7 +134,8 @@ const getSessionAccount = cache(async () => {
   if (!session) return null;
 
   const user = await getUserByDiscordId(session.id);
-  return user?.id === session.accountId
+  return user?.id === session.accountId &&
+    !(await isSuspendedIdentity(session.id, user))
     ? { user, currentUser: { ...session, email: user.email ?? undefined } }
     : null;
 });

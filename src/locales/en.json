@@ -837,6 +837,8 @@
     "pageDescription": "Browse public Polycord profiles, then sign in when you are ready to create your own profile or manage your account.",
     "authErrorTitle": "Discord login did not finish",
     "authErrorDescription": "Please try signing in again. If the issue continues, check that Discord OAuth is configured for this environment.",
+    "authErrorSuspendedTitle": "Your account is suspended",
+    "authErrorSuspendedDescription": "You can't sign in to Polycord while your suspension is active. You can sign in again once it ends.",
     "connectOnDiscord": "Connect on Discord",
     "viewProfile": "View profile",
     "languagesLabel": "Languages",
