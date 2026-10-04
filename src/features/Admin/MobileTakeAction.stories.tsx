@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   expect,
+  fireEvent,
   fn,
   screen,
   userEvent,
@@ -196,5 +197,76 @@ export const Warn: Story = {
       ),
     );
     await waitFor(() => expect(args.onClose).toHaveBeenCalled());
+  },
+};
+
+export const UnhideConfirmation: Story = {
+  play: async ({ args }) => {
+    const sheet = await openedSheet();
+    await expect(sheet.queryByRole('textbox', { name: 'Note' })).toBeNull();
+    await userEvent.click(
+      sheet.getByRole('button', { name: /^Unhide profile/ }),
+    );
+    let dialog = within(
+      await screen.findByRole('dialog', {
+        name: "Unhide Ryan Mercer's profile?",
+      }),
+    );
+    fireEvent.change(dialog.getByRole('textbox', { name: 'Note' }), {
+      target: { value: 'Draft note' },
+    });
+    await userEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
+    await expect(actionFetch).not.toHaveBeenCalled();
+    await userEvent.click(
+      (await openedSheet()).getByRole('button', { name: /^Unhide profile/ }),
+    );
+    dialog = within(
+      await screen.findByRole('dialog', {
+        name: "Unhide Ryan Mercer's profile?",
+      }),
+    );
+    await expect(dialog.getByRole('textbox', { name: 'Note' })).toHaveValue('');
+    await userEvent.click(
+      dialog.getByRole('button', { name: 'Unhide profile' }),
+    );
+    await waitFor(() =>
+      expect(actionFetch).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'unhide_profile', userId: 'ryan' }),
+      ),
+    );
+    await expect(actionFetch.mock.lastCall?.[0].note).toBeUndefined();
+    await waitFor(() => expect(args.onClose).toHaveBeenCalled());
+  },
+};
+
+export const HideConfirmation: Story = {
+  beforeEach: () => {
+    subject = ryan;
+    return () => {
+      subject = flagged;
+    };
+  },
+  play: async () => {
+    await userEvent.click(
+      (await openedSheet()).getByRole('button', { name: /^Hide profile/ }),
+    );
+    const dialog = within(
+      await screen.findByRole('dialog', {
+        name: "Hide Ryan Mercer's profile?",
+      }),
+    );
+    await expect(actionFetch).not.toHaveBeenCalled();
+    fireEvent.change(dialog.getByRole('textbox', { name: 'Note' }), {
+      target: { value: 'Profile requires review.' },
+    });
+    await userEvent.click(dialog.getByRole('button', { name: 'Hide profile' }));
+    await waitFor(() =>
+      expect(actionFetch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'hide_profile',
+          note: 'Profile requires review.',
+        }),
+      ),
+    );
   },
 };
