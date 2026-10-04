@@ -216,7 +216,7 @@ const QueueRow = ({
   </button>
 );
 
-const UserDetail = ({
+export const UserDetail = ({
   store,
   user,
   reports,
@@ -241,7 +241,7 @@ const UserDetail = ({
   otherReports: number;
   resolvedOnAct: boolean;
   notify: Notify;
-  openUser: (userId: string) => void;
+  openUser?: (userId: string) => void;
   onOpenRecord?: () => void;
   profileFirst: boolean;
 }) => {
@@ -254,7 +254,7 @@ const UserDetail = ({
       ) : (
         <p className="text-[13px] text-subtle">{t('noReports')}</p>
       )}
-      {otherReports > 0 ? (
+      {otherReports > 0 && openUser ? (
         <button
           type="button"
           onClick={() => openUser(user.id)}
