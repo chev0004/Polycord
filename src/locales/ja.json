@@ -54,6 +54,8 @@
     "guestShared": "ゲストがあなたのプロフィールを共有しました",
     "anonymousUserShared": "ユーザーがあなたのプロフィールを共有しました",
     "moderationWarning": "モデレーションチームから警告が届きました。コミュニティガイドラインをご確認ください。",
+    "noteFromModeration": "運営からのお知らせ",
+    "readWarning": "警告を読む",
     "seeWhoWithPremium": "サポーターで誰だったか見る",
     "justNow": "たった今",
     "minutesAgo": "{count, plural, other {#分前}}",
@@ -1098,6 +1100,16 @@
     "dockSavedProfiles": "保存したプロフィール",
     "dockBump": "プロフィールをバンプ",
     "dockBumpCooldown": "あと{time}でバンプ可能"
+  },
+  "WarningNotice": {
+    "eyebrow": "運営からのお知らせ",
+    "harassmentTitle": "嫌がらせ行為に関する警告",
+    "harassmentParagraphOne": "報告の確認の結果、あなたが連絡を望まないメンバーを侮辱したり、嫌がらせをしたり、繰り返し連絡したりしていたことが判明しました。これは<guidelines>コミュニティガイドライン</guidelines>（「敬意を持って接する」および「禁止事項」）に定められており、Polycordを利用する人にとって安心できない環境をつくります。",
+    "harassmentParagraphTwo": "Polycordには多くの国から、さまざまな言語レベルの人が集まります。どうか辛抱強く、他の人の境界線を尊重し、連絡を望まないとはっきり示した相手への連絡をやめてください。",
+    "acknowledge": "この警告を読み、理解しました。",
+    "fine": "これは警告であり、他の措置は取られていません。このような行為が続く場合、プロフィールが非表示になり、アカウントが停止または利用停止になることがあります。",
+    "continue": "続ける",
+    "close": "閉じる"
   },
   "Banned": {
     "wordmarkAlt": "Polycord",

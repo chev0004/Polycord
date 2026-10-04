@@ -1,4 +1,5 @@
 import type { GrantUnit } from '@/lib/premiumGrant';
+import type { WarningCategory } from '@/types';
 
 export const MODERATION_ACTIONS = [
   'dismiss',
@@ -122,6 +123,7 @@ export type ModRequest = {
   reportIds: string[];
   note: string;
   days?: number;
+  category?: WarningCategory;
 };
 
 export type SeedStatus = {

@@ -140,3 +140,32 @@ export const Empty: Story = {
     ).not.toBeInTheDocument();
   },
 };
+
+export const ModerationNote: Story = {
+  args: {
+    notifications: [
+      {
+        id: 'notice',
+        kind: 'warning',
+        warningCategory: 'harassment',
+        message: 'Harassment',
+        createdAt: new Date(Date.now() - 3 * 60000).toISOString(),
+      },
+      ...notifications.slice(0, 2),
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const row = canvas.getByRole('button', { name: /Note from moderation/ });
+    await expect(within(row).getByText('Read warning')).toBeInTheDocument();
+    await expect(within(row).getByText('Unread')).toBeInTheDocument();
+    await userEvent.click(row);
+    await expect(screen.queryByRole('dialog')).toBeNull();
+    await expect(
+      canvas.getByRole('button', { name: /Note from moderation/ }),
+    ).toBeInTheDocument();
+    await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      window.innerWidth,
+    );
+  },
+};

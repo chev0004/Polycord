@@ -1,7 +1,19 @@
 import 'server-only';
 
-import { and, desc, eq, gte, isNull, lt, notExists, or } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  isNull,
+  lt,
+  not,
+  notExists,
+  or,
+  sql,
+} from 'drizzle-orm';
 import { sendPushForNotification } from '@/lib/push/server';
+import { NOTICE_CATEGORIES } from '@/types';
 import { db } from './client';
 import {
   type NewNotificationRecord,
@@ -11,6 +23,8 @@ import {
   users,
 } from './schema';
 import { getUserSettingsByUserId } from './settings';
+
+const noticePending = sql`(${notifications.kind} = 'warning' and ${notifications.warningCategory} is not null and ${notifications.warningCategory} in ${NOTICE_CATEGORIES} and ${notifications.acknowledgedAt} is null)`;
 
 export const listNotificationsForUser = async (userId: string) =>
   db
@@ -48,7 +62,11 @@ export const listNotificationsForUser = async (userId: string) =>
       ),
     )
     .where(eq(notifications.userId, userId))
-    .orderBy(desc(notifications.createdAt), desc(notifications.id));
+    .orderBy(
+      desc(noticePending),
+      desc(notifications.createdAt),
+      desc(notifications.id),
+    );
 
 export const createNotification = async (values: NewNotificationRecord) => {
   const settings = await getUserSettingsByUserId(values.userId);
@@ -103,15 +121,35 @@ export const setNotificationRead = async (
       and(
         eq(notifications.id, notificationId),
         eq(notifications.userId, userId),
+        not(noticePending),
       ),
     );
+};
+
+export const acknowledgeNotice = async (
+  userId: string,
+  notificationId: string,
+) => {
+  const [acknowledged] = await db
+    .update(notifications)
+    .set({ acknowledgedAt: new Date(), read: true })
+    .where(
+      and(
+        eq(notifications.id, notificationId),
+        eq(notifications.userId, userId),
+        noticePending,
+      ),
+    )
+    .returning({ id: notifications.id });
+
+  return acknowledged !== undefined;
 };
 
 export const markAllNotificationsRead = async (userId: string) => {
   await db
     .update(notifications)
     .set({ read: true })
-    .where(eq(notifications.userId, userId));
+    .where(and(eq(notifications.userId, userId), not(noticePending)));
 };
 
 export const deleteNotification = async (
@@ -124,10 +162,13 @@ export const deleteNotification = async (
       and(
         eq(notifications.id, notificationId),
         eq(notifications.userId, userId),
+        not(noticePending),
       ),
     );
 };
 
 export const clearNotifications = async (userId: string) => {
-  await db.delete(notifications).where(eq(notifications.userId, userId));
+  await db
+    .delete(notifications)
+    .where(and(eq(notifications.userId, userId), not(noticePending)));
 };
