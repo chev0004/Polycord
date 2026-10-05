@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
 const enabled = process.env.DISC027_TIMING === 'true';
+const instance = crypto.randomUUID();
 const timings = new AsyncLocalStorage<Record<string, number>>();
 
 export const observeDuration = (name: string, duration: number) => {
@@ -35,21 +36,22 @@ export const startupResponse = async <T extends Response>(
   operation: () => Promise<T>,
 ): Promise<T> => {
   if (!enabled) return operation();
-  return timings.run(
-    { [`${name}-uptime`]: process.uptime() * 1000 },
-    async () => {
-      const response = await measureStartup(name, operation);
-      const metrics = Object.entries(
-        timings.getStore() as Record<string, number>,
+  const initial: Record<string, number> = {};
+  if (typeof process.uptime === 'function')
+    initial[`${name}-uptime`] = process.uptime() * 1000;
+  return timings.run(initial, async () => {
+    const response = await measureStartup(name, operation);
+    const metrics = Object.entries(timings.getStore() as Record<string, number>)
+      .map(([key, value]) =>
+        key === 'sql-count'
+          ? `${key};desc="${value}"`
+          : `${key};dur=${value.toFixed(2)}`,
       )
-        .map(([key, value]) =>
-          key === 'sql-count'
-            ? `${key};desc="${value}"`
-            : `${key};dur=${value.toFixed(2)}`,
-        )
-        .join(', ');
-      response.headers.append('Server-Timing', metrics);
-      return response;
-    },
-  );
+      .join(', ');
+    response.headers.append(
+      'Server-Timing',
+      `${name}-instance;desc="${instance}", ${metrics}`,
+    );
+    return response;
+  });
 };
