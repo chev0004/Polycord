@@ -140,6 +140,25 @@ const verifyPayload = async <T>(
   }
 };
 
+export const BAN_CHECK_AUTH_HEADER = 'x-polycord-ban-check-token';
+
+export const createBanCheckToken = async () => {
+  const secret = getAuthSecret();
+
+  return secret ? sign('ban-check', secret) : null;
+};
+
+export const isBanCheckToken = async (value: string | null) => {
+  const expected = await createBanCheckToken();
+  const valueBytes = value ? textEncoder.encode(value) : null;
+
+  return Boolean(
+    expected &&
+      valueBytes &&
+      constantTimeEqual(valueBytes, textEncoder.encode(expected)),
+  );
+};
+
 export const createOAuthState = (redirectTo: string) => {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);

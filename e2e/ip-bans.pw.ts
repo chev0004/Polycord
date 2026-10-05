@@ -157,6 +157,26 @@ test.describe('ip bans', () => {
     ).toBe(200);
   });
 
+  test('the verification endpoint rejects callers without the internal token', async ({
+    request,
+  }) => {
+    await block(BLOCKED);
+
+    for (const headers of [
+      {} as Record<string, string>,
+      { 'x-polycord-ban-check-token': 'forged' },
+      { 'x-polycord-ban-check-token': sign({ purpose: 'ban-check' }) },
+    ]) {
+      const response = await request.post('/api/internal/ban-check', {
+        headers,
+        data: { ip: BLOCKED, discordUserIds: [] },
+      });
+
+      expect(response.status()).toBe(403);
+      expect(await response.text()).not.toContain('PC-');
+    }
+  });
+
   test('ipv4 and ipv6 spellings are normalized to the same block', async ({
     request,
   }) => {

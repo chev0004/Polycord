@@ -1,10 +1,8 @@
-import 'server-only';
-
-import { createHash } from 'node:crypto';
-import { findActiveIpBan, findBannedAt } from '@/db';
 import {
   AUTH_BAN_COOKIE,
   AUTH_SESSION_COOKIE,
+  BAN_CHECK_AUTH_HEADER,
+  createBanCheckToken,
   readBanCookieValue,
   readSessionFromCookieValue,
 } from './auth-session';
@@ -12,35 +10,62 @@ import { clientIp } from './clientIp';
 
 export type BanNotice = { date: Date; reference: string };
 
-const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+export const BAN_CHECK_PATH = '/api/internal/ban-check';
+export const BAN_CHECK_TIMEOUT_MS = 4000;
 
-export const banReference = (seed: string) => {
-  const digest = createHash('sha256').update(seed).digest();
-  const code = Array.from(digest.subarray(0, 8), (byte) => ALPHABET[byte % 32]);
-  return `PC-${code.slice(0, 4).join('')}-${code.slice(4).join('')}`;
-};
+const isBanNotice = (
+  value: unknown,
+): value is { date: string; reference: string } =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as { date?: unknown }).date === 'string' &&
+  !Number.isNaN(Date.parse((value as { date: string }).date)) &&
+  typeof (value as { reference?: unknown }).reference === 'string';
 
 export const findBan = async (
+  origin: string,
   headers: Headers,
   cookie: (name: string) => string | undefined,
 ): Promise<BanNotice | null> => {
-  const ip = clientIp(headers);
-  const ipBan = ip ? await findActiveIpBan(ip) : null;
-
-  if (ipBan) {
-    return { date: ipBan.createdAt, reference: banReference(ipBan.id) };
-  }
-
   const sessionCookie = cookie(AUTH_SESSION_COOKIE);
   const banCookie = cookie(AUTH_BAN_COOKIE);
-  const [session, banned] = await Promise.all([
+  const [session, banned, token] = await Promise.all([
     sessionCookie ? readSessionFromCookieValue(sessionCookie) : null,
     banCookie ? readBanCookieValue(banCookie) : null,
+    createBanCheckToken(),
   ]);
-  const discordUserIds = [session?.id, banned].flatMap((id) => id ?? []);
-  const bannedAt = await findBannedAt(discordUserIds);
 
-  return bannedAt
-    ? { date: bannedAt, reference: banReference(discordUserIds.join('+')) }
-    : null;
+  if (!token) {
+    throw new Error('Ban check token unavailable');
+  }
+
+  const response = await fetch(new URL(BAN_CHECK_PATH, origin), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      [BAN_CHECK_AUTH_HEADER]: token,
+    },
+    body: JSON.stringify({
+      ip: clientIp(headers),
+      discordUserIds: [session?.id, banned].flatMap((id) => id ?? []),
+    }),
+    cache: 'no-store',
+    signal: AbortSignal.timeout(BAN_CHECK_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Ban check failed with ${response.status}`);
+  }
+
+  const { ban } = (await response.json()) as { ban?: unknown };
+
+  if (ban === null) {
+    return null;
+  }
+
+  if (!isBanNotice(ban)) {
+    throw new Error('Ban check returned an invalid response');
+  }
+
+  return { date: new Date(ban.date), reference: ban.reference };
 };

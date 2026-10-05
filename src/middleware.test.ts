@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import { NextRequest } from 'next/server';
 import {
   AUTH_SESSION_COOKIE,
@@ -6,13 +6,25 @@ import {
 } from './lib/auth-session';
 
 let ban: { date: Date; reference: string } | null = null;
+let banError: Error | null = null;
 
-mock.module('./lib/banGate', () => ({ findBan: async () => ban }));
+const realFetch = globalThis.fetch;
+
+globalThis.fetch = (async (input: URL) => {
+  if (new URL(input).pathname !== '/api/internal/ban-check') {
+    return realFetch(input);
+  }
+  if (banError) throw banError;
+  return Response.json({
+    ban: ban && { date: ban.date.toISOString(), reference: ban.reference },
+  });
+}) as unknown as typeof fetch;
 
 const { default: middleware } = await import('./middleware');
 
 beforeEach(() => {
   ban = null;
+  banError = null;
 });
 
 const requestFor = (path: string, sessionCookie?: string, method = 'GET') => {
@@ -110,8 +122,12 @@ describe('ban gate', () => {
     }
   });
 
-  it('keeps health and the billing webhook reachable', async () => {
-    for (const path of ['/api/health', '/api/billing/webhook']) {
+  it('keeps health, the billing webhook and the ban check reachable', async () => {
+    for (const path of [
+      '/api/health',
+      '/api/billing/webhook',
+      '/api/internal/ban-check',
+    ]) {
       const response = await middleware(requestFor(path, undefined, 'POST'));
 
       expect(response.status, path).toBe(200);
@@ -121,6 +137,28 @@ describe('ban gate', () => {
   it('passes unbanned visitors through', async () => {
     ban = null;
     const response = await middleware(requestFor('/api/discovery'));
+
+    expect(response.status).toBe(200);
+  });
+});
+
+describe('ban gate failure', () => {
+  beforeEach(() => {
+    banError = new Error('timed out');
+  });
+
+  it('answers pages and apis with a no-store 503', async () => {
+    for (const path of ['/en', '/api/discovery', '/en/settings']) {
+      const response = await middleware(requestFor(path));
+
+      expect(response.status, path).toBe(503);
+      expect(response.headers.get('cache-control')).toBe('no-store');
+      expect(response.headers.get('x-middleware-rewrite')).toBeNull();
+    }
+  });
+
+  it('does not affect service routes', async () => {
+    const response = await middleware(requestFor('/api/health'));
 
     expect(response.status).toBe(200);
   });
