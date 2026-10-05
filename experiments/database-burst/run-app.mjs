@@ -46,7 +46,7 @@ const call = async (path, options = {}) => {
   try {
     const response = await fetch(new URL(path, origin), {
       ...options,
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(16000),
     });
     const body = await response.text();
     return {
