@@ -1,7 +1,9 @@
 import 'server-only';
 
 import { Socket } from 'node:net';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { type ExtractTablesWithRelations, sql } from 'drizzle-orm';
+import { drizzle, NodePgTransaction } from 'drizzle-orm/node-postgres';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { Client, Pool } from 'pg';
 import * as schema from './schema';
 import supabaseCa from './supabaseCa.json';
@@ -17,15 +19,20 @@ const connectionConfig = () => {
     throw new Error('DATABASE_URL is required to connect to the database.');
   }
 
-  const { hostname } = new URL(databaseUrl);
+  const url = new URL(databaseUrl);
+  for (const key of ['ssl', 'sslmode', 'sslcert', 'sslkey', 'sslrootcert']) {
+    url.searchParams.delete(key);
+  }
   return {
-    connectionString: databaseUrl,
+    connectionString: url.href,
     connectionTimeoutMillis: 3000,
-    ssl: ['localhost', '127.0.0.1'].includes(hostname)
+    ssl: ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
       ? false
       : {
           rejectUnauthorized: true,
-          ...(hostname.endsWith('.pooler.supabase.com') && { ca: supabaseCa }),
+          ...(url.hostname.endsWith('.pooler.supabase.com') && {
+            ca: supabaseCa,
+          }),
         },
   };
 };
@@ -58,13 +65,26 @@ export const db = drizzle(pool, { schema });
 
 db.transaction = async (transaction, config) => {
   const client = await pool.connect();
-  let failed = false;
+  const connection = drizzle(client, { schema });
+  const tx = new NodePgTransaction<
+    typeof schema,
+    ExtractTablesWithRelations<typeof schema>
+  >(new PgDialect(), connection._.session, {
+    fullSchema: schema,
+    schema: connection._.schema as ExtractTablesWithRelations<typeof schema>,
+    tableNamesMap: connection._.tableNamesMap,
+  });
+  let committed = false;
   try {
-    return await drizzle(client, { schema }).transaction(transaction, config);
-  } catch (error) {
-    failed = true;
-    throw error;
+    await tx.execute(sql`begin`);
+    if (config && Object.values(config).some((value) => value !== undefined)) {
+      await tx.setTransaction(config);
+    }
+    const result = await transaction(tx);
+    await tx.execute(sql`commit`);
+    committed = true;
+    return result;
   } finally {
-    client.release(failed);
+    client.release(!committed);
   }
 };

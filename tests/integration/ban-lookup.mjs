@@ -11,6 +11,7 @@ const sockets = new Set();
 const stalledSockets = new Set();
 let stallBegin = false;
 let stallQuery = false;
+let stallTransaction = null;
 let stalled = 0;
 const proxy = createServer((socket) => {
   sockets.add(socket);
@@ -22,7 +23,8 @@ const proxy = createServer((socket) => {
   socket.on('data', (chunk) => {
     if (
       (stallBegin && chunk.includes(Buffer.from('begin'))) ||
-      (stallQuery && chunk.includes(Buffer.from('banned_at')))
+      (stallQuery && chunk.includes(Buffer.from('banned_at'))) ||
+      (stallTransaction && chunk.includes(Buffer.from(stallTransaction)))
     ) {
       holding = true;
       stalled++;
@@ -48,7 +50,15 @@ proxyUrl.hostname = '127.0.0.1';
 proxyUrl.port = String(proxy.address().port);
 process.env.DATABASE_URL = proxyUrl.href;
 mock.module('server-only', () => ({}));
-const { db } = await import('../../src/db/client');
+const { db, createBanClient } = await import('../../src/db/client');
+for (const sslmode of ['require', 'disable', 'no-verify']) {
+  process.env.DATABASE_URL = `postgresql://postgres.test006@aws-0-us-east-2.pooler.supabase.com:6543/postgres?sslmode=${sslmode}`;
+  const client = createBanClient(new AbortController().signal);
+  assert.equal(client.connectionParameters.ssl.rejectUnauthorized, true);
+  assert.ok(client.connectionParameters.ssl.ca.includes('BEGIN CERTIFICATE'));
+  await client.end();
+}
+process.env.DATABASE_URL = proxyUrl.href;
 const { ipBans, users } = await import('../../src/db/schema');
 const { lookupBan, BAN_STATEMENT_TIMEOUT_MS } = await import(
   '../../src/lib/banLookup'
@@ -177,6 +187,26 @@ try {
   await delay(100);
   assert.equal(stalledSockets.size, 0);
   stallBegin = false;
+  for (const statement of ['select 42 as stalled', 'commit']) {
+    stallTransaction = statement;
+    const started = Date.now();
+    await assert.rejects(
+      db.transaction((tx) => tx.execute(sql`select 42 as stalled`)),
+      (error) => error.cause?.message === 'Query read timeout',
+    );
+    assert.ok(
+      Date.now() - started < 12000,
+      `${statement} cleanup exceeded its deadline`,
+    );
+    await delay(100);
+    assert.equal(stalledSockets.size, 0);
+    assert.equal(db.$client.waitingCount, 0);
+    stallTransaction = null;
+    assert.equal(
+      (await db.execute(sql`select 1 as recovered`)).rows[0].recovered,
+      1,
+    );
+  }
   assert.equal(
     (await db.transaction((tx) => tx.execute(sql`select 1 as recovered`)))
       .rows[0].recovered,
@@ -198,10 +228,70 @@ try {
       .length,
     0,
   );
+  await assert.rejects(
+    db.transaction(async (tx) => {
+      await tx.insert(users).values({
+        discordUserId: rollbackId,
+        discordUsername: rollbackId,
+        displayName: 'Explicit rollback',
+      });
+      tx.rollback();
+    }),
+  );
+  assert.equal(
+    (await db.select().from(users).where(eq(users.discordUserId, rollbackId)))
+      .length,
+    0,
+  );
+  await db.transaction(async (tx) => {
+    const nestedError = new Error('nested rollback');
+    await assert.rejects(
+      tx.transaction(async (nested) => {
+        await nested.insert(users).values({
+          discordUserId: rollbackId,
+          discordUsername: rollbackId,
+          displayName: 'Savepoint rollback',
+        });
+        throw nestedError;
+      }),
+      nestedError,
+    );
+    assert.equal(
+      (await tx.select().from(users).where(eq(users.discordUserId, rollbackId)))
+        .length,
+      0,
+    );
+    assert.equal((await tx.execute(sql`select 1 as alive`)).rows[0].alive, 1);
+  });
+  const configured = await db.transaction(
+    (tx) =>
+      tx.execute(
+        sql`select current_setting('transaction_isolation') as isolation, current_setting('transaction_read_only') as read_only`,
+      ),
+    {
+      isolationLevel: 'serializable',
+      accessMode: 'read only',
+      deferrable: true,
+    },
+  );
+  assert.deepEqual(configured.rows[0], {
+    isolation: 'serializable',
+    read_only: 'on',
+  });
+  assert.equal(
+    (
+      await db.transaction(
+        (tx) => tx.execute(sql`select 1 as empty_config`),
+        {},
+      )
+    ).rows[0].empty_config,
+    1,
+  );
   console.log('ban lookup recovery passed');
 } finally {
   stallBegin = false;
   stallQuery = false;
+  stallTransaction = null;
   for (const socket of stalledSockets) socket.destroy();
   if (stalledSockets.size) await delay(50);
   await db.delete(ipBans).where(eq(ipBans.ip, BLOCKED_IP));
