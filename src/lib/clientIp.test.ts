@@ -34,7 +34,7 @@ describe('normalizeIp', () => {
 });
 
 describe('clientIp', () => {
-  it('reads only the trusted proxy header', () => {
+  it('prefers the trusted proxy header over forwarding headers', () => {
     const headers = new Headers({
       'x-nf-client-connection-ip': '198.51.100.7',
       'x-forwarded-for': '203.0.113.9',
@@ -44,10 +44,20 @@ describe('clientIp', () => {
     expect(clientIp(headers)).toBe('198.51.100.7');
   });
 
-  it('ignores forwarding headers when the trusted header is missing', () => {
-    const headers = new Headers({ 'x-forwarded-for': '203.0.113.9' });
+  it('reads the address the proxy appended to x-forwarded-for at the edge', () => {
+    const headers = new Headers({
+      'x-forwarded-for': '203.0.113.9, 192.0.2.1, 198.51.100.7',
+      'x-real-ip': '203.0.113.10',
+    });
 
-    expect(clientIp(headers)).toBeNull();
+    expect(clientIp(headers)).toBe('198.51.100.7');
+  });
+
+  it('ignores x-real-ip and client-supplied entries', () => {
+    expect(clientIp(new Headers({ 'x-real-ip': '203.0.113.9' }))).toBeNull();
+    expect(
+      clientIp(new Headers({ 'x-forwarded-for': '198.51.100.7, junk' })),
+    ).toBeNull();
   });
 
   it('honours a configured header name', () => {
@@ -55,6 +65,7 @@ describe('clientIp', () => {
     const headers = new Headers({
       'x-proxy-ip': '2001:db8::1',
       'x-nf-client-connection-ip': '198.51.100.7',
+      'x-forwarded-for': '203.0.113.9',
     });
 
     expect(clientIp(headers)).toBe('2001:db8::1');
