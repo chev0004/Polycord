@@ -1,0 +1,20 @@
+{
+  "id": "694f7324-d2b5-43b5-9de4-ae33e0b927ee",
+  "name": "polycord-staging",
+  "published": {
+    "id": "6ac3dfcd5e5acd1955f378e0",
+    "commit_ref": "1f4fc1fa462712eb5ca01c0dfa371d8f0db92695",
+    "branch": "develop",
+    "published_at": "2026-10-05T17:42:20.109Z",
+    "locked": false,
+    "functions_region": "cmh"
+  },
+  "build": {
+    "repo_branch": "develop",
+    "allowed_branches": [
+      "develop"
+    ],
+    "stop_builds": false,
+    "skip_prs": true
+  }
+}
