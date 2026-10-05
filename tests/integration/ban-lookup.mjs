@@ -53,8 +53,7 @@ const { ipBans, users } = await import('../../src/db/schema');
 const { lookupBan, BAN_STATEMENT_TIMEOUT_MS } = await import(
   '../../src/lib/banLookup'
 );
-const { eq } = await import('drizzle-orm');
-const { sql } = await import('drizzle-orm');
+const { eq, sql } = await import('drizzle-orm');
 const { POST } = await import('../../src/app/api/internal/ban-check/route');
 const { BAN_CHECK_AUTH_HEADER, createBanCheckToken } = await import(
   '../../src/lib/auth-session'
