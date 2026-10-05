@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { BAN_CHECK_AUTH_HEADER, isBanCheckToken } from '@/lib/auth-session';
 import { lookupBan } from '@/lib/banLookup';
 import { normalizeIp } from '@/lib/clientIp';
+import { startupResponse } from '@/lib/startupProbe';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ const withDeadline = async <T>(run: (signal: AbortSignal) => Promise<T>) => {
   }
 };
 
-export const POST = async (request: Request) => {
+const check = async (request: Request) => {
   if (!(await isBanCheckToken(request.headers.get(BAN_CHECK_AUTH_HEADER)))) {
     return NextResponse.json(
       { error: 'Forbidden' },
@@ -68,3 +69,6 @@ export const POST = async (request: Request) => {
     );
   }
 };
+
+export const POST = (request: Request) =>
+  startupResponse('ban-handler', () => check(request));

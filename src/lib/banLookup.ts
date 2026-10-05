@@ -6,6 +6,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { findActiveIpBan, findBannedAt } from '@/db';
 import { createBanClient } from '@/db/client';
 import type { BanNotice } from './banGate';
+import { measureStartup } from './startupProbe';
 
 export const BAN_STATEMENT_TIMEOUT_MS = 2500;
 
@@ -26,25 +27,34 @@ export const lookupBan = async (
   const client = createBanClient(signal);
 
   try {
-    await client.connect();
-    return await drizzle(client).transaction(async (tx) => {
-      signal.throwIfAborted();
-      await tx.execute(
-        sql`select set_config('statement_timeout', ${String(BAN_STATEMENT_TIMEOUT_MS)}, true)`,
-      );
-      const ipBan = ip ? await findActiveIpBan(ip, tx) : null;
+    await measureStartup('ban-connect', () => client.connect());
+    return await measureStartup('ban-transaction', () =>
+      drizzle(client).transaction(async (tx) => {
+        signal.throwIfAborted();
+        await tx.execute(
+          sql`select set_config('statement_timeout', ${String(BAN_STATEMENT_TIMEOUT_MS)}, true)`,
+        );
+        const ipBan = ip
+          ? await measureStartup('ban-ip', () => findActiveIpBan(ip, tx))
+          : null;
 
-      if (ipBan) {
-        return { date: ipBan.createdAt, reference: banReference(ipBan.id) };
-      }
+        if (ipBan) {
+          return { date: ipBan.createdAt, reference: banReference(ipBan.id) };
+        }
 
-      signal.throwIfAborted();
-      const bannedAt = await findBannedAt(discordUserIds, tx);
+        signal.throwIfAborted();
+        const bannedAt = await measureStartup('ban-identity', () =>
+          findBannedAt(discordUserIds, tx),
+        );
 
-      return bannedAt
-        ? { date: bannedAt, reference: banReference(discordUserIds.join('+')) }
-        : null;
-    });
+        return bannedAt
+          ? {
+              date: bannedAt,
+              reference: banReference(discordUserIds.join('+')),
+            }
+          : null;
+      }),
+    );
   } finally {
     await client.end();
   }
