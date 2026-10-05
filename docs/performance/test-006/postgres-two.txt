@@ -1,0 +1,2133 @@
+{
+  "at": "2026-10-05T06:02:22.335Z",
+  "origin": "",
+  "results": [
+    {
+      "driver": "postgres",
+      "poolSize": 2,
+      "size": 1,
+      "ok": 1,
+      "p50": 239.91570000000002,
+      "p95": 239.91570000000002,
+      "max": 239.91570000000002,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 239.91570000000002
+        }
+      ]
+    },
+    {
+      "driver": "postgres",
+      "poolSize": 2,
+      "size": 1,
+      "ok": 1,
+      "p50": 247.26099999999997,
+      "p95": 247.26099999999997,
+      "max": 247.26099999999997,
+      "outcomes": [
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 247.26099999999997
+        }
+      ]
+    },
+    {
+      "driver": "postgres",
+      "poolSize": 2,
+      "size": 1,
+      "ok": 1,
+      "p50": 454.8881,
+      "p95": 454.8881,
+      "max": 454.8881,
+      "outcomes": [
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 454.8881
+        }
+      ]
+    },
+    {
+      "driver": "postgres",
+      "poolSize": 2,
+      "size": 12,
+      "ok": 6,
+      "p50": 10006.899300000001,
+      "p95": 10006.920699999999,
+      "max": 10006.920699999999,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 723.2815999999998
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 727.7214000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 464.0493999999999
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10006.918099999999
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10006.920699999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 457.7614000000001
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10006.914
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10006.9096
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 695.5145999999997
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10006.899300000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10006.9045
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 710.4197000000001
+        }
+      ]
+    },
+    {
+      "driver": "postgres",
+      "poolSize": 2,
+      "size": 60,
+      "ok": 22,
+      "p50": 10013.079099999999,
+      "p95": 10013.192900000002,
+      "max": 10013.197199999999,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2643.291799999999
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2647.0098
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 467.90810000000056
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.1783
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.197199999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 461.2538000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.193399999998
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.192900000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 696.0156999999999
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.187199999998
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.184799999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 710.6294999999991
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.187199999998
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.177800000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 933.2216000000008
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.168200000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.1668
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 948.1571000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.159800000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.160100000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1174.2187999999987
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.151600000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.1501
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1188.3184999999994
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.14
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.1383
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1415.4406
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.117
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.136700000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1434.8709
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.117599999998
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.114300000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1659.5914000000012
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.107
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.106000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1676.182999999999
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.098200000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0961
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1895.2260000000006
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0913
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.089799999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1915.2183000000005
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.079099999999
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.081699999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2144.745000000001
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.080899999999
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.080900000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2151.3567999999996
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0723
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0716
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2380.2752999999993
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.069099999999
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.065400000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2391.3809999999994
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0592
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0588
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2615.3897000000015
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0505
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10013.0505
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2621.8421
+        }
+      ]
+    },
+    {
+      "driver": "postgres",
+      "poolSize": 2,
+      "size": 60,
+      "ok": 23,
+      "p50": 10001.9257,
+      "p95": 10001.973600000001,
+      "max": 10001.974599999998,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2657.8076
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2664.4516000000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 484.9227000000028
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2667.6493999999984
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.955699999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 471.54160000000047
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.966900000003
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9715
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 715.3294000000024
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.969100000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.970399999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 722.5878000000012
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9636
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.972899999997
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 944.5
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.971099999999
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9745
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 960.9659000000029
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.973600000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.974599999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1180.8430999999982
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.969000000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9693
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1200.0013
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.966800000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.965200000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1420.1211000000003
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9594
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.96
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1438.017499999998
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.956300000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9564
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1677.6607000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.948399999997
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.947500000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1696.5141000000003
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9381
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.938300000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1930.6848000000027
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9326
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.931499999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1943.3102
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.929800000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.930099999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2158.737000000001
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.928099999997
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.928300000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2171.3289000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9251
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9257
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2395.534599999999
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.922900000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.922600000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2409.5332000000017
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9205
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.920900000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2632.5090999999993
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.917699999998
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10001.9185
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2642.3675999999978
+        }
+      ]
+    },
+    {
+      "driver": "postgres",
+      "poolSize": 2,
+      "size": 60,
+      "ok": 22,
+      "p50": 10007.348999999998,
+      "p95": 10007.376199999999,
+      "max": 10007.381500000003,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2785.5205000000024
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2789.516300000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 536.1536000000015
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.3783
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.381500000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 547.1332000000002
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.376199999999
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.3678
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 773.5637999999999
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.362500000003
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.363000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 778.4455000000016
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.361899999996
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.361200000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1016.0426999999981
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.369000000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.369700000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1021.4228000000003
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.367900000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.3688
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1282.5269000000008
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.365700000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.366000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1287.8156999999992
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.363599999997
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.364100000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1516.5351999999948
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.3625
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.362000000005
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1528.273299999997
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.360100000002
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.360800000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1758.4639000000025
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.357699999997
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.357900000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1777.385000000002
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.3525
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.351200000005
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2015.331900000001
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.348999999998
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.344999999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2021.9276000000027
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.341300000004
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.342699999997
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2272.1978000000017
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.340599999996
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.354399999997
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2283.5465000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.351400000003
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.351599999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2523.659099999997
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.349299999998
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.349999999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2539.0982000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.347300000001
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.347899999997
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2759.472600000001
+        },
+        {
+          "kind": "discovery",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.346300000005
+        },
+        {
+          "kind": "page",
+          "status": 0,
+          "error": "Local deadline exceeded",
+          "ms": 10007.346700000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2771.381699999998
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "at": "2026-10-05T06:01:41.208Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:41.495Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:41.756Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:42.021Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:01:42.288Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:42.548Z",
+      "connections": 4,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:01:42.809Z",
+      "connections": 4,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:43.067Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:43.328Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:43.591Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:43.861Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:44.112Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:44.369Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:44.619Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:44.883Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:45.152Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:45.421Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:45.662Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:45.928Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:46.176Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:46.440Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:46.704Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:46.968Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:47.218Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:47.469Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:47.720Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:47.981Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:48.249Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:48.519Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:48.776Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:49.040Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:49.306Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:49.570Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:49.823Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:50.092Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:50.348Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:50.614Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:50.878Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:51.144Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:51.408Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:51.671Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:51.922Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:52.184Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:52.439Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:52.695Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:52.950Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:01:53.196Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:01:53.449Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:01:53.713Z",
+      "connections": 4,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:01:53.972Z",
+      "connections": 4,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:01:54.235Z",
+      "connections": 4,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:01:54.485Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:01:54.753Z",
+      "connections": 4,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:55.012Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:55.264Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:55.530Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:55.789Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:56.054Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:56.320Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:56.576Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:56.837Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:57.087Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:57.352Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:57.618Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:57.867Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:58.116Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:58.382Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:58.633Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:58.904Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:59.157Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:59.411Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:59.675Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:01:59.924Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:00.190Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:00.452Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:00.722Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:00.984Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:01.246Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:01.511Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:01.762Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:02.012Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:02.282Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:02.542Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:02.792Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:03.058Z",
+      "connections": 4,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:03.318Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:03.579Z",
+      "connections": 4,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:03.850Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:04.108Z",
+      "connections": 4,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:04.377Z",
+      "connections": 4,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:04.641Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:04.900Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:05.163Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:05.427Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:05.694Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:05.955Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:06.208Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:06.459Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:06.721Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:06.988Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:07.243Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:07.505Z",
+      "connections": 4,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:07.767Z",
+      "connections": 4,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:08.030Z",
+      "connections": 5,
+      "active": 4,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:08.298Z",
+      "connections": 6,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:08.556Z",
+      "connections": 6,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:08.822Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:09.067Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:09.332Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:09.595Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:09.869Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:10.123Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:10.385Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:10.649Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:10.911Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:11.176Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:11.439Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:11.704Z",
+      "connections": 7,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:11.968Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:12.231Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:12.494Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:12.761Z",
+      "connections": 7,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:13.017Z",
+      "connections": 7,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:13.271Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:13.519Z",
+      "connections": 7,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:13.775Z",
+      "connections": 8,
+      "active": 1,
+      "idle_transactions": 3
+    },
+    {
+      "at": "2026-10-05T06:02:14.026Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:14.279Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:14.547Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:14.813Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:15.072Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:15.339Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:15.604Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:15.852Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:16.118Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:16.383Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:16.646Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:16.918Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:17.162Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:17.411Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:17.678Z",
+      "connections": 9,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:17.940Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:18.189Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:18.440Z",
+      "connections": 9,
+      "active": 2,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T06:02:18.705Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:18.967Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:19.233Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:19.483Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:19.747Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:19.999Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:20.262Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:20.534Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:20.776Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:21.043Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:21.307Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:21.557Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T06:02:21.824Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:22.087Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T06:02:22.329Z",
+      "connections": 9,
+      "active": 2,
+      "idle_transactions": 0
+    }
+  ]
+}

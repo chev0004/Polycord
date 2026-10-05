@@ -1,0 +1,1058 @@
+{
+  "at": "2026-10-05T05:32:28.939Z",
+  "origin": "local",
+  "results": [
+    {
+      "driver": "pg",
+      "poolSize": 2,
+      "size": 1,
+      "ok": 1,
+      "p50": 309.43910000000005,
+      "p95": 309.43910000000005,
+      "max": 309.43910000000005,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 309.43910000000005
+        }
+      ]
+    },
+    {
+      "driver": "pg",
+      "poolSize": 2,
+      "size": 1,
+      "ok": 1,
+      "p50": 198.99359999999996,
+      "p95": 198.99359999999996,
+      "max": 198.99359999999996,
+      "outcomes": [
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 198.99359999999996
+        }
+      ]
+    },
+    {
+      "driver": "pg",
+      "poolSize": 2,
+      "size": 1,
+      "ok": 1,
+      "p50": 329.2314,
+      "p95": 329.2314,
+      "max": 329.2314,
+      "outcomes": [
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 329.2314
+        }
+      ]
+    },
+    {
+      "driver": "pg",
+      "poolSize": 2,
+      "size": 12,
+      "ok": 12,
+      "p50": 408.65379999999993,
+      "p95": 639.2277999999999,
+      "max": 639.2277999999999,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 209.33810000000005
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 203.44179999999994
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 356.9973
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 245.7213999999999
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 273.90559999999994
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 425.95220000000006
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 381.89570000000015
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 408.65379999999993
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 556.5979
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 452.2539999999999
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 480.6998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 639.2277999999999
+        }
+      ]
+    },
+    {
+      "driver": "pg",
+      "poolSize": 2,
+      "size": 60,
+      "ok": 60,
+      "p50": 1252.7777,
+      "p95": 2284.6571999999996,
+      "max": 2442.9336,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 204.0331000000001
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 196.57780000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 348.13599999999997
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 236.9303
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 263.7641000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 424.07079999999996
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 373.29639999999995
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 401.1700000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 562.9125000000001
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 450.66049999999996
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 478.25829999999996
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 656.0173
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 588.8630000000003
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 615.7288000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 774.3061
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 682.8347000000001
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 708.6879000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 870.1584
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 800.1038999999998
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 824.6360999999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 984.4302
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 898.9583000000002
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 926.3250999999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1089.8318000000002
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1011.5457999999999
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1040.3588
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1199.6796
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1117.6611
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1146.0125
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1325.9296
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1224.2993
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1252.7777
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1421.2829
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1362.8793
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1392.8832
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1562.5205999999998
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1450.6757
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1477.1098
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1633.4970999999998
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1594.7033
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1623.8276
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1787.8508
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1664.1628
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1690.9076
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1844.5679
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1815.4815
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1844.4611
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2004.2315
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1874.9393
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1898.9502000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2066.4408999999996
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2037.1992
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2065.9056
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2229.4242000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2098.9868
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2124.753
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2287.0967
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2257.0063
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2284.6571999999996
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2442.9336
+        }
+      ]
+    },
+    {
+      "driver": "pg",
+      "poolSize": 2,
+      "size": 60,
+      "ok": 60,
+      "p50": 1268.8128000000006,
+      "p95": 2287.674,
+      "max": 2456.2945000000004,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 211.98569999999972
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 220.5056000000004
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 371.2631000000001
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 248.76630000000023
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 279.7305000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 444.6764999999996
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 398.0232000000001
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 422.0862999999995
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 579.7507
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 470.0319000000004
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 496.9247999999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 665.3089
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 609.4508000000001
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 635.7746999999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 804.7845999999995
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 693.8919999999998
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 729.6390999999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 899.8489999999997
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 829.7661000000003
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 856.5511000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1011.8765000000003
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 932.7868000000003
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 963.1322
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1130.2013000000002
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1042.0365000000006
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1066.8037
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1221.2070000000003
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1158.0951
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1186.1829000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1344.4321
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1244.9815000000003
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1268.8128000000006
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1432.3561999999997
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1372.5077999999999
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1400.0960999999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1584.2448999999997
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1459.9792000000002
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1488.3006000000005
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1652.3901999999998
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1611.2086999999997
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1637.5997000000007
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1799.1445000000003
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1680.1132000000002
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1704.4845000000005
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1854.0778999999998
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1824.7178999999996
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1851.7083000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2017.5257000000001
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1882.3785000000003
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1909.5215999999996
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2077.4636
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2045.824
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2073.1569999999997
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2235.3953
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2103.4342
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2133.5431000000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2292.2795000000006
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2261.3995
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2287.674
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2456.2945000000004
+        }
+      ]
+    },
+    {
+      "driver": "pg",
+      "poolSize": 2,
+      "size": 60,
+      "ok": 60,
+      "p50": 1234.9134000000004,
+      "p95": 2146.08,
+      "max": 2293.2458000000006,
+      "outcomes": [
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 202.0661
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 197.6842999999999
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 356.0002000000004
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 228.66010000000006
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 252.77850000000035
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 418.46680000000015
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 380.85559999999987
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 404.3114000000005
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 555.2114999999994
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 443.8779000000004
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 468.4272000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 618.2250999999997
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 578.9396999999999
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 605.5951999999997
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 759.0752999999995
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 642.2671
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 668.6368000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 823.8177000000005
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 783.4278999999997
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 808.4166999999998
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 967.2585000000008
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 850.0168000000003
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 877.0645000000004
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1044.2366000000002
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 992.0500000000002
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1018.0748999999996
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1184.4330999999993
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1070.7511999999997
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1097.6952999999994
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1249.7289
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1209.7093000000004
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1234.9134000000004
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1398.8320999999996
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1274.7767999999996
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1301.6359000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1459.2233999999999
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1428.4930999999997
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1452.5037000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1605.1451000000006
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1484.7389999999996
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1511.1480000000001
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1680.2355000000007
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1631.9421000000002
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1663.2978000000003
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1817.4433999999992
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1708.3572999999997
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1732.4994000000006
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 1884.0601000000006
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1844.0775999999996
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1868.2659999999996
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2026.8093
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 1918.1206000000002
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 1943.3045000000002
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2093.919499999999
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2052.7766999999994
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2079.2485000000006
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2229.374100000001
+        },
+        {
+          "kind": "discovery",
+          "status": 200,
+          "ms": 2120.4334
+        },
+        {
+          "kind": "page",
+          "status": 200,
+          "ms": 2146.08
+        },
+        {
+          "kind": "ban",
+          "status": 200,
+          "ms": 2293.2458000000006
+        }
+      ]
+    }
+  ]
+}
