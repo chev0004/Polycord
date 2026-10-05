@@ -81,13 +81,17 @@ async function routeMiddleware(
 ) {
   if (!serviceRoutes.has(request.nextUrl.pathname)) {
     try {
-      const ban = await measureStartup('ban-http', () =>
-        findBan(
-          request.nextUrl.origin,
-          request.headers,
-          (name) => request.cookies.get(name)?.value,
-          observe,
-        ),
+      const ban = await measureStartup(
+        process.env.POLYCORD_DIRECT_BAN_CHECK === 'true'
+          ? 'ban-direct'
+          : 'ban-http',
+        () =>
+          findBan(
+            request.nextUrl.origin,
+            request.headers,
+            (name) => request.cookies.get(name)?.value,
+            observe,
+          ),
       );
 
       if (ban) {

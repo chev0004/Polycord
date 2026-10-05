@@ -3,8 +3,8 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { findActiveIpBan, findBannedAt } from '@/db';
 import { createBanClient } from '@/db/client';
+import { findActiveIpBan, findBannedAt } from '@/db/ipBans';
 import type { BanNotice } from './banGate';
 import { measureStartup } from './startupProbe';
 

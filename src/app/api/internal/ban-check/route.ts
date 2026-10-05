@@ -1,30 +1,13 @@
 import { NextResponse } from 'next/server';
 import { BAN_CHECK_AUTH_HEADER, isBanCheckToken } from '@/lib/auth-session';
+import { withBanDeadline } from '@/lib/banDeadline';
 import { lookupBan } from '@/lib/banLookup';
 import { normalizeIp } from '@/lib/clientIp';
 import { startupResponse } from '@/lib/startupProbe';
 
 export const dynamic = 'force-dynamic';
 
-const LOOKUP_DEADLINE_MS = 3000;
 const noStore = { 'Cache-Control': 'no-store' };
-
-const withDeadline = async <T>(run: (signal: AbortSignal) => Promise<T>) => {
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const expired = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => {
-      controller.abort();
-      reject(new Error('Ban lookup timed out'));
-    }, LOOKUP_DEADLINE_MS);
-  });
-
-  try {
-    return await Promise.race([run(controller.signal), expired]);
-  } finally {
-    clearTimeout(timer);
-  }
-};
 
 const check = async (request: Request) => {
   if (!(await isBanCheckToken(request.headers.get(BAN_CHECK_AUTH_HEADER)))) {
@@ -52,7 +35,7 @@ const check = async (request: Request) => {
   }
 
   try {
-    const ban = await withDeadline((signal) =>
+    const ban = await withBanDeadline((signal) =>
       lookupBan(normalizeIp(body.ip), body.discordUserIds, signal),
     );
 
