@@ -63,7 +63,7 @@ const { ipBans, users } = await import('../../src/db/schema');
 const { lookupBan, BAN_STATEMENT_TIMEOUT_MS } = await import(
   '../../src/lib/banLookup'
 );
-const { eq, sql } = await import('drizzle-orm');
+const { eq, sql, TransactionRollbackError } = await import('drizzle-orm');
 const { POST } = await import('../../src/app/api/internal/ban-check/route');
 const { BAN_CHECK_AUTH_HEADER, createBanCheckToken } = await import(
   '../../src/lib/auth-session'
@@ -212,7 +212,8 @@ try {
       .rows[0].recovered,
     1,
   );
-  const rollbackId = `test006-rollback-${discordUserId}`;
+  const rollbackId = `rollback-${discordUserId.slice(0, 23)}`;
+  const rollbackError = new Error('TEST-006 rollback');
   await assert.rejects(
     db.transaction(async (tx) => {
       await tx.insert(users).values({
@@ -220,8 +221,9 @@ try {
         discordUsername: rollbackId,
         displayName: 'Rollback fixture',
       });
-      throw new Error('TEST-006 rollback');
+      throw rollbackError;
     }),
+    (error) => error === rollbackError,
   );
   assert.equal(
     (await db.select().from(users).where(eq(users.discordUserId, rollbackId)))
@@ -237,6 +239,7 @@ try {
       });
       tx.rollback();
     }),
+    (error) => error instanceof TransactionRollbackError,
   );
   assert.equal(
     (await db.select().from(users).where(eq(users.discordUserId, rollbackId)))
