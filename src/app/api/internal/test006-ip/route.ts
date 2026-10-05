@@ -1,5 +1,4 @@
 import { BAN_CHECK_AUTH_HEADER, isBanCheckToken } from '@/lib/auth-session';
-import { clientIp } from '@/lib/clientIp';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +11,7 @@ export const GET = async (request: Request) => {
     return new Response('Forbidden', { status: 403 });
   }
   return Response.json(
-    { ip: clientIp(request.headers) },
+    { ip: request.headers.get('x-test006-edge-ip') },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 };
