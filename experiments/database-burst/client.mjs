@@ -3,17 +3,19 @@ import postgres from 'postgres';
 import ca from './ca.json' with { type: 'json' };
 
 export const createClient = (driver, connectionString) => {
+  const max = Number(process.env.PROBE_POOL_SIZE ?? 1);
   const url = new URL(connectionString);
   if (url.username !== 'postgres.ftlxjximfprlplbihcph') {
     throw new Error('TEST-006 disposable database required');
   }
-  if (driver === 'postgres') {
+  if (driver === 'postgres' || driver === 'postgres-serial') {
     const client = postgres(connectionString, {
       prepare: false,
-      max: 1,
+      max,
       ssl: { ca, rejectUnauthorized: true },
       connect_timeout: 3,
       idle_timeout: 20,
+      ...(driver === 'postgres-serial' && { max_pipeline: 1 }),
     });
     return {
       query: (text, values = []) => client.unsafe(text, values),
@@ -28,7 +30,7 @@ export const createClient = (driver, connectionString) => {
   const pool = new pg.Pool({
     connectionString,
     ssl: { ca, rejectUnauthorized: true },
-    max: 1,
+    max,
     connectionTimeoutMillis: 3000,
     query_timeout: 2500,
     idleTimeoutMillis: 20000,

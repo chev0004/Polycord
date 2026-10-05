@@ -11,7 +11,7 @@ export default async (request) => {
   }
   const params = new URL(request.url).searchParams;
   const driver = params.get('driver');
-  if (!['pg', 'postgres'].includes(driver))
+  if (!['pg', 'postgres', 'postgres-serial'].includes(driver))
     return new Response('Invalid driver', { status: 400 });
   let client = clients.get(driver);
   if (!client) {

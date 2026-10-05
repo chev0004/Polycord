@@ -10,7 +10,7 @@ if (
 }
 const results = [];
 const kinds = ['discovery', 'page', 'ban'];
-for (const driver of ['postgres', 'pg']) {
+for (const driver of (process.env.PROBE_DRIVERS ?? 'postgres,pg').split(',')) {
   for (const size of [1, 1, 1, 12, 60, 60, 60]) {
     const client = origin
       ? null
@@ -68,6 +68,7 @@ for (const driver of ['postgres', 'pg']) {
       const times = outcomes.map(({ ms }) => ms).sort((a, b) => a - b);
       const result = {
         driver,
+        poolSize: Number(process.env.PROBE_POOL_SIZE ?? 1),
         size,
         ok: outcomes.filter(({ status }) => status === 200).length,
         p50: times[Math.floor(times.length * 0.5)],
