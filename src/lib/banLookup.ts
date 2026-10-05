@@ -22,6 +22,7 @@ export const lookupBan = (
   signal: AbortSignal,
 ): Promise<BanNotice | null> =>
   db.transaction(async (tx) => {
+    signal.throwIfAborted();
     await tx.execute(
       sql`select set_config('statement_timeout', ${String(BAN_STATEMENT_TIMEOUT_MS)}, true)`,
     );

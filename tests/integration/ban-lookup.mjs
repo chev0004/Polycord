@@ -8,7 +8,7 @@ assert.ok(['localhost', '127.0.0.1'].includes(url.hostname));
 process.env.DATABASE_URL = url.href;
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
-const { users } = await import('../../src/db/schema');
+const { ipBans, users } = await import('../../src/db/schema');
 const { lookupBan, BAN_STATEMENT_TIMEOUT_MS } = await import(
   '../../src/lib/banLookup'
 );
@@ -22,17 +22,18 @@ await db.insert(users).values({
   bannedAt: new Date('2026-10-04T00:00:00Z'),
 });
 const locker = postgres(url.href, { max: 1 });
+const BLOCKED_IP = '203.0.113.250';
 const signal = () => new AbortController().signal;
 
 try {
   const found = await lookupBan(null, [discordUserId], signal());
   assert.equal(found?.date.toISOString(), '2026-10-04T00:00:00.000Z');
 
+  await db.insert(ipBans).values({ ip: BLOCKED_IP, reason: 'ban-lookup-test' });
+  assert.ok(await lookupBan(BLOCKED_IP, [], signal()));
   const aborted = new AbortController();
   aborted.abort();
-  await assert.rejects(
-    lookupBan('203.0.113.250', [discordUserId], aborted.signal),
-  );
+  await assert.rejects(lookupBan(BLOCKED_IP, [], aborted.signal));
 
   const lookups = 8;
   const started = Date.now();
@@ -63,6 +64,7 @@ try {
   assert.ok(Date.now() - recovered < 1000);
   console.log('ban lookup recovery passed');
 } finally {
+  await db.delete(ipBans).where(eq(ipBans.ip, BLOCKED_IP));
   await db.delete(users).where(eq(users.discordUserId, discordUserId));
   await locker.end();
   process.exit(0);
