@@ -1,6 +1,8 @@
 # TEST-006: disposable Supabase driver experiment
 
-Measured on 2026-10-05. The pg candidate passed 12 parallel application requests and three consecutive 60-request application bursts on a fresh deployment. The successful configuration uses two pooled application connections, a dedicated abortable ban connection, and a 12-second middleware HTTP deadline. Database connection and ban lookup deadlines remain three seconds; ban statements are limited to 2.5 seconds and general application queries to ten seconds.
+The review candidate passes the two missing checks: exactly 5,000 synthetic profiles and a 60-request batch as the runner's first application traffic after a fresh deploy. Three bursts pass 60/60, the subsequent parallel check passes 12/12, and all eight safety checks pass. The first batch's p95 is 6.64 seconds and maximum is 7.10 seconds. This supports the combined pg/pool/deadline candidate for a separate staging rollout review; it does not establish a driver-only fix or fast startup. PR #259 remains draft and no existing staging or production resource was changed.
+
+Measured on 2026-10-05. The initial pg candidate passed 12 parallel application requests and three consecutive 60-request application bursts after smaller requests had warmed its fresh deployment. Those runs used only 100 profiles. The configuration uses two pooled application connections, a dedicated abortable ban connection, and a 12-second middleware HTTP deadline. Database connection and ban lookup deadlines remain three seconds; ban statements are limited to 2.5 seconds and general application queries to ten seconds.
 
 The driver change alone did not solve hosted cold-start failures. Both original Postgres.js and pg produced uncached 503s with the original four-second middleware deadline. An eight-second trial still failed one first-burst request. These observations support reviewing the pg candidate and its startup allowance together, rather than attributing the hosted improvement solely to pg. The final cold burst reached 6.79 seconds; an earlier passing twelve-second trial reached 9.49 seconds.
 
@@ -12,7 +14,7 @@ The driver change alone did not solve hosted cold-start failures. Both original 
 - Netlify: [polycord-test006-supabase](https://polycord-test006-supabase.netlify.app), separate disposable site, Node 22, Next.js 15.5.25, Next.js Runtime 5.16.1, Netlify Build 37.3.3.
 - Local runner: Windows, Bun 1.3.14. The TCP/TLS integration proxy runs in Node because Bun did not complete that proxy's TLS upgrade.
 - Locked dependencies: Postgres.js 3.4.9, pg 8.23.1, Drizzle 0.45.2.
-- Data: 100 synthetic profiles, synthetic allowed/banned accounts, remembered restriction, and synthetic IP fixture. Analytics was disabled. No staging or production database was queried or changed.
+- Data: the original trials used 100 synthetic profiles. The review trial expands the same disposable database to 5,000 profiles using the application generator, including varied visibility, languages, tags, availability, Supporter grants, boosts, and voice introductions. Synthetic allowed/banned accounts, remembered restriction, and synthetic IP fixtures remain separate. Analytics was disabled. No staging or production database was queried or changed.
 - Credentials were held outside the repository and imported only into this disposable site. No paid resources, quota increases, or existing project configuration changes were made. Neon was unnecessary because Supabase had a free slot; this is not a Neon comparison.
 
 The new Supabase project and Netlify site were retained for review. The temporary local credential file and temporary IP probe were removed after testing; only the sandbox's provider-side test credentials remain for the working preview.
@@ -21,7 +23,9 @@ The new Supabase project and Netlify site were retained for review. The temporar
 
 Standalone probes use the same SQL and fixture for both drivers: discovery joins with nine results, page counts, and interactive transactions containing identity/restriction/IP queries. Each driver runs three sequential operations, 12 parallel mixed operations, then three consecutive 60-operation bursts. Both start with one connection, disabled prepared statements, TLS certificate validation, a three-second connection timeout, and a 20-second idle timeout. pg additionally has its native 2.5-second query timeout; the local runner applies a ten-second overall deadline to either driver. The transaction sets a 2.5-second server statement timeout.
 
-Application runs mix `/en?q=test006`, discovery results, discovery counts, and authenticated internal ban lookups. Requests use a synthetic allowed session; separate checks cover banned identities, remembered bans, internal authentication, IP lookup, and forged forwarding headers. Timings include the client-to-Netlify round trip and response body. The p95 is the sorted sample at index `floor(0.95 * n)`, capped at the last result. These small samples establish observed behavior, not an SLA or a statistically isolated driver speed advantage.
+Original application runs mix `/en?q=test006`, discovery results, discovery counts, and authenticated internal ban lookups. They perform safety checks, a single request, and 12 parallel requests before their first 60-request burst. They therefore establish recovery and warmed/scaling behavior, not a 60-request first-traffic pass. The review runner instead starts with three batches of 60 requests, then 12 parallel requests and the safety checks. Its page route is unfiltered `/en`, which must render actual profiles. API responses must contain profiles and the exact database-derived discoverable count; allowed internal lookups must return `ban: null`. All successful workload responses must be uncached. A failed count, payload, safety check, or monitoring sample makes the runner exit unsuccessfully while preserving the collected evidence.
+
+Requests use a synthetic allowed session; separate checks cover banned identities, remembered bans, internal authentication, IP lookup, and forged forwarding headers. Timings include the client-to-Netlify round trip and response body. The p95 is the sorted sample at index `floor(0.95 * n)`, capped at the last result. These small samples establish observed behavior, not an SLA or a statistically isolated driver speed advantage.
 
 ## Standalone results
 
@@ -39,7 +43,7 @@ Local single-connection failures occurred under the mixed transaction workload a
 
 The standalone hosted comparison passed with either driver. Its connection samples peaked at 17 PostgreSQL backends, including Supabase services and the observer; the final sample had zero idle transactions. A shared pooler reuses backends, so these counts are not Netlify instance or pooler-client counts.
 
-## Application results
+## Original 100-profile application results
 
 | Deployment | Middleware HTTP deadline | Parallel 12 | Three bursts of 60 | Burst p95 / maximum |
 | --- | ---: | --- | --- | --- |
@@ -55,6 +59,33 @@ The eight-second failure was an uncached page 503 at 8.09 seconds. Database back
 The final candidate's samples peaked at 16 PostgreSQL backends, six active backends, and two idle transactions during traffic; the final sample had zero idle transactions. Sampling is every 250 ms and can miss shorter peaks. The observer's query itself counts as active.
 
 The application configurations differ: original Postgres.js has an application pool of five; pg has two. Both use a separate connection per ban lookup. The final trial changes both the driver and outer HTTP deadline, so it does not isolate their individual contributions. The practical recommendation is the tested combined candidate, with a separate rollout review for the higher worst-case HTTP wait and the driver migration.
+
+## Review fixes and tradeoffs
+
+The pg `query_timeout` is a client-side deadline, not server query cancellation. The earlier transaction wrapper asked Drizzle to roll back after an in-transaction query timed out; a stalled connection could spend a second ten-second query deadline on that rollback before being discarded. The revised outer transaction owns BEGIN and COMMIT, returning a connection to the pool only after a confirmed COMMIT. Every unsuccessful transaction discards its connection immediately, which aborts unfinished server transactions and preserves the original error. The integration proxy separately withholds BEGIN, SELECT, and COMMIT responses and checks bounded failure, closed sockets, drained pool waiters, and immediate recovery. A lost COMMIT response can leave a committed result uncertain; the application does not automatically retry it.
+
+The prior rollback test used a fixture identity longer than the `users.discord_user_id` limit and accepted any rejection. It could pass on a rejected INSERT without exercising rollback. The corrected fixture fits the schema and requires the deliberately thrown error or Drizzle's explicit rollback exception. Savepoint rollback and isolation/read-only options are also checked against the real database.
+
+Connection-string SSL options can [replace pg's explicit TLS configuration](https://node-postgres.com/features/ssl). The application removes those URL options before handing the URL to pg, so its Supabase CA and certificate validation remain authoritative. IPv6 loopback is treated like other local test connections. Regression checks cover `sslmode=require`, `disable`, and `no-verify` without connecting to the synthetic test hostname.
+
+The two-connection pool still trades per-instance throughput for a smaller connection footprint; the separate ban connection remains outside that pool. The twelve-second middleware wait still trades slower outage responses for startup tolerance. Neither setting was increased during review, and neither positive ban results nor failures are cached. Transaction errors already discarded connections before review; closing them earlier removes a wasted rollback wait, without adding success-path work. Transaction options require one SET TRANSACTION round trip after BEGIN; current application callers do not pass options. The adapter uses Drizzle 0.45.2's transaction/session exports, so adapter upgrades must rerun these lifecycle tests.
+
+## Review: 5,000 profiles and first application traffic
+
+Application commit `b360ba0e7533653ad7f69a9a00067f1bf4d7e89d` was built without cache and published at the [fresh immutable deployment](https://6ac37a1157df527372b0b63a--polycord-test006-supabase.netlify.app). The page was not opened and the runner made no health check, safety request, smaller batch, or temporary-IP probe before the first 60 requests. The first batch launched at `2026-10-05T10:24:46.271Z`, with all 60 calls dispatched within two milliseconds. Each batch includes 15 unfiltered pages, 15 discovery pages, 15 counts, and 15 authenticated internal ban lookups. The fixture contains 5,000 profiles, 4,735 currently discoverable.
+
+| Batch | Successful validated responses | p50 | p95 | Maximum |
+| --- | --- | --- | --- | --- |
+| First application traffic, 60 | 60/60 | 5.60 s | 6.64 s | 7.10 s |
+| Second burst, 60 | 60/60 | 0.75 s | 2.35 s | 2.52 s |
+| Third burst, 60 | 60/60 | 0.76 s | 1.63 s | 1.77 s |
+| Subsequent parallel check, 12 | 12/12 | 0.77 s | 1.85 s | 1.85 s |
+
+All eight subsequent checks passed, including uncached ban denials, the banned page, internal authentication, synthetic IP lookup, and forged forwarding headers. No workload request timed out or returned an unexpected status, an empty/error feed, an incorrect count, or a positive ban for the allowed identity. PostgreSQL backend samples peaked at 18 connections, 17 active connections, and ten idle transactions during traffic; the last sample had one active observer and zero idle transactions. Counts include Supabase services and the observer and do not measure total Netlify instances or pooler clients. The 250 ms sample interval can miss brief peaks.
+
+The runner executes in the disposable Netlify site's Linux build environment, using Bun 1.3.14 and the already configured secret credentials. The [probe build log](https://app.netlify.com/projects/polycord-test006-supabase/deploys/6ac37ae0c057c56e9d0f50a6) supplies [raw first-traffic evidence](review-first-traffic.txt) and [table-lock recovery evidence](review-locked.txt). UI log timestamp prefixes were removed when saving the JSON. This client location differs from the original Windows runner, and the page workload is now unfiltered, so these latencies are not a controlled before/after speed comparison. Database fixture and monitoring queries precede the first HTTP batch and warm the database. The test establishes the runner's first traffic to a fresh deployment; provider-side internal startup or traffic is not observable, so it cannot prove every function was physically cold.
+
+With `users` locked, the internal route, discovery, and page returned uncached 503s in 2.87, 2.66, and 2.71 seconds. After unlock they recovered to 200 in 172, 291, and 558 ms, with zero idle transactions. The five integration suites also passed through the TLS proxy before fixture expansion, in 45.66 seconds. They cover real transaction rollback, savepoint recovery, transaction options, and stalled BEGIN/SELECT/COMMIT cleanup. [CI on the measured commit](https://github.com/chev0004/Polycord/actions/runs/37296002301) passed 181 tests without skips, 79 application browser tests, and 457 Storybook tests.
 
 ## Safety and failure recovery
 
@@ -88,11 +119,13 @@ bun --no-env-file --env-file=<external-sandbox-env> experiments/database-burst/r
 
 For the sleep check, pause only this disposable Supabase project and run `run-faults.mjs` with `paused`. Resume it, wait for the provider's restoration-complete signal, and run the same script with `recovered`. Do not restart or redeploy Netlify between these checks.
 
-Run setup only once on an empty disposable database. It applies the repository migrations and adds the fixture. The local integration runner creates and deletes only its own test records. `PROBE_POOL_SIZE` selects the standalone connection cap; `PROBE_DRIVERS` selects `postgres`, `pg`, or `postgres-serial`. Defaults are one connection and both primary drivers. The output directory must exist.
+Setup applies repository migrations and grows the disposable fixture to exactly 5,000 profiles in capped batches. It recreates only the two named TEST-006 accounts and its synthetic IP restriction, so run it before measuring rather than during traffic. The integration runner creates and deletes only its own test records. `PROBE_POOL_SIZE` selects the standalone connection cap; `PROBE_DRIVERS` selects `postgres`, `pg`, or `postgres-serial`. Defaults are one connection and both primary drivers. The output directory must exist. `run-app.mjs` requires an immutable deployment hostname and a 5,000-profile fixture.
+
+Netlify stores the sandbox credentials as unreadable secrets. To reproduce without exporting or rotating them, the `test/test-006` build context runs `experiments/database-burst/build.mjs`. It verifies the disposable site ID and both database endpoints before any child job. With `TEST006_DEPLOY_ORIGIN` unset, it runs integration checks, seeds the larger fixture, and builds the application. After that deployment is published, set this non-secret variable to its immutable deployment URL and trigger a second build. That build's first application traffic is the 60-request batch, followed by the remaining bursts, safety checks, and table-lock/recovery probe. The build log contains raw JSON between `TEST006_RESULT_BEGIN` and `TEST006_RESULT_END`; no session cookies, internal tokens, database passwords, or caller IPs are logged. Clear the variable afterward to avoid claiming a repeated run against a warmed deployment is fresh.
 
 For the standalone Netlify probe, configure the disposable site's base as `experiments/database-burst`, use the child `netlify.toml`, and import only the sandbox env file. Restore the root application configuration for app trials. All commits use `[skip netlify]` to avoid automatic builds on existing sites; builds on this sandbox were triggered manually in Chrome.
 
-The trusted caller-IP check is optional in `run-app.mjs` and runs only on the temporary probe deployment. The removed probe source is preserved in the measured commit for reproducibility, not installed in the final application.
+The old temporary caller-IP probe is no longer called by the review runner. Its source and trusted-IP enforcement evidence are preserved in the eight-second trial's measured commit; the final application does not install it.
 
 ## Measured commits and artifacts
 
@@ -104,6 +137,7 @@ The trusted caller-IP check is optional in `run-app.mjs` and runs only on the te
 | pg app, 8 s and trusted IP probe | `e753e4c7` | [pg 8 s](https://6ac33cf9ce110ecae3a50a89--polycord-test006-supabase.netlify.app) |
 | pg app, 12 s, initial general query limit | `8da7e8b29b85146b601c0a7290bc91b8551dce1a` | [Initial 12 s trial](https://6ac33e26fbf6fba1ae0ede70--polycord-test006-supabase.netlify.app) |
 | Final pg app, 12 s, separate query limits | `2ded19b850bb7c8f4cda28e8364327e20ae7b5d8` | [Final candidate](https://6ac344338a947fbf3abea1b0--polycord-test006-supabase.netlify.app) |
+| Reviewed pg app, 5,000 profiles, first 60-request traffic | `b360ba0e7533653ad7f69a9a00067f1bf4d7e89d` | [Reviewed candidate](https://6ac37a1157df527372b0b63a--polycord-test006-supabase.netlify.app) |
 
 The `.txt` measurement logs in this directory contain raw JSON with request outcomes, timestamps, latency distributions, and available database samples. Local pool-one and pool-two comparison files predate connection sampling. The initial certificate-configuration failure and an invalid server-layer IP probe were corrected before the recorded comparison runs and are excluded from the canonical results.
 
