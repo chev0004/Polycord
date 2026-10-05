@@ -1,8 +1,8 @@
 # TEST-006: disposable Supabase driver experiment
 
-Measured on 2026-10-05. The pg candidate passed 12 parallel application requests and three consecutive 60-request application bursts on a fresh deployment. The successful configuration uses two pooled application connections, a dedicated abortable ban connection, and a 12-second middleware HTTP deadline. Database connection and ban lookup deadlines remain three seconds; ban statements are limited to 2.5 seconds.
+Measured on 2026-10-05. The pg candidate passed 12 parallel application requests and three consecutive 60-request application bursts on a fresh deployment. The successful configuration uses two pooled application connections, a dedicated abortable ban connection, and a 12-second middleware HTTP deadline. Database connection and ban lookup deadlines remain three seconds; ban statements are limited to 2.5 seconds and general application queries to ten seconds.
 
-The driver change alone did not solve hosted cold-start failures. Both original Postgres.js and pg produced uncached 503s with the original four-second middleware deadline. An eight-second trial still failed one first-burst request. These observations support reviewing the pg candidate and its startup allowance together, rather than attributing the hosted improvement solely to pg. Cold requests still approached 9.5 seconds.
+The driver change alone did not solve hosted cold-start failures. Both original Postgres.js and pg produced uncached 503s with the original four-second middleware deadline. An eight-second trial still failed one first-burst request. These observations support reviewing the pg candidate and its startup allowance together, rather than attributing the hosted improvement solely to pg. The final cold burst reached 6.79 seconds; an earlier passing twelve-second trial reached 9.49 seconds.
 
 ## Resources and conditions
 
@@ -47,11 +47,12 @@ The standalone hosted comparison passed with either driver. Its connection sampl
 | pg app, fresh deployment | 4 s | 6/12 | 34, 59, 60 / 60 | p95 4.35, 4.78, 2.49 s; max 4.73, 5.39, 2.99 s |
 | Same pg app, warm run | 4 s | 12/12 | 60, 60, 60 / 60 | p95 5.24, 1.57, 1.51 s; max 5.86, 4.09, 1.72 s |
 | pg app, fresh deployment | 8 s | 12/12 | 59, 60, 60 / 60 | p95 9.25, 4.14, 2.92 s; max 9.41, 5.03, 4.07 s |
-| Final pg app, fresh deployment | 12 s | 12/12 | 60, 60, 60 / 60 | p95 9.31, 1.91, 2.32 s; max 9.49, 5.17, 2.57 s |
+| pg app, fresh deployment, 2.5 s general query limit | 12 s | 12/12 | 60, 60, 60 / 60 | p95 9.31, 1.91, 2.32 s; max 9.49, 5.17, 2.57 s |
+| Final pg app, fresh deployment, 10 s general query limit | 12 s | 12/12 | 60, 60, 60 / 60 | p95 6.65, 4.51, 1.85 s; max 6.79, 5.05, 5.09 s |
 
 The eight-second failure was an uncached page 503 at 8.09 seconds. Database backend samples stayed below the dashboard limit and returned to zero idle transactions. This is consistent with the outer middleware HTTP deadline expiring during function startup/scaling; it is not evidence that the driver or database exhausted all 60 database connections. The final run was performed after the auxiliary local trial finished.
 
-The final candidate's samples peaked at 18 PostgreSQL backends, five active backends, and three idle transactions during traffic; the final sample had zero idle transactions. Sampling is every 250 ms and can miss shorter peaks. The observer's query itself counts as active.
+The final candidate's samples peaked at 16 PostgreSQL backends, six active backends, and two idle transactions during traffic; the final sample had zero idle transactions. Sampling is every 250 ms and can miss shorter peaks. The observer's query itself counts as active.
 
 The application configurations differ: original Postgres.js has an application pool of five; pg has two. Both use a separate connection per ban lookup. The final trial changes both the driver and outer HTTP deadline, so it does not isolate their individual contributions. The practical recommendation is the tested combined candidate, with a separate rollout review for the higher worst-case HTTP wait and the driver migration.
 
@@ -64,6 +65,10 @@ Netlify serves the rewritten banned page with HTTP 200 while showing the banned 
 Local integration checks exercise unreachable connections, eight stalled BEGIN lookups, stalled queries, blocked statements, repeated recovery, transaction rollback, and four pooled transactions whose BEGIN stalls. Ban routes return no-store 503 within four seconds, aborted sockets close, pool waiters drain, and the next transaction succeeds without restarting the process. Explicit application pool checkout/release protects against Drizzle 0.45.2 placing BEGIN before its transaction catch/finally.
 
 Hosted table-lock checks returned no-store 503 in 3.20 s for the internal lookup, 2.80 s for discovery, and 2.70 s for the page. After releasing the lock, those same routes returned 200 in 193, 427, and 731 ms. The final database sample had zero idle transactions. The evidence includes these requests and recovery.
+
+The final ten-second general-query revision repeated this check: no-store 503 in 2.89, 2.72, and 2.68 seconds, then healthy recovery in 160, 340, and 691 ms, with zero idle transactions. The five local integration suites also passed again in 42.62 seconds. Stalled application-pool BEGIN is bounded by the ten-second query limit; dedicated ban lookups retain their shorter deadlines.
+
+The [first full CI run](https://github.com/chev0004/Polycord/actions/runs/37272189782) on `69c6101` passed 180 tests and failed the 5,000-profile seed/discovery test with `Query read timeout`. The initial shared application limit of 2.5 seconds was too short for that legitimate query. Commit `2ded19b` separates the ten-second general query limit from the 2.5-second dedicated ban limit. The earlier passing hosted fixture of 100 profiles did not expose this larger-fixture regression. The [corrected CI run](https://github.com/chev0004/Polycord/actions/runs/37272809558) passed all 181 tests, 79 application browser tests, and 457 Storybook tests.
 
 The new Supabase project was manually paused, then resumed through Chrome. While paused, the internal lookup, discovery, and page returned no-store 503 in 1.25, 0.83, and 0.67 seconds. An early recovery attempt while the dashboard still said `Coming up...` also returned a bounded 503. After Supabase reported restoration complete, the first internal lookup returned 200 in 550 ms, followed by discovery in 463 ms and the page in 805 ms. Netlify was not rebuilt or restarted between pause and recovery. The project was left restored and usable. This tests a real provider pause/resume cycle; waiting seven days for automatic free-project inactivity pausing was not exercised.
 
@@ -97,8 +102,9 @@ The trusted caller-IP check is optional in `run-app.mjs` and runs only on the te
 | pg app, 4 s | `da4ef9ab5be0197af399c667ad4f4706072635e2` | [pg 4 s](https://6ac339229a268a66cec6263e--polycord-test006-supabase.netlify.app) |
 | Original app, 4 s | `e94e431a8afd40a750650e06847a72ca80313912` | [Original driver](https://6ac33aa772edf0cb2c7c4ccf--polycord-test006-supabase.netlify.app) |
 | pg app, 8 s and trusted IP probe | `e753e4c7` | [pg 8 s](https://6ac33cf9ce110ecae3a50a89--polycord-test006-supabase.netlify.app) |
-| Final pg app, 12 s | `8da7e8b29b85146b601c0a7290bc91b8551dce1a` | [Final candidate](https://6ac33e26fbf6fba1ae0ede70--polycord-test006-supabase.netlify.app) |
+| pg app, 12 s, initial general query limit | `8da7e8b29b85146b601c0a7290bc91b8551dce1a` | [Initial 12 s trial](https://6ac33e26fbf6fba1ae0ede70--polycord-test006-supabase.netlify.app) |
+| Final pg app, 12 s, separate query limits | `2ded19b850bb7c8f4cda28e8364327e20ae7b5d8` | [Final candidate](https://6ac344338a947fbf3abea1b0--polycord-test006-supabase.netlify.app) |
 
 The `.txt` measurement logs in this directory contain raw JSON with request outcomes, timestamps, latency distributions, and available database samples. Local pool-one and pool-two comparison files predate connection sampling. The initial certificate-configuration failure and an invalid server-layer IP probe were corrected before the recorded comparison runs and are excluded from the canonical results.
 
-Checks: formatting/lint, i18n checks, TypeScript, 166 unit tests passed with 15 database-dependent skips, and five real local integration suites passed against this disposable database. The targeted middleware/ban route tests also passed after changing the HTTP deadline. Hosted production builds succeeded against the disposable environment.
+Checks: formatting/lint, i18n checks, and TypeScript passed. The local unit run passed 166 tests with 15 database-dependent skips; five real local integration suites passed against this disposable database. The targeted middleware/ban route tests also passed after changing the HTTP deadline. CI on the final measured code at `2ded19b` used Bun 1.4.2 and its own PostgreSQL 17 service, passing 181 tests with no skips, 79 application browser tests, and 457 Storybook tests. Hosted production builds succeeded against the disposable environment.
