@@ -186,13 +186,11 @@ try {
   const rollbackId = `test006-rollback-${discordUserId}`;
   await assert.rejects(
     db.transaction(async (tx) => {
-      await tx
-        .insert(users)
-        .values({
-          discordUserId: rollbackId,
-          discordUsername: rollbackId,
-          displayName: 'Rollback fixture',
-        });
+      await tx.insert(users).values({
+        discordUserId: rollbackId,
+        discordUsername: rollbackId,
+        displayName: 'Rollback fixture',
+      });
       throw new Error('TEST-006 rollback');
     }),
   );
