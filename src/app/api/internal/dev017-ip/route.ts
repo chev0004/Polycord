@@ -1,0 +1,17 @@
+import { BAN_CHECK_AUTH_HEADER, isBanCheckToken } from '@/lib/auth-session';
+
+export const dynamic = 'force-dynamic';
+
+export const GET = async (request: Request) => {
+  if (
+    new URL(process.env.DATABASE_URL as string).username !==
+      'postgres.lqyekuxzhxkjsctdpybi' ||
+    !(await isBanCheckToken(request.headers.get(BAN_CHECK_AUTH_HEADER)))
+  ) {
+    return new Response('Forbidden', { status: 403 });
+  }
+  return Response.json(
+    { ip: request.headers.get('x-dev017-edge-ip') },
+    { headers: { 'Cache-Control': 'no-store' } },
+  );
+};

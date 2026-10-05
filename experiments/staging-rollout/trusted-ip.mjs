@@ -30,7 +30,7 @@ const sql = postgres(process.env.SESSION_DATABASE_URL, {
 const outcomes = [];
 let fixture;
 try {
-  const probe = await fetch(`${probeOrigin}/.netlify/functions/visitor-ip`, {
+  const probe = await fetch(`${probeOrigin}/api/internal/dev017-ip`, {
     headers: { [BAN_CHECK_AUTH_HEADER]: await createBanCheckToken() },
     redirect: 'error',
     signal: AbortSignal.timeout(16000),
