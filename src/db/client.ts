@@ -5,7 +5,7 @@ import { type ExtractTablesWithRelations, sql } from 'drizzle-orm';
 import { drizzle, NodePgTransaction } from 'drizzle-orm/node-postgres';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import { Client, Pool } from 'pg';
-import { observeDuration } from '@/lib/startupProbe';
+import { captureDuration, observeDuration } from '@/lib/startupProbe';
 import * as schema from './schema';
 import supabaseCa from './supabaseCa.json';
 
@@ -59,6 +59,19 @@ const pool =
 pool.on('error', () => {});
 
 if (process.env.DISC027_TIMING === 'true') {
+  const connect = pool.connect;
+  pool.connect = function (this: Pool, ...args: unknown[]) {
+    const finish = captureDuration('pool-acquire');
+    if (typeof args[0] === 'function') {
+      const callback = args[0];
+      args[0] = (...values: unknown[]) => {
+        finish();
+        Reflect.apply(callback, this, values);
+      };
+    }
+    const result = Reflect.apply(connect, this, args);
+    return result?.finally ? result.finally(finish) : result;
+  } as typeof pool.connect;
   const query = pool.query;
   pool.query = function (this: Pool, ...args: unknown[]) {
     const started = performance.now();

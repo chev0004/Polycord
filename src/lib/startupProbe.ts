@@ -8,6 +8,15 @@ export const observeDuration = (name: string, duration: number) => {
   if (current) current[name] = (current[name] ?? 0) + duration;
 };
 
+export const captureDuration = (name: string) => {
+  const current = timings.getStore();
+  const started = performance.now();
+  return () => {
+    if (current)
+      current[name] = (current[name] ?? 0) + performance.now() - started;
+  };
+};
+
 export const measureStartup = async <T>(
   name: string,
   operation: () => Promise<T>,
@@ -26,12 +35,21 @@ export const startupResponse = async <T extends Response>(
   operation: () => Promise<T>,
 ): Promise<T> => {
   if (!enabled) return operation();
-  return timings.run({ uptime: process.uptime() * 1000 }, async () => {
-    const response = await measureStartup(name, operation);
-    const metrics = Object.entries(timings.getStore() as Record<string, number>)
-      .map(([key, value]) => `${key};dur=${value.toFixed(2)}`)
-      .join(', ');
-    response.headers.append('Server-Timing', metrics);
-    return response;
-  });
+  return timings.run(
+    { [`${name}-uptime`]: process.uptime() * 1000 },
+    async () => {
+      const response = await measureStartup(name, operation);
+      const metrics = Object.entries(
+        timings.getStore() as Record<string, number>,
+      )
+        .map(([key, value]) =>
+          key === 'sql-count'
+            ? `${key};desc="${value}"`
+            : `${key};dur=${value.toFixed(2)}`,
+        )
+        .join(', ');
+      response.headers.append('Server-Timing', metrics);
+      return response;
+    },
+  );
 };
