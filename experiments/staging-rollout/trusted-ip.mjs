@@ -70,7 +70,10 @@ try {
 } finally {
   if (fixture) await sql`delete from ip_bans where id=${fixture.id}`;
   await sql.end({ timeout: 0 });
-  await writeFile(process.argv[3], JSON.stringify({ origin, outcomes }, null, 2));
+  await writeFile(
+    process.argv[3],
+    JSON.stringify({ origin, outcomes }, null, 2),
+  );
 }
 const recovery = await fetch(`${origin}/api/discovery?locale=en`, {
   redirect: 'error',
