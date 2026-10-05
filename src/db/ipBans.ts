@@ -19,6 +19,8 @@ import {
   users,
 } from './schema';
 
+export type Reader = Pick<typeof db, 'select'>;
+
 const OBSERVATION_RETENTION_DAYS = 30;
 
 export const recordIpObservation = async (
@@ -49,8 +51,8 @@ export const listIpObservations = (discordUserId: string) =>
     .where(eq(ipObservations.discordUserId, discordUserId))
     .orderBy(desc(ipObservations.lastSeenAt));
 
-export const findActiveIpBan = async (ip: string) => {
-  const [ban] = await db
+export const findActiveIpBan = async (ip: string, reader: Reader = db) => {
+  const [ban] = await reader
     .select()
     .from(ipBans)
     .where(and(eq(ipBans.ip, ip), isNull(ipBans.revokedAt)))
@@ -59,10 +61,13 @@ export const findActiveIpBan = async (ip: string) => {
   return ban ?? null;
 };
 
-export const findBannedAt = async (discordUserIds: string[]) => {
+export const findBannedAt = async (
+  discordUserIds: string[],
+  reader: Reader = db,
+) => {
   if (!discordUserIds.length) return null;
   const [fromUsers, fromRestrictions] = await Promise.all([
-    db
+    reader
       .select({ at: users.bannedAt })
       .from(users)
       .where(
@@ -71,7 +76,7 @@ export const findBannedAt = async (discordUserIds: string[]) => {
           isNotNull(users.bannedAt),
         ),
       ),
-    db
+    reader
       .select({ at: moderationRestrictions.bannedAt })
       .from(moderationRestrictions)
       .where(

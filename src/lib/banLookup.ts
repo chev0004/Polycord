@@ -1,8 +1,12 @@
 import 'server-only';
 
 import { createHash } from 'node:crypto';
+import { sql } from 'drizzle-orm';
 import { findActiveIpBan, findBannedAt } from '@/db';
+import { db } from '@/db/client';
 import type { BanNotice } from './banGate';
+
+export const BAN_STATEMENT_TIMEOUT_MS = 2500;
 
 const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
@@ -12,19 +16,25 @@ export const banReference = (seed: string) => {
   return `PC-${code.slice(0, 4).join('')}-${code.slice(4).join('')}`;
 };
 
-export const lookupBan = async (
+export const lookupBan = (
   ip: string | null,
   discordUserIds: string[],
-): Promise<BanNotice | null> => {
-  const ipBan = ip ? await findActiveIpBan(ip) : null;
+  signal: AbortSignal,
+): Promise<BanNotice | null> =>
+  db.transaction(async (tx) => {
+    await tx.execute(
+      sql`select set_config('statement_timeout', ${String(BAN_STATEMENT_TIMEOUT_MS)}, true)`,
+    );
+    const ipBan = ip ? await findActiveIpBan(ip, tx) : null;
 
-  if (ipBan) {
-    return { date: ipBan.createdAt, reference: banReference(ipBan.id) };
-  }
+    if (ipBan) {
+      return { date: ipBan.createdAt, reference: banReference(ipBan.id) };
+    }
 
-  const bannedAt = await findBannedAt(discordUserIds);
+    signal.throwIfAborted();
+    const bannedAt = await findBannedAt(discordUserIds, tx);
 
-  return bannedAt
-    ? { date: bannedAt, reference: banReference(discordUserIds.join('+')) }
-    : null;
-};
+    return bannedAt
+      ? { date: bannedAt, reference: banReference(discordUserIds.join('+')) }
+      : null;
+  });

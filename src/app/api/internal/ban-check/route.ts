@@ -8,13 +8,22 @@ export const dynamic = 'force-dynamic';
 const LOOKUP_DEADLINE_MS = 3000;
 const noStore = { 'Cache-Control': 'no-store' };
 
-const deadline = () =>
-  new Promise<never>((_, reject) =>
-    setTimeout(
-      () => reject(new Error('Ban lookup timed out')),
-      LOOKUP_DEADLINE_MS,
-    ),
-  );
+const withDeadline = async <T>(run: (signal: AbortSignal) => Promise<T>) => {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expired = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error('Ban lookup timed out'));
+    }, LOOKUP_DEADLINE_MS);
+  });
+
+  try {
+    return await Promise.race([run(controller.signal), expired]);
+  } finally {
+    clearTimeout(timer);
+  }
+};
 
 export const POST = async (request: Request) => {
   if (!(await isBanCheckToken(request.headers.get(BAN_CHECK_AUTH_HEADER)))) {
@@ -25,8 +34,8 @@ export const POST = async (request: Request) => {
   }
 
   const body = (await request.json().catch(() => null)) as {
-    ip?: unknown;
-    discordUserIds?: unknown;
+    ip: string | null;
+    discordUserIds: string[];
   } | null;
 
   if (
@@ -42,10 +51,9 @@ export const POST = async (request: Request) => {
   }
 
   try {
-    const ban = await Promise.race([
-      lookupBan(normalizeIp(body.ip), body.discordUserIds),
-      deadline(),
-    ]);
+    const ban = await withDeadline((signal) =>
+      lookupBan(normalizeIp(body.ip), body.discordUserIds, signal),
+    );
 
     return NextResponse.json(
       {
