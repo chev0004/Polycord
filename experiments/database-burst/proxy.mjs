@@ -1,11 +1,11 @@
 import { createConnection, createServer } from 'node:net';
 import { connect } from 'node:tls';
 import ca from '../../src/db/supabaseCa.json' with { type: 'json' };
+import { sandboxResource } from './resources.mjs';
 
 export const createProxy = async (remoteUrl) => {
   const remote = new URL(remoteUrl);
-  if (remote.username !== 'postgres.ftlxjximfprlplbihcph')
-    throw new Error('TEST-006 disposable database required');
+  sandboxResource(remote.href);
   const sockets = new Set();
   const server = createServer((socket) => {
     sockets.add(socket);

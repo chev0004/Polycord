@@ -8,16 +8,11 @@ import {
   createBanCookieValue,
   createSessionCookieValue,
 } from '../../src/lib/auth-session';
+import { sandboxOrigin, sandboxResource } from './resources.mjs';
 
 const origin = process.argv[2];
-assert.equal(
-  new URL(process.env.SESSION_DATABASE_URL).username,
-  'postgres.ftlxjximfprlplbihcph',
-);
-assert.match(
-  origin,
-  /^https:\/\/[a-f0-9]{24}--polycord-test006-supabase\.netlify\.app$/,
-);
+const resource = sandboxResource(process.env.SESSION_DATABASE_URL);
+sandboxOrigin(origin, resource, true);
 assert.ok(process.env.AUTH_SECRET);
 const monitor = postgres(process.env.SESSION_DATABASE_URL, {
   prepare: false,

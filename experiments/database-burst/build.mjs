@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { sandboxResource } from './resources.mjs';
 
-assert.equal(process.env.SITE_ID, '69325f10-4cec-4ed6-a390-7a6392a48470');
+const resource = sandboxResource(process.env.DATABASE_URL);
+assert.equal(process.env.SITE_ID, resource.id);
 for (const name of ['DATABASE_URL', 'SESSION_DATABASE_URL']) {
-  const url = new URL(process.env[name]);
-  assert.equal(url.username, 'postgres.ftlxjximfprlplbihcph');
-  assert.equal(url.hostname, 'aws-0-us-east-2.pooler.supabase.com');
-  assert.equal(url.pathname, '/postgres');
+  assert.equal(sandboxResource(process.env[name]), resource);
 }
+assert.equal(new URL(process.env.DATABASE_URL).port, '6543');
+assert.equal(new URL(process.env.SESSION_DATABASE_URL).port, '5432');
 const run = (command, args) =>
   execFileSync(command, args, { stdio: 'inherit' });
 const origin = process.env.TEST006_DEPLOY_ORIGIN;
