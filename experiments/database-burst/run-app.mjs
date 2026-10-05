@@ -88,7 +88,12 @@ const call = async (path, options = {}) => {
       ms: performance.now() - started,
       ttfb,
       bytes: Buffer.byteLength(body),
-      serverTiming: response.headers.get('server-timing'),
+      serverTiming: [
+        response.headers.get('server-timing'),
+        response.headers.get('x-disc027-timing'),
+      ]
+        .filter(Boolean)
+        .join(', '),
       noStore:
         response.headers.get('cache-control')?.includes('no-store') ?? false,
       valid,

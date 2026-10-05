@@ -59,7 +59,7 @@ export const findBan = async (
     throw new Error(`Ban check failed with ${response.status}`);
   }
 
-  observe?.(response.headers.get('server-timing'));
+  observe?.(response.headers.get('x-disc027-timing'));
 
   const { ban } = (await response.json()) as { ban?: unknown };
 

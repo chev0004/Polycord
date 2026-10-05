@@ -49,7 +49,7 @@ export const startupResponse = async <T extends Response>(
       )
       .join(', ');
     response.headers.append(
-      'Server-Timing',
+      name === 'middleware' ? 'Server-Timing' : 'X-Disc027-Timing',
       `${name}-instance;desc="${instance}", ${metrics}`,
     );
     return response;
