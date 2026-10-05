@@ -39,11 +39,19 @@ const connectionConfig = () => {
 };
 
 export const createBanClient = (signal: AbortSignal) => {
+  const socket = new Socket({ signal });
   const client = new Client({
     ...connectionConfig(),
     query_timeout: 2500,
-    stream: () => new Socket({ signal }),
+    stream: () => socket,
   });
+  if ('Deno' in globalThis) {
+    client.connection.once('sslconnect', () => {
+      const secure = client.connection.stream;
+      socket.once('close', () => secure.destroy());
+      secure.once('close', () => socket.destroy());
+    });
+  }
   client.on('error', () => {});
   return client;
 };
