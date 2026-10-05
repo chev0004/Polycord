@@ -10,7 +10,7 @@
   command = "node experiments/database-burst/build.mjs"
 
 [context."perf/disc-027"]
-  command = "node experiments/database-burst/build.mjs"
+  command = "node experiments/discovery-latency/build.mjs"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
