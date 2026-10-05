@@ -2,6 +2,7 @@ import { mock } from 'bun:test';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
+import ca from '../../src/db/supabaseCa.json' with { type: 'json' };
 
 const url = new URL(process.env.DATABASE_URL);
 if (url.username !== 'postgres.ftlxjximfprlplbihcph')
@@ -9,7 +10,7 @@ if (url.username !== 'postgres.ftlxjximfprlplbihcph')
 const client = postgres(url.href, {
   prepare: false,
   max: 1,
-  ssl: 'require',
+  ssl: { ca, rejectUnauthorized: true },
   connect_timeout: 3,
 });
 await migrate(drizzle(client), { migrationsFolder: './drizzle' });

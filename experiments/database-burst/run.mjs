@@ -11,6 +11,12 @@ if (
   throw new Error('TEST-006 disposable Netlify origin required');
 }
 const results = [];
+if (
+  new URL(process.env.SESSION_DATABASE_URL).username !==
+  'postgres.ftlxjximfprlplbihcph'
+) {
+  throw new Error('TEST-006 disposable database required');
+}
 const monitor = postgres(process.env.SESSION_DATABASE_URL, {
   prepare: false,
   max: 1,

@@ -10,6 +10,10 @@ import {
 } from '../../src/lib/auth-session';
 
 const origin = process.argv[2];
+assert.equal(
+  new URL(process.env.SESSION_DATABASE_URL).username,
+  'postgres.ftlxjximfprlplbihcph',
+);
 assert.match(
   origin,
   /^https:\/\/(?:[a-f0-9]+--)?polycord-test006-supabase\.netlify\.app$/,
