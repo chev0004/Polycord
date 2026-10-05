@@ -172,7 +172,7 @@ try {
     ),
   );
   assert.ok(transactions.every(({ status }) => status === 'rejected'));
-  assert.ok(Date.now() - transactionStarted < 7000);
+  assert.ok(Date.now() - transactionStarted < 12000);
   assert.equal(db.$client.waitingCount, 0);
   await delay(100);
   assert.equal(stalledSockets.size, 0);

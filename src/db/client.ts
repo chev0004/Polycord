@@ -21,7 +21,6 @@ const connectionConfig = () => {
   return {
     connectionString: databaseUrl,
     connectionTimeoutMillis: 3000,
-    query_timeout: 2500,
     ssl: ['localhost', '127.0.0.1'].includes(hostname)
       ? false
       : {
@@ -34,6 +33,7 @@ const connectionConfig = () => {
 export const createBanClient = (signal: AbortSignal) => {
   const client = new Client({
     ...connectionConfig(),
+    query_timeout: 2500,
     stream: () => new Socket({ signal }),
   });
   client.on('error', () => {});
@@ -45,6 +45,7 @@ const pool =
   new Pool({
     ...connectionConfig(),
     max: 2,
+    query_timeout: 10000,
     idleTimeoutMillis: 20000,
   });
 pool.on('error', () => {});
