@@ -10,6 +10,7 @@ assert.ok(['localhost', '127.0.0.1'].includes(url.hostname));
 const sockets = new Set();
 const stalledSockets = new Set();
 let stallBegin = false;
+let stallQuery = false;
 let stalled = 0;
 const proxy = createServer((socket) => {
   sockets.add(socket);
@@ -19,7 +20,10 @@ const proxy = createServer((socket) => {
   });
   let holding = false;
   socket.on('data', (chunk) => {
-    if (stallBegin && chunk.includes(Buffer.from('begin '))) {
+    if (
+      (stallBegin && chunk.includes(Buffer.from('begin'))) ||
+      (stallQuery && chunk.includes(Buffer.from('banned_at')))
+    ) {
       holding = true;
       stalled++;
       stalledSockets.add(socket);
@@ -50,6 +54,7 @@ const { lookupBan, BAN_STATEMENT_TIMEOUT_MS } = await import(
   '../../src/lib/banLookup'
 );
 const { eq } = await import('drizzle-orm');
+const { sql } = await import('drizzle-orm');
 const { POST } = await import('../../src/app/api/internal/ban-check/route');
 const { BAN_CHECK_AUTH_HEADER, createBanCheckToken } = await import(
   '../../src/lib/auth-session'
@@ -136,15 +141,76 @@ try {
   assert.equal(response.status, 200);
   assert.equal((await response.json()).ban.date, '2026-10-04T00:00:00.000Z');
   assert.ok(Date.now() - retry < 1000);
+
+  stallQuery = true;
+  const queryStarted = Date.now();
+  const stalledQuery = await call();
+  assert.equal(stalledQuery.status, 503);
+  assert.equal(stalledQuery.headers.get('cache-control'), 'no-store');
+  assert.ok(Date.now() - queryStarted < 4000);
+  stallQuery = false;
+  await delay(100);
+  assert.equal(stalledSockets.size, 0);
+  assert.equal((await call()).status, 200);
+
+  const reachableUrl = process.env.DATABASE_URL;
+  const unreachableUrl = new URL(reachableUrl);
+  unreachableUrl.port = '1';
+  process.env.DATABASE_URL = unreachableUrl.href;
+  const unavailableStarted = Date.now();
+  const unavailable = await call();
+  assert.equal(unavailable.status, 503);
+  assert.equal(unavailable.headers.get('cache-control'), 'no-store');
+  assert.ok(Date.now() - unavailableStarted < 4000);
+  process.env.DATABASE_URL = reachableUrl;
+  assert.equal((await call()).status, 200);
+
+  stallBegin = true;
+  const transactionStarted = Date.now();
+  const transactions = await Promise.allSettled(
+    Array.from({ length: 4 }, () =>
+      db.transaction((tx) => tx.execute(sql`select 1`)),
+    ),
+  );
+  assert.ok(transactions.every(({ status }) => status === 'rejected'));
+  assert.ok(Date.now() - transactionStarted < 7000);
+  assert.equal(db.$client.waitingCount, 0);
+  await delay(100);
+  assert.equal(stalledSockets.size, 0);
+  stallBegin = false;
+  assert.equal(
+    (await db.transaction((tx) => tx.execute(sql`select 1 as recovered`)))
+      .rows[0].recovered,
+    1,
+  );
+  const rollbackId = `test006-rollback-${discordUserId}`;
+  await assert.rejects(
+    db.transaction(async (tx) => {
+      await tx
+        .insert(users)
+        .values({
+          discordUserId: rollbackId,
+          discordUsername: rollbackId,
+          displayName: 'Rollback fixture',
+        });
+      throw new Error('TEST-006 rollback');
+    }),
+  );
+  assert.equal(
+    (await db.select().from(users).where(eq(users.discordUserId, rollbackId)))
+      .length,
+    0,
+  );
   console.log('ban lookup recovery passed');
 } finally {
   stallBegin = false;
+  stallQuery = false;
   for (const socket of stalledSockets) socket.destroy();
   if (stalledSockets.size) await delay(50);
   await db.delete(ipBans).where(eq(ipBans.ip, BLOCKED_IP));
   await db.delete(users).where(eq(users.discordUserId, discordUserId));
   await locker.end();
-  await db.$client.end({ timeout: 0 });
+  await db.$client.end();
   for (const socket of sockets) socket.destroy();
   await new Promise((resolve) => proxy.close(resolve));
 }

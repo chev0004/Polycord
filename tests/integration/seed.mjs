@@ -441,5 +441,5 @@ try {
       [ownerUser, memberUser, ...realUsers].map((user) => user.id),
     ),
   );
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

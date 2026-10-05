@@ -234,5 +234,5 @@ try {
       ]),
     );
   await db.delete(users).where(inArray(users.id, [viewer.id, target.id]));
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

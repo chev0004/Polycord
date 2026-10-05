@@ -1,6 +1,6 @@
 import pg from 'pg';
 import postgres from 'postgres';
-import ca from './ca.json' with { type: 'json' };
+import ca from '../../src/db/supabaseCa.json' with { type: 'json' };
 
 export const createClient = (driver, connectionString) => {
   const max = Number(process.env.PROBE_POOL_SIZE ?? 1);

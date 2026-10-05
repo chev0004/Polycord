@@ -1,4 +1,6 @@
 import { writeFile } from 'node:fs/promises';
+import postgres from 'postgres';
+import ca from '../../src/db/supabaseCa.json' with { type: 'json' };
 import { createClient, workload } from './client.mjs';
 
 const origin = process.argv[2];
@@ -9,6 +11,20 @@ if (
   throw new Error('TEST-006 disposable Netlify origin required');
 }
 const results = [];
+const monitor = postgres(process.env.SESSION_DATABASE_URL, {
+  prepare: false,
+  max: 1,
+  connect_timeout: 3,
+  ssl: { ca, rejectUnauthorized: true },
+});
+const samples = [];
+const sample = async () => {
+  const [row] =
+    await monitor`select count(*)::int as connections,count(*) filter(where state='active')::int as active,count(*) filter(where state='idle in transaction')::int as idle_transactions from pg_stat_activity where datname=current_database() and usename='postgres'`;
+  samples.push({ at: new Date().toISOString(), ...row });
+};
+await sample();
+const sampling = setInterval(() => sample().catch(() => {}), 250);
 const kinds = ['discovery', 'page', 'ban'];
 for (const driver of (process.env.PROBE_DRIVERS ?? 'postgres,pg').split(',')) {
   for (const size of [1, 1, 1, 12, 60, 60, 60]) {
@@ -34,10 +50,11 @@ for (const driver of (process.env.PROBE_DRIVERS ?? 'postgres,pg').split(',')) {
               );
               const data = await response.json();
               return {
+                ...data,
+                serverMs: data.ms,
                 kind,
                 status: response.status,
                 ms: performance.now() - started,
-                ...data,
               };
             }
             let timer;
@@ -83,10 +100,18 @@ for (const driver of (process.env.PROBE_DRIVERS ?? 'postgres,pg').split(',')) {
     }
   }
 }
+clearInterval(sampling);
+await sample();
+await monitor.end({ timeout: 0 });
 await writeFile(
   process.argv[3] ?? 'test-results/test006-probes.json',
   JSON.stringify(
-    { at: new Date().toISOString(), origin: origin ?? 'local', results },
+    {
+      at: new Date().toISOString(),
+      origin: origin ?? 'local',
+      results,
+      samples,
+    },
     null,
     2,
   ),

@@ -393,5 +393,5 @@ try {
   ]) {
     if (id) await db.delete(table).where(eq(table.id, id));
   }
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

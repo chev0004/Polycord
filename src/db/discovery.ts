@@ -43,7 +43,7 @@ const loadPostgresTimezones = () => {
   if (!postgresTimezones) {
     const timezones = db
       .execute<{ name: string }>(sql`select name from pg_timezone_names`)
-      .then((rows) => [...rows].map(({ name }) => name));
+      .then(({ rows }) => rows.map(({ name }) => name));
     postgresTimezones = timezones;
     timezones.catch(() => {
       if (postgresTimezones === timezones) postgresTimezones = undefined;
@@ -62,7 +62,7 @@ const tagCounts = (where: SQL | undefined, limit?: number) =>
       inner join ${users} on ${profiles.userId} = ${users.id}
       cross join lateral unnest(${profiles.tags}) tag where ${where}
       group by tag order by count(*) desc, tag ${limit ? sql`limit ${limit}` : sql``}`)
-    .then((rows) => [...rows]);
+    .then(({ rows }) => rows);
 
 const loadTopTags = () => {
   if (!tagCache || tagCache.expires < Date.now()) {

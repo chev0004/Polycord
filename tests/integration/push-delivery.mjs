@@ -78,5 +78,5 @@ try {
   console.log('push delivery passed');
 } finally {
   await db.delete(users).where(eq(users.id, user.id));
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

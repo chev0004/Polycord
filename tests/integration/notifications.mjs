@@ -281,5 +281,5 @@ try {
       people.map((user) => user.id),
     ),
   );
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

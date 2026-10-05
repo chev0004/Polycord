@@ -43,4 +43,4 @@ await db
   .insert(ipBans)
   .values({ ip: '203.0.113.250', reason: 'TEST-006 synthetic fixture' });
 console.log('TEST-006 migrated and seeded 100 synthetic profiles');
-await db.$client.end({ timeout: 0 });
+await db.$client.end();

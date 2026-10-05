@@ -111,5 +111,5 @@ try {
   await db
     .delete(users)
     .where(inArray(users.id, [user.id, copier.id, owner.id]));
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }
