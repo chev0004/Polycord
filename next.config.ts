@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     ];
   },
   serverExternalPackages: ['ffprobe-static'],
+  transpilePackages: ['pg'],
   outputFileTracingIncludes: {
     '/api/profile/voice': [
       `node_modules/ffprobe-static/bin/${process.platform}/${process.arch}/*`,
