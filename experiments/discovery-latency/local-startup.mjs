@@ -3,6 +3,9 @@ import { readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 const results = [];
+const commit = execFileSync('git', ['rev-parse', 'HEAD'], {
+  encoding: 'utf8',
+}).trim();
 for (const route of ['api/internal/ban-check', 'api/discovery']) {
   const entry = resolve(`.next/server/app/${route}/route.js`);
   const trace = JSON.parse(await readFile(`${entry}.nft.json`, 'utf8'));
@@ -48,6 +51,10 @@ for (const route of ['api/internal/ban-check', 'api/discovery']) {
 }
 await writeFile(
   process.argv[2],
-  JSON.stringify({ node: process.version, results }, null, 2),
+  JSON.stringify(
+    { at: new Date().toISOString(), commit, node: process.version, results },
+    null,
+    2,
+  ),
 );
 console.log(JSON.stringify(results.map(({ samples, ...result }) => result)));
