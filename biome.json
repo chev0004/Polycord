@@ -85,7 +85,6 @@
         "**/*.config.mjs",
         "**/*.config.ts",
         "**/middleware.ts",
-        "netlify/ban-check.ts",
         "**/*.stories.tsx",
         "**/*.stories.ts",
         "**/.storybook/*.tsx",
