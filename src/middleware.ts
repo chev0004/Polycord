@@ -8,7 +8,6 @@ import {
   readSessionFromCookieValue,
 } from './lib/auth-session';
 import { BAN_CHECK_PATH, findBan } from './lib/banGate';
-import { clientIp } from './lib/clientIp';
 import { locales } from './utils/locales';
 
 export { locales };
@@ -99,11 +98,6 @@ export default async function middleware(request: NextRequest) {
   }
 
   if (nonPageRoute.test(request.nextUrl.pathname)) {
-    if (request.nextUrl.pathname === '/api/internal/dev017-ip') {
-      const headers = new Headers(request.headers);
-      headers.set('x-dev017-edge-ip', clientIp(request.headers) ?? '');
-      return NextResponse.next({ request: { headers } });
-    }
     return NextResponse.next();
   }
 
