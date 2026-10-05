@@ -7,7 +7,7 @@ import {
   BAN_REFERENCE_HEADER,
   readSessionFromCookieValue,
 } from './lib/auth-session';
-import { findBan } from './lib/banGate';
+import { BAN_CHECK_PATH, findBan } from './lib/banGate';
 import { locales } from './utils/locales';
 
 export { locales };
@@ -32,7 +32,11 @@ const getProtectedRouteLocale = (pathname: string) => {
   return null;
 };
 
-const serviceRoutes = new Set(['/api/billing/webhook', '/api/health']);
+const serviceRoutes = new Set([
+  '/api/billing/webhook',
+  '/api/health',
+  BAN_CHECK_PATH,
+]);
 const nonPageRoute = /^\/(api|_next)(\/|$)|\./;
 
 const denyBanned = (
@@ -72,13 +76,24 @@ const denyBanned = (
 
 export default async function middleware(request: NextRequest) {
   if (!serviceRoutes.has(request.nextUrl.pathname)) {
-    const ban = await findBan(
-      request.headers,
-      (name) => request.cookies.get(name)?.value,
-    );
+    try {
+      const ban = await findBan(
+        request.nextUrl.origin,
+        request.headers,
+        (name) => request.cookies.get(name)?.value,
+      );
 
-    if (ban) {
-      return denyBanned(request, ban);
+      if (ban) {
+        return denyBanned(request, ban);
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Temporarily unavailable' },
+        {
+          status: 503,
+          headers: { 'Cache-Control': 'no-store', 'Retry-After': '5' },
+        },
+      );
     }
   }
 
