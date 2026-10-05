@@ -1,0 +1,9 @@
+{
+  "id": "6ac4172cdf568ee4a858afa5",
+  "commit": null,
+  "build": null,
+  "created": "2026-10-05T21:31:24.436Z",
+  "region": "cmh",
+  "origin": "https://6ac4172cdf568ee4a858afa5--polycord-disc027-supabase.netlify.app",
+  "source": "local artifact, f700704"
+}
