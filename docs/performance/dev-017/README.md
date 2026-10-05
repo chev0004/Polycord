@@ -66,7 +66,17 @@ The 23 relevant middleware, ban-route, and real-network redirect regression test
 
 ## Rollback
 
-The disposable-site rollback drill is still pending while the original sandbox is paused by Supabase's account-wide free-project limit. A separately authorized test project has been created to complete that drill without taking staging or another app offline.
+The rollback and fault drills passed on the separately authorized disposable site `polycord-disc027-supabase` (`0c36e849-7617-4665-a657-1eb2b60da3d2`) and database `vioatoyjsfzqrpohliaa`. The database is free x86 Nano in Ohio, PostgreSQL `17.11.0.002`, with 5,000 synthetic profiles and 4,735 discoverable profiles. It uses its own provider transaction/session endpoints and credentials. The original sandbox remains paused, and staging and unrelated projects were not interrupted.
+
+The disposable deployments use the merged candidate's unchanged database and ban behavior, with DISC-027 timing probes. After locking the serving deployment, the runner restored `6ac3f0b223bbe1390cbb0473`, verified health, exact counts, real rendered synthetic profiles, remembered and account bans, internal authentication and no-store responses on the public test hostname, then restored `6ac3f169a8d8562757dc5413` and repeated the seven checks. Both deployments contain the same instrumented baseline commit `3c1558f3ae958659931f683318a41b268d3fd66b`; this exercises deployment restore and recovery, not a code-version performance comparison. The serving deployment was explicitly unlocked afterward. [Rollback evidence](disposable-rollback.txt) and [roll-forward evidence](disposable-roll-forward.txt) preserve all seven checks per target.
+
+An exclusive lock on the disposable `users` table caused the authenticated internal check, discovery API and page to return uncached 503 responses in 8.17, 2.94 and 2.72 seconds. The first value includes hosted startup and network time; the database statement limit remains 2.5 seconds. Releasing the lock restored all three responses to 200 without restarting the functions, and the observer found zero idle transactions. [Lock and cleanup evidence](disposable-locked.txt) records both failure and recovery.
+
+Pausing only this disposable database caused the same routes to fail closed with no-store 503s in 1.34, 0.81 and 0.69 seconds. After Supabase completed restoration, the existing deployment recovered without a new build or function restart, returning 200 in 0.77, 0.48 and 0.77 seconds. [Outage evidence](disposable-paused.txt) and [recovery evidence](disposable-recovered.txt) retain those checks. Requests made while the provider was still restoring continued to return bounded 503s; recovery is claimed only after restoration finished.
+
+DISC-027's third independent initial burst on this disposable project previously experienced unexpected 500/503 responses and subsequently recovered unchanged. Its cause remains unproven and is preserved in that ticket's baseline evidence. The two staging workloads above had no such errors. The fault and restore drills do not establish an availability guarantee for the free platform.
+
+These drills used existing deployments and consumed no new Netlify build-runner time. Automatic builds are now stopped only on the experiment site. Staging remains on its validated deployment with normal `develop` builds and PR previews disabled.
 
 For staging, use the existing Netlify credentials and the REST API, keeping all secret values inside the shell process:
 
