@@ -49,6 +49,7 @@ export const createBanClient = (signal: AbortSignal) => {
     client.connection.once('sslconnect', () => {
       const secure = client.connection.stream;
       socket.once('close', () => secure.destroy());
+      secure.once('end', () => socket.destroy());
       secure.once('close', () => socket.destroy());
     });
   }

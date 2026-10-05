@@ -56,6 +56,10 @@ export const lookupBan = async (
       }),
     );
   } finally {
-    await client.end();
+    await measureStartup('ban-close', async () => {
+      const closed = client.end();
+      if ('Deno' in globalThis) client.connection.stream.destroy();
+      await closed;
+    });
   }
 };
