@@ -1,4 +1,6 @@
 import { mock } from 'bun:test';
+import assert from 'node:assert/strict';
+import { count, eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
@@ -18,10 +20,18 @@ await client.end({ timeout: 0 });
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
 const { addDummies } = await import('../../src/db/seed');
-const { users, moderationRestrictions, ipBans } = await import(
+const { users, profiles, moderationRestrictions, ipBans } = await import(
   '../../src/db/schema'
 );
-await addDummies(100);
+await db
+  .delete(users)
+  .where(inArray(users.discordUserId, ['test006-allowed', 'test006-banned']));
+let [{ total }] = await db.select({ total: count() }).from(profiles);
+while (total < 5000) {
+  await addDummies(5000 - total);
+  [{ total }] = await db.select({ total: count() }).from(profiles);
+}
+assert.equal(total, 5000);
 await db.insert(users).values([
   {
     discordUserId: 'test006-allowed',
@@ -39,9 +49,11 @@ await db.insert(users).values([
 ]);
 await db
   .insert(moderationRestrictions)
-  .values({ discordUserId: 'test006-remembered', bannedAt: new Date() });
+  .values({ discordUserId: 'test006-remembered', bannedAt: new Date() })
+  .onConflictDoNothing();
+await db.delete(ipBans).where(eq(ipBans.ip, '203.0.113.250'));
 await db
   .insert(ipBans)
   .values({ ip: '203.0.113.250', reason: 'TEST-006 synthetic fixture' });
-console.log('TEST-006 migrated and seeded 100 synthetic profiles');
+console.log('TEST-006 migrated and seeded 5000 synthetic profiles');
 await db.$client.end();

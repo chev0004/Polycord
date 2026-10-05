@@ -6,6 +6,9 @@
   NODE_VERSION = "22"
   BUN_VERSION = "1.3.14"
 
+[context."test/test-006"]
+  command = "node experiments/database-burst/build.mjs"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
