@@ -58,7 +58,10 @@ export const lookupBan = async (
   } finally {
     await measureStartup('ban-close', async () => {
       const closed = client.end();
-      if ('Deno' in globalThis) client.connection.stream.destroy();
+      if ('Deno' in globalThis) {
+        client.connection.stream.destroy();
+        client.connection.emit('end');
+      }
       await closed;
     });
   }
