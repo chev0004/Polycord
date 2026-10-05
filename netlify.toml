@@ -11,6 +11,7 @@
 
 [context."chore/dev-017"]
   command = "node experiments/staging-rollout/build.mjs"
+  functions = "experiments/staging-rollout/netlify/functions"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
