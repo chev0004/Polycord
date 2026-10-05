@@ -115,12 +115,40 @@ try {
     ],
   ]) {
     const result = await call(path, options);
-    checks.push({ name, expected, ...result });
-    assert.equal(result.status, expected, name);
-    if (name === 'banned page') assert.equal(result.bannedScreen, true);
-    if (name === 'IP lookup') assert.equal(result.banFound, true);
+    checks.push({
+      name,
+      expected,
+      ...result,
+      passed:
+        result.status === expected &&
+        (name !== 'banned page' || result.bannedScreen) &&
+        (name !== 'IP lookup' || result.banFound),
+    });
   }
   await sample();
+  const ipResponse = await fetch(new URL('/api/internal/test006-ip', origin), {
+    headers: { [BAN_CHECK_AUTH_HEADER]: token },
+    signal: AbortSignal.timeout(12000),
+  });
+  if (ipResponse.status === 200) {
+    const { ip } = await ipResponse.json();
+    assert.ok(ip);
+    const [ban] =
+      await monitor`insert into ip_bans(ip,reason) values(${ip},'TEST-006 caller IP test') returning id`;
+    try {
+      const result = await call('/api/discovery?locale=en');
+      checks.push({
+        name: 'trusted caller IP ban',
+        expected: 403,
+        ...result,
+        passed: result.status === 403,
+      });
+      assert.equal(result.status, 403);
+    } finally {
+      await monitor`delete from ip_bans where id=${ban.id}`;
+    }
+    assert.equal((await call('/api/discovery?locale=en')).status, 200);
+  }
   const sampling = setInterval(() => sample().catch(() => {}), 250);
   const paths = [
     '/en?q=test006',
