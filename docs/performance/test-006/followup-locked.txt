@@ -1,0 +1,44 @@
+{
+  "mode": "locked",
+  "outcomes": [
+    {
+      "path": "/api/internal/ban-check",
+      "status": 503,
+      "ms": 2676.6229179999996,
+      "noStore": true
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 503,
+      "ms": 2649.760708,
+      "noStore": true
+    },
+    {
+      "path": "/en",
+      "status": 503,
+      "ms": 2720.0650990000004,
+      "noStore": true
+    },
+    {
+      "path": "/api/internal/ban-check",
+      "status": 200,
+      "ms": 130.82752900000014,
+      "noStore": true
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 200,
+      "ms": 277.2874730000003,
+      "noStore": true
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "ms": 508.8104320000002,
+      "noStore": true
+    },
+    {
+      "idle_transactions": 0
+    }
+  ]
+}

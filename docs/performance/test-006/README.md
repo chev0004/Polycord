@@ -1,6 +1,6 @@
 # TEST-006: disposable Supabase driver experiment
 
-The review candidate passes the two missing checks: exactly 5,000 synthetic profiles and a 60-request batch as the runner's first application traffic after a fresh deploy. Three bursts pass 60/60, the subsequent parallel check passes 12/12, and all eight safety checks pass. The first batch's p95 is 6.64 seconds and maximum is 7.10 seconds. This supports the combined pg/pool/deadline candidate for a separate staging rollout review; it does not establish a driver-only fix or fast startup. PR #259 remains draft and no existing staging or production resource was changed.
+The review candidate passes the two missing checks: exactly 5,000 synthetic profiles and a 60-request batch as the runner's first application traffic after a fresh deploy. Three bursts pass 60/60, the subsequent parallel check passes 12/12, and all eight safety checks pass. The latest first batch's p95 is 6.50 seconds and maximum is 7.32 seconds, including the follow-up redirect guard. This supports the combined pg/pool/deadline candidate for a separate staging rollout review; it does not establish a driver-only fix or fast startup. PR #259 remains draft and no existing staging or production resource was changed.
 
 Measured on 2026-10-05. The initial pg candidate passed 12 parallel application requests and three consecutive 60-request application bursts after smaller requests had warmed its fresh deployment. Those runs used only 100 profiles. The configuration uses two pooled application connections, a dedicated abortable ban connection, and a 12-second middleware HTTP deadline. Database connection and ban lookup deadlines remain three seconds; ban statements are limited to 2.5 seconds and general application queries to ten seconds.
 
@@ -87,6 +87,25 @@ The runner executes in the disposable Netlify site's Linux build environment, us
 
 With `users` locked, the internal route, discovery, and page returned uncached 503s in 2.87, 2.66, and 2.71 seconds. After unlock they recovered to 200 in 172, 291, and 558 ms, with zero idle transactions. The five integration suites also passed through the TLS proxy before fixture expansion, in 45.66 seconds. They cover real transaction rollback, savepoint recovery, transaction options, and stalled BEGIN/SELECT/COMMIT cleanup. [CI on the measured commit](https://github.com/chev0004/Polycord/actions/runs/37296002301) passed 181 tests without skips, 79 application browser tests, and 457 Storybook tests.
 
+## Follow-up: reject internal redirects
+
+The internal ban-check fetch originally followed HTTP redirects. A real-network regression test in Bun redirects the authenticated POST to a second loopback server; before the fix, that server received the internal token and its `ban: null` response was accepted. The request now uses `redirect: 'error'`, so the lookup rejects without contacting the redirect target. The test failed before the change and passes afterward. This adds no database query or network round trip to successful direct requests. A misconfigured internal redirect now fails closed with 503 instead of being followed; configure the internal route to respond directly.
+
+Commit `37addce658a0d7ffc59f5e90e69531a04b2f63f5` passed the five real database integration suites in 46.45 seconds and was published without build cache at the [fresh redirect-safe deployment](https://6ac38210910cf7749b790019--polycord-test006-supabase.netlify.app). The [second probe build](https://app.netlify.com/projects/polycord-test006-supabase/deploys/6ac382e3a17a53aaf34bb687) targeted this immutable URL, configured only in the disposable site's Production context. Its first application batch launched at `2026-10-05T10:58:57.244Z`, before any smaller batch or application check. The same fixture has 5,000 profiles and 4,735 discoverable profiles.
+
+| Batch | Successful validated responses | p50 | p95 | Maximum |
+| --- | --- | --- | --- | --- |
+| First application traffic, 60 | 60/60 | 4.72 s | 6.50 s | 7.32 s |
+| Second burst, 60 | 60/60 | 0.88 s | 1.82 s | 2.33 s |
+| Third burst, 60 | 60/60 | 0.74 s | 2.21 s | 2.55 s |
+| Subsequent parallel check, 12 | 12/12 | 0.57 s | 1.02 s | 1.02 s |
+
+All eight safety checks passed. PostgreSQL backend samples peaked at 18 connections, 14 active connections, and six idle transactions during traffic; the last sample had only the active observer and zero idle transactions. Monitoring reported no errors. Locked-database checks returned uncached 503s in 2.68, 2.65, and 2.72 seconds, then recovered after unlock in 131, 277, and 509 ms, with zero idle transactions.
+
+Local checks passed, and the local unit run passed 167 tests with 15 database-dependent skips. [CI on the measured redirect-safe commit](https://github.com/chev0004/Polycord/actions/runs/37299475903) passed all 182 tests, 79 application browser tests, and 457 Storybook tests.
+
+[Raw burst evidence](followup-first-traffic.txt) and [raw table-lock evidence](followup-locked.txt) preserve the provider log output after removing timestamp prefixes. Netlify redacted the deploy-origin value as `****` in this run's JSON; the configured immutable target and deployed commit are identified above rather than inserting an inferred URL into the raw file. The earlier methodology limits still apply: fixture/monitoring queries warm the database, provider-side startup is not observable, and these runs do not isolate a latency improvement from the redirect guard.
+
 ## Safety and failure recovery
 
 The final candidate passes anonymous pages, allowed identities, account bans, remembered bans, internal authentication, synthetic IP lookup, and spoofed forwarding-header checks. A temporary authenticated probe on the eight-second deployment captured the middleware's trusted caller address; banning that address returned 403 and removing the synthetic restriction restored 200. That probe and its middleware forwarding hook were removed before the final deployment. No caller address is stored in the evidence.
@@ -138,6 +157,7 @@ The old temporary caller-IP probe is no longer called by the review runner. Its 
 | pg app, 12 s, initial general query limit | `8da7e8b29b85146b601c0a7290bc91b8551dce1a` | [Initial 12 s trial](https://6ac33e26fbf6fba1ae0ede70--polycord-test006-supabase.netlify.app) |
 | Final pg app, 12 s, separate query limits | `2ded19b850bb7c8f4cda28e8364327e20ae7b5d8` | [Final candidate](https://6ac344338a947fbf3abea1b0--polycord-test006-supabase.netlify.app) |
 | Reviewed pg app, 5,000 profiles, first 60-request traffic | `b360ba0e7533653ad7f69a9a00067f1bf4d7e89d` | [Reviewed candidate](https://6ac37a1157df527372b0b63a--polycord-test006-supabase.netlify.app) |
+| Redirect-safe pg app, 5,000 profiles, first 60-request traffic | `37addce658a0d7ffc59f5e90e69531a04b2f63f5` | [Redirect-safe candidate](https://6ac38210910cf7749b790019--polycord-test006-supabase.netlify.app) |
 
 The `.txt` measurement logs in this directory contain raw JSON with request outcomes, timestamps, latency distributions, and available database samples. Local pool-one and pool-two comparison files predate connection sampling. The initial certificate-configuration failure and an invalid server-layer IP probe were corrected before the recorded comparison runs and are excluded from the canonical results.
 
