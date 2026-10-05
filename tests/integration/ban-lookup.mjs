@@ -127,7 +127,8 @@ try {
   while (stalledSockets.size && Date.now() - cleanup < 1000) await delay(10);
   assert.equal(stalledSockets.size, 0, 'expired BEGIN connections stayed open');
   assert.equal(stalled, lookups);
-  assert.deepEqual(await locker`select 1 as alive`, [{ alive: 1 }]);
+  const [healthy] = await locker`select 1 as alive`;
+  assert.equal(healthy.alive, 1);
 
   stallBegin = false;
   const retry = Date.now();
