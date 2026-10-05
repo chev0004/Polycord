@@ -2,9 +2,9 @@ import 'server-only';
 
 import { createHash } from 'node:crypto';
 import { sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { findActiveIpBan, findBannedAt } from '@/db';
-import { createSqlClient } from '@/db/client';
+import { createBanClient } from '@/db/client';
 import type { BanNotice } from './banGate';
 
 export const BAN_STATEMENT_TIMEOUT_MS = 2500;
@@ -23,9 +23,10 @@ export const lookupBan = async (
   signal: AbortSignal,
 ): Promise<BanNotice | null> => {
   signal.throwIfAborted();
-  const client = createSqlClient(signal);
+  const client = createBanClient(signal);
 
   try {
+    await client.connect();
     return await drizzle(client).transaction(async (tx) => {
       signal.throwIfAborted();
       await tx.execute(
@@ -45,6 +46,6 @@ export const lookupBan = async (
         : null;
     });
   } finally {
-    await client.end({ timeout: 0 });
+    await client.end();
   }
 };
