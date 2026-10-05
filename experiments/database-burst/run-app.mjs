@@ -47,6 +47,11 @@ const call = async (path, options = {}) => {
     const body = await response.text();
     return {
       status: response.status,
+      bannedScreen: body.includes('id="banned-title"'),
+      banFound:
+        path === '/api/internal/ban-check' && response.status === 200
+          ? JSON.parse(body).ban !== null
+          : undefined,
       ms: performance.now() - started,
       noStore:
         response.headers.get('cache-control')?.includes('no-store') ?? false,
@@ -77,7 +82,8 @@ try {
       { headers: { cookie: allowed } },
       200,
     ],
-    ['account ban', '/en', { headers: { cookie: banned } }, 403],
+    ['account ban', '/api/discovery', { headers: { cookie: banned } }, 403],
+    ['banned page', '/en', { headers: { cookie: banned } }, 200],
     [
       'remembered ban',
       '/api/discovery',
@@ -111,6 +117,8 @@ try {
     const result = await call(path, options);
     checks.push({ name, expected, ...result });
     assert.equal(result.status, expected, name);
+    if (name === 'banned page') assert.equal(result.bannedScreen, true);
+    if (name === 'IP lookup') assert.equal(result.banFound, true);
   }
   await sample();
   const sampling = setInterval(() => sample().catch(() => {}), 250);
