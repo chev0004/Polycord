@@ -125,5 +125,5 @@ try {
   await db
     .delete(moderationRestrictions)
     .where(eq(moderationRestrictions.discordUserId, identity.id));
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

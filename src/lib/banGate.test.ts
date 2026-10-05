@@ -93,4 +93,38 @@ describe('findBan', () => {
       findBan('https://polycord.test', headers, () => undefined),
     ).rejects.toThrow();
   });
+
+  it('rejects redirects without forwarding the internal token', async () => {
+    const forwardedTokens: boolean[] = [];
+    const target = Bun.serve({
+      hostname: '127.0.0.1',
+      port: 0,
+      fetch: (request) => {
+        forwardedTokens.push(request.headers.has(BAN_CHECK_AUTH_HEADER));
+        return Response.json({ ban: null });
+      },
+    });
+    const source = Bun.serve({
+      hostname: '127.0.0.1',
+      port: 0,
+      fetch: () => Response.redirect(target.url, 307),
+    });
+
+    try {
+      const result = await findBan(
+        source.url.origin,
+        headers,
+        () => undefined,
+      ).then(
+        () => 'allowed',
+        () => 'failed',
+      );
+
+      expect(forwardedTokens).toEqual([]);
+      expect(result).toBe('failed');
+    } finally {
+      await source.stop(true);
+      await target.stop(true);
+    }
+  });
 });

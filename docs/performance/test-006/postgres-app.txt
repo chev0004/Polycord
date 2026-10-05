@@ -1,0 +1,2069 @@
+{
+  "at": "2026-10-05T05:52:45.641Z",
+  "origin": "https://6ac33aa772edf0cb2c7c4ccf--polycord-test006-supabase.netlify.app",
+  "checks": [
+    {
+      "name": "anonymous page",
+      "expected": 200,
+      "status": 200,
+      "bannedScreen": false,
+      "ms": 1763.4791999999998,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    },
+    {
+      "name": "allowed account",
+      "expected": 200,
+      "status": 200,
+      "bannedScreen": false,
+      "ms": 505.0482999999999,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    },
+    {
+      "name": "account ban",
+      "expected": 403,
+      "status": 403,
+      "bannedScreen": false,
+      "ms": 159.971,
+      "noStore": true,
+      "valid": false,
+      "passed": true
+    },
+    {
+      "name": "banned page",
+      "expected": 200,
+      "status": 200,
+      "bannedScreen": true,
+      "ms": 334.86609999999973,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    },
+    {
+      "name": "remembered ban",
+      "expected": 403,
+      "status": 403,
+      "bannedScreen": false,
+      "ms": 168.2778000000003,
+      "noStore": true,
+      "valid": false,
+      "passed": true
+    },
+    {
+      "name": "internal authentication",
+      "expected": 403,
+      "status": 403,
+      "bannedScreen": false,
+      "ms": 115.26500000000033,
+      "noStore": true,
+      "valid": false,
+      "passed": true
+    },
+    {
+      "name": "IP lookup",
+      "expected": 200,
+      "status": 200,
+      "bannedScreen": false,
+      "banFound": true,
+      "ms": 150.7163999999998,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    },
+    {
+      "name": "spoofed IP headers",
+      "expected": 200,
+      "status": 200,
+      "bannedScreen": false,
+      "ms": 287.22479999999996,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    }
+  ],
+  "results": [
+    {
+      "size": 1,
+      "ok": 1,
+      "p50": 951.7968000000001,
+      "p95": 951.7968000000001,
+      "max": 951.7968000000001,
+      "outcomes": [
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 951.7968000000001,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "size": 12,
+      "ok": 11,
+      "p50": 1353.9692999999997,
+      "p95": 5340.223599999999,
+      "max": 5340.223599999999,
+      "outcomes": [
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1349.0491000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4499.9992,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 867.8924999999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 362.4291000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 5340.223599999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 794.4119000000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4410.4215,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 425.14429999999993,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1353.9692999999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4221.463400000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4166.3837,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 380.4332999999997,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "size": 60,
+      "ok": 35,
+      "p50": 4180.563099999999,
+      "p95": 4796.329599999999,
+      "max": 5442.715100000001,
+      "outcomes": [
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1290.8752999999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 754.8932000000004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 757.8223999999991,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 470.1831999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4152.4771,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 756.0313999999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3979.7448999999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 470.11149999999907,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1554.9385000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4180.6603,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 663.8073999999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 392.52340000000004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4225.240400000001,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 723.2139000000006,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4331.0396,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 608.3077999999987,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4152.196899999999,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4374.7438,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4331.001699999999,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 796.1103999999996,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1887.5818,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1063.8593999999994,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4287.3577000000005,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 625.5404000000017,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4287.3294000000005,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4226.2554,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 991.0545000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 556.0015000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4330.8789000000015,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 5012.9298,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4224.9653,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 789.1478999999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4330.823899999999,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4287.2091,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4226.1754,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 4796.329599999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 5442.715100000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4248.585000000001,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4606.3004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 640.7446,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4248.631399999998,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4248.610500000001,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4226.061600000001,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 842.7544999999991,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2030.8963000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4287.109200000001,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4786.1734,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 640.674500000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4226.421,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4226.024099999999,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4180.563099999999,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 555.7925000000014,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1235.4867999999988,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4226.624100000001,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4248.4966,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 469.4349000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1869.3401000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4180.700999999999,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4594.9601999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 595.8750999999993,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "size": 60,
+      "ok": 58,
+      "p50": 840.034700000002,
+      "p95": 5864.079699999998,
+      "max": 6330.7004000000015,
+      "outcomes": [
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1613.201399999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 862.9927000000007,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 489.7009999999991,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 217.8153999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1034.5486,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 838.8384000000005,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 604.3685999999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 229.7605999999996,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 5252.934399999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 477.40739999999823,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 859.7695000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 195.08300000000054,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1442.9402999999984,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1045.0029000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 968.0816999999988,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 235.10490000000027,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1006.645599999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1056.1903999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 712.2223999999987,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 281.3678999999993,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1708.6517999999978,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 479.3352999999988,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4128.227099999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 378.3822999999993,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1078.0301,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1047.520099999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 853.590900000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 229.58339999999953,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4117.125200000002,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4618.4573,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 674.5306999999993,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 261.9804000000004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 5169.389800000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 682.6879000000026,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 496.20400000000154,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 335.20759999999973,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 977.6832999999988,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 840.034700000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 503,
+          "bannedScreen": false,
+          "ms": 4089.4488,
+          "noStore": true,
+          "valid": false
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 456.3942999999981,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 5864.079699999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 745.0540999999994,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 761.188500000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 261.8944999999985,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 6330.7004000000015,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1038.1569999999974,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 984.9717000000019,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 312.10570000000007,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 6024.8446,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 740.7496999999985,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 821.5325999999986,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 285.1840999999986,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1213.1659000000018,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4403.383000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 806.7315000000017,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 321.14370000000054,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1507.320700000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 996.1897000000008,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 674.3360000000011,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 367.7416000000012,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "size": 60,
+      "ok": 60,
+      "p50": 764.6309000000001,
+      "p95": 4038.9969999999994,
+      "max": 4756.223100000003,
+      "outcomes": [
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 725.104800000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4036.6443,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 606.3286000000007,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 173.2556000000004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1384.1704000000027,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 836.2988000000005,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 609.9744000000028,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 239.03989999999976,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1518.6598000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 770.0622999999978,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 559.232,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 199.70550000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 967.9354999999996,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 734.3544000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 734.4192000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 507.333499999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1016.5109999999986,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 949.4929999999986,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 768.7367000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 276.02080000000205,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4756.223100000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 838.402100000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 646.2281000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 339.03060000000187,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1910.326799999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 868.9501000000018,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 622.8217000000004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 248.17929999999978,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1013.0835999999981,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 594.7690000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 608.1210000000028,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 549.0907000000007,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1451.2655000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4139.032600000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 540.1525000000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 224.77929999999833,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1523.9284999999982,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 542.6532999999981,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 831.624200000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 368.8881999999976,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1348.2257000000027,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 764.6309000000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 768.6439000000028,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 258.97230000000127,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 941.515800000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 771.6879999999983,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 913.5053000000007,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 262.03099999999904,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 971.6497999999992,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4038.9969999999994,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 604.9249999999993,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 352.2002999999968,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1015.9784,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 720.6506999999983,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 818.2824,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 267.3319999999985,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 879.5991000000031,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 662.7947999999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 853.3502000000008,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 244.6844999999994,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "at": "2026-10-05T05:52:22.492Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:23.059Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:23.328Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:23.578Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:23.826Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:24.077Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T05:52:24.341Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:24.610Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:24.855Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:25.106Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:25.372Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:25.636Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:25.897Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:26.169Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:26.424Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:26.674Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:26.939Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:27.191Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:27.458Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:27.726Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:27.986Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:28.232Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:28.497Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:28.767Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:29.024Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:29.287Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:29.551Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:29.800Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T05:52:30.063Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:30.332Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:30.591Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:30.843Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:31.109Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:31.368Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:31.632Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:31.896Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:32.160Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:32.426Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:32.676Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:32.938Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:33.201Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:33.465Z",
+      "connections": 17,
+      "active": 4,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T05:52:33.730Z",
+      "connections": 17,
+      "active": 7,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T05:52:33.992Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:34.259Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:34.512Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:34.763Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T05:52:35.022Z",
+      "connections": 18,
+      "active": 6,
+      "idle_transactions": 5
+    },
+    {
+      "at": "2026-10-05T05:52:35.291Z",
+      "connections": 18,
+      "active": 14,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:35.544Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:35.805Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:36.055Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:36.313Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:36.571Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:36.829Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:37.093Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:37.344Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:37.610Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:37.874Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:38.125Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:38.389Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:38.640Z",
+      "connections": 18,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:38.903Z",
+      "connections": 18,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:39.154Z",
+      "connections": 18,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:39.421Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:39.676Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:39.933Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:40.204Z",
+      "connections": 18,
+      "active": 4,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:40.472Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:40.716Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:40.966Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:41.226Z",
+      "connections": 18,
+      "active": 4,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T05:52:41.486Z",
+      "connections": 18,
+      "active": 6,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:41.741Z",
+      "connections": 18,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:42.008Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:42.260Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:42.520Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:42.777Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:43.035Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:43.299Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:43.564Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:43.827Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:44.093Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:44.344Z",
+      "connections": 18,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:44.609Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:44.875Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:45.142Z",
+      "connections": 18,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:45.389Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T05:52:45.636Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    }
+  ]
+}

@@ -184,5 +184,5 @@ try {
       owners.map((owner) => owner.id),
     ),
   );
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

@@ -171,5 +171,5 @@ try {
   console.log('received shares passed');
 } finally {
   await db.delete(users).where(inArray(users.id, created));
-  await globalThis.polycordSql.end();
+  await db.$client.end();
 }

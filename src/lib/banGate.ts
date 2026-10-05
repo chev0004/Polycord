@@ -11,7 +11,7 @@ import { clientIp } from './clientIp';
 export type BanNotice = { date: Date; reference: string };
 
 export const BAN_CHECK_PATH = '/api/internal/ban-check';
-export const BAN_CHECK_TIMEOUT_MS = 4000;
+export const BAN_CHECK_TIMEOUT_MS = 12000;
 
 const isBanNotice = (
   value: unknown,
@@ -50,6 +50,7 @@ export const findBan = async (
       discordUserIds: [session?.id, banned].flatMap((id) => id ?? []),
     }),
     cache: 'no-store',
+    redirect: 'error',
     signal: AbortSignal.timeout(BAN_CHECK_TIMEOUT_MS),
   });
 

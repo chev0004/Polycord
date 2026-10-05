@@ -10,10 +10,10 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
         ['run', 'tests/integration/ban-lookup.mjs'],
         {
           encoding: 'utf8',
-          timeout: 60000,
+          timeout: 90000,
         },
       ),
     ).toContain('ban lookup recovery passed');
   },
-  60000,
+  90000,
 );
