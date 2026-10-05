@@ -15,6 +15,8 @@ The driver change alone did not solve hosted cold-start failures. Both original 
 - Data: 100 synthetic profiles, synthetic allowed/banned accounts, remembered restriction, and synthetic IP fixture. Analytics was disabled. No staging or production database was queried or changed.
 - Credentials were held outside the repository and imported only into this disposable site. No paid resources, quota increases, or existing project configuration changes were made. Neon was unnecessary because Supabase had a free slot; this is not a Neon comparison.
 
+The new Supabase project and Netlify site were retained for review. The temporary local credential file and temporary IP probe were removed after testing; only the sandbox's provider-side test credentials remain for the working preview.
+
 ## Workload
 
 Standalone probes use the same SQL and fixture for both drivers: discovery joins with nine results, page counts, and interactive transactions containing identity/restriction/IP queries. Each driver runs three sequential operations, 12 parallel mixed operations, then three consecutive 60-operation bursts. Both start with one connection, disabled prepared statements, TLS certificate validation, a three-second connection timeout, and a 20-second idle timeout. pg additionally has its native 2.5-second query timeout; the local runner applies a ten-second overall deadline to either driver. The transaction sets a 2.5-second server statement timeout.
