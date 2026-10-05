@@ -50,6 +50,7 @@ export const findBan = async (
       discordUserIds: [session?.id, banned].flatMap((id) => id ?? []),
     }),
     cache: 'no-store',
+    redirect: 'error',
     signal: AbortSignal.timeout(BAN_CHECK_TIMEOUT_MS),
   });
 
