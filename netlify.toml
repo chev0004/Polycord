@@ -9,6 +9,9 @@
 [context."test/test-006"]
   command = "node experiments/database-burst/build.mjs"
 
+[context."perf/disc-027"]
+  command = "node experiments/database-burst/build.mjs"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 

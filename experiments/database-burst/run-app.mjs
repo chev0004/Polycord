@@ -64,6 +64,7 @@ const call = async (path, options = {}) => {
       ...options,
       signal: AbortSignal.timeout(16000),
     });
+    const ttfb = performance.now() - started;
     const body = await response.text();
     const data = response.headers
       .get('content-type')
@@ -90,6 +91,9 @@ const call = async (path, options = {}) => {
           ? data.ban !== null
           : undefined,
       ms: performance.now() - started,
+      ttfb,
+      bytes: Buffer.byteLength(body),
+      serverTiming: response.headers.get('server-timing'),
       noStore:
         response.headers.get('cache-control')?.includes('no-store') ?? false,
       valid,
