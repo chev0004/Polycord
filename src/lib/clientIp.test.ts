@@ -3,6 +3,7 @@ import { clientIp, normalizeIp } from './clientIp';
 
 afterEach(() => {
   delete process.env.POLYCORD_CLIENT_IP_HEADER;
+  delete (globalThis as { Netlify?: unknown }).Netlify;
 });
 
 describe('normalizeIp', () => {
@@ -58,6 +59,18 @@ describe('clientIp', () => {
     expect(
       clientIp(new Headers({ 'x-forwarded-for': '198.51.100.7, junk' })),
     ).toBeNull();
+  });
+
+  it('prefers the Netlify edge context over any header', () => {
+    (globalThis as { Netlify?: unknown }).Netlify = {
+      context: { ip: '198.51.100.7' },
+    };
+    const headers = new Headers({
+      'x-nf-client-connection-ip': '203.0.113.9',
+      'x-forwarded-for': '203.0.113.10',
+    });
+
+    expect(clientIp(headers)).toBe('198.51.100.7');
   });
 
   it('honours a configured header name', () => {

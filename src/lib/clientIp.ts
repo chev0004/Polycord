@@ -21,13 +21,18 @@ export const normalizeIp = (value: string | null | undefined) => {
   return [high >> 8, high & 255, low >> 8, low & 255].join('.');
 };
 
+const netlifyContextIp = () =>
+  (globalThis as { Netlify?: { context?: { ip?: string } | null } }).Netlify
+    ?.context?.ip;
+
 export const clientIp = (headers: Headers) => {
   const configured = process.env.POLYCORD_CLIENT_IP_HEADER;
 
   return normalizeIp(
     configured
       ? headers.get(configured)
-      : (headers.get(TRUSTED_IP_HEADER) ??
+      : (netlifyContextIp() ??
+          headers.get(TRUSTED_IP_HEADER) ??
           headers.get(FORWARDED_FOR_HEADER)?.split(',').at(-1)),
   );
 };
