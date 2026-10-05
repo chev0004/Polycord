@@ -65,6 +65,8 @@ export const db = drizzle(pool, { schema });
 
 db.transaction = async (transaction, config) => {
   const client = await pool.connect();
+  const onError = () => {};
+  client.on('error', onError);
   const connection = drizzle(client, { schema });
   const tx = new NodePgTransaction<
     typeof schema,
@@ -86,5 +88,6 @@ db.transaction = async (transaction, config) => {
     return result;
   } finally {
     client.release(!committed);
+    client.removeListener('error', onError);
   }
 };

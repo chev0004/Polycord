@@ -12,6 +12,7 @@ const stalledSockets = new Set();
 let stallBegin = false;
 let stallQuery = false;
 let stallTransaction = null;
+let disconnectTransaction = null;
 let stalled = 0;
 const proxy = createServer((socket) => {
   sockets.add(socket);
@@ -21,6 +22,13 @@ const proxy = createServer((socket) => {
   });
   let holding = false;
   socket.on('data', (chunk) => {
+    if (
+      disconnectTransaction &&
+      chunk.includes(Buffer.from(disconnectTransaction))
+    ) {
+      socket.destroy();
+      return;
+    }
     if (
       (stallBegin && chunk.includes(Buffer.from('begin'))) ||
       (stallQuery && chunk.includes(Buffer.from('banned_at'))) ||
@@ -174,6 +182,36 @@ try {
   process.env.DATABASE_URL = reachableUrl;
   assert.equal((await call()).status, 200);
 
+  for (const statement of ['begin', 'select 42 as disconnected', 'commit']) {
+    disconnectTransaction = statement;
+    const started = Date.now();
+    const outcomes = await Promise.allSettled(
+      Array.from({ length: 2 }, () =>
+        db.transaction((tx) => tx.execute(sql`select 42 as disconnected`)),
+      ),
+    );
+    assert.ok(
+      outcomes.every(
+        (outcome) =>
+          outcome.status === 'rejected' &&
+          outcome.reason.cause?.message ===
+            'Connection terminated unexpectedly',
+      ),
+    );
+    assert.ok(Date.now() - started < 1000);
+    assert.equal(db.$client.totalCount, 0);
+    assert.equal(db.$client.waitingCount, 0);
+    disconnectTransaction = null;
+    assert.equal(
+      (await db.transaction((tx) => tx.execute(sql`select 1 as recovered`)))
+        .rows[0].recovered,
+      1,
+    );
+    const client = await db.$client.connect();
+    assert.equal(client.listenerCount('error'), 0);
+    client.release();
+  }
+
   stallBegin = true;
   const transactionStarted = Date.now();
   const transactions = await Promise.allSettled(
@@ -295,6 +333,7 @@ try {
   stallBegin = false;
   stallQuery = false;
   stallTransaction = null;
+  disconnectTransaction = null;
   for (const socket of stalledSockets) socket.destroy();
   if (stalledSockets.size) await delay(50);
   await db.delete(ipBans).where(eq(ipBans.ip, BLOCKED_IP));
