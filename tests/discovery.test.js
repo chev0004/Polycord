@@ -26,3 +26,15 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
     expect(output).toContain('discovery boost interleaving passed');
   },
 );
+
+test.skipIf(!process.env.TEST_DATABASE_URL)(
+  'discovery keeps every selected tag visible in the popular tags',
+  () => {
+    const output = execFileSync(
+      process.execPath,
+      ['run', 'tests/integration/discovery-tags.mjs'],
+      { encoding: 'utf8', timeout: 30000 },
+    );
+    expect(output).toContain('discovery selected tags passed');
+  },
+);
