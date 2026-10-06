@@ -58,7 +58,8 @@ proxyUrl.hostname = '127.0.0.1';
 proxyUrl.port = String(proxy.address().port);
 process.env.DATABASE_URL = proxyUrl.href;
 mock.module('server-only', () => ({}));
-const { db, createBanClient } = await import('../../src/db/client');
+const { db } = await import('../../src/db/client');
+const { createBanClient } = await import('../../src/db/connection');
 for (const sslmode of ['require', 'disable', 'no-verify']) {
   process.env.DATABASE_URL = `postgresql://postgres.test006@aws-0-us-east-2.pooler.supabase.com:6543/postgres?sslmode=${sslmode}`;
   const client = createBanClient(new AbortController().signal);
@@ -67,8 +68,10 @@ for (const sslmode of ['require', 'disable', 'no-verify']) {
   await client.end();
 }
 process.env.DATABASE_URL = proxyUrl.href;
-const { ipBans, users } = await import('../../src/db/schema');
-const { lookupBan, BAN_STATEMENT_TIMEOUT_MS } = await import(
+const { ipBans, users, moderationRestrictions } = await import(
+  '../../src/db/schema'
+);
+const { lookupBan, banReference, BAN_STATEMENT_TIMEOUT_MS } = await import(
   '../../src/lib/banLookup'
 );
 const { eq, sql, TransactionRollbackError } = await import('drizzle-orm');
@@ -79,6 +82,7 @@ const { BAN_CHECK_AUTH_HEADER, createBanCheckToken } = await import(
 process.env.AUTH_SECRET = 'ban-lookup-test-secret';
 
 const discordUserId = randomUUID().replaceAll('-', '');
+const rememberedId = randomUUID().replaceAll('-', '');
 const locker = postgres(url.href, { max: 1 });
 const BLOCKED_IP = '203.0.113.250';
 const signal = () => new AbortController().signal;
@@ -92,8 +96,39 @@ try {
   });
   const found = await lookupBan(null, [discordUserId], signal());
   assert.equal(found?.date.toISOString(), '2026-10-04T00:00:00.000Z');
+  assert.equal(await lookupBan(null, [], signal()), null);
+  await db
+    .insert(moderationRestrictions)
+    .values({ discordUserId: rememberedId, bannedAt: new Date('2026-10-03') });
+  const earliest = await lookupBan(
+    null,
+    [discordUserId, rememberedId],
+    signal(),
+  );
+  assert.equal(earliest.date.toISOString(), '2026-10-03T00:00:00.000Z');
+  assert.equal(
+    earliest.reference,
+    banReference(`${discordUserId}+${rememberedId}`),
+  );
+  assert.ok(await lookupBan(null, [rememberedId], signal()));
 
-  await db.insert(ipBans).values({ ip: BLOCKED_IP, reason: 'ban-lookup-test' });
+  const [ipBan] = await db
+    .insert(ipBans)
+    .values({ ip: BLOCKED_IP, reason: 'ban-lookup-test' })
+    .returning();
+  assert.equal(
+    (await lookupBan(BLOCKED_IP, [rememberedId], signal())).reference,
+    banReference(ipBan.id),
+  );
+  await db
+    .update(ipBans)
+    .set({ revokedAt: new Date() })
+    .where(eq(ipBans.id, ipBan.id));
+  assert.equal(await lookupBan(BLOCKED_IP, [], signal()), null);
+  await db
+    .update(ipBans)
+    .set({ revokedAt: null })
+    .where(eq(ipBans.id, ipBan.id));
   assert.ok(await lookupBan(BLOCKED_IP, [], signal()));
   const aborted = new AbortController();
   aborted.abort();
@@ -338,6 +373,9 @@ try {
   if (stalledSockets.size) await delay(50);
   await db.delete(ipBans).where(eq(ipBans.ip, BLOCKED_IP));
   await db.delete(users).where(eq(users.discordUserId, discordUserId));
+  await db
+    .delete(moderationRestrictions)
+    .where(eq(moderationRestrictions.discordUserId, rememberedId));
   await locker.end();
   await db.$client.end();
   for (const socket of sockets) socket.destroy();
