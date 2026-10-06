@@ -138,8 +138,11 @@ export const Default: Story = {
     const canvas = within(context.canvasElement);
 
     expect(
-      canvas.queryByText('Find a language partner on Discord'),
-    ).not.toBeInTheDocument();
+      canvas.getByRole('heading', {
+        name: 'Find a language partner on Discord',
+        level: 1,
+      }),
+    ).toHaveClass('sr-only');
 
     await filterAndClearPlay(context);
   },
