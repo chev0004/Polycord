@@ -5,6 +5,7 @@
 [build.environment]
   NODE_VERSION = "22"
   BUN_VERSION = "1.3.14"
+  POLYCORD_STATIC_DISCOVERY_SHELL = "true"
 
 [context."test/test-006"]
   command = "node experiments/database-burst/build.mjs"
@@ -17,6 +18,9 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[[plugins]]
+  package = "./plugins/discovery-shell"
 
 [[headers]]
   for = "/*"
