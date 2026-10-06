@@ -15,7 +15,11 @@ import {
   DISCOVERY_PAGE_SIZE,
   planDiscoveryGroups,
 } from '@/features/Discovery/discoveryData';
-import type { DiscoveryTagCount } from '@/features/Discovery/discoveryTags';
+import {
+  byPopularity,
+  type DiscoveryTagCount,
+  withSelectedTags,
+} from '@/features/Discovery/discoveryTags';
 import {
   type DiscoveryUrlState,
   MAX_STACK_PAGES,
@@ -82,7 +86,10 @@ const blockedUserIds = (viewerUserId: string) =>
   sql`(select blocked_user_id from user_blocks where blocker_user_id = ${viewerUserId}::uuid
     union all select blocker_user_id from user_blocks where blocked_user_id = ${viewerUserId}::uuid)`;
 
-const listTopTags = async (viewerUserId?: string) => {
+const listTopTags = async (
+  viewerUserId: string | undefined,
+  selectedTags: string[],
+) => {
   const [top, blocked] = await Promise.all([
     loadTopTags(),
     viewerUserId
@@ -94,16 +101,50 @@ const listTopTags = async (viewerUserId?: string) => {
         )
       : [],
   ]);
-  if (!blocked.length) return top.slice(0, TOP_TAGS);
   const hidden = new Map(blocked.map(({ tag, count }) => [tag, count]));
-  return top
-    .map(({ tag, count }) => ({ tag, count: count - (hidden.get(tag) ?? 0) }))
-    .filter(({ count }) => count > 0)
-    .sort(
-      (a, b) =>
-        b.count - a.count || (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0),
-    )
-    .slice(0, TOP_TAGS);
+  const shown = blocked.length
+    ? top
+        .map(({ tag, count }) => ({
+          tag,
+          count: count - (hidden.get(tag) ?? 0),
+        }))
+        .filter(({ count }) => count > 0)
+        .sort(byPopularity)
+        .slice(0, TOP_TAGS)
+    : top.slice(0, TOP_TAGS);
+  const absent = selectedTags.filter(
+    (tag) => !shown.some((entry) => entry.tag === tag),
+  );
+  if (!absent.length) return shown;
+
+  const inAbsent = sql`tag in (${sql.join(
+    absent.map((tag) => sql`${tag}`),
+    sql`, `,
+  )})`;
+  const [all, hiddenSelected] = await Promise.all([
+    tagCounts(and(discoverable(), inAbsent)),
+    viewerUserId
+      ? tagCounts(
+          and(
+            discoverable(),
+            inAbsent,
+            sql`${profiles.userId} in ${blockedUserIds(viewerUserId)}`,
+          ),
+        )
+      : [],
+  ]);
+  const countOf = (rows: DiscoveryTagCount[], tag: string) =>
+    rows.find((row) => row.tag === tag)?.count ?? 0;
+
+  return withSelectedTags(
+    shown,
+    selectedTags,
+    absent.map((tag) => ({
+      tag,
+      count: countOf(all, tag) - countOf(hiddenSelected, tag),
+    })),
+    TOP_TAGS,
+  );
 };
 
 const discoveryWhere = async (
@@ -315,7 +356,7 @@ export const listDiscoveryPage = async (
   };
 
   const [tags, positions, total] = await Promise.all([
-    listTopTags(viewerUserId),
+    listTopTags(viewerUserId, state.selectedTags),
     boostPositions(),
     countRows(),
   ]);
