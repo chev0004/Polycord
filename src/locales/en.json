@@ -315,6 +315,8 @@
     "addModerator": "Add moderator",
     "addModeratorPlaceholder": "Username, name or Discord ID",
     "noStaffMatches": "No matching accounts.",
+    "searchingAccounts": "Searching accounts…",
+    "accountSearchFailed": "Account search failed.",
     "removeModerator": "Remove {name} as moderator",
     "grantModerator": "Make {name} a moderator",
     "reauthRequired": "Owner actions need a sign-in from the last 12 hours.",

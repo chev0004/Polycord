@@ -315,6 +315,8 @@
     "addModerator": "モデレーターを追加",
     "addModeratorPlaceholder": "ユーザー名、名前、Discord ID",
     "noStaffMatches": "一致するアカウントはありません。",
+    "searchingAccounts": "アカウントを検索中…",
+    "accountSearchFailed": "アカウントを検索できませんでした。",
     "removeModerator": "{name}さんをモデレーターから外す",
     "grantModerator": "{name}さんをモデレーターにする",
     "reauthRequired": "オーナーの操作には12時間以内のログインが必要です。",
