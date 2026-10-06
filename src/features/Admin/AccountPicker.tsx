@@ -37,6 +37,7 @@ export const AccountPicker = ({
     return user && !user.role ? [user] : [];
   });
   const open = !selected && query.trim() !== '';
+  const navigable = open && status === 'ready' && candidates.length > 0;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt re-runs the search on retry
   useEffect(() => {
@@ -46,6 +47,7 @@ export const AccountPicker = ({
       setStatus('idle');
       return;
     }
+    setMatches([]);
     setStatus('loading');
     let current = true;
     const timer = setTimeout(() => {
@@ -78,7 +80,7 @@ export const AccountPicker = ({
     if (event.key === 'Escape' && (value || query)) {
       event.stopPropagation();
       clear();
-    } else if (open && candidates.length) {
+    } else if (navigable) {
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         setActive((active + 1) % candidates.length);
@@ -99,12 +101,10 @@ export const AccountPicker = ({
         <input
           type="search"
           role="combobox"
-          aria-expanded={open && status === 'ready' && candidates.length > 0}
+          aria-expanded={navigable}
           aria-controls={listId}
           aria-autocomplete="list"
-          aria-activedescendant={
-            open && candidates.length ? `${listId}-${active}` : undefined
-          }
+          aria-activedescendant={navigable ? `${listId}-${active}` : undefined}
           value={selected ? selected.username : query}
           onChange={(event) => {
             setQuery(event.target.value);
