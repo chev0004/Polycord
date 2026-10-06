@@ -219,4 +219,12 @@ export const loadSuspiciousPage = async (window: ActivityWindow) => {
 export const loadSuspiciousEvents = async (
   userId: string,
   window: ActivityWindow,
-) => (await listSuspiciousEvents(userId, window)).map(toSuspiciousEvent);
+  offset: number,
+) => {
+  const { events, hasMore } = await listSuspiciousEvents(
+    userId,
+    window,
+    offset,
+  );
+  return { events: events.map(toSuspiciousEvent), hasMore };
+};

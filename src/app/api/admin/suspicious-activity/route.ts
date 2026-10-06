@@ -21,9 +21,15 @@ export const GET = async (request: Request) => {
   }
 
   if (userId) {
-    return NextResponse.json({
-      events: await loadSuspiciousEvents(userId, window),
-    });
+    const offset = z.coerce
+      .number()
+      .int()
+      .min(0)
+      .catch(0)
+      .parse(params.get('offset') ?? 0);
+    return NextResponse.json(
+      await loadSuspiciousEvents(userId, window, offset),
+    );
   }
 
   return NextResponse.json(await loadSuspiciousPage(window));

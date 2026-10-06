@@ -93,19 +93,51 @@ try {
   assert.ok(ours.some((row) => !row.userId && row.ip === anonymousIp));
   assert.ok(!ours.some((row) => row.userId === byName.yesterday.id));
 
+  const { events, hasMore } = await listSuspiciousEvents(
+    byName.heavy.id,
+    windowOf(0),
+  );
+  assert.equal(events.length, 12);
+  assert.equal(hasMore, false);
+  assert.ok(events.every((row) => row.action === 'copy'));
+  assert.deepEqual(
+    events.map((row) => row.createdAt.getTime()),
+    [...events.map((row) => row.createdAt.getTime())].sort((a, b) => b - a),
+  );
+
+  const pages = [];
+  for (let offset = 0, more = true; more; offset += 5) {
+    const page = await listSuspiciousEvents(
+      byName.heavy.id,
+      windowOf(0),
+      offset,
+      5,
+    );
+    pages.push(page);
+    more = page.hasMore;
+  }
+  assert.deepEqual(
+    pages.map((page) => [page.events.length, page.hasMore]),
+    [
+      [5, true],
+      [5, true],
+      [2, false],
+    ],
+  );
+  assert.deepEqual(
+    pages.flatMap((page) => page.events.map((row) => row.id)),
+    events.map((row) => row.id),
+  );
+
   const earlier = await listSuspiciousGroups(windowOf(-1));
   assert.ok(earlier.some((row) => row.userId === byName.yesterday.id));
 
   assert.equal(
-    (await listSuspiciousEvents(byName.heavy.id, windowOf(0))).length,
-    12,
-  );
-  assert.equal(
-    (await listSuspiciousEvents(byName.single.id, windowOf(0))).length,
+    (await listSuspiciousEvents(byName.single.id, windowOf(0))).events.length,
     2,
   );
   assert.equal(
-    (await listSuspiciousEvents(byName.single.id, windowOf(1))).length,
+    (await listSuspiciousEvents(byName.single.id, windowOf(1))).events.length,
     1,
   );
 

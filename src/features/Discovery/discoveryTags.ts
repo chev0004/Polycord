@@ -5,6 +5,30 @@ export type DiscoveryTagCount = {
   count: number;
 };
 
+export const byPopularity = (a: DiscoveryTagCount, b: DiscoveryTagCount) =>
+  b.count - a.count || (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0);
+
+export const withSelectedTags = (
+  tags: DiscoveryTagCount[],
+  selected: string[],
+  missing: DiscoveryTagCount[],
+  size: number,
+): DiscoveryTagCount[] => {
+  let drop = Math.max(0, missing.length - (size - tags.length));
+  const kept = [...tags]
+    .reverse()
+    .filter(({ tag }) => {
+      if (drop > 0 && !selected.includes(tag)) {
+        drop--;
+        return false;
+      }
+      return true;
+    })
+    .reverse();
+
+  return [...kept, ...missing].sort(byPopularity);
+};
+
 export const buildTagCounts = (
   profiles: DiscoveryProfile[],
 ): DiscoveryTagCount[] => {

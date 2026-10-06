@@ -59,6 +59,37 @@ test.describe('grouped suspicious activity', () => {
     await sql.end();
   });
 
+  test('long histories load in pages', async ({ browser }) => {
+    const [deep] = await sql<Account[]>`
+      insert into users (discord_user_id, discord_username, display_name)
+      values (${`${prefix}-deep`}, ${`${prefix}-deep`}, ${`${prefix} Deep`})
+      returning id, discord_user_id as "discordUserId"`;
+    await sql`insert into suspicious_activity (user_id, action, ip, created_at)
+      select ${deep.id}, 'bump', '192.0.2.8', now() - n * interval '1 second'
+      from generate_series(1, 120) as n`;
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+    });
+    await signIn(context, owner);
+    const page = await context.newPage();
+    await page.goto('/en/admin');
+    await page.getByRole('tab', { name: /^Suspicious activity/ }).click();
+    await page.getByText('120 flagged events').click();
+
+    const events = page.getByText('192.0.2.8');
+    const more = page.getByRole('button', { name: 'Show more events' });
+    await expect(events).toHaveCount(51);
+    await more.click();
+    await expect(events).toHaveCount(101);
+    await more.click();
+    await expect(events).toHaveCount(121);
+    await expect(more).toHaveCount(0);
+    await context.close();
+    await sql`delete from suspicious_activity where user_id = ${deep.id}`;
+    await sql`delete from users where id = ${deep.id}`;
+  });
+
   for (const [name, viewport, role] of [
     ['desktop', { width: 1400, height: 900 }, 'tab'],
     ['mobile', { width: 390, height: 844 }, 'button'],

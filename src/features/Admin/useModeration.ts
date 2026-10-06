@@ -193,14 +193,12 @@ export const useModeration = (initial: ModSnapshot) => {
   );
 
   const loadSuspiciousEvents = useCallback(
-    async (userId: string, range: ActivityRange) =>
-      (
-        await loadWindow<{ events: ModSuspiciousEvent[] }>(
-          '/api/admin/suspicious-activity',
-          range,
-          { userId },
-        )
-      ).events,
+    (userId: string, range: ActivityRange, offset: number) =>
+      loadWindow<{ events: ModSuspiciousEvent[]; hasMore: boolean }>(
+        '/api/admin/suspicious-activity',
+        range,
+        { userId, offset },
+      ),
     [loadWindow],
   );
 

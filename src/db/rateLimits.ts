@@ -116,9 +116,10 @@ export const listSuspiciousGroups = async (window: ActivityWindow) => {
 export const listSuspiciousEvents = async (
   userId: string,
   window: ActivityWindow,
-  limit = 200,
-) =>
-  db
+  offset = 0,
+  limit = 50,
+) => {
+  const rows = await db
     .select()
     .from(suspiciousActivity)
     .where(
@@ -128,4 +129,7 @@ export const listSuspiciousEvents = async (
       ),
     )
     .orderBy(desc(suspiciousActivity.createdAt), desc(suspiciousActivity.id))
-    .limit(limit);
+    .limit(limit + 1)
+    .offset(offset);
+  return { events: rows.slice(0, limit), hasMore: rows.length > limit };
+};

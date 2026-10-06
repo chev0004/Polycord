@@ -2,7 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { MdClose, MdSearch } from 'react-icons/md';
+import { MdClose } from 'react-icons/md';
+import { AccountPicker } from './AccountPicker';
 import {
   ActionError,
   modButton,
@@ -25,8 +26,6 @@ export const IpBlocksPanel = ({
   const t = useTranslations('Admin');
   const { date } = useModFormat();
   const [bans, setBans] = useState<IpBlock[]>([]);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<string[]>([]);
   const [account, setAccount] = useState<string | null>(null);
   const [observed, setObserved] = useState<ObservedIp[]>([]);
   const [picked, setPicked] = useState<string[]>([]);
@@ -34,11 +33,7 @@ export const IpBlocksPanel = ({
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<'failed' | 'reauth' | null>(null);
-  const { search, loadIpBlocks } = store;
-  const candidates = results.flatMap((id) => {
-    const user = store.usersById.get(id);
-    return user && !user.role ? [user] : [];
-  });
+  const { loadIpBlocks } = store;
   const ips = [...picked, ...manual.split(/[\s,]+/).filter(Boolean)];
 
   useEffect(() => {
@@ -46,24 +41,6 @@ export const IpBlocksPanel = ({
       .then((result) => setBans(result.bans))
       .catch(() => setError('failed'));
   }, [loadIpBlocks]);
-
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (!trimmed || account) {
-      setResults([]);
-      return;
-    }
-    let current = true;
-    const timer = setTimeout(() => {
-      search(trimmed)
-        .then((ids) => current && setResults(ids))
-        .catch(() => current && setResults([]));
-    }, 300);
-    return () => {
-      current = false;
-      clearTimeout(timer);
-    };
-  }, [query, account, search]);
 
   useEffect(() => {
     setObserved([]);
@@ -77,10 +54,9 @@ export const IpBlocksPanel = ({
     };
   }, [account, loadIpBlocks]);
 
-  const clearAccount = () => {
-    setAccount(null);
+  const chooseAccount = (userId: string | null) => {
+    setAccount(userId);
     setPicked([]);
-    setQuery('');
   };
 
   const run = async (change: () => Promise<IpBlock[]>) => {
@@ -97,12 +73,6 @@ export const IpBlocksPanel = ({
     }
   };
 
-  const choose = (userId: string, username: string) => {
-    setAccount(userId);
-    setQuery(username);
-    setPicked([]);
-  };
-
   const block = async () => {
     const done = await run(() =>
       store.blockIps({
@@ -112,7 +82,7 @@ export const IpBlocksPanel = ({
       }),
     );
     if (done) {
-      clearAccount();
+      chooseAccount(null);
       setManual('');
       setReason('');
     }
@@ -162,40 +132,13 @@ export const IpBlocksPanel = ({
         <p className="px-1 font-semibold text-[13px] text-foreground">
           {t('blockIpTitle')}
         </p>
-        <label className="flex h-10 items-center gap-2 rounded-full border border-white/[0.07] bg-background-darker pr-3 pl-3.5 text-subtle focus-within:border-white/[0.14]">
-          <MdSearch size={18} aria-hidden />
-          <input
-            type="search"
-            value={query}
-            readOnly={account !== null}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t('ipAccountPlaceholder')}
-            aria-label={t('ipAccountPlaceholder')}
-            className="min-w-0 flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-subtle"
-          />
-          {account ? (
-            <button
-              type="button"
-              onClick={clearAccount}
-              aria-label={t('clearSearch')}
-            >
-              <MdClose size={18} />
-            </button>
-          ) : null}
-        </label>
-        {account
-          ? null
-          : candidates.map((user) => (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => choose(user.id, user.username)}
-                className="rounded-xl px-2 py-1.5 text-left text-[13px] text-foreground hover:bg-background-main"
-              >
-                {user.displayName}{' '}
-                <span className="text-subtle">@{user.username}</span>
-              </button>
-            ))}
+        <AccountPicker
+          store={store}
+          value={account}
+          onChange={chooseAccount}
+          placeholder={t('ipAccountPlaceholder')}
+          label={t('ipAccountPlaceholder')}
+        />
         {account ? (
           observed.length ? (
             <div className="flex flex-col gap-0.5">
