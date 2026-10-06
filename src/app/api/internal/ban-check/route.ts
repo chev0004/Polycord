@@ -3,7 +3,7 @@ import { BAN_CHECK_AUTH_HEADER, isBanCheckToken } from '@/lib/auth-session';
 import { withBanDeadline } from '@/lib/banDeadline';
 import { lookupBan } from '@/lib/banLookup';
 import { normalizeIp } from '@/lib/clientIp';
-import { startupResponse } from '@/lib/startupProbe';
+import { probeFailure, startupResponse } from '@/lib/startupProbe';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,10 +45,10 @@ const handlePost = async (request: Request) => {
       },
       { headers: noStore },
     );
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Unavailable' },
-      { status: 503, headers: noStore },
+      { status: 503, headers: { ...noStore, ...probeFailure(error) } },
     );
   }
 };

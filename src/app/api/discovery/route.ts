@@ -7,7 +7,7 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { withModerationStates } from '@/lib/moderation';
-import { startupResponse } from '@/lib/startupProbe';
+import { probeFailure, startupResponse } from '@/lib/startupProbe';
 
 async function handleGet(request: Request) {
   try {
@@ -48,12 +48,16 @@ async function handleGet(request: Request) {
     return NextResponse.json(data, {
       headers: { 'Cache-Control': 'private, no-store' },
     });
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Temporarily unavailable' },
       {
         status: 503,
-        headers: { 'Cache-Control': 'private, no-store', 'Retry-After': '5' },
+        headers: {
+          'Cache-Control': 'private, no-store',
+          'Retry-After': '5',
+          ...probeFailure(error),
+        },
       },
     );
   }
