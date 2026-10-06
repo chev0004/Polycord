@@ -1,11 +1,13 @@
 import { mock } from 'bun:test';
 import assert from 'node:assert/strict';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { NextRequest } from 'next/server';
 import plugin from '../../plugins/discovery-shell';
 
+globalThis.AsyncLocalStorage = AsyncLocalStorage;
+const { NextRequest } = await import('next/server');
 let ban = null;
 let failed = false;
 mock.module('../../src/lib/banLookup', () => ({
@@ -18,7 +20,10 @@ process.env.AUTH_SECRET = 'static-shell-test-secret';
 process.env.POLYCORD_DIRECT_BAN_CHECK = 'true';
 const { default: middleware } = await import('../../src/middleware');
 const request = (path, init) =>
-  new NextRequest(`https://polycord.test${path}`, init);
+  new NextRequest(`https://polycord.test${path}`, {
+    ...init,
+    headers: { accept: 'text/html', ...init?.headers },
+  });
 const rewrite = (response) => response.headers.get('x-middleware-rewrite');
 
 process.env.POLYCORD_STATIC_DISCOVERY_SHELL = 'false';
@@ -41,12 +46,25 @@ assert.match(
 );
 for (const req of [
   request('/en', { headers: { rsc: '1' } }),
+  request('/en', { headers: { accept: '*/*' } }),
   request('/en?_rsc=payload'),
   request('/en', { method: 'POST' }),
   request('/en/legal'),
 ]) {
   assert.ok(!rewrite(await middleware(req))?.includes('__discovery_shell'));
 }
+const { adapter } = await import('next/dist/server/web/adapter');
+const flight = await adapter({
+  handler: middleware,
+  page: '/middleware',
+  request: {
+    url: 'https://polycord.test/en?_rsc=proof',
+    method: 'GET',
+    headers: { rsc: '1', accept: '*/*' },
+    nextConfig: {},
+  },
+});
+assert.ok(!rewrite(flight.response)?.includes('__discovery_shell'));
 for (const path of [
   '/__discovery_shell/en.html',
   '/__discovery_shell/ja',

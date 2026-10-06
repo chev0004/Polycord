@@ -152,6 +152,8 @@ async function middleware(request: NextRequest) {
     process.env.POLYCORD_STATIC_DISCOVERY_SHELL === 'true' &&
     locales.some((lang) => request.nextUrl.pathname === `/${lang}`) &&
     ['GET', 'HEAD'].includes(request.method) &&
+    (request.headers.get('sec-fetch-dest') === 'document' ||
+      request.headers.get('accept')?.includes('text/html')) &&
     !request.headers.has('rsc') &&
     !request.nextUrl.searchParams.has('_rsc') &&
     !response.headers.has('location')
