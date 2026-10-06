@@ -16,11 +16,12 @@ for (const target of [origin, probeOrigin]) {
     /^https:\/\/([a-f0-9]{24}--polycord-staging\.netlify\.app|polycord\.chev\.dev)$/,
   );
 }
-assert.equal(
-  new URL(process.env.SESSION_DATABASE_URL).username,
-  'postgres.lqyekuxzhxkjsctdpybi',
-);
-const sql = postgres(process.env.SESSION_DATABASE_URL, {
+const url = new URL(process.env.SESSION_DATABASE_URL);
+assert.equal(url.username, 'postgres.lqyekuxzhxkjsctdpybi');
+assert.equal(url.hostname, 'aws-1-us-west-2.pooler.supabase.com');
+assert.equal(url.port, '5432');
+assert.equal(url.pathname, '/postgres');
+const sql = postgres(url.href, {
   prepare: false,
   max: 1,
   ssl: { ca, rejectUnauthorized: true },
