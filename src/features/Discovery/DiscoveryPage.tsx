@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -15,8 +16,6 @@ import { siteContainerClass } from '@/components/Container';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
-import { MobileTakeAction } from '@/features/Admin/MobileTakeAction';
-import { TakeActionPanel } from '@/features/Admin/TakeActionPanel';
 import type { ModState, StaffRole } from '@/features/Admin/types';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
@@ -60,10 +59,8 @@ import {
 } from './MobileFilters';
 import { Pagination } from './Pagination';
 import type { DiscoveryProfile } from './ProfileCard';
-import { ProfileGrid } from './ProfileGrid';
 import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 import { recordProfileShare } from './profileShareRequest';
-import { ReportDialog } from './ReportDialog';
 import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
 import {
@@ -77,6 +74,26 @@ import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl } from './shareProfile';
 import { type AppliedFilter, TagCloud } from './TagCloud';
 import { useProfileBump } from './useProfileBump';
+
+const ProfileGrid = dynamic(
+  () => import('./ProfileGrid').then((module) => module.ProfileGrid),
+  {
+    loading: ProfileGridSkeleton,
+  },
+);
+const MobileTakeAction = dynamic(() =>
+  import('@/features/Admin/MobileTakeAction').then(
+    (module) => module.MobileTakeAction,
+  ),
+);
+const TakeActionPanel = dynamic(() =>
+  import('@/features/Admin/TakeActionPanel').then(
+    (module) => module.TakeActionPanel,
+  ),
+);
+const ReportDialog = dynamic(() =>
+  import('./ReportDialog').then((module) => module.ReportDialog),
+);
 
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
 
@@ -1122,16 +1139,18 @@ export const DiscoveryPage = ({
         />
       ) : null}
 
-      <ReportDialog
-        open={reportTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setReportTarget(null);
-          }
-        }}
-        profileName={reportTarget?.name}
-        onSubmit={handleSubmitReport}
-      />
+      {reportTarget ? (
+        <ReportDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setReportTarget(null);
+            }
+          }}
+          profileName={reportTarget.name}
+          onSubmit={handleSubmitReport}
+        />
+      ) : null}
 
       <BackToTop count={appliedFilters.length + selectedTags.length} />
 
