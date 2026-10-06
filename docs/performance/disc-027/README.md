@@ -87,9 +87,9 @@ Local Deno `2.9.7` also ran eight concurrent locked lookups, all failing within 
 
 ## Reproduction and rollback
 
-Use only the named disposable site and database with the synthetic fixture. Configure the documented environment, including `DISC027_TIMING=true` and `POLYCORD_DIRECT_BAN_CHECK=true`, without printing credentials. Build locally with Node `22.23.3` and the adapter above. Confirm automatic builds remain stopped. For each of three trials, stamp the prepared package with a distinct label, upload with `netlify deploy --no-build --prod --site 0c36e849-7617-4665-a657-1eb2b60da3d2`, then immediately run `bun --no-env-file experiments/database-burst/run-app.mjs <immutable-origin> <evidence-file>`. Do not send smaller probes first. Record source and artifact hashes, verify `build_id` is null, and compare runtime identifiers before calling the trials cold.
+Use only the named disposable site and database with the synthetic fixture. Configure the documented environment, including `POLYCORD_DIRECT_BAN_CHECK=true`, without printing credentials. Build locally with Node `22.23.3` and the adapter above. Confirm automatic builds remain stopped. For each of three trials, stamp the prepared package with a distinct label, upload with `netlify deploy --no-build --prod --site 0c36e849-7617-4665-a657-1eb2b60da3d2`, then immediately run `bun --no-env-file experiments/database-burst/run-app.mjs <immutable-origin> <evidence-file>`. Do not send smaller probes first. Record source and artifact hashes, verify `build_id` is null, and compare runtime identifiers before calling the trials cold.
 
-Timing probes are disabled unless `DISC027_TIMING=true`. The temporary diagnostic header and rejected standalone function are removed. Restore deployment `6ac4172cdf568ee4a858afa5` for the baseline behavior; its original archive is retained outside Git. Existing staging and production use the default HTTPS transport and their existing resources.
+The timing probe and diagnostic header used for the recorded measurements, and the rejected standalone function, are removed from the final code; the captured evidence remains in this directory. Restore deployment `6ac4172cdf568ee4a858afa5` for the baseline behavior; its original archive is retained outside Git. Existing staging and production use the default HTTPS transport and their existing resources.
 
 ## Evidence
 
