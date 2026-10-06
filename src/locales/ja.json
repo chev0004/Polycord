@@ -318,7 +318,6 @@
     "searchingAccounts": "アカウントを検索中…",
     "accountSearchFailed": "アカウントを検索できませんでした。",
     "removeModerator": "{name}さんをモデレーターから外す",
-    "grantModerator": "{name}さんをモデレーターにする",
     "reauthRequired": "オーナーの操作には12時間以内のログインが必要です。",
     "signInAgain": "再ログイン",
     "action_premium_grant": "サポーターを付与",
