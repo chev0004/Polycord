@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   createContext,
   useCallback,
@@ -12,6 +12,7 @@ import {
   useTransition,
 } from 'react';
 import { type CardTheme, isValidHex } from '@/features/Discovery/cardTheme';
+import { UrlObserver } from './UrlObserver';
 
 type RouteProgressContextValue = {
   start: (href?: string) => void;
@@ -54,8 +55,8 @@ export const RouteProgressProvider = ({
   theme?: CardTheme;
 }) => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const location = `${pathname}?${searchParams.toString()}`;
+  const [query, setQuery] = useState('');
+  const location = `${pathname}?${query}`;
   const [isPending, startTransition] = useTransition();
   const [isVisible, setIsVisible] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -133,6 +134,7 @@ export const RouteProgressProvider = ({
 
   return (
     <RouteProgressContext.Provider value={value}>
+      <UrlObserver onChange={setQuery} />
       {children}
       <div
         aria-hidden="true"

@@ -100,6 +100,7 @@ export const useInbox = ({
   }, [persist]);
 
   useEffect(() => {
+    if (!persist) return;
     void refresh();
     const refreshVisible = () => {
       if (document.visibilityState === 'visible') void refresh();
@@ -136,7 +137,7 @@ export const useInbox = ({
       request.current?.abort();
       request.current = null;
     };
-  }, [refresh, source]);
+  }, [refresh, source, persist]);
 
   if (!persist) {
     const nextSignature = notificationsSignature(initialNotifications, premium);

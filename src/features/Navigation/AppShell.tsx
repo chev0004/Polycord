@@ -54,6 +54,7 @@ export const useSyncPendingCases = (count: number) => {
 type AppShellProps = {
   locale: string;
   isLoggedIn: boolean;
+  viewerLoading?: boolean;
   userAvatarUrl?: string;
   pendingCases?: number;
   children: React.ReactNode;
@@ -62,6 +63,7 @@ type AppShellProps = {
 export const AppShell = ({
   locale,
   isLoggedIn,
+  viewerLoading,
   userAvatarUrl,
   pendingCases,
   children,
@@ -94,6 +96,7 @@ export const AppShell = ({
           <Navbar
             iconUrl={userAvatarUrl}
             isLoggedIn={isLoggedIn}
+            viewerLoading={viewerLoading}
             dockable={dockable}
             badge={staffArea ? <StaffPill /> : undefined}
             notifications={[]}
@@ -125,5 +128,5 @@ export const AppShell = ({
     </BumpContext.Provider>
   );
 
-  return isLoggedIn ? <WarningNoticeHost>{shell}</WarningNoticeHost> : shell;
+  return <WarningNoticeHost enabled={isLoggedIn}>{shell}</WarningNoticeHost>;
 };

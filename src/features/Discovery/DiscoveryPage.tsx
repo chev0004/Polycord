@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   useCallback,
@@ -24,7 +24,7 @@ import {
   useRouteProgress,
   useRouteProgressRouter,
 } from '@/features/Navigation/RouteProgress';
-import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
+import { UrlObserver } from '@/features/Navigation/UrlObserver';
 import { profileDraftSchema } from '@/features/Profile/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
@@ -88,6 +88,7 @@ type DiscoveryPageProps = {
   authError?: string;
   feedError?: boolean;
   isLoading?: boolean;
+  fetchOnMount?: boolean;
   isLoggedIn: boolean;
   locale: string;
   needsOnboarding?: boolean;
@@ -160,6 +161,7 @@ export const DiscoveryPage = ({
   authError,
   feedError = false,
   isLoading = false,
+  fetchOnMount = false,
   isLoggedIn,
   locale,
   needsOnboarding = false,
@@ -177,8 +179,10 @@ export const DiscoveryPage = ({
   const router = useRouteProgressRouter();
   const { navigate } = useRouteProgress();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const urlQuery = searchParams.toString();
+  const [urlQuery, setUrlQuery] = useState<string | null>(null);
+  const lastWrittenQuery = useRef<string | null>(null);
+  const [queryAuthError, setQueryAuthError] = useState<string>();
+  const remote = fetchOnMount || Boolean(discoveryData);
   const t = useTranslations('Discovery');
   const mobile = useIsMobile();
   const viewerHasAvailability = Boolean(viewerAvailability);
@@ -199,7 +203,9 @@ export const DiscoveryPage = ({
   );
   const settleRequest = useRef<(() => void) | null>(null);
   const [awaitingResults, setAwaitingResults] = useState(false);
-  const [initialState] = useState(() => parseDiscoveryState(searchParams));
+  const [initialState] = useState(() =>
+    parseDiscoveryState(new URLSearchParams()),
+  );
   const [filterValues, setFilterValues] = useState<DiscoveryFilterValues>(
     initialState.filterValues,
   );
@@ -237,15 +243,6 @@ export const DiscoveryPage = ({
   useEffect(() => {
     setProfileItems(withoutBlocked(profiles));
   }, [profiles]);
-
-  useEffect(() => {
-    const state = parseDiscoveryState(new URLSearchParams(urlQuery));
-    setFilterValues(state.filterValues);
-    setSearchQuery(state.searchQuery);
-    setSelectedTags(state.selectedTags);
-    setSortValue(state.sortValue);
-    setPage(state.page);
-  }, [urlQuery]);
 
   useEffect(() => {
     if (!needsOnboarding || !userId) {
@@ -366,6 +363,25 @@ export const DiscoveryPage = ({
 
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
+  const hasLoaded = useRef(Boolean(discoveryData));
+  const receiveQuery = useCallback((query: string) => {
+    if (lastWrittenQuery.current === query) {
+      lastWrittenQuery.current = null;
+      return;
+    }
+    lastWrittenQuery.current = null;
+    const params = new URLSearchParams(query);
+    const state = parseDiscoveryState(params);
+    requestRef.current?.abort();
+    setFilterValues(state.filterValues);
+    setSearchQuery(state.searchQuery);
+    setDebouncedSearch(state.searchQuery);
+    setSelectedTags(state.selectedTags);
+    setSortValue(state.sortValue);
+    setPage(state.page);
+    setQueryAuthError(params.get('authError') ?? undefined);
+    setUrlQuery(query);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 250);
@@ -384,20 +400,24 @@ export const DiscoveryPage = ({
   const [loadedUrl, setLoadedUrl] = useState(requestUrl);
 
   const refreshDiscovery = useCallback(async () => {
-    if (!discoveryData) return;
+    if (!remote || urlQuery === null || mobile === null) return;
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
     setIsRefreshing(true);
     setRefreshFailed(false);
     try {
-      const response = await fetch(requestUrl, {
-        cache: 'no-store',
-        signal: controller.signal,
-      });
+      const response = await fetch(
+        `${requestUrl}${fetchOnMount && !hasLoaded.current ? '&initial=1' : ''}`,
+        {
+          cache: 'no-store',
+          signal: controller.signal,
+        },
+      );
       if (!response.ok) throw new Error('Discovery refresh failed');
       const data: DiscoveryData = await response.json();
       if (controller.signal.aborted) return;
+      hasLoaded.current = true;
       setRemoteData(data);
       setProfileItems(withoutBlocked(data.profiles));
       setPage(data.page);
@@ -406,12 +426,13 @@ export const DiscoveryPage = ({
       if (!controller.signal.aborted) setRefreshFailed(true);
     } finally {
       if (!controller.signal.aborted) setIsRefreshing(false);
+      if (requestRef.current === controller) requestRef.current = null;
     }
-  }, [discoveryData, requestUrl]);
+  }, [remote, urlQuery, mobile, requestUrl, fetchOnMount]);
 
   const countResults = useCallback(
     async (draft: FilterDraft, signal: AbortSignal) => {
-      if (!discoveryData) {
+      if (!remote) {
         return applyTagFilter(
           applyDiscoverySearch(
             applyDiscoveryFilters(
@@ -433,32 +454,30 @@ export const DiscoveryPage = ({
       const data: Pick<DiscoveryData, 'total'> = await response.json();
       return data.total;
     },
-    [
-      discoveryData,
-      profileItems,
-      viewerContext,
-      searchQuery,
-      debouncedSearch,
-      locale,
-    ],
+    [remote, profileItems, viewerContext, searchQuery, debouncedSearch, locale],
   );
 
   useEffect(() => {
+    if (remote && (urlQuery === null || mobile === null)) return;
     const refresh = refreshDiscovery;
     if (skipInitialRefresh.current) skipInitialRefresh.current = false;
     else refresh();
-    window.addEventListener('focus', refresh);
-    window.addEventListener('pageshow', refresh);
+    const focus = () => {
+      if (!requestRef.current) void refresh();
+    };
+    const restored = (event: PageTransitionEvent) => {
+      if (event.persisted) void refresh();
+    };
+    window.addEventListener('focus', focus);
+    window.addEventListener('pageshow', restored);
     window.addEventListener('polycord:profiles-changed', refresh);
     return () => {
       requestRef.current?.abort();
-      window.removeEventListener('focus', refresh);
-      window.removeEventListener('pageshow', refresh);
+      window.removeEventListener('focus', focus);
+      window.removeEventListener('pageshow', restored);
       window.removeEventListener('polycord:profiles-changed', refresh);
     };
-  }, [refreshDiscovery]);
-
-  useHistoryRefresh(refreshDiscovery);
+  }, [refreshDiscovery, remote, urlQuery, mobile]);
 
   useEffect(() => {
     if (mobile === null || stackPending) return;
@@ -493,6 +512,7 @@ export const DiscoveryPage = ({
   }, []);
 
   useEffect(() => {
+    if (urlQuery === null) return;
     const query = buildDiscoveryQuery(
       { filterValues, searchQuery, selectedTags, sortValue, page },
       new URLSearchParams(window.location.search),
@@ -502,16 +522,26 @@ export const DiscoveryPage = ({
       return;
     }
 
+    lastWrittenQuery.current = query;
     window.history.replaceState(
       null,
       '',
       `${query ? `${pathname}?${query}` : pathname}${window.location.hash}`,
     );
-  }, [filterValues, searchQuery, selectedTags, sortValue, page, pathname]);
+  }, [
+    filterValues,
+    searchQuery,
+    selectedTags,
+    sortValue,
+    page,
+    pathname,
+    urlQuery,
+  ]);
 
-  const showSkeleton = isLoading;
+  const showSkeleton = isLoading || (remote && !remoteData && !refreshFailed);
 
   const trackRequest = () => {
+    requestRef.current?.abort();
     settleRequest.current?.();
     setRefreshFailed(false);
     setAwaitingResults(true);
@@ -524,6 +554,7 @@ export const DiscoveryPage = ({
   };
 
   const handleSearchChange = (value: string) => {
+    requestRef.current?.abort();
     setSearchQuery(value);
     setPage(1);
   };
@@ -818,7 +849,7 @@ export const DiscoveryPage = ({
 
   useLayoutEffect(() => {
     if (!awaitingResults || isRefreshing) return;
-    if (discoveryData && loadedUrl !== requestUrl && !refreshFailed) return;
+    if (remote && loadedUrl !== requestUrl && !refreshFailed) return;
     window.scrollTo(0, 0);
     settleRequest.current?.();
     settleRequest.current = null;
@@ -826,7 +857,7 @@ export const DiscoveryPage = ({
   }, [
     awaitingResults,
     isRefreshing,
-    discoveryData,
+    remote,
     loadedUrl,
     requestUrl,
     refreshFailed,
@@ -842,7 +873,7 @@ export const DiscoveryPage = ({
     request: onBumpProfile,
     onBumped: async (result) => {
       await refreshDiscovery();
-      if (!discoveryData)
+      if (!remote)
         setProfileItems((previous) =>
           previous.map((profile) =>
             profile.id === currentProfileId
@@ -860,8 +891,9 @@ export const DiscoveryPage = ({
 
   return (
     <>
+      <UrlObserver onChange={receiveQuery} />
       {needsOnboarding && !isPromptDismissed ? (
-        <aside className="relative mx-4 mt-4 rounded-lg bg-background-darker p-4 pr-11 shadow-xl sm:mx-8 md:fixed md:right-4 md:bottom-[calc(var(--dock-space,0px)+16px)] md:z-40 md:m-0 md:w-[min(420px,calc(100vw-2rem))]">
+        <aside className="fixed right-4 bottom-[calc(var(--dock-space,0px)+16px)] z-40 w-[min(420px,calc(100vw-2rem))] rounded-lg bg-background-darker p-4 pr-11 shadow-xl">
           <div className="flex items-start">
             <button
               type="button"
@@ -901,21 +933,22 @@ export const DiscoveryPage = ({
       ) : null}
 
       <main className={`${siteContainerClass} py-8`}>
-        {authError ? (
+        <h1 className="sr-only">{t('pageTitle')}</h1>
+        {authError || queryAuthError ? (
           <div
             className="mb-6 rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
             role="alert"
           >
             <p className="font-semibold">
               {t(
-                authError === 'suspended'
+                (authError ?? queryAuthError) === 'suspended'
                   ? 'authErrorSuspendedTitle'
                   : 'authErrorTitle',
               )}
             </p>
             <p className="mt-1 text-danger">
               {t(
-                authError === 'suspended'
+                (authError ?? queryAuthError) === 'suspended'
                   ? 'authErrorSuspendedDescription'
                   : 'authErrorDescription',
               )}
@@ -927,16 +960,23 @@ export const DiscoveryPage = ({
           <SearchBar value={searchQuery} onChange={handleSearchChange} />
         </div>
         <div className="mb-[26px] flex flex-col gap-[14px]">
-          {tagCounts.length > 0 ? (
-            <TagCloud
-              tags={tagCounts}
-              selected={selectedTags}
-              onToggle={handleToggleTag}
-              onClear={handleClearTags}
-              collapsible={mobile === true}
-              applied={mobile === true ? appliedFilters : undefined}
-            />
-          ) : null}
+          <div className={fetchOnMount ? 'min-h-[96px]' : undefined}>
+            {remote && !remoteData ? (
+              <div
+                aria-hidden="true"
+                className="h-24 animate-pulse rounded-lg bg-background-darker"
+              />
+            ) : tagCounts.length > 0 ? (
+              <TagCloud
+                tags={tagCounts}
+                selected={selectedTags}
+                onToggle={handleToggleTag}
+                onClear={handleClearTags}
+                collapsible={mobile === true}
+                applied={mobile === true ? appliedFilters : undefined}
+              />
+            ) : null}
+          </div>
           <FilterBar
             className="max-md:hidden"
             filters={filterDefs}
@@ -971,6 +1011,7 @@ export const DiscoveryPage = ({
         ) : null}
         {(!refreshFailed || profileItems.length > 0) && (
           <>
+            <h2 className="sr-only">{t('resultsHeading')}</h2>
             <div className="mb-[18px] flex flex-wrap items-center gap-2">
               <span
                 aria-live="polite"

@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ReactNode, useState } from 'react';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { UrlObserver } from '@/features/Navigation/UrlObserver';
 import { localizePath } from '@/utils/localePaths';
 import type { locales } from '@/utils/locales';
 
@@ -19,7 +20,7 @@ export const LocaleLink = ({
 }) => {
   const currentLocale = useLocale();
   const pathname = usePathname();
-  const query = useSearchParams().toString();
+  const [query, setQuery] = useState('');
   const href = `${localizePath(pathname, locale)}${query ? `?${query}` : ''}`;
   const router = useRouteProgressRouter();
   const t = useTranslations('LanguageSwitcher');
@@ -27,6 +28,7 @@ export const LocaleLink = ({
 
   return (
     <div>
+      <UrlObserver onChange={setQuery} />
       <Link
         href={href}
         aria-current={locale === currentLocale ? 'true' : undefined}
