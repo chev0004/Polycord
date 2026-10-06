@@ -427,7 +427,7 @@ try {
         origin,
         transport,
         fixture,
-        versions: { bun: Bun.version, chromium: browser.version() },
+        versions: { runner: process.version, chromium: browser.version() },
         results,
         checks,
         samples,
