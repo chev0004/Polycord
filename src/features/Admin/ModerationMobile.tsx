@@ -46,12 +46,7 @@ import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
 import type { WarningCategory } from '@/types';
-import {
-  type ModTab,
-  type Notify,
-  type UsersQuery,
-  useEventLabel,
-} from './ModerationDesktop';
+import type { ModTab, Notify, UsersQuery } from './ModerationDesktop';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
@@ -82,7 +77,14 @@ import { GrantFields, useGrant } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { protectionOf } from './permissions';
 import { SeedPanel } from './SeedPanel';
-import type { ModAction, ModReport, ModUser, SeedStatus } from './types';
+import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
+import type {
+  ModAction,
+  ModReport,
+  ModSuspicious,
+  ModUser,
+  SeedStatus,
+} from './types';
 import { LOG_ACTIONS } from './types';
 import {
   groupReports,
@@ -704,6 +706,84 @@ const LogScreen = ({
   );
 };
 
+const FlagRow = ({
+  row,
+  store,
+  openUser,
+}: {
+  row: ModSuspicious;
+  store: ModerationStore;
+  openUser: (userId: string) => void;
+}) => {
+  const t = useTranslations('Admin');
+  const { relative } = useModFormat();
+  const eventLabel = useEventLabel();
+  const [open, setOpen] = useState(false);
+  const user = store.usersById.get(row.userId ?? '');
+  const grouped = row.userId !== undefined && row.count > 1;
+  const eventsId = `suspicious-events-${row.id}`;
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={!user && !grouped}
+        aria-expanded={grouped ? open : undefined}
+        aria-controls={grouped ? eventsId : undefined}
+        onClick={() => (grouped ? setOpen(!open) : user && openUser(user.id))}
+        className={`grid w-full grid-cols-[22px_minmax(0,1fr)_auto] items-start gap-3 py-3.5 pr-3 pl-4 text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[50px]`}
+      >
+        <MdOutlinedFlag size={20} className="mt-px text-discord-yellow" />
+        <span className="min-w-0">
+          <span className="block font-medium text-[15px]">
+            {eventLabel(row.action)}
+          </span>
+          <span className="mt-0.5 block text-[13px] text-muted">
+            {t('eventReason')}
+          </span>
+          {user ? (
+            <span className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] text-gray-200">
+              <Avatar avatarUrl={user.avatarUrl} size="sm" />
+              {user.displayName}
+              <RestrictionChips user={user} small />
+            </span>
+          ) : null}
+          <span className="mt-1.5 block font-mono text-[13px] text-muted">
+            {row.ip ?? '-'} · {relative(row.createdAt)}
+          </span>
+          {grouped ? (
+            <span className="mt-1.5 block font-medium text-[13px] text-primary-light">
+              {t('flaggedEvents', { count: row.count })}
+            </span>
+          ) : null}
+        </span>
+        {grouped ? (
+          <MdExpandMore
+            size={20}
+            className={`mt-0.5 text-subtle ${open ? 'rotate-180' : ''}`}
+          />
+        ) : (
+          <MdChevronRight size={20} className="mt-0.5 text-subtle" />
+        )}
+      </button>
+      {grouped && open && row.userId ? (
+        <div className="bg-background-darker">
+          <SuspiciousEvents id={eventsId} store={store} userId={row.userId} />
+          {user ? (
+            <button
+              type="button"
+              onClick={() => openUser(user.id)}
+              className="px-5 pb-3.5 font-medium text-[13px] text-primary-light"
+            >
+              {t('viewUser')}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </>
+  );
+};
+
 const FlagsScreen = ({
   store,
   openUser,
@@ -712,8 +792,6 @@ const FlagsScreen = ({
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
-  const { relative } = useModFormat();
-  const eventLabel = useEventLabel();
 
   return (
     <>
@@ -721,42 +799,14 @@ const FlagsScreen = ({
       <div className="px-3">
         {store.suspicious.length ? (
           <div className={group}>
-            {store.suspicious.map((row) => {
-              const user = store.usersById.get(row.userId ?? '');
-              return (
-                <button
-                  key={row.id}
-                  type="button"
-                  disabled={!user}
-                  onClick={() => user && openUser(user.id)}
-                  className={`grid w-full grid-cols-[22px_minmax(0,1fr)_auto] items-start gap-3 py-3.5 pr-3 pl-4 text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[50px]`}
-                >
-                  <MdOutlinedFlag
-                    size={20}
-                    className="mt-px text-discord-yellow"
-                  />
-                  <span className="min-w-0">
-                    <span className="block font-medium text-[15px]">
-                      {eventLabel(row.action)}
-                    </span>
-                    <span className="mt-0.5 block text-[13px] text-muted">
-                      {t('eventReason')}
-                    </span>
-                    {user ? (
-                      <span className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] text-gray-200">
-                        <Avatar avatarUrl={user.avatarUrl} size="sm" />
-                        {user.displayName}
-                        <RestrictionChips user={user} small />
-                      </span>
-                    ) : null}
-                    <span className="mt-1.5 block font-mono text-[13px] text-muted">
-                      {row.ip ?? '-'} · {relative(row.createdAt)}
-                    </span>
-                  </span>
-                  <MdChevronRight size={20} className="mt-0.5 text-subtle" />
-                </button>
-              );
-            })}
+            {store.suspicious.map((row) => (
+              <FlagRow
+                key={row.id}
+                row={row}
+                store={store}
+                openUser={openUser}
+              />
+            ))}
           </div>
         ) : (
           <MobileEmpty
