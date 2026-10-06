@@ -33,7 +33,6 @@ for (const route of ['api/internal/ban-check', 'api/discovery']) {
             NODE_ENV: 'production',
             DATABASE_URL: 'postgres://unused:unused@127.0.0.1:1/unused',
             AUTH_SECRET: 'disc027-disposable-local-build',
-            DISC027_TIMING: 'false',
           },
         },
       ).trim(),
