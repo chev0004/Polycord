@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-05T21:24:26.850Z",
+  "origin": "https://6ac3f169a8d8562757dc5413--polycord-disc027-supabase.netlify.app",
+  "mode": "recovered",
+  "outcomes": [
+    {
+      "path": "/api/internal/ban-check",
+      "status": 200,
+      "ms": 771.9008,
+      "noStore": true
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 200,
+      "ms": 479.4827,
+      "noStore": true
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "ms": 771.5914,
+      "noStore": true
+    }
+  ]
+}

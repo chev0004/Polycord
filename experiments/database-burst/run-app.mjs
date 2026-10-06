@@ -10,13 +10,19 @@ import {
 } from '../../src/lib/auth-session';
 
 const origin = process.argv[2];
+const staging = process.argv[4] === '--staging';
+const prefix = staging ? 'dev017' : 'test006';
+const project = staging ? 'lqyekuxzhxkjsctdpybi' : 'ftlxjximfprlplbihcph';
+const fixtureIp = staging ? '203.0.113.249' : '203.0.113.250';
 assert.equal(
   new URL(process.env.SESSION_DATABASE_URL).username,
-  'postgres.ftlxjximfprlplbihcph',
+  `postgres.${project}`,
 );
 assert.match(
   origin,
-  /^https:\/\/[a-f0-9]{24}--polycord-test006-supabase\.netlify\.app$/,
+  staging
+    ? /^https:\/\/([a-f0-9]{24}--polycord-staging\.netlify\.app|polycord\.chev\.dev)$/
+    : /^https:\/\/[a-f0-9]{24}--polycord-test006-supabase\.netlify\.app$/,
 );
 assert.ok(process.env.AUTH_SECRET);
 const monitor = postgres(process.env.SESSION_DATABASE_URL, {
@@ -31,19 +37,19 @@ const [fixture] = await monitor`select count(*)::int as profiles,
     and p.last_bumped_at is not null and u.banned_at is null
     and (u.suspended_until is null or u.suspended_until < now()))::int as discoverable
   from profiles p join users u on u.id=p.user_id`;
-assert.equal(fixture.profiles, 5000);
+if (!staging) assert.equal(fixture.profiles, 5000);
 assert.ok(fixture.discoverable > 0);
 const accounts =
-  await monitor`select id,discord_user_id from users where discord_user_id in ('test006-allowed','test006-banned')`;
+  await monitor`select id,discord_user_id from users where discord_user_id in (${`${prefix}-allowed`},${`${prefix}-banned`})`;
 const session = async (id) =>
   `polycord_session=${await createSessionCookieValue({ id, name: 'TEST-006', username: id }, accounts.find((row) => row.discord_user_id === id).id)}`;
-const allowed = await session('test006-allowed');
-const banned = await session('test006-banned');
-const remembered = `polycord_banned=${await createBanCookieValue('test006-remembered')}`;
+const allowed = await session(`${prefix}-allowed`);
+const banned = await session(`${prefix}-banned`);
+const remembered = `polycord_banned=${await createBanCookieValue(`${prefix}-remembered`)}`;
 const token = await createBanCheckToken();
 assert.equal(
   (
-    await monitor`select count(*)::int as total from ip_bans where ip='203.0.113.250' and revoked_at is null`
+    await monitor`select count(*)::int as total from ip_bans where ip=${fixtureIp} and revoked_at is null`
   )[0].total,
   1,
 );
@@ -134,7 +140,7 @@ try {
         call(
           paths[i % paths.length],
           i % paths.length === 3
-            ? internal({ ip: null, discordUserIds: ['test006-allowed'] })
+            ? internal({ ip: null, discordUserIds: [`${prefix}-allowed`] })
             : { headers: { cookie: allowed } },
         ),
       ),
@@ -182,7 +188,7 @@ try {
     [
       'IP lookup',
       '/api/internal/ban-check',
-      internal({ ip: '203.0.113.250', discordUserIds: [] }),
+      internal({ ip: fixtureIp, discordUserIds: [] }),
       200,
     ],
     [
@@ -190,8 +196,8 @@ try {
       '/api/discovery?locale=en',
       {
         headers: {
-          'x-nf-client-connection-ip': '203.0.113.250',
-          'x-forwarded-for': '203.0.113.250',
+          'x-nf-client-connection-ip': fixtureIp,
+          'x-forwarded-for': fixtureIp,
         },
       },
       200,

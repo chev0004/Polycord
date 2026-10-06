@@ -1,0 +1,19 @@
+{
+  "origin": "https://6ac3dfcd5e5acd1955f378e0--polycord-staging.netlify.app",
+  "outcomes": [
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 403,
+      "ms": 1103.9299,
+      "noStore": true,
+      "bannedScreen": false
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "ms": 1137.3669,
+      "noStore": true,
+      "bannedScreen": true
+    }
+  ]
+}

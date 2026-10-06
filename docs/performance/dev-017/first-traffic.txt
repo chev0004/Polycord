@@ -1,0 +1,2567 @@
+{
+  "at": "2026-10-05T17:40:00.482Z",
+  "origin": "https://6ac3dfcd5e5acd1955f378e0--polycord-staging.netlify.app",
+  "fixture": {
+    "profiles": 5005,
+    "discoverable": 4732
+  },
+  "checks": [
+    {
+      "name": "anonymous page",
+      "expected": 200,
+      "path": "/en",
+      "startedAt": "2026-10-05T17:39:51.215Z",
+      "status": 200,
+      "bannedScreen": false,
+      "ms": 1521.9115999999995,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    },
+    {
+      "name": "allowed account",
+      "expected": 200,
+      "path": "/api/discovery?locale=en",
+      "startedAt": "2026-10-05T17:39:52.737Z",
+      "status": 200,
+      "bannedScreen": false,
+      "ms": 1763.1216000000022,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    },
+    {
+      "name": "account ban",
+      "expected": 403,
+      "path": "/api/discovery",
+      "startedAt": "2026-10-05T17:39:54.500Z",
+      "status": 403,
+      "bannedScreen": false,
+      "ms": 1053.2461000000003,
+      "noStore": true,
+      "valid": false,
+      "passed": true
+    },
+    {
+      "name": "banned page",
+      "expected": 200,
+      "path": "/en",
+      "startedAt": "2026-10-05T17:39:55.553Z",
+      "status": 200,
+      "bannedScreen": true,
+      "ms": 1474.4557000000023,
+      "noStore": true,
+      "valid": false,
+      "passed": true
+    },
+    {
+      "name": "remembered ban",
+      "expected": 403,
+      "path": "/api/discovery",
+      "startedAt": "2026-10-05T17:39:57.028Z",
+      "status": 403,
+      "bannedScreen": false,
+      "ms": 1071.6318000000028,
+      "noStore": true,
+      "valid": false,
+      "passed": true
+    },
+    {
+      "name": "internal authentication",
+      "expected": 403,
+      "path": "/api/internal/ban-check",
+      "startedAt": "2026-10-05T17:39:58.099Z",
+      "status": 403,
+      "bannedScreen": false,
+      "ms": 247.4817000000039,
+      "noStore": true,
+      "valid": false,
+      "passed": true
+    },
+    {
+      "name": "IP lookup",
+      "expected": 200,
+      "path": "/api/internal/ban-check",
+      "startedAt": "2026-10-05T17:39:58.347Z",
+      "status": 200,
+      "bannedScreen": false,
+      "banFound": true,
+      "ms": 762.0541000000012,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    },
+    {
+      "name": "spoofed IP headers",
+      "expected": 200,
+      "path": "/api/discovery?locale=en",
+      "startedAt": "2026-10-05T17:39:59.109Z",
+      "status": 200,
+      "bannedScreen": false,
+      "ms": 1290.6693000000014,
+      "noStore": true,
+      "valid": true,
+      "passed": true
+    }
+  ],
+  "results": [
+    {
+      "startedAt": "2026-10-05T17:39:23.837Z",
+      "firstTraffic": true,
+      "size": 60,
+      "ok": 60,
+      "p50": 11305.1263,
+      "p95": 12634.932499999999,
+      "max": 13414.3642,
+      "outcomes": [
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.837Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12244.2062,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12634.932499999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 10988.9339,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5430.9277999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12318.872599999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11830.1306,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11305.1263,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5653.0681,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 8538.5098,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 8584.8736,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 10924.5199,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 6099.3251,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12360.9246,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 8388.0957,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 7973.485199999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5788.4871,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12356.8011,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12066.8416,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 7973.4741,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5462.435100000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12472.390300000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11538.0572,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11536.3096,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5569.7501,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 7752.363899999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 8367.1205,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11846.1836,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5383.7726999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 8010.5027,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11565.6129,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11566.6471,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5478.049499999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12464.0412,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12205.3204,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11746.9792,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 6270.2771999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12464.1371,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 8356.300000000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11942.645,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.838Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5489.5731,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 13414.3642,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 8376.3473,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11477.2145,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5667.343400000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12467.0921,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12465.838199999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11535.9092,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5410.3864,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12372.6377,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11548.6825,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11103.4567,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 1397.0212000000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 13343.6931,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11888.7017,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 10923.8241,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 5825.5012,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12096.939699999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 12098.2013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 11122.1116,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:23.839Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 1252.5321,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "startedAt": "2026-10-05T17:39:37.253Z",
+      "firstTraffic": false,
+      "size": 60,
+      "ok": 60,
+      "p50": 2807.091700000001,
+      "p95": 3878.6648999999998,
+      "max": 6029.359,
+      "outcomes": [
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.253Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3726.7574999999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.253Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2786.4694,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.253Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3372.3975999999984,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.253Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 2232.929699999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.253Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3405.0437,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.253Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3668.113300000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.253Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2192.330600000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 857.6278999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3150.453300000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2613.0147000000015,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2205.952299999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 924.2983999999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3259.110200000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3878.6648999999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2353.0648999999994,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 828.7780000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3679.5751,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3368.6543999999994,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2914.3547000000017,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 914.3014999999996,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3270.489099999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2417.2610000000004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3069.4985000000015,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 2225.519799999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2790.618599999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2866.915900000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3189.5372000000007,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 881.6579000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3286.8806000000022,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2441.9882,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2359.3333000000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 1648.000399999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3631.0944,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2644.7530000000006,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2202.181699999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 886.5274000000009,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2938.6094999999987,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2803.8950000000004,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 6029.359,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 881.5528000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2945.7200999999986,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2404.9781999999977,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3213.7906999999996,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 827.222099999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3875.485999999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3115.833499999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2242.9622,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 984.1585999999988,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2935.6628999999994,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2937.3542000000016,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2182.4974,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 810.2547000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4279.2983,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3069.163300000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3147.237299999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 1596.6345999999994,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3216.6175000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3468.953400000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2807.091700000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:37.254Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 840.4629000000004,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "startedAt": "2026-10-05T17:39:43.283Z",
+      "firstTraffic": false,
+      "size": 60,
+      "ok": 60,
+      "p50": 2651.0515000000014,
+      "p95": 4266.713499999998,
+      "max": 4799.882799999999,
+      "outcomes": [
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.283Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3119.192600000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2846.626400000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2937.9707000000017,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 764.6097999999984,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2929.5635,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2787.8876999999993,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2198.381699999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 804.2563999999984,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3866.5171999999984,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3143.6708999999973,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2290.2785000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 836.7468000000008,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2934.815200000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2413.0433999999987,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2180.4637999999977,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 724.3708999999981,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3078.255100000002,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3049.2403000000013,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2377.923899999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 877.9771000000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2608.1692000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3427.000100000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2469.9532,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 897.5316000000021,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4266.713499999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3666.999499999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2298.9192999999977,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 762.9485000000022,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3575.415799999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2427.397000000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2769.2009999999973,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 864.3927000000003,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2732.5299000000014,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2399.2720999999983,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2968.9277,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 999.8846000000012,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4799.882799999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3457.7297999999973,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2299.4493,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 776.3428000000022,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 4312.323499999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2999.6460000000006,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2651.0515000000014,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 963.4580000000024,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2933.791599999997,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3065.3051000000014,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.284Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2677.6237,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 900.1350999999995,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2689.9303000000036,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2412.8882000000012,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2194.9831999999988,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 1559.6792999999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3268.2906999999977,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3062.4645999999993,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2190.5550999999978,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 1473.5335000000014,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3574.7488999999987,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3128.667699999998,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2303.1905000000006,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:43.285Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 1617.3843000000015,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    },
+    {
+      "startedAt": "2026-10-05T17:39:48.085Z",
+      "firstTraffic": false,
+      "size": 12,
+      "ok": 12,
+      "p50": 2214.493200000001,
+      "p95": 3129.8521,
+      "max": 3129.8521,
+      "outcomes": [
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 1756.964899999999,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2361.2210000000014,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2214.493200000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 746.7429999999986,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 3129.8521,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2353.0386,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2095.5563,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 746.6948999999986,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/en",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2679.6382000000012,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2344.561300000001,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "ms": 2095.1466999999975,
+          "noStore": true,
+          "valid": true
+        },
+        {
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-05T17:39:48.085Z",
+          "status": 200,
+          "bannedScreen": false,
+          "banFound": false,
+          "ms": 792.0957999999991,
+          "noStore": true,
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "at": "2026-10-05T17:39:23.837Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:24.154Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:24.416Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:24.689Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:24.948Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:25.216Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:25.472Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:25.733Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:25.996Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:26.257Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:26.527Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:26.789Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:27.051Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:27.315Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:27.567Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:27.831Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:28.099Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:28.358Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:28.618Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:28.885Z",
+      "connections": 5,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:29.146Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 5
+    },
+    {
+      "at": "2026-10-05T17:39:29.409Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T17:39:29.672Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:29.937Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 8
+    },
+    {
+      "at": "2026-10-05T17:39:30.190Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 4
+    },
+    {
+      "at": "2026-10-05T17:39:30.443Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:30.703Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:30.969Z",
+      "connections": 11,
+      "active": 4,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:31.231Z",
+      "connections": 11,
+      "active": 8,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:31.494Z",
+      "connections": 11,
+      "active": 8,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:31.757Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:32.030Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:32.282Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:32.530Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:32.794Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:33.056Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:33.324Z",
+      "connections": 11,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:33.598Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 14
+    },
+    {
+      "at": "2026-10-05T17:39:33.837Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 16
+    },
+    {
+      "at": "2026-10-05T17:39:34.102Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 10
+    },
+    {
+      "at": "2026-10-05T17:39:34.370Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:34.618Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:34.883Z",
+      "connections": 17,
+      "active": 8,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:35.147Z",
+      "connections": 17,
+      "active": 12,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:35.404Z",
+      "connections": 17,
+      "active": 7,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:35.653Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:35.915Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:36.171Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:36.430Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:36.681Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:36.932Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:37.197Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:37.448Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:37.703Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:37.965Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 10
+    },
+    {
+      "at": "2026-10-05T17:39:38.230Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:38.489Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:38.749Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 16
+    },
+    {
+      "at": "2026-10-05T17:39:39.015Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 16
+    },
+    {
+      "at": "2026-10-05T17:39:39.280Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 14
+    },
+    {
+      "at": "2026-10-05T17:39:39.543Z",
+      "connections": 17,
+      "active": 4,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:39.809Z",
+      "connections": 17,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:40.078Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:40.337Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:40.589Z",
+      "connections": 17,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:40.847Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:41.113Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:41.376Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:41.637Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:41.901Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:42.170Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:42.429Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:42.692Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:42.959Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:43.221Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:43.484Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:43.747Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:44.016Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 8
+    },
+    {
+      "at": "2026-10-05T17:39:44.280Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:44.538Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T17:39:44.806Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 16
+    },
+    {
+      "at": "2026-10-05T17:39:45.058Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 16
+    },
+    {
+      "at": "2026-10-05T17:39:45.318Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 13
+    },
+    {
+      "at": "2026-10-05T17:39:45.585Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:45.855Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:46.103Z",
+      "connections": 17,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:46.366Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:46.614Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:46.881Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:47.138Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:47.385Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:47.651Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:47.911Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:48.180Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:48.438Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:48.701Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 4
+    },
+    {
+      "at": "2026-10-05T17:39:48.970Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:49.227Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:49.491Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 4
+    },
+    {
+      "at": "2026-10-05T17:39:49.753Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-05T17:39:50.015Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:50.284Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:50.547Z",
+      "connections": 17,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:39:50.792Z",
+      "connections": 17,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-05T17:39:51.057Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-05T17:40:00.466Z",
+      "connections": 17,
+      "active": 1,
+      "idle_transactions": 0
+    }
+  ]
+}
