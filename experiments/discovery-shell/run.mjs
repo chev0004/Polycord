@@ -59,6 +59,7 @@ const timings = (response) => ({
   serverTiming: response.headers.get('server-timing') ?? '',
   nodeTiming: response.headers.get('x-disc029-timing') ?? '',
   nodeVersion: response.headers.get('x-disc029-node') ?? '',
+  serverless: response.headers.get('x-disc029-serverless') ?? '',
   transport: response.headers.get('x-disc029-transport') ?? '',
   failure: response.headers.get('x-disc029-failure') ?? '',
   code: response.headers.get('x-disc029-code') ?? '',
@@ -204,6 +205,7 @@ const visit = async ({ context, page }) => {
         serverTiming: headers['server-timing'] ?? '',
         nodeTiming: headers['x-disc029-timing'] ?? '',
         nodeVersion: headers['x-disc029-node'] ?? '',
+        serverless: headers['x-disc029-serverless'] ?? '',
         transport: headers['x-disc029-transport'] ?? '',
         failure: headers['x-disc029-failure'] ?? '',
         code: headers['x-disc029-code'] ?? '',
@@ -216,6 +218,12 @@ const visit = async ({ context, page }) => {
           data?.profiles?.length > 0 &&
           data.profiles.every(({ id }) => typeof id === 'string');
         item.total = data?.total;
+      } else if (url.pathname === '/api/discovery/viewer') {
+        const data = await response.json().catch(() => null);
+        item.valid =
+          response.ok() &&
+          data?.isLoggedIn === true &&
+          data.userId === 'test006-allowed';
       }
       followups.push(item);
     })();
@@ -351,6 +359,12 @@ try {
       (item.kind === 'browser' || item.noStore) &&
       (item.kind === 'browser'
         ? item.serverTiming?.includes('middleware-instance') &&
+          item.followups.some(
+            (followup) =>
+              followup.path === '/api/discovery/viewer' &&
+              followup.valid &&
+              followup.noStore,
+          ) &&
           item.followups.some(
             (followup) =>
               followup.path === '/api/discovery' &&

@@ -62,7 +62,13 @@ export const startupResponse = async <T extends Response>(
         'X-Disc029-Transport',
         process.env.POLYCORD_DIRECT_BAN_CHECK === 'true' ? 'direct' : 'https',
       );
-    else response.headers.set('X-Disc029-Node', process.version);
+    else {
+      response.headers.set('X-Disc029-Node', process.version);
+      response.headers.set(
+        'X-Disc029-Serverless',
+        process.env.AWS_LAMBDA_FUNCTION_NAME ? 'yes' : 'no',
+      );
+    }
     return response;
   });
 };
