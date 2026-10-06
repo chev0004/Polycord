@@ -26,6 +26,12 @@ import {
   MdTune,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import {
+  ActivityDayBar,
+  ActivityPager,
+  ActivityStatus,
+  useActivityPages,
+} from './ActivityPages';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
@@ -48,7 +54,13 @@ import { PremiumPanel } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { SeedPanel } from './SeedPanel';
 import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
-import type { ModAction, ModSuspicious, ModUser, SeedStatus } from './types';
+import type {
+  ActivityRange,
+  ModAction,
+  ModSuspicious,
+  ModUser,
+  SeedStatus,
+} from './types';
 import { LOG_ACTIONS } from './types';
 import {
   groupReports,
@@ -769,12 +781,14 @@ const LogTab = ({
   const label = useLogLabel();
   const [action, setAction] = useState('');
   const [staff, setStaff] = useState('');
-  const rows = store.log.filter(
+  const pages = useActivityPages(store.loadActivityLog);
+  const entries = pages.rows ?? [];
+  const rows = entries.filter(
     (entry) =>
       (!action || entry.action === action) &&
       (!staff || entry.staffId === staff),
   );
-  const staffIds = [...new Set(store.log.flatMap((e) => e.staffId ?? []))];
+  const staffIds = [...new Set(entries.flatMap((e) => e.staffId ?? []))];
   const clear = () => {
     setAction('');
     setStaff('');
@@ -782,6 +796,9 @@ const LogTab = ({
 
   return (
     <section className={tablePane} aria-label={t('tabLog')}>
+      <div className="border-line border-b px-3.5 py-3">
+        <ActivityDayBar pages={pages} />
+      </div>
       <div className="flex flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
         <FilterSelect
           icon={MdTune}
@@ -824,7 +841,9 @@ const LogTab = ({
         <span>{t('colTime')}</span>
         <span>{t('colNote')}</span>
       </div>
-      {rows.length ? (
+      {!pages.rows ? (
+        <ActivityStatus pages={pages} />
+      ) : rows.length ? (
         rows.map((entry) => (
           <div key={entry.id} className={`${bodyRow} ${logColumns}`}>
             <span className="inline-flex items-center gap-2 font-medium text-foreground">
@@ -853,7 +872,7 @@ const LogTab = ({
             </span>
           </div>
         ))
-      ) : (
+      ) : entries.length ? (
         <EmptyState
           className="px-6 py-10"
           icon={MdFilterAltOff}
@@ -864,17 +883,27 @@ const LogTab = ({
             {t('clearFilters')}
           </button>
         </EmptyState>
+      ) : (
+        <EmptyState
+          className="px-6 py-10"
+          icon={MdHistory}
+          title={t('logEmptyTitle')}
+          body={t('logEmptyBody')}
+        />
       )}
+      <ActivityPager pages={pages} />
     </section>
   );
 };
 
 const SuspiciousRow = ({
   row,
+  range,
   store,
   openUser,
 }: {
   row: ModSuspicious;
+  range: ActivityRange;
   store: ModerationStore;
   openUser: (userId: string) => void;
 }) => {
@@ -941,7 +970,12 @@ const SuspiciousRow = ({
       </div>
       {open && row.userId ? (
         <div className="border-[rgba(55,65,81,0.6)] border-t bg-background-darker">
-          <SuspiciousEvents id={eventsId} store={store} userId={row.userId} />
+          <SuspiciousEvents
+            id={eventsId}
+            store={store}
+            userId={row.userId}
+            range={range}
+          />
         </div>
       ) : null}
     </>
@@ -956,12 +990,14 @@ const SuspiciousTab = ({
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
+  const pages = useActivityPages(store.loadSuspicious);
 
   return (
     <section className={tablePane} aria-label={t('tabSuspicious')}>
-      <p className="border-line border-b px-5 py-3.5 text-[12.5px] text-subtle">
-        {t('suspiciousIntro')}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-line border-b px-5 py-3.5">
+        <p className="text-[12.5px] text-subtle">{t('suspiciousIntro')}</p>
+        <ActivityDayBar pages={pages} />
+      </div>
       <div className={`${headRow} ${suspiciousColumns}`}>
         <span>{t('colEvent')}</span>
         <span>{t('colUser')}</span>
@@ -969,11 +1005,14 @@ const SuspiciousTab = ({
         <span>{t('colTime')}</span>
         <span />
       </div>
-      {store.suspicious.length ? (
-        store.suspicious.map((row) => (
+      {!pages.rows ? (
+        <ActivityStatus pages={pages} />
+      ) : pages.rows.length ? (
+        pages.rows.map((row) => (
           <SuspiciousRow
             key={row.id}
             row={row}
+            range={pages.range}
             store={store}
             openUser={openUser}
           />
@@ -986,6 +1025,7 @@ const SuspiciousTab = ({
           body={t('suspiciousEmptyBody')}
         />
       )}
+      <ActivityPager pages={pages} />
     </section>
   );
 };
@@ -1019,12 +1059,7 @@ export const ModerationDesktop = ({
       },
       { id: 'users', icon: MdPersonSearch, label: t('tabUsers') },
       { id: 'log', icon: MdHistory, label: t('tabLog') },
-      {
-        id: 'suspicious',
-        icon: MdPolicy,
-        label: t('tabSuspicious'),
-        badge: store.suspicious.length,
-      },
+      { id: 'suspicious', icon: MdPolicy, label: t('tabSuspicious') },
       ...(seed
         ? [{ id: 'dummy' as const, icon: MdStorage, label: t('tabDummy') }]
         : []),

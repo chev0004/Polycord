@@ -95,6 +95,10 @@ export type ModSuspiciousEvent = {
   createdAt: string;
 };
 
+export type ActivityRange = { from: string; to: string };
+
+export type ActivityPage<T> = { rows: T[]; nextCursor?: string };
+
 export type ModSuspicious = ModSuspiciousEvent & { count: number };
 
 export type ModData = {
@@ -105,7 +109,6 @@ export type ModData = {
 
 export type ModSnapshot = ModData & {
   pendingCases: number;
-  suspicious: ModSuspicious[];
   staff: string[];
   meId: string;
   meRole: StaffRole;

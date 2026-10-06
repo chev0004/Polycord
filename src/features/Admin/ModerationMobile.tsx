@@ -46,6 +46,12 @@ import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
 import type { WarningCategory } from '@/types';
+import {
+  ActivityDayBar,
+  ActivityPager,
+  ActivityStatus,
+  useActivityPages,
+} from './ActivityPages';
 import type { ModTab, Notify, UsersQuery } from './ModerationDesktop';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
@@ -79,6 +85,7 @@ import { protectionOf } from './permissions';
 import { SeedPanel } from './SeedPanel';
 import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
+  ActivityRange,
   ModAction,
   ModReport,
   ModSuspicious,
@@ -537,34 +544,19 @@ const LogScreen = ({
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
-  const { date, time } = useModFormat();
+  const { time } = useModFormat();
   const label = useLogLabel();
   const [action, setAction] = useState('');
   const [staff, setStaff] = useState('');
   const [sheet, setSheet] = useState<'action' | 'staff' | null>(null);
-  const rows = store.log.filter(
+  const pages = useActivityPages(store.loadActivityLog);
+  const entries = pages.rows ?? [];
+  const rows = entries.filter(
     (entry) =>
       (!action || entry.action === action) &&
       (!staff || entry.staffId === staff),
   );
-  const staffIds = [...new Set(store.log.flatMap((e) => e.staffId ?? []))];
-  const dayLabel = (iso: string) => {
-    const day = new Date(iso).toDateString();
-    if (day === new Date().toDateString()) return t('today');
-    if (day === new Date(Date.now() - 86400000).toDateString())
-      return t('yesterday');
-    return date(iso);
-  };
-  const days = rows.reduce<{ label: string; items: typeof rows }[]>(
-    (all, entry) => {
-      const key = dayLabel(entry.createdAt);
-      const last = all.at(-1);
-      if (last?.label === key) last.items.push(entry);
-      else all.push({ label: key, items: [entry] });
-      return all;
-    },
-    [],
-  );
+  const staffIds = [...new Set(entries.flatMap((e) => e.staffId ?? []))];
   const clear = () => {
     setAction('');
     setStaff('');
@@ -578,6 +570,9 @@ const LogScreen = ({
         heading={t('tabLog')}
         sub={t('actionsCount', { count: rows.length })}
       />
+      <div className="px-4 pb-3">
+        <ActivityDayBar pages={pages} />
+      </div>
       <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
         <button
           type="button"
@@ -605,48 +600,41 @@ const LogScreen = ({
         ) : null}
       </div>
       <div className="px-3">
-        {rows.length ? (
-          days.map((day, index) => (
-            <div key={day.label}>
-              <p
-                className={`px-4 pb-2 font-semibold text-subtle text-xs uppercase tracking-[0.06em] ${index ? 'pt-[18px]' : ''}`}
+        {!pages.rows ? (
+          <ActivityStatus pages={pages} />
+        ) : rows.length ? (
+          <div className={group}>
+            {rows.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => entry.userId && openUser(entry.userId)}
+                className={`grid w-full grid-cols-[10px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-[13px] text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[38px]`}
               >
-                {day.label}
-              </p>
-              <div className={group}>
-                {day.items.map((entry) => (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    onClick={() => entry.userId && openUser(entry.userId)}
-                    className={`grid w-full grid-cols-[10px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-[13px] text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[38px]`}
-                  >
-                    <span
-                      className={`mt-1.5 h-2 w-2 rounded-full ${ACTION_TONE[entry.action]}`}
-                    />
-                    <span className="min-w-0">
-                      <span className="block font-semibold text-[15px]">
-                        {label(entry)}
-                      </span>
-                      <span className="mt-0.5 block text-[13px] text-muted">
-                        {staffName(entry.userId)} ·{' '}
-                        {t('byStaff', { name: staffName(entry.staffId) })}
-                      </span>
-                      {entry.note ? (
-                        <span className="mt-1.5 block font-light text-[13.5px] text-soft leading-[1.4]">
-                          {entry.note}
-                        </span>
-                      ) : null}
+                <span
+                  className={`mt-1.5 h-2 w-2 rounded-full ${ACTION_TONE[entry.action]}`}
+                />
+                <span className="min-w-0">
+                  <span className="block font-semibold text-[15px]">
+                    {label(entry)}
+                  </span>
+                  <span className="mt-0.5 block text-[13px] text-muted">
+                    {staffName(entry.userId)} ·{' '}
+                    {t('byStaff', { name: staffName(entry.staffId) })}
+                  </span>
+                  {entry.note ? (
+                    <span className="mt-1.5 block font-light text-[13.5px] text-soft leading-[1.4]">
+                      {entry.note}
                     </span>
-                    <span className="whitespace-nowrap pt-0.5 text-[12.5px] text-subtle">
-                      {time(new Date(entry.createdAt))}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))
-        ) : (
+                  ) : null}
+                </span>
+                <span className="whitespace-nowrap pt-0.5 text-[12.5px] text-subtle">
+                  {time(new Date(entry.createdAt))}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : entries.length ? (
           <MobileEmpty
             icon={MdFilterAltOff}
             title={t('noMatchTitle')}
@@ -660,7 +648,14 @@ const LogScreen = ({
               {t('clearFilters')}
             </button>
           </MobileEmpty>
+        ) : (
+          <MobileEmpty
+            icon={MdHistory}
+            title={t('logEmptyTitle')}
+            body={t('logEmptyBody')}
+          />
         )}
+        <ActivityPager pages={pages} />
       </div>
       <ActionSheet
         open={sheet === 'action'}
@@ -708,10 +703,12 @@ const LogScreen = ({
 
 const FlagRow = ({
   row,
+  range,
   store,
   openUser,
 }: {
   row: ModSuspicious;
+  range: ActivityRange;
   store: ModerationStore;
   openUser: (userId: string) => void;
 }) => {
@@ -768,7 +765,12 @@ const FlagRow = ({
       </button>
       {grouped && open && row.userId ? (
         <div className="bg-background-darker">
-          <SuspiciousEvents id={eventsId} store={store} userId={row.userId} />
+          <SuspiciousEvents
+            id={eventsId}
+            store={store}
+            userId={row.userId}
+            range={range}
+          />
           {user ? (
             <button
               type="button"
@@ -792,17 +794,24 @@ const FlagsScreen = ({
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
+  const pages = useActivityPages(store.loadSuspicious);
 
   return (
     <>
       <Header heading={t('tabSuspicious')} sub={t('suspiciousIntro')} />
+      <div className="px-4 pb-3">
+        <ActivityDayBar pages={pages} />
+      </div>
       <div className="px-3">
-        {store.suspicious.length ? (
+        {!pages.rows ? (
+          <ActivityStatus pages={pages} />
+        ) : pages.rows.length ? (
           <div className={group}>
-            {store.suspicious.map((row) => (
+            {pages.rows.map((row) => (
               <FlagRow
                 key={row.id}
                 row={row}
+                range={pages.range}
                 store={store}
                 openUser={openUser}
               />
@@ -815,6 +824,7 @@ const FlagsScreen = ({
             body={t('suspiciousEmptyBody')}
           />
         )}
+        <ActivityPager pages={pages} />
       </div>
     </>
   );

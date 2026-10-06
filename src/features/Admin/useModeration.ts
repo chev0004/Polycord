@@ -3,6 +3,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import type {
+  ActivityPage,
+  ActivityRange,
   IpBlock,
   ModData,
   ModLogEntry,
@@ -10,6 +12,7 @@ import type {
   ModRequest,
   ModSnapshot,
   ModState,
+  ModSuspicious,
   ModSuspiciousEvent,
   ModUser,
   ObservedIp,
@@ -143,13 +146,55 @@ export const useModeration = (initial: ModSnapshot) => {
     [merge],
   );
 
-  const loadSuspiciousEvents = useCallback(async (userId: string) => {
-    const response = await fetch(
-      `/api/admin/suspicious-activity?userId=${userId}`,
-    );
-    if (!response.ok) throw new Error('failed');
-    return ((await response.json()) as { events: ModSuspiciousEvent[] }).events;
-  }, []);
+  const loadWindow = useCallback(
+    async <T>(path: string, range: ActivityRange, extra: object) => {
+      const response = await fetch(
+        `${path}?${new URLSearchParams({ ...range, ...extra })}`,
+      );
+      if (!response.ok) throw new Error('failed');
+      return (await response.json()) as T;
+    },
+    [],
+  );
+
+  const loadActivityLog = useCallback(
+    async (range: ActivityRange, cursor?: string) => {
+      const result = await loadWindow<ModData & { nextCursor?: string }>(
+        '/api/admin/activity-log',
+        range,
+        cursor ? { cursor } : {},
+      );
+      merge(result);
+      return { rows: result.log, nextCursor: result.nextCursor };
+    },
+    [loadWindow, merge],
+  );
+
+  const loadSuspicious = useCallback(
+    async (
+      range: ActivityRange,
+      cursor?: string,
+    ): Promise<ActivityPage<ModSuspicious>> => {
+      const result = await loadWindow<
+        ModData & { activity: ModSuspicious[]; nextCursor?: string }
+      >('/api/admin/suspicious-activity', range, cursor ? { cursor } : {});
+      merge(result);
+      return { rows: result.activity, nextCursor: result.nextCursor };
+    },
+    [loadWindow, merge],
+  );
+
+  const loadSuspiciousEvents = useCallback(
+    async (userId: string, range: ActivityRange) =>
+      (
+        await loadWindow<{ events: ModSuspiciousEvent[] }>(
+          '/api/admin/suspicious-activity',
+          range,
+          { userId },
+        )
+      ).events,
+    [loadWindow],
+  );
 
   const search = useCallback(
     async (query: string): Promise<string[]> => {
@@ -195,7 +240,6 @@ export const useModeration = (initial: ModSnapshot) => {
     usersById,
     pendingGroups,
     pendingCases,
-    suspicious: initial.suspicious,
     meId: initial.meId,
     meRole: initial.meRole,
     staff,
@@ -206,6 +250,8 @@ export const useModeration = (initial: ModSnapshot) => {
       changePremium('POST', { userId, amount, unit }),
     revokePremium: (userId: string) => changePremium('DELETE', { userId }),
     loadIpBlocks,
+    loadActivityLog,
+    loadSuspicious,
     loadSuspiciousEvents,
     blockIps: (body: { ips: string[]; userId?: string; reason?: string }) =>
       changeIpBlocks('POST', body),
