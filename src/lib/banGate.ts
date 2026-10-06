@@ -27,7 +27,6 @@ export const findBan = async (
   origin: string,
   headers: Headers,
   cookie: (name: string) => string | undefined,
-  observe?: (value: string | null) => void,
 ): Promise<BanNotice | null> => {
   const sessionCookie = cookie(AUTH_SESSION_COOKIE);
   const banCookie = cookie(AUTH_BAN_COOKIE);
@@ -68,8 +67,6 @@ export const findBan = async (
   if (!response.ok) {
     throw new Error(`Ban check failed with ${response.status}`);
   }
-
-  observe?.(response.headers.get('x-disc027-timing'));
 
   const { ban } = (await response.json()) as { ban?: unknown };
 

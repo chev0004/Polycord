@@ -8,7 +8,6 @@ import {
   readSessionFromCookieValue,
 } from './lib/auth-session';
 import { BAN_CHECK_PATH, findBan } from './lib/banGate';
-import { measureStartup, startupResponse } from './lib/startupProbe';
 import { locales } from './utils/locales';
 
 export { locales };
@@ -75,23 +74,13 @@ const denyBanned = (
   });
 };
 
-async function routeMiddleware(
-  request: NextRequest,
-  observe?: (value: string | null) => void,
-) {
+export default async function middleware(request: NextRequest) {
   if (!serviceRoutes.has(request.nextUrl.pathname)) {
     try {
-      const ban = await measureStartup(
-        process.env.POLYCORD_DIRECT_BAN_CHECK === 'true'
-          ? 'ban-direct'
-          : 'ban-http',
-        () =>
-          findBan(
-            request.nextUrl.origin,
-            request.headers,
-            (name) => request.cookies.get(name)?.value,
-            observe,
-          ),
+      const ban = await findBan(
+        request.nextUrl.origin,
+        request.headers,
+        (name) => request.cookies.get(name)?.value,
       );
 
       if (ban) {
@@ -145,17 +134,6 @@ async function routeMiddleware(
   }
 
   return handleI18nRouting(request);
-}
-
-export default async function middleware(request: NextRequest) {
-  let upstream: string | null = null;
-  const response = await startupResponse('middleware', () =>
-    routeMiddleware(request, (value) => {
-      upstream = value;
-    }),
-  );
-  if (upstream) response.headers.append('Server-Timing', upstream);
-  return response;
 }
 
 export const config = {
