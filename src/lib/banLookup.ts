@@ -1,10 +1,7 @@
 import 'server-only';
 
 import { createHash } from 'node:crypto';
-import { sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { createBanClient } from '@/db/client';
-import { findActiveIpBan, findBannedAt } from '@/db/ipBans';
+import { createBanClient } from '@/db/connection';
 import type { BanNotice } from './banGate';
 
 export const BAN_STATEMENT_TIMEOUT_MS = 2500;
@@ -27,24 +24,45 @@ export const lookupBan = async (
 
   try {
     await client.connect();
-    return await drizzle(client).transaction(async (tx) => {
+    await client.query('begin');
+    try {
       signal.throwIfAborted();
-      await tx.execute(
-        sql`select set_config('statement_timeout', ${String(BAN_STATEMENT_TIMEOUT_MS)}, true)`,
-      );
-      const ipBan = ip ? await findActiveIpBan(ip, tx) : null;
-
-      if (ipBan) {
-        return { date: ipBan.createdAt, reference: banReference(ipBan.id) };
-      }
-
-      signal.throwIfAborted();
-      const bannedAt = await findBannedAt(discordUserIds, tx);
-
-      return bannedAt
-        ? { date: bannedAt, reference: banReference(discordUserIds.join('+')) }
+      await client.query("select set_config('statement_timeout', $1, true)", [
+        String(BAN_STATEMENT_TIMEOUT_MS),
+      ]);
+      const ipBan = ip
+        ? (
+            await client.query<{ id: string; created_at: Date }>(
+              'select id, created_at from ip_bans where ip = $1 and revoked_at is null order by created_at asc limit 1',
+              [ip],
+            )
+          ).rows[0]
         : null;
-    });
+      let notice: BanNotice | null = null;
+      if (ipBan) {
+        notice = { date: ipBan.created_at, reference: banReference(ipBan.id) };
+      } else if (discordUserIds.length) {
+        signal.throwIfAborted();
+        const dates: number[] = [];
+        for (const table of ['users', 'moderation_restrictions']) {
+          const { rows } = await client.query<{ at: Date }>(
+            `select banned_at as at from ${table} where discord_user_id = any($1::varchar[]) and banned_at is not null`,
+            [discordUserIds],
+          );
+          dates.push(...rows.map(({ at }) => Number(at)));
+        }
+        if (dates.length)
+          notice = {
+            date: new Date(Math.min(...dates)),
+            reference: banReference(discordUserIds.join('+')),
+          };
+      }
+      await client.query('commit');
+      return notice;
+    } catch (error) {
+      await client.query('rollback');
+      throw error;
+    }
   } finally {
     const closed = client.end();
     if ('Deno' in globalThis) {
