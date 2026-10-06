@@ -8,7 +8,6 @@ import {
   readSessionFromCookieValue,
 } from './lib/auth-session';
 import { BAN_CHECK_PATH, findBan } from './lib/banGate';
-import { measureStartup, startupResponse } from './lib/startupProbe';
 import { locales } from './utils/locales';
 
 export { locales };
@@ -75,19 +74,13 @@ const denyBanned = (
   });
 };
 
-async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   if (!serviceRoutes.has(request.nextUrl.pathname)) {
     try {
-      const ban = await measureStartup(
-        process.env.POLYCORD_DIRECT_BAN_CHECK === 'true'
-          ? 'ban-direct'
-          : 'ban-http',
-        () =>
-          findBan(
-            request.nextUrl.origin,
-            request.headers,
-            (name) => request.cookies.get(name)?.value,
-          ),
+      const ban = await findBan(
+        request.nextUrl.origin,
+        request.headers,
+        (name) => request.cookies.get(name)?.value,
       );
 
       if (ban) {
@@ -149,9 +142,6 @@ async function middleware(request: NextRequest) {
 
   return handleI18nRouting(request);
 }
-
-export default (request: NextRequest) =>
-  startupResponse('middleware', () => middleware(request));
 
 export const config = {
   matcher: ['/((?!_next/static|favicon.ico|polycord-wordmark.svg).*)'],

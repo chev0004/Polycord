@@ -10,7 +10,6 @@ import {
   BAN_REFERENCE_HEADER,
 } from './auth-session';
 import { findBan } from './banGate';
-import { measureStartup } from './startupProbe';
 
 export const serveDiscoveryDocument = async (
   request: Request,
@@ -23,16 +22,10 @@ export const serveDiscoveryDocument = async (
   try {
     if (!locale || !documents[locale])
       throw new Error('Missing discovery document');
-    const ban = await measureStartup(
-      process.env.POLYCORD_DIRECT_BAN_CHECK === 'true'
-        ? 'ban-direct'
-        : 'ban-http',
-      () =>
-        findBan(
-          url.origin,
-          request.headers,
-          (name) => cookies.get(name)?.value,
-        ),
+    const ban = await findBan(
+      url.origin,
+      request.headers,
+      (name) => cookies.get(name)?.value,
     );
     if (ban) {
       if (!['GET', 'HEAD'].includes(request.method))

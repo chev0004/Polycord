@@ -30,7 +30,7 @@ module.exports = {
     );
     await build({
       stdin: {
-        contents: `import { serveDiscoveryDocument } from ${JSON.stringify(join(root, 'src/lib/discoveryDocument.ts'))}; import { startupResponse } from ${JSON.stringify(join(root, 'src/lib/startupProbe.ts'))}; import documents from ${JSON.stringify(documentPath)}; export default (request, context) => startupResponse('middleware', () => serveDiscoveryDocument(request, context, documents));`,
+        contents: `import { serveDiscoveryDocument } from ${JSON.stringify(join(root, 'src/lib/discoveryDocument.ts'))}; import documents from ${JSON.stringify(documentPath)}; export default (request, context) => serveDiscoveryDocument(request, context, documents);`,
         resolveDir: root,
         loader: 'ts',
       },

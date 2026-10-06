@@ -7,9 +7,8 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { withModerationStates } from '@/lib/moderation';
-import { probeFailure, startupResponse } from '@/lib/startupProbe';
 
-async function handleGet(request: Request) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const user = await getCurrentUser();
@@ -48,7 +47,7 @@ async function handleGet(request: Request) {
     return NextResponse.json(data, {
       headers: { 'Cache-Control': 'private, no-store' },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Temporarily unavailable' },
       {
@@ -56,12 +55,8 @@ async function handleGet(request: Request) {
         headers: {
           'Cache-Control': 'private, no-store',
           'Retry-After': '5',
-          ...probeFailure(error),
         },
       },
     );
   }
 }
-
-export const GET = (request: Request) =>
-  startupResponse('discovery', () => handleGet(request));

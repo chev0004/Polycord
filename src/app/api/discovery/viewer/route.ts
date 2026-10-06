@@ -12,9 +12,8 @@ import { getStaffRole } from '@/lib/admin';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
-import { probeFailure, startupResponse } from '@/lib/startupProbe';
 
-async function handleGet(request: Request) {
+export async function GET(request: Request) {
   try {
     const user = await getCurrentUser();
     const locale =
@@ -60,7 +59,7 @@ async function handleGet(request: Request) {
     return NextResponse.json(viewer, {
       headers: { 'Cache-Control': 'private, no-store' },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Temporarily unavailable' },
       {
@@ -68,12 +67,8 @@ async function handleGet(request: Request) {
         headers: {
           'Cache-Control': 'private, no-store',
           'Retry-After': '5',
-          ...probeFailure(error),
         },
       },
     );
   }
 }
-
-export const GET = (request: Request) =>
-  startupResponse('viewer', () => handleGet(request));
