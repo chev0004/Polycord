@@ -134,6 +134,12 @@ const observeShell = () => {
     element.getBoundingClientRect().width > 0 &&
     element.getBoundingClientRect().height > 0 &&
     getComputedStyle(element).display !== 'none';
+  const interactive = (element, event) => {
+    const key =
+      element &&
+      Object.keys(element).find((name) => name.startsWith('__reactProps$'));
+    return key && typeof element[key]?.[event] === 'function';
+  };
   const inspect = () => {
     const search = document.querySelector(
       'main input[aria-label="Search profiles"]',
@@ -153,6 +159,10 @@ const observeShell = () => {
       visible(language) &&
       visible(sort) &&
       visible(primary) &&
+      interactive(search, 'onChange') &&
+      [language, sort, primary].every((button) =>
+        interactive(button, 'onClick'),
+      ) &&
       wordmark?.complete &&
       wordmark.naturalWidth > 0
     )
@@ -170,6 +180,11 @@ const observeShell = () => {
   });
   window.addEventListener('load', inspect);
   document.addEventListener('DOMContentLoaded', inspect);
+  const polling = setInterval(() => {
+    inspect();
+    if (metrics.visibleShell !== null && metrics.dataReady !== null)
+      clearInterval(polling);
+  }, 25);
 };
 const createPage = async () => {
   const context = await browser.newContext({
