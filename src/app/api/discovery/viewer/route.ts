@@ -12,8 +12,9 @@ import { getStaffRole } from '@/lib/admin';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
+import { startupResponse } from '@/lib/startupProbe';
 
-export async function GET(request: Request) {
+async function handleGet(request: Request) {
   try {
     const user = await getCurrentUser();
     const locale =
@@ -69,3 +70,6 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const GET = (request: Request) =>
+  startupResponse('viewer', () => handleGet(request));

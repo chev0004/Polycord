@@ -3,12 +3,13 @@ import { BAN_CHECK_AUTH_HEADER, isBanCheckToken } from '@/lib/auth-session';
 import { withBanDeadline } from '@/lib/banDeadline';
 import { lookupBan } from '@/lib/banLookup';
 import { normalizeIp } from '@/lib/clientIp';
+import { startupResponse } from '@/lib/startupProbe';
 
 export const dynamic = 'force-dynamic';
 
 const noStore = { 'Cache-Control': 'no-store' };
 
-export const POST = async (request: Request) => {
+const handlePost = async (request: Request) => {
   if (!(await isBanCheckToken(request.headers.get(BAN_CHECK_AUTH_HEADER)))) {
     return NextResponse.json(
       { error: 'Forbidden' },
@@ -51,3 +52,6 @@ export const POST = async (request: Request) => {
     );
   }
 };
+
+export const POST = (request: Request) =>
+  startupResponse('ban-handler', () => handlePost(request));
