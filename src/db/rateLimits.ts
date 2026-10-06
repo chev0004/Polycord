@@ -104,10 +104,17 @@ export const listSuspiciousGroups = async (limit = 100) => {
     .limit(limit);
 };
 
-export const listSuspiciousEvents = async (userId: string, limit = 200) =>
-  db
+export const listSuspiciousEvents = async (
+  userId: string,
+  offset = 0,
+  limit = 50,
+) => {
+  const rows = await db
     .select()
     .from(suspiciousActivity)
     .where(eq(suspiciousActivity.userId, userId))
     .orderBy(desc(suspiciousActivity.createdAt), desc(suspiciousActivity.id))
-    .limit(limit);
+    .limit(limit + 1)
+    .offset(offset);
+  return { events: rows.slice(0, limit), hasMore: rows.length > limit };
+};

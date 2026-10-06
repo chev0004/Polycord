@@ -25,15 +25,21 @@ export const GET = async (request: Request) => {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const userId = new URL(request.url).searchParams.get('userId');
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
 
   if (userId) {
     if (!z.string().uuid().safeParse(userId).success) {
       return NextResponse.json({ error: 'Invalid user' }, { status: 400 });
     }
-    return NextResponse.json({
-      events: (await listSuspiciousEvents(userId)).map(toEvent),
-    });
+    const offset = z.coerce
+      .number()
+      .int()
+      .min(0)
+      .catch(0)
+      .parse(searchParams.get('offset') ?? 0);
+    const { events, hasMore } = await listSuspiciousEvents(userId, offset);
+    return NextResponse.json({ events: events.map(toEvent), hasMore });
   }
 
   return NextResponse.json({

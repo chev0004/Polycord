@@ -143,13 +143,19 @@ export const useModeration = (initial: ModSnapshot) => {
     [merge],
   );
 
-  const loadSuspiciousEvents = useCallback(async (userId: string) => {
-    const response = await fetch(
-      `/api/admin/suspicious-activity?userId=${userId}`,
-    );
-    if (!response.ok) throw new Error('failed');
-    return ((await response.json()) as { events: ModSuspiciousEvent[] }).events;
-  }, []);
+  const loadSuspiciousEvents = useCallback(
+    async (userId: string, offset: number) => {
+      const response = await fetch(
+        `/api/admin/suspicious-activity?userId=${userId}&offset=${offset}`,
+      );
+      if (!response.ok) throw new Error('failed');
+      return (await response.json()) as {
+        events: ModSuspiciousEvent[];
+        hasMore: boolean;
+      };
+    },
+    [],
+  );
 
   const search = useCallback(
     async (query: string): Promise<string[]> => {
