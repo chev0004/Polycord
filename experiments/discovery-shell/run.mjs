@@ -60,6 +60,8 @@ const timings = (response) => ({
   nodeTiming: response.headers.get('x-disc029-timing') ?? '',
   nodeVersion: response.headers.get('x-disc029-node') ?? '',
   transport: response.headers.get('x-disc029-transport') ?? '',
+  failure: response.headers.get('x-disc029-failure') ?? '',
+  code: response.headers.get('x-disc029-code') ?? '',
 });
 const internal = async (body, invalid = false) => ({
   method: 'POST',
@@ -203,6 +205,8 @@ const visit = async ({ context, page }) => {
         nodeTiming: headers['x-disc029-timing'] ?? '',
         nodeVersion: headers['x-disc029-node'] ?? '',
         transport: headers['x-disc029-transport'] ?? '',
+        failure: headers['x-disc029-failure'] ?? '',
+        code: headers['x-disc029-code'] ?? '',
       };
       if (url.pathname === '/api/discovery') {
         const data = await response.json().catch(() => null);
@@ -218,12 +222,28 @@ const visit = async ({ context, page }) => {
     pending.push(task);
   });
   let result;
+  let documentResponse = {};
   try {
     const response = await page.goto(`${origin}/en`, {
       waitUntil: 'commit',
       timeout: 25000,
     });
     const ttfb = performance.now() - started;
+    documentResponse = {
+      status: response.status(),
+      ttfb,
+      ...Object.fromEntries(
+        Object.entries(response.headers())
+          .filter(([key]) =>
+            ['server-timing', 'x-disc029-transport'].includes(key),
+          )
+          .map(([key, value]) => [
+            key === 'server-timing' ? 'serverTiming' : 'transport',
+            value,
+          ]),
+      ),
+    };
+    if (response.status() !== 200) throw new Error('Shell response failed');
     await page.waitForFunction(
       () => typeof window.disc029Metrics?.dataReady === 'number',
       undefined,
@@ -266,11 +286,13 @@ const visit = async ({ context, page }) => {
       kind: 'browser',
       path: '/en',
       startedAt,
-      status: 0,
+      status: documentResponse.status ?? 0,
       valid: false,
       error: error.name,
+      errorDetail: error.message.split('\n')[0],
       ms: performance.now() - started,
       ...metrics,
+      ...documentResponse,
       followups,
     };
   } finally {
