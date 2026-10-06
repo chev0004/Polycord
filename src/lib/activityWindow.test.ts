@@ -22,6 +22,19 @@ describe('parseActivityWindow', () => {
     expect(window?.cursor).toEqual({ at: '2026-10-05T12:30:00.123456Z', id });
   });
 
+  test('accepts an action and staff filter', () => {
+    const window = parseActivityWindow(
+      params({
+        from: '2026-10-05T00:00:00.000Z',
+        to: '2026-10-06T00:00:00.000Z',
+        action: 'ban',
+        staffId: id,
+      }),
+    );
+    expect(window?.action).toBe('ban');
+    expect(window?.staffId).toBe(id);
+  });
+
   test('accepts a 25 hour daylight saving day', () => {
     expect(
       parseActivityWindow(
@@ -44,6 +57,22 @@ describe('parseActivityWindow', () => {
       { from: '2026-10-01T00:00:00Z', to: '2026-10-05T00:00:00Z' },
     ],
     ['bad dates', { from: 'yesterday', to: 'today' }],
+    [
+      'unknown action',
+      {
+        from: '2026-10-05T00:00:00Z',
+        to: '2026-10-06T00:00:00Z',
+        action: 'explode',
+      },
+    ],
+    [
+      'bad staff id',
+      {
+        from: '2026-10-05T00:00:00Z',
+        to: '2026-10-06T00:00:00Z',
+        staffId: 'someone',
+      },
+    ],
     [
       'bad cursor',
       { from: '2026-10-05T00:00:00Z', to: '2026-10-06T00:00:00Z', cursor: 'x' },

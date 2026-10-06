@@ -212,6 +212,10 @@ export const listModerationActionsPage = async (window: ActivityWindow) =>
     .where(
       and(
         withinWindow(moderationActions.createdAt, window),
+        window.action ? eq(moderationActions.action, window.action) : undefined,
+        window.staffId
+          ? eq(moderationActions.adminUserId, window.staffId)
+          : undefined,
         afterCursor(
           moderationActions.createdAt,
           moderationActions.id,

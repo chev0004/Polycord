@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LOG_ACTIONS, type LogAction } from '@/features/Admin/types';
 
 export const ACTIVITY_PAGE_SIZE = 25;
 
@@ -12,12 +13,16 @@ export type ActivityWindow = {
   from: Date;
   to: Date;
   cursor?: ActivityCursor;
+  action?: LogAction;
+  staffId?: string;
 };
 
 const schema = z.object({
   from: z.string().datetime(),
   to: z.string().datetime(),
   cursor: z.string().regex(cursorPattern).optional(),
+  action: z.enum(LOG_ACTIONS).optional(),
+  staffId: z.string().uuid().optional(),
 });
 
 export const parseActivityWindow = (
@@ -27,6 +32,8 @@ export const parseActivityWindow = (
     from: params.get('from') ?? undefined,
     to: params.get('to') ?? undefined,
     cursor: params.get('cursor') ?? undefined,
+    action: params.get('action') ?? undefined,
+    staffId: params.get('staffId') ?? undefined,
   });
   if (!parsed.success) return null;
 
@@ -40,6 +47,8 @@ export const parseActivityWindow = (
     from,
     to,
     cursor: match ? { at: match[1], id: match[2] } : undefined,
+    action: parsed.data.action,
+    staffId: parsed.data.staffId,
   };
 };
 
