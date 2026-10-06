@@ -122,6 +122,38 @@ test.describe('admin account picker', () => {
     await context.close();
   });
 
+  test('enter ignores matches from the previous query', async ({ browser }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+    });
+    const page = await openAdmin(context);
+    await page.getByRole('button', { name: 'Manage staff' }).click();
+    await page.getByRole('button', { name: 'Add moderator' }).click();
+    const picker = page.getByRole('combobox', { name: 'Add moderator' });
+    const submit = page.getByRole('button', { name: 'Add moderator' });
+
+    await picker.fill(prefix);
+    await expect(option(page, `${prefix} Beta`)).toBeVisible();
+
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/api/admin/users*', async (route) => {
+      await gate;
+      await route.continue();
+    });
+    await picker.fill(`${prefix} nobody`);
+    await expect(page.getByText('Searching accounts')).toBeVisible();
+    await picker.press('Enter');
+    await expect(picker).toHaveValue(`${prefix} nobody`);
+    await expect(submit).toBeDisabled();
+
+    release();
+    await expect(page.getByText('No matching accounts.')).toBeVisible();
+    await context.close();
+  });
+
   test('ip blocks use the selected account', async ({ browser }) => {
     const context = await browser.newContext({
       baseURL: 'http://localhost:3119',
