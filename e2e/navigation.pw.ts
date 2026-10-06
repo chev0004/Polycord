@@ -198,6 +198,7 @@ test('account pages open behind the progress bar without a skeleton', async ({
       const log = { skeleton: false, completedEarly: false };
       Object.assign(window, { progressLog: log });
       new MutationObserver(() => {
+        if (!Reflect.get(window, 'watchProgress')) return;
         if (document.querySelector('.skeleton-shimmer')) log.skeleton = true;
         const bar = document.querySelector<HTMLElement>('div.fixed.top-0.h-1');
         const target = Reflect.get(window, 'progressTarget');
@@ -222,8 +223,15 @@ test('account pages open behind the progress bar without a skeleton', async ({
     ] as const) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/en');
+      await expect(
+        page.getByRole('status', { name: 'Loading profiles' }),
+      ).toHaveCount(0);
       await page.evaluate(
-        (target) => Object.assign(window, { progressTarget: target }),
+        (target) =>
+          Object.assign(window, {
+            progressTarget: target,
+            watchProgress: true,
+          }),
         `/en/${path}`,
       );
       if (width === 1280) {

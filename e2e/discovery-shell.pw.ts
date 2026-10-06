@@ -1,0 +1,268 @@
+import { createHmac, randomUUID } from 'node:crypto';
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
+import postgres from 'postgres';
+import en from '../src/locales/en.json';
+import ja from '../src/locales/ja.json';
+
+const sql = postgres(process.env.TEST_DATABASE_URL as string);
+const prefix = `Shell ${randomUUID().slice(0, 8)}`;
+let owners: { id: string; discord_user_id: string; display_name: string }[];
+
+test.beforeAll(async () => {
+  owners =
+    await sql`insert into users (discord_user_id,discord_username,display_name)
+    values (${randomUUID().replaceAll('-', '')},${`${prefix} Alice`},${`${prefix} Alice`}),
+    (${randomUUID().replaceAll('-', '')},${`${prefix} Bob`},${`${prefix} Bob`}),
+    (${randomUUID().replaceAll('-', '')},${`${prefix} Viewer`},${`${prefix} Viewer`})
+    returning id,discord_user_id,display_name`;
+  for (const owner of owners.slice(0, 2))
+    await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,last_bumped_at)
+      values (${owner.id},true,'en','ja','intermediate','An isolated shell fixture.',array[${prefix}],'US',now())`;
+});
+
+test.afterAll(async () => {
+  await sql`delete from users where id in ${sql(owners.map(({ id }) => id))}`;
+  await sql.end();
+});
+
+for (const locale of ['en', 'ja'] as const)
+  for (const width of [1440, 390])
+    test(`${locale} shell stays usable while data and account load at ${width}px`, async ({
+      page,
+    }, testInfo) => {
+      const messages = locale === 'en' ? en : ja;
+      const t = messages.Discovery;
+      await page.setViewportSize({ width, height: 900 });
+      let releaseData: () => void = () => {};
+      let releaseViewer: () => void = () => {};
+      const dataGate = new Promise<void>((resolve) => {
+        releaseData = resolve;
+      });
+      const viewerGate = new Promise<void>((resolve) => {
+        releaseViewer = resolve;
+      });
+      const calls: string[] = [];
+      await page.route('**/api/discovery/viewer?*', async (route) => {
+        await viewerGate;
+        await route.continue();
+      });
+      await page.route('**/api/discovery?*', async (route) => {
+        const url = new URL(route.request().url());
+        if (url.searchParams.get('count') !== '1') calls.push(url.search);
+        if (
+          url.searchParams.get('q') === owners[0].display_name &&
+          url.searchParams.get('count') !== '1'
+        ) {
+          const response = await route.fetch();
+          await dataGate;
+          await route.fulfill({ response });
+        } else await route.continue();
+      });
+      try {
+        const response = await page.goto(
+          `/${locale}?q=${encodeURIComponent(owners[0].display_name)}&country=US&sort=name-asc`,
+        );
+        expect(await response?.text()).toContain('polycord-wordmark.svg');
+        expect(await response?.text()).toContain(
+          `aria-label="${t.searchLabel}"`,
+        );
+        const search = page.getByRole('textbox', { name: t.searchLabel });
+        await expect(search).toHaveValue(owners[0].display_name);
+        await expect(
+          page.getByRole('button', {
+            name: messages.LanguageSwitcher.changeLanguage,
+          }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole('status', { name: t.viewerLoading }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole('button', { name: messages.loginWithDiscord }),
+        ).toHaveCount(0);
+        await expect.poll(() => calls.length).toBe(1);
+        expect(calls[0]).toContain('country=US');
+        expect(calls[0]).toContain('sort=name-asc');
+        if (width > 768) {
+          await page
+            .getByRole('button', { name: t.filterPrimaryLanguage, exact: true })
+            .click();
+          await expect(page.locator('.PopoverContent')).toBeVisible();
+        } else {
+          await page
+            .getByRole('button', { name: new RegExp(`^${t.filterSheetTitle}`) })
+            .click();
+          await expect(page.getByRole('dialog')).toBeVisible();
+        }
+        await page.keyboard.press('Escape');
+        await page
+          .getByRole('button', {
+            name: width > 768 ? t.sortLabel : new RegExp(`^${t.sortByLabel}:`),
+            exact: width > 768,
+          })
+          .click();
+        await expect(
+          page.getByText(t.sortNameDesc, { exact: true }),
+        ).toBeVisible();
+        await page.keyboard.press('Escape');
+        await search.fill(owners[1].display_name);
+        await expect
+          .poll(() =>
+            calls.some(
+              (query) =>
+                new URLSearchParams(query).get('q') === owners[1].display_name,
+            ),
+          )
+          .toBe(true);
+        await expect(search).toBeFocused();
+        await page.screenshot({
+          path: testInfo.outputPath('pending-shell.png'),
+          animations: 'disabled',
+        });
+        releaseViewer();
+        await expect(
+          page.getByRole('heading', {
+            name: new RegExp(owners[1].display_name),
+          }),
+        ).toBeVisible();
+        await expect(search).toHaveValue(owners[1].display_name);
+        await expect(search).toBeFocused();
+        releaseData();
+        await expect(
+          page.getByRole('heading', {
+            name: new RegExp(owners[0].display_name),
+          }),
+        ).toHaveCount(0);
+        await expect(
+          page.getByRole('heading', {
+            name: new RegExp(owners[1].display_name),
+          }),
+        ).toBeVisible();
+        const accessibility = await new AxeBuilder({ page }).analyze();
+        expect(accessibility.violations).toEqual([]);
+        await page.screenshot({
+          path: testInfo.outputPath('ready-shell.png'),
+          animations: 'disabled',
+        });
+      } finally {
+        releaseData();
+        releaseViewer();
+        await page.unrouteAll({ behavior: 'wait' });
+      }
+    });
+
+for (const width of [1440, 390])
+  test(`a signed-in account resolves without moving pending search at ${width}px`, async ({
+    page,
+    context,
+  }) => {
+    const owner = owners[2];
+    await page.setViewportSize({ width, height: 900 });
+    const payload = Buffer.from(
+      JSON.stringify({
+        user: {
+          id: owner.discord_user_id,
+          accountId: owner.id,
+          name: owner.display_name,
+          username: owner.display_name,
+        },
+        issuedAt: Date.now(),
+        expiresAt: Date.now() + 3600000,
+      }),
+    ).toString('base64url');
+    const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+      .update(payload)
+      .digest('base64url');
+    await context.addCookies([
+      {
+        name: 'polycord_session',
+        value: `${payload}.${signature}`,
+        domain: 'localhost',
+        path: '/',
+      },
+    ]);
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/api/discovery/viewer?*', async (route) => {
+      await gate;
+      await route.continue();
+    });
+    try {
+      await page.goto('/en');
+      const search = page.getByRole('textbox', {
+        name: en.Discovery.searchLabel,
+      });
+      await search.fill(owners[1].display_name);
+      const bounds = await search.boundingBox();
+      await expect(
+        page.getByRole('button', { name: en.loginWithDiscord }),
+      ).toHaveCount(0);
+      release();
+      await expect(
+        width > 768
+          ? page.getByRole('button', { name: 'Account menu' })
+          : page.getByRole('navigation', { name: 'Main', exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: new RegExp(owners[1].display_name) }),
+      ).toBeVisible();
+      await expect(search).toHaveValue(owners[1].display_name);
+      await expect(search).toBeFocused();
+      expect((await search.boundingBox())?.y).toBe(bounds?.y);
+      await expect(
+        page.getByRole('button', {
+          name: en.Discovery.onboardingPromptDismiss,
+        }),
+      ).toBeVisible();
+    } finally {
+      release();
+      await page.unrouteAll({ behavior: 'wait' });
+    }
+  });
+
+test('query history, refresh and failed-data retry preserve the shell', async ({
+  page,
+}) => {
+  await page.goto(`/en?q=${encodeURIComponent(owners[0].display_name)}`);
+  const search = page.getByRole('textbox', { name: en.Discovery.searchLabel });
+  await expect(
+    page.getByRole('heading', { name: new RegExp(owners[0].display_name) }),
+  ).toBeVisible();
+  await page.evaluate(
+    (name) =>
+      window.history.pushState(null, '', `/en?q=${encodeURIComponent(name)}`),
+    owners[1].display_name,
+  );
+  await expect(search).toHaveValue(owners[1].display_name);
+  await expect(
+    page.getByRole('heading', { name: new RegExp(owners[1].display_name) }),
+  ).toBeVisible();
+  await page.goBack();
+  await expect(search).toHaveValue(owners[0].display_name);
+  await expect(
+    page.getByRole('heading', { name: new RegExp(owners[0].display_name) }),
+  ).toBeVisible();
+  await page.goForward();
+  await expect(search).toHaveValue(owners[1].display_name);
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: new RegExp(owners[1].display_name) }),
+  ).toBeVisible();
+  await page.route('**/api/discovery?*', (route) =>
+    route.fulfill({ status: 503, body: '{}' }),
+  );
+  await search.fill(`${prefix} unavailable`);
+  await expect(
+    page.getByRole('alert').filter({ hasText: en.Discovery.feedErrorTitle }),
+  ).toContainText(en.Discovery.feedErrorTitle);
+  await expect(search).toBeEnabled();
+  await page.unroute('**/api/discovery?*');
+  await search.fill(owners[0].display_name);
+  await page.getByRole('button', { name: en.Discovery.retryFeed }).click();
+  await expect(
+    page.getByRole('heading', { name: new RegExp(owners[0].display_name) }),
+  ).toBeVisible();
+  await expect(search).toHaveValue(owners[0].display_name);
+});
