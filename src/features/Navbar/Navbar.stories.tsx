@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, within } from '@storybook/test';
 import { useTranslations } from 'next-intl';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { Navbar } from './Navbar';
 
 const meta: Meta<typeof Navbar> = {
@@ -16,6 +17,13 @@ const meta: Meta<typeof Navbar> = {
       },
     },
   },
+  decorators: [
+    (Story) => (
+      <RouteProgressProvider>
+        <Story />
+      </RouteProgressProvider>
+    ),
+  ],
   args: {
     onLoginClick: fn(),
     onProfileClick: fn(),

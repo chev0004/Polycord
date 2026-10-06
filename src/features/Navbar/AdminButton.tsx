@@ -3,14 +3,18 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { MdOutlineShield } from 'react-icons/md';
+import { useRouteProgress } from '@/features/Navigation/RouteProgress';
 
 export const AdminButton = ({ pendingCases }: { pendingCases: number }) => {
   const t = useTranslations('Admin');
   const locale = useLocale();
+  const { start } = useRouteProgress();
+  const href = `/${locale}/admin`;
 
   return (
     <Link
-      href={`/${locale}/admin`}
+      href={href}
+      onNavigate={() => start(href)}
       aria-label={t('adminButtonLabel', { count: pendingCases })}
       className="flex h-9 select-none items-center gap-1.5 rounded-lg px-1 font-figtree font-semibold text-foreground text-sm uppercase tracking-[0.04em] outline-none transition-colors duration-200 hover:text-muted focus-visible:bg-primary-dark max-md:h-11 max-md:w-11 max-md:justify-center"
     >
