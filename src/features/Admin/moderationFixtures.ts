@@ -99,16 +99,6 @@ export const moderationSnapshot: ModSnapshot = {
       createdAt: ago(9 * 1440),
     },
   ],
-  suspicious: [
-    {
-      id: 's1',
-      action: 'copy',
-      userId: 'ryan',
-      ip: '185.220.101.42',
-      createdAt: ago(26 * 60),
-      count: 1,
-    },
-  ],
 };
 
 export const emptyModerationSnapshot: ModSnapshot = {

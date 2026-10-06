@@ -46,6 +46,13 @@ import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
 import type { WarningCategory } from '@/types';
+import {
+  ActivityDayBar,
+  ActivityPager,
+  type ActivityPages,
+  ActivityStatus,
+  useActivityPages,
+} from './ActivityPages';
 import type { ModTab, Notify, UsersQuery } from './ModerationDesktop';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
@@ -79,7 +86,9 @@ import { protectionOf } from './permissions';
 import { SeedPanel } from './SeedPanel';
 import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
+  ActivityRange,
   ModAction,
+  ModLogEntry,
   ModReport,
   ModSuspicious,
   ModUser,
@@ -531,44 +540,19 @@ const chipButton = (on: boolean) =>
 
 const LogScreen = ({
   store,
+  pages,
   openUser,
 }: {
   store: ModerationStore;
+  pages: ActivityPages<ModLogEntry>;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
-  const { date, time } = useModFormat();
+  const { time } = useModFormat();
   const label = useLogLabel();
-  const [action, setAction] = useState('');
-  const [staff, setStaff] = useState('');
   const [sheet, setSheet] = useState<'action' | 'staff' | null>(null);
-  const rows = store.log.filter(
-    (entry) =>
-      (!action || entry.action === action) &&
-      (!staff || entry.staffId === staff),
-  );
-  const staffIds = [...new Set(store.log.flatMap((e) => e.staffId ?? []))];
-  const dayLabel = (iso: string) => {
-    const day = new Date(iso).toDateString();
-    if (day === new Date().toDateString()) return t('today');
-    if (day === new Date(Date.now() - 86400000).toDateString())
-      return t('yesterday');
-    return date(iso);
-  };
-  const days = rows.reduce<{ label: string; items: typeof rows }[]>(
-    (all, entry) => {
-      const key = dayLabel(entry.createdAt);
-      const last = all.at(-1);
-      if (last?.label === key) last.items.push(entry);
-      else all.push({ label: key, items: [entry] });
-      return all;
-    },
-    [],
-  );
-  const clear = () => {
-    setAction('');
-    setStaff('');
-  };
+  const rows = pages.rows ?? [];
+  const { action = '', staffId: staff = '' } = pages.filters;
   const staffName = (id?: string) =>
     store.usersById.get(id ?? '')?.displayName ?? t('unknownUser');
 
@@ -578,6 +562,9 @@ const LogScreen = ({
         heading={t('tabLog')}
         sub={t('actionsCount', { count: rows.length })}
       />
+      <div className="px-4 pb-3">
+        <ActivityDayBar pages={pages} />
+      </div>
       <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
         <button
           type="button"
@@ -597,56 +584,53 @@ const LogScreen = ({
           {staff ? staffName(staff) : t('allStaff')}
           <MdExpandMore size={18} />
         </button>
-        {action || staff ? (
-          <button type="button" onClick={clear} className={chipButton(false)}>
+        {pages.filtered ? (
+          <button
+            type="button"
+            onClick={pages.clearFilters}
+            className={chipButton(false)}
+          >
             <MdClose size={16} />
             {t('clear')}
           </button>
         ) : null}
       </div>
       <div className="px-3">
-        {rows.length ? (
-          days.map((day, index) => (
-            <div key={day.label}>
-              <p
-                className={`px-4 pb-2 font-semibold text-subtle text-xs uppercase tracking-[0.06em] ${index ? 'pt-[18px]' : ''}`}
+        {!pages.rows ? (
+          <ActivityStatus pages={pages} />
+        ) : rows.length ? (
+          <div className={group}>
+            {rows.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => entry.userId && openUser(entry.userId)}
+                className={`grid w-full grid-cols-[10px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-[13px] text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[38px]`}
               >
-                {day.label}
-              </p>
-              <div className={group}>
-                {day.items.map((entry) => (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    onClick={() => entry.userId && openUser(entry.userId)}
-                    className={`grid w-full grid-cols-[10px_minmax(0,1fr)_auto] items-start gap-3 px-4 py-[13px] text-left text-foreground active:bg-white/[0.035] ${divider} before:left-[38px]`}
-                  >
-                    <span
-                      className={`mt-1.5 h-2 w-2 rounded-full ${ACTION_TONE[entry.action]}`}
-                    />
-                    <span className="min-w-0">
-                      <span className="block font-semibold text-[15px]">
-                        {label(entry)}
-                      </span>
-                      <span className="mt-0.5 block text-[13px] text-muted">
-                        {staffName(entry.userId)} ·{' '}
-                        {t('byStaff', { name: staffName(entry.staffId) })}
-                      </span>
-                      {entry.note ? (
-                        <span className="mt-1.5 block font-light text-[13.5px] text-soft leading-[1.4]">
-                          {entry.note}
-                        </span>
-                      ) : null}
+                <span
+                  className={`mt-1.5 h-2 w-2 rounded-full ${ACTION_TONE[entry.action]}`}
+                />
+                <span className="min-w-0">
+                  <span className="block font-semibold text-[15px]">
+                    {label(entry)}
+                  </span>
+                  <span className="mt-0.5 block text-[13px] text-muted">
+                    {staffName(entry.userId)} ·{' '}
+                    {t('byStaff', { name: staffName(entry.staffId) })}
+                  </span>
+                  {entry.note ? (
+                    <span className="mt-1.5 block font-light text-[13.5px] text-soft leading-[1.4]">
+                      {entry.note}
                     </span>
-                    <span className="whitespace-nowrap pt-0.5 text-[12.5px] text-subtle">
-                      {time(new Date(entry.createdAt))}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))
-        ) : (
+                  ) : null}
+                </span>
+                <span className="whitespace-nowrap pt-0.5 text-[12.5px] text-subtle">
+                  {time(new Date(entry.createdAt))}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : pages.filtered ? (
           <MobileEmpty
             icon={MdFilterAltOff}
             title={t('noMatchTitle')}
@@ -654,13 +638,20 @@ const LogScreen = ({
           >
             <button
               type="button"
-              onClick={clear}
+              onClick={pages.clearFilters}
               className="h-10 rounded-full border border-primary-dark px-3.5 font-semibold text-primary-light text-sm"
             >
               {t('clearFilters')}
             </button>
           </MobileEmpty>
+        ) : (
+          <MobileEmpty
+            icon={MdHistory}
+            title={t('logEmptyTitle')}
+            body={t('logEmptyBody')}
+          />
         )}
+        <ActivityPager pages={pages} />
       </div>
       <ActionSheet
         open={sheet === 'action'}
@@ -672,13 +663,13 @@ const LogScreen = ({
             key: 'all',
             label: t('allActions'),
             selected: !action,
-            onSelect: () => setAction(''),
+            onSelect: () => pages.setFilter('action', ''),
           },
           ...LOG_ACTIONS.map((value) => ({
             key: value,
             label: t(`action_${value}`),
             selected: action === value,
-            onSelect: () => setAction(value),
+            onSelect: () => pages.setFilter('action', value),
           })),
         ]}
       />
@@ -692,13 +683,13 @@ const LogScreen = ({
             key: 'all',
             label: t('allStaff'),
             selected: !staff,
-            onSelect: () => setStaff(''),
+            onSelect: () => pages.setFilter('staffId', ''),
           },
-          ...staffIds.map((id) => ({
+          ...store.staff.map((id) => ({
             key: id,
             label: staffName(id),
             selected: staff === id,
-            onSelect: () => setStaff(id),
+            onSelect: () => pages.setFilter('staffId', id),
           })),
         ]}
       />
@@ -708,10 +699,12 @@ const LogScreen = ({
 
 const FlagRow = ({
   row,
+  range,
   store,
   openUser,
 }: {
   row: ModSuspicious;
+  range: ActivityRange;
   store: ModerationStore;
   openUser: (userId: string) => void;
 }) => {
@@ -768,7 +761,12 @@ const FlagRow = ({
       </button>
       {grouped && open && row.userId ? (
         <div className="bg-background-darker">
-          <SuspiciousEvents id={eventsId} store={store} userId={row.userId} />
+          <SuspiciousEvents
+            id={eventsId}
+            store={store}
+            userId={row.userId}
+            range={range}
+          />
           {user ? (
             <button
               type="button"
@@ -786,9 +784,11 @@ const FlagRow = ({
 
 const FlagsScreen = ({
   store,
+  pages,
   openUser,
 }: {
   store: ModerationStore;
+  pages: ActivityPages<ModSuspicious>;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
@@ -796,13 +796,19 @@ const FlagsScreen = ({
   return (
     <>
       <Header heading={t('tabSuspicious')} sub={t('suspiciousIntro')} />
+      <div className="px-4 pb-3">
+        <ActivityDayBar pages={pages} />
+      </div>
       <div className="px-3">
-        {store.suspicious.length ? (
+        {!pages.rows ? (
+          <ActivityStatus pages={pages} />
+        ) : pages.rows.length ? (
           <div className={group}>
-            {store.suspicious.map((row) => (
+            {pages.rows.map((row) => (
               <FlagRow
                 key={row.id}
                 row={row}
+                range={pages.range}
                 store={store}
                 openUser={openUser}
               />
@@ -815,6 +821,7 @@ const FlagsScreen = ({
             body={t('suspiciousEmptyBody')}
           />
         )}
+        <ActivityPager pages={pages} />
       </div>
     </>
   );
@@ -1893,6 +1900,11 @@ export const ModerationMobile = ({
   const [page, setPage] = useState<Page | null>(null);
   const [closing, setClosing] = useState(false);
   const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);
+  const logPages = useActivityPages(store.loadActivityLog, tab === 'log');
+  const flagPages = useActivityPages(
+    store.loadSuspicious,
+    tab === 'suspicious',
+  );
 
   const back = () => {
     setClosing(true);
@@ -1920,9 +1932,11 @@ export const ModerationMobile = ({
       {tab === 'users' ? (
         <UsersScreen store={store} users={users} openUser={openUser} />
       ) : null}
-      {tab === 'log' ? <LogScreen store={store} openUser={openUser} /> : null}
+      {tab === 'log' ? (
+        <LogScreen store={store} pages={logPages} openUser={openUser} />
+      ) : null}
       {tab === 'suspicious' ? (
-        <FlagsScreen store={store} openUser={openUser} />
+        <FlagsScreen store={store} pages={flagPages} openUser={openUser} />
       ) : null}
       {tab === 'dummy' && seed ? (
         <div className="pt-[calc(env(safe-area-inset-top)+16px)]">

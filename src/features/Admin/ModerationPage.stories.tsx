@@ -13,7 +13,7 @@ import {
   moderationSnapshot,
   moderatorSnapshot,
 } from './moderationFixtures';
-import type { ModUser, SeedStatus } from './types';
+import type { ModLogEntry, ModUser, SeedStatus } from './types';
 
 const seed: SeedStatus = {
   real: 17,
@@ -47,6 +47,32 @@ const mockSeedApi = (start: number) => () => {
   };
 };
 
+const recorded: ModLogEntry[] = [];
+
+const activityPage = () =>
+  new Response(
+    JSON.stringify({
+      users: [],
+      reports: [],
+      log: [...recorded, ...moderationSnapshot.log],
+    }),
+  );
+
+const mockActivityApi = () => {
+  const original = globalThis.fetch;
+  recorded.length = 0;
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) =>
+      String(args[0]).startsWith('/api/admin/activity-log')
+        ? activityPage()
+        : original(...args),
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+  };
+};
+
 const premiumFetch = fn();
 
 const mockSupporterApi = () => {
@@ -54,14 +80,30 @@ const mockSupporterApi = () => {
   const ryan = moderationSnapshot.users.find(
     (user) => user.id === 'ryan',
   ) as ModUser;
+  recorded.length = 0;
   premiumFetch.mockReset();
   globalThis.fetch = Object.assign(
     async (...args: Parameters<typeof fetch>) => {
+      if (String(args[0]).startsWith('/api/admin/activity-log'))
+        return activityPage();
       if (String(args[0]) !== '/api/admin/premium') return original(...args);
       const method = args[1]?.method;
       const request = JSON.parse(String(args[1]?.body));
       premiumFetch(method, request);
       const expiresAt = '2027-03-28T10:15:00.000Z';
+      const entry: ModLogEntry = {
+        id: `premium-${premiumFetch.mock.calls.length}`,
+        action: method === 'POST' ? 'premium_grant' : 'premium_revoke',
+        userId: 'ryan',
+        staffId: 'kenji',
+        grant:
+          method === 'POST'
+            ? { amount: request.amount, unit: request.unit }
+            : undefined,
+        expiresAt,
+        createdAt: new Date().toISOString(),
+      };
+      recorded.unshift(entry);
       return new Response(
         JSON.stringify({
           users: [
@@ -74,20 +116,7 @@ const mockSupporterApi = () => {
             },
           ],
           reports: [],
-          log: [
-            {
-              id: `premium-${premiumFetch.mock.calls.length}`,
-              action: method === 'POST' ? 'premium_grant' : 'premium_revoke',
-              userId: 'ryan',
-              staffId: 'kenji',
-              grant:
-                method === 'POST'
-                  ? { amount: request.amount, unit: request.unit }
-                  : undefined,
-              expiresAt,
-              createdAt: new Date().toISOString(),
-            },
-          ],
+          log: [entry],
         }),
       );
     },
@@ -105,26 +134,29 @@ const mockModerationApi = () => {
   const ryan = moderationSnapshot.users.find(
     (user) => user.id === 'ryan',
   ) as ModUser;
+  recorded.length = 0;
   moderationFetch.mockReset();
   globalThis.fetch = Object.assign(
     async (...args: Parameters<typeof fetch>) => {
+      if (String(args[0]).startsWith('/api/admin/activity-log'))
+        return activityPage();
       if (String(args[0]) !== '/api/admin/moderation') return original(...args);
       const body = JSON.parse(String(args[1]?.body));
       moderationFetch(body);
+      const entry: ModLogEntry = {
+        id: `action-${moderationFetch.mock.calls.length}`,
+        action: body.action,
+        userId: 'ryan',
+        staffId: 'kenji',
+        note: body.note,
+        createdAt: new Date().toISOString(),
+      };
+      recorded.unshift(entry);
       return new Response(
         JSON.stringify({
           users: [{ ...ryan, warnings: ryan.warnings + 1 }],
           reports: [],
-          log: [
-            {
-              id: `action-${moderationFetch.mock.calls.length}`,
-              action: body.action,
-              userId: 'ryan',
-              staffId: 'kenji',
-              note: body.note,
-              createdAt: new Date().toISOString(),
-            },
-          ],
+          log: [entry],
         }),
       );
     },
@@ -273,6 +305,7 @@ export const QueueClear: Story = {
 };
 
 export const ActivityLog: Story = {
+  beforeEach: mockActivityApi,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));

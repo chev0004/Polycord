@@ -32,7 +32,6 @@ const MobileCase = ({
     reports: found.reports,
     log: found.log,
     pendingCases: 0,
-    suspicious: [],
     staff: [],
     meId,
     meRole,

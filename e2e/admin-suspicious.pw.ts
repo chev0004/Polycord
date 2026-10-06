@@ -37,6 +37,8 @@ test.describe('grouped suspicious activity', () => {
   let heavy: Account;
   let single: Account;
 
+  const utcToday = sql`(date_trunc('day', now() at time zone 'utc') at time zone 'utc')`;
+
   test.beforeAll(async () => {
     await sql`delete from users where discord_user_id = 'e2e-admin'`;
     [owner, heavy, single] = await sql<Account[]>`
@@ -47,8 +49,8 @@ test.describe('grouped suspicious activity', () => {
       returning id, discord_user_id as "discordUserId"`;
     await sql`delete from suspicious_activity`;
     for (let index = 0; index < 6; index++)
-      await sql`insert into suspicious_activity (user_id, action, ip, created_at) values (${heavy.id}, 'copy', '203.0.113.9', now() - ${index + 1} * interval '1 minute')`;
-    await sql`insert into suspicious_activity (user_id, action, ip, created_at) values (${single.id}, 'report', '198.51.100.4', now() - interval '30 minutes')`;
+      await sql`insert into suspicious_activity (user_id, action, ip, created_at) values (${heavy.id}, 'copy', '203.0.113.9', ${utcToday} + ${index + 1} * interval '1 minute')`;
+    await sql`insert into suspicious_activity (user_id, action, ip, created_at) values (${single.id}, 'report', '198.51.100.4', ${utcToday} + interval '30 minutes')`;
   });
 
   test.afterAll(async () => {
@@ -98,6 +100,7 @@ test.describe('grouped suspicious activity', () => {
       const context = await browser.newContext({
         baseURL: 'http://localhost:3119',
         viewport,
+        timezoneId: 'UTC',
       });
       await signIn(context, owner);
       const page = await context.newPage();

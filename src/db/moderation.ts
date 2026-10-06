@@ -6,6 +6,7 @@ import {
   count,
   desc,
   eq,
+  getTableColumns,
   inArray,
   like,
   ne,
@@ -13,7 +14,9 @@ import {
   sql,
 } from 'drizzle-orm';
 import type { ModState } from '@/features/Admin/types';
+import { ACTIVITY_PAGE_SIZE, type ActivityWindow } from '@/lib/activityWindow';
 import type { GrantUnit } from '@/lib/premiumGrant';
+import { afterCursor, cursorAt, withinWindow } from './activityWindow';
 import { db } from './client';
 import {
   listTargetLanguagesByProfileIds,
@@ -198,6 +201,30 @@ export const listModerationActions = async (targetUserIds?: string[]) =>
     )
     .orderBy(desc(moderationActions.createdAt))
     .limit(200);
+
+export const listModerationActionsPage = async (window: ActivityWindow) =>
+  db
+    .select({
+      ...getTableColumns(moderationActions),
+      cursorAt: cursorAt(moderationActions.createdAt),
+    })
+    .from(moderationActions)
+    .where(
+      and(
+        withinWindow(moderationActions.createdAt, window),
+        window.action ? eq(moderationActions.action, window.action) : undefined,
+        window.staffId
+          ? eq(moderationActions.adminUserId, window.staffId)
+          : undefined,
+        afterCursor(
+          moderationActions.createdAt,
+          moderationActions.id,
+          window.cursor,
+        ),
+      ),
+    )
+    .orderBy(desc(moderationActions.createdAt), desc(moderationActions.id))
+    .limit(ACTIVITY_PAGE_SIZE + 1);
 
 export const listModerationUsers = async (userIds: string[]) => {
   if (!userIds.length) return [];

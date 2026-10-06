@@ -6,11 +6,13 @@ import {
   hasActivePremiumGrant,
   isSubscriptionActive,
   listModerationActions,
+  listModerationActionsPage,
   listModerationReports,
   listModerationStatesByProfileId,
   listModerationUsers,
   listReportsAgainstUsers,
   listStaffUserIds,
+  listSuspiciousEvents,
   listSuspiciousGroups,
   type ModerationAction,
   type Report,
@@ -21,9 +23,12 @@ import type {
   ModLogEntry,
   ModReport,
   ModSnapshot,
+  ModSuspicious,
+  ModSuspiciousEvent,
   ModUser,
   StaffRole,
 } from '@/features/Admin/types';
+import { type ActivityWindow, pageOf } from './activityWindow';
 import { isOwnerDiscordId, ownerDiscordIds } from './admin';
 import { isPremiumDiscordId } from './entitlements';
 
@@ -148,30 +153,18 @@ export const loadModerationSnapshot = async (
   meId: string,
   meRole: StaffRole,
 ): Promise<ModSnapshot> => {
-  const [reports, log, suspicious, staff, pendingCases] = await Promise.all([
+  const [reports, log, staff, pendingCases] = await Promise.all([
     listModerationReports(),
     listModerationActions(),
-    listSuspiciousGroups(),
     listStaffUserIds(ownerDiscordIds()),
     countPendingCases(),
   ]);
 
   return {
-    ...(await withUsers(reports, log, [
-      ...staff,
-      ...suspicious.flatMap((row) => (row.userId ? [row.userId] : [])),
-    ])),
+    ...(await withUsers(reports, log, staff)),
     staff,
     meRole,
     pendingCases,
-    suspicious: suspicious.map((row) => ({
-      id: row.id,
-      action: row.action,
-      userId: row.userId ?? undefined,
-      ip: row.ip ?? undefined,
-      createdAt: row.createdAt.toISOString(),
-      count: row.total,
-    })),
     meId,
   };
 };
@@ -185,4 +178,53 @@ export const searchModeration = async (query: string) => {
   ]);
 
   return { results, ...(await withUsers(reports, log, results)) };
+};
+
+const toSuspiciousEvent = (row: {
+  id: string;
+  action: string;
+  userId: string | null;
+  ip: string | null;
+  createdAt: Date;
+}): ModSuspiciousEvent => ({
+  id: row.id,
+  action: row.action,
+  userId: row.userId ?? undefined,
+  ip: row.ip ?? undefined,
+  createdAt: row.createdAt.toISOString(),
+});
+
+export const loadActivityLogPage = async (window: ActivityWindow) => {
+  const { page, nextCursor } = pageOf(await listModerationActionsPage(window));
+  return { nextCursor, ...(await withUsers([], page, [])) };
+};
+
+export const loadSuspiciousPage = async (window: ActivityWindow) => {
+  const { page, nextCursor } = pageOf(await listSuspiciousGroups(window));
+  const activity: ModSuspicious[] = page.map((row) => ({
+    ...toSuspiciousEvent(row),
+    count: row.total,
+  }));
+  return {
+    nextCursor,
+    activity,
+    ...(await withUsers(
+      [],
+      [],
+      activity.flatMap(({ userId }) => userId ?? []),
+    )),
+  };
+};
+
+export const loadSuspiciousEvents = async (
+  userId: string,
+  window: ActivityWindow,
+  offset: number,
+) => {
+  const { events, hasMore } = await listSuspiciousEvents(
+    userId,
+    window,
+    offset,
+  );
+  return { events: events.map(toSuspiciousEvent), hasMore };
 };

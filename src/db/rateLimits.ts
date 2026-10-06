@@ -1,6 +1,8 @@
 import 'server-only';
 
 import { and, desc, eq, getTableColumns, sql } from 'drizzle-orm';
+import { ACTIVITY_PAGE_SIZE, type ActivityWindow } from '@/lib/activityWindow';
+import { afterCursor, cursorAt, withinWindow } from './activityWindow';
 import { db } from './client';
 import {
   type NewSuspiciousActivity,
@@ -81,10 +83,11 @@ export const logSuspiciousActivity = async (
 
 const flaggedKey = sql`coalesce(${suspiciousActivity.userId}::text, ${suspiciousActivity.id}::text)`;
 
-export const listSuspiciousGroups = async (limit = 100) => {
+export const listSuspiciousGroups = async (window: ActivityWindow) => {
   const ranked = db
     .select({
       ...getTableColumns(suspiciousActivity),
+      cursorAt: cursorAt(suspiciousActivity.createdAt).as('cursor_at'),
       total: sql<number>`count(*) over (partition by ${flaggedKey})`
         .mapWith(Number)
         .as('total'),
@@ -94,25 +97,37 @@ export const listSuspiciousGroups = async (limit = 100) => {
           .as('position'),
     })
     .from(suspiciousActivity)
+    .where(withinWindow(suspiciousActivity.createdAt, window))
     .as('ranked');
 
   return db
     .select()
     .from(ranked)
-    .where(eq(ranked.position, 1))
+    .where(
+      and(
+        eq(ranked.position, 1),
+        afterCursor(ranked.createdAt, ranked.id, window.cursor),
+      ),
+    )
     .orderBy(desc(ranked.createdAt), desc(ranked.id))
-    .limit(limit);
+    .limit(ACTIVITY_PAGE_SIZE + 1);
 };
 
 export const listSuspiciousEvents = async (
   userId: string,
+  window: ActivityWindow,
   offset = 0,
   limit = 50,
 ) => {
   const rows = await db
     .select()
     .from(suspiciousActivity)
-    .where(eq(suspiciousActivity.userId, userId))
+    .where(
+      and(
+        eq(suspiciousActivity.userId, userId),
+        withinWindow(suspiciousActivity.createdAt, window),
+      ),
+    )
     .orderBy(desc(suspiciousActivity.createdAt), desc(suspiciousActivity.id))
     .limit(limit + 1)
     .offset(offset);

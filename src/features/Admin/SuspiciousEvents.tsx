@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { Spinner, useModFormat } from './ModerationParts';
-import type { ModSuspiciousEvent } from './types';
+import type { ActivityRange, ModSuspiciousEvent } from './types';
 import type { ModerationStore } from './useModeration';
 
 export const useEventLabel = () => {
@@ -21,10 +21,12 @@ export const SuspiciousEvents = ({
   id,
   store,
   userId,
+  range,
 }: {
   id: string;
   store: ModerationStore;
   userId: string;
+  range: ActivityRange;
 }) => {
   const t = useTranslations('Admin');
   const { absolute } = useModFormat();
@@ -39,7 +41,7 @@ export const SuspiciousEvents = ({
   const load = useCallback(
     (offset: number) => {
       setStatus('loading');
-      loadSuspiciousEvents(userId, offset).then(
+      loadSuspiciousEvents(userId, range, offset).then(
         (page) => {
           setEvents((current) => [
             ...current,
@@ -53,7 +55,7 @@ export const SuspiciousEvents = ({
         () => setStatus('failed'),
       );
     },
-    [userId, loadSuspiciousEvents],
+    [userId, range, loadSuspiciousEvents],
   );
 
   useEffect(() => {
