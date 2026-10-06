@@ -36,15 +36,21 @@ test.describe('admin activity pages', () => {
   const utcToday = sql`(date_trunc('day', now() at time zone 'utc') at time zone 'utc')`;
   let owner: Account;
   let target: Account;
+  let moderator: Account;
 
   test.beforeAll(async () => {
     await sql`delete from users where discord_user_id = 'e2e-admin'`;
-    [owner, target] = await sql<Account[]>`
+    [owner, target, moderator] = await sql<Account[]>`
       insert into users (discord_user_id, discord_username, display_name)
       values ('e2e-admin', 'e2e-admin', 'E2E Owner'),
-        (${`${prefix}-target`}, ${`${prefix}-target`}, ${`${prefix} Target`})
+        (${`${prefix}-target`}, ${`${prefix}-target`}, ${`${prefix} Target`}),
+        (${`${prefix}-mod`}, ${`${prefix}-mod`}, ${`${prefix} Mod`})
       returning id, discord_user_id as "discordUserId"`;
+    await sql`insert into staff_roles (user_id) values (${moderator.id})`;
     await sql`delete from moderation_actions`;
+    await sql`insert into moderation_actions (admin_user_id, target_user_id, action, note, created_at)
+      select ${moderator.id}, ${target.id}, 'ban', 'ban-' || n, ${utcToday} + n * interval '1 second'
+      from generate_series(1, 3) as n`;
     await sql`insert into moderation_actions (admin_user_id, target_user_id, action, note, created_at)
       select ${owner.id}, ${target.id}, 'warn', 'today-' || n, ${utcToday} + n * interval '1 minute'
       from generate_series(1, 30) as n`;
@@ -55,7 +61,7 @@ test.describe('admin activity pages', () => {
 
   test.afterAll(async () => {
     await sql`delete from moderation_actions`;
-    await sql`delete from users where id in ${sql([owner, target].map(({ id }) => id))}`;
+    await sql`delete from users where id in ${sql([owner, target, moderator].map(({ id }) => id))}`;
     await sql.end();
   });
 
@@ -122,6 +128,50 @@ test.describe('admin activity pages', () => {
     expect(
       urls.every((url) => url.includes('from=') && url.includes('to=')),
     ).toBe(true);
+    await context.close();
+  });
+
+  test('filters run on the server and the view survives switching tabs', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    await signIn(context, owner);
+    const page = await context.newPage();
+    await page.goto('/en/admin');
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await expect(page.getByText(/^ban-\d+$/)).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(page.getByText('Page 2')).toBeVisible();
+    await page.getByRole('tab', { name: /^Suspicious activity/ }).click();
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await expect(page.getByText('Page 2')).toBeVisible();
+
+    await page.getByRole('button', { name: 'All actions' }).click();
+    await page
+      .getByRole('button', { name: 'Banned user', exact: true })
+      .click();
+    await expect(page.getByText(/^ban-\d+$/)).toHaveCount(3);
+    await expect(page.getByText(/^today-/)).toHaveCount(0);
+    await expect(page.getByText('Page 1')).toBeVisible();
+
+    await page.getByRole('button', { name: 'All staff' }).click();
+    await page.getByRole('button', { name: `${prefix} Mod` }).click();
+    await expect(page.getByText(/^ban-\d+$/)).toHaveCount(3);
+
+    await page.getByRole('tab', { name: /^Suspicious activity/ }).click();
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await expect(page.getByText(/^ban-\d+$/)).toHaveCount(3);
+    await expect(
+      page.getByRole('button', { name: `${prefix} Mod` }),
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await expect(page.getByText(/^today-\d+$/)).toHaveCount(25);
     await context.close();
   });
 });
