@@ -84,7 +84,9 @@ export const RefreshError: Story = {
     const canvas = within(canvasElement);
     canvasElement.ownerDocument.defaultView?.dispatchEvent(new Event('focus'));
     await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
-    expect(canvasElement.querySelectorAll('article')).toHaveLength(9);
+    await waitFor(() =>
+      expect(canvasElement.querySelectorAll('article')).toHaveLength(9),
+    );
     expect(canvas.queryByLabelText('Loading profiles')).not.toBeInTheDocument();
   },
 };
@@ -173,7 +175,9 @@ const mobileBlock = (status: number | null, fromSheet = false): Story => {
     play: async ({ canvasElement }) => {
       if (window.innerWidth >= 768) return;
       const canvas = within(canvasElement);
-      const card = canvas.getByText('Yuki').closest('article') as HTMLElement;
+      const card = (await canvas.findByText('Yuki')).closest(
+        'article',
+      ) as HTMLElement;
       if (fromSheet) {
         await userEvent.click(card);
         const sheet = await screen.findByRole('dialog', { name: 'Yuki' });
@@ -233,7 +237,7 @@ export const ShareWithoutClipboard: Story = {
     try {
       const canvas = within(canvasElement);
       await userEvent.click(
-        canvas.getAllByRole('button', { name: 'Card menu' })[0],
+        (await canvas.findAllByRole('button', { name: 'Card menu' }))[0],
       );
       await userEvent.click(await screen.findByText('Share profile'));
       await expect(
@@ -252,7 +256,9 @@ const shareFirstProfile = async (canvasElement: HTMLElement) => {
     value: { writeText: async () => {} },
   });
   await userEvent.click(
-    within(canvasElement).getAllByRole('button', { name: 'Card menu' })[0],
+    (
+      await within(canvasElement).findAllByRole('button', { name: 'Card menu' })
+    )[0],
   );
   await userEvent.click(await screen.findByText('Share profile'));
   return (await screen.findByText('Profile link copied')).closest(
@@ -401,7 +407,9 @@ export const SearchEmpty: Story = {
     await waitFor(() =>
       expect(canvas.getByText('0 partners')).toBeInTheDocument(),
     );
-    await expect(canvas.getByText(/find any matches/)).toBeInTheDocument();
+    await expect(
+      await canvas.findByText(/find any matches/),
+    ).toBeInTheDocument();
   },
 };
 
@@ -469,7 +477,7 @@ export const Sort: Story = {
         ) & Node.DOCUMENT_POSITION_FOLLOWING,
       );
 
-    await expect(precedes('Wei', 'Yuki')).toBe(true);
+    await waitFor(() => expect(precedes('Wei', 'Yuki')).toBe(true));
 
     const pickSort = async (option: string) => {
       await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
@@ -609,7 +617,9 @@ export const Empty: Story = {
     const canvas = within(canvasElement);
 
     await expect(canvas.getByText('0 partners')).toBeInTheDocument();
-    await expect(canvas.getByText(/find any matches/)).toBeInTheDocument();
+    await expect(
+      await canvas.findByText(/find any matches/),
+    ).toBeInTheDocument();
   },
 };
 
@@ -789,7 +799,7 @@ export const StaffChipsFollowActions: Story = {
         .map((chips) => chips.textContent)
         .join(' ');
 
-    await expect(chipText()).toContain('1 pending report');
+    await waitFor(() => expect(chipText()).toContain('1 pending report'));
     const card = within(canvasElement).getByText('Yuki').closest('article');
     await userEvent.click(
       within(card as HTMLElement).getByRole('button', { name: 'Card menu' }),
