@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, getTableColumns, sql } from 'drizzle-orm';
 import { db } from './client';
 import {
   type NewSuspiciousActivity,
@@ -79,9 +79,35 @@ export const logSuspiciousActivity = async (
   await db.insert(suspiciousActivity).values(entry);
 };
 
-export const listSuspiciousActivity = async (limit = 100) =>
+const flaggedKey = sql`coalesce(${suspiciousActivity.userId}::text, ${suspiciousActivity.id}::text)`;
+
+export const listSuspiciousGroups = async (limit = 100) => {
+  const ranked = db
+    .select({
+      ...getTableColumns(suspiciousActivity),
+      total: sql<number>`count(*) over (partition by ${flaggedKey})`
+        .mapWith(Number)
+        .as('total'),
+      position:
+        sql<number>`row_number() over (partition by ${flaggedKey} order by ${suspiciousActivity.createdAt} desc, ${suspiciousActivity.id} desc)`
+          .mapWith(Number)
+          .as('position'),
+    })
+    .from(suspiciousActivity)
+    .as('ranked');
+
+  return db
+    .select()
+    .from(ranked)
+    .where(eq(ranked.position, 1))
+    .orderBy(desc(ranked.createdAt), desc(ranked.id))
+    .limit(limit);
+};
+
+export const listSuspiciousEvents = async (userId: string, limit = 200) =>
   db
     .select()
     .from(suspiciousActivity)
-    .orderBy(desc(suspiciousActivity.createdAt))
+    .where(eq(suspiciousActivity.userId, userId))
+    .orderBy(desc(suspiciousActivity.createdAt), desc(suspiciousActivity.id))
     .limit(limit);

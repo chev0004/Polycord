@@ -10,6 +10,7 @@ import type {
   ModRequest,
   ModSnapshot,
   ModState,
+  ModSuspiciousEvent,
   ModUser,
   ObservedIp,
 } from './types';
@@ -142,6 +143,14 @@ export const useModeration = (initial: ModSnapshot) => {
     [merge],
   );
 
+  const loadSuspiciousEvents = useCallback(async (userId: string) => {
+    const response = await fetch(
+      `/api/admin/suspicious-activity?userId=${userId}`,
+    );
+    if (!response.ok) throw new Error('failed');
+    return ((await response.json()) as { events: ModSuspiciousEvent[] }).events;
+  }, []);
+
   const search = useCallback(
     async (query: string): Promise<string[]> => {
       const response = await fetch(
@@ -197,6 +206,7 @@ export const useModeration = (initial: ModSnapshot) => {
       changePremium('POST', { userId, amount, unit }),
     revokePremium: (userId: string) => changePremium('DELETE', { userId }),
     loadIpBlocks,
+    loadSuspiciousEvents,
     blockIps: (body: { ips: string[]; userId?: string; reason?: string }) =>
       changeIpBlocks('POST', body),
     unblockIp: (id: string) => changeIpBlocks('DELETE', { id }),
