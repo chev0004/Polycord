@@ -70,14 +70,34 @@ try {
   assert.equal(limited.length, 2);
   assert.equal(new Set(limited.map((row) => row.userId ?? row.id)).size, 2);
 
-  const events = await listSuspiciousEvents(heavy.id);
+  const { events, hasMore } = await listSuspiciousEvents(heavy.id);
   assert.equal(events.length, 12);
+  assert.equal(hasMore, false);
   assert.ok(events.every((row) => row.action === 'copy'));
   assert.deepEqual(
     events.map((row) => row.createdAt.getTime()),
     [...events.map((row) => row.createdAt.getTime())].sort((a, b) => b - a),
   );
-  assert.equal((await listSuspiciousEvents(light.id)).length, 2);
+  assert.equal((await listSuspiciousEvents(light.id)).events.length, 2);
+
+  const pages = [];
+  for (let offset = 0, more = true; more; offset += 5) {
+    const page = await listSuspiciousEvents(heavy.id, offset, 5);
+    pages.push(page);
+    more = page.hasMore;
+  }
+  assert.deepEqual(
+    pages.map((page) => [page.events.length, page.hasMore]),
+    [
+      [5, true],
+      [5, true],
+      [2, false],
+    ],
+  );
+  assert.deepEqual(
+    pages.flatMap((page) => page.events.map((row) => row.id)),
+    events.map((row) => row.id),
+  );
 
   await db.insert(suspiciousActivity).values(event(single, 'report', 0));
   const refreshed = (await listSuspiciousGroups(100)).filter(
