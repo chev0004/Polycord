@@ -105,6 +105,12 @@ for (const locale of ['en', 'ja'] as const)
           page.getByText(t.sortNameDesc, { exact: true }),
         ).toBeVisible();
         await page.keyboard.press('Escape');
+        await expect(
+          page.getByRole('button', {
+            name: width > 768 ? t.sortLabel : new RegExp(`^${t.sortByLabel}:`),
+            exact: width > 768,
+          }),
+        ).toBeFocused();
         await search.fill(owners[1].display_name);
         await expect
           .poll(() =>
