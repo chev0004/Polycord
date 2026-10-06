@@ -63,7 +63,7 @@ const pool =
   new Pool({
     ...connectionConfig(),
     max: 2,
-    maxUses: 1,
+    maxUses: process.env.AWS_LAMBDA_FUNCTION_NAME ? 1 : Infinity,
     query_timeout: 10000,
     idleTimeoutMillis: 20000,
   });
