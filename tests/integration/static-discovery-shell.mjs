@@ -86,18 +86,15 @@ try {
       `.next/server/app/${locale}.html`,
       `<html lang="${locale}">Public shell</html>`,
     );
-  const options = { constants: { PUBLISH_DIR: join(directory, 'publish') } };
-  await plugin.onPostBuild(options);
+  const options = { constants: { PUBLISH_DIR: join(directory, '.next') } };
+  await plugin.onBuild(options);
   assert.equal(
-    await readFile('publish/__discovery_shell/ja.html', 'utf8'),
+    await readFile('.netlify/static/__discovery_shell/ja.html', 'utf8'),
     '<html lang="ja">Public shell</html>',
   );
   manifest.routes['/en'].initialRevalidateSeconds = 60;
   await writeFile('.next/prerender-manifest.json', JSON.stringify(manifest));
-  await assert.rejects(
-    plugin.onPostBuild(options),
-    /must be fully prerendered/,
-  );
+  await assert.rejects(plugin.onBuild(options), /must be fully prerendered/);
 } finally {
   process.chdir(original);
   await rm(directory, { recursive: true, force: true });
