@@ -1,97 +1,112 @@
 import { mock } from 'bun:test';
 import assert from 'node:assert/strict';
-import { AsyncLocalStorage } from 'node:async_hooks';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import plugin from '../../plugins/discovery-shell';
 
-globalThis.AsyncLocalStorage = AsyncLocalStorage;
-const { NextRequest } = await import('next/server');
 let ban = null;
 let failed = false;
+let input;
+mock.module('server-only', () => ({}));
 mock.module('../../src/lib/banLookup', () => ({
-  lookupBan: async () => {
+  lookupBan: async (ip, ids) => {
+    input = { ip, ids };
     if (failed) throw new Error('Unavailable');
     return ban;
   },
 }));
 process.env.AUTH_SECRET = 'static-shell-test-secret';
 process.env.POLYCORD_DIRECT_BAN_CHECK = 'true';
-const { default: middleware } = await import('../../src/middleware');
+globalThis.Netlify = { context: { ip: '198.51.100.7' } };
+const { serveDiscoveryDocument } = await import(
+  '../../src/lib/discoveryDocument'
+);
+const { createSessionCookieValue, createBanCookieValue } = await import(
+  '../../src/lib/auth-session'
+);
+const documents = {
+  en: '<html lang="en">Public shell</html>',
+  ja: '<html lang="ja">Public shell</html>',
+};
+let forwarded;
+const context = {
+  next: async (request) => {
+    forwarded = request;
+    return new Response('next handler', {
+      headers: { 'Cache-Control': 'public' },
+    });
+  },
+};
 const request = (path, init) =>
-  new NextRequest(`https://polycord.test${path}`, {
+  new Request(`https://polycord.test${path}`, {
     ...init,
     headers: { accept: 'text/html', ...init?.headers },
   });
-const rewrite = (response) => response.headers.get('x-middleware-rewrite');
-
-process.env.POLYCORD_STATIC_DISCOVERY_SHELL = 'false';
-assert.equal(rewrite(await middleware(request('/en'))), null);
-process.env.POLYCORD_STATIC_DISCOVERY_SHELL = 'true';
+const serve = (req) => serveDiscoveryDocument(req, context, documents);
+const session = await createSessionCookieValue(
+  { id: 'allowed', name: 'Synthetic' },
+  '1',
+);
+const remembered = await createBanCookieValue('remembered');
+await serve(
+  request('/en', {
+    headers: {
+      cookie: `polycord_session=${session}; polycord_banned=${remembered}`,
+      'x-forwarded-for': '203.0.113.250',
+    },
+  }),
+);
+assert.deepEqual(input, { ip: '198.51.100.7', ids: ['allowed', 'remembered'] });
+await serve(
+  request('/en', {
+    headers: { cookie: 'polycord_session=forged; polycord_banned=forged' },
+  }),
+);
+assert.deepEqual(input.ids, []);
 for (const locale of ['en', 'ja']) {
-  const response = await middleware(request(`/${locale}?search=pending`));
-  assert.equal(
-    rewrite(response),
-    `https://polycord.test/__discovery_shell/${locale}.html`,
-  );
-  assert.equal(
-    response.headers.get('cache-control'),
-    'public, max-age=0, must-revalidate',
+  const response = await serve(request(`/${locale}?q=pending`));
+  assert.equal(await response.text(), documents[locale]);
+  assert.ok(
+    response.headers.get('set-cookie').includes(`NEXT_LOCALE=${locale}`),
   );
 }
-assert.match(
-  rewrite(await middleware(request('/en', { method: 'HEAD' }))),
-  /__discovery_shell/,
+assert.equal(
+  await (await serve(request('/en', { method: 'HEAD' }))).text(),
+  '',
+);
+assert.equal(
+  (await serve(request('/en/?q=pending'))).headers.get('location'),
+  'https://polycord.test/en?q=pending',
 );
 for (const req of [
-  request('/en', { headers: { rsc: '1' } }),
-  request('/en', { headers: { accept: '*/*' } }),
+  request('/en', { headers: { rsc: '1', accept: '*/*' } }),
   request('/en?_rsc=payload'),
+  request('/en.rsc'),
   request('/en', { method: 'POST' }),
-  request('/en/legal'),
+  request('/en', { headers: { accept: '*/*' } }),
 ]) {
-  assert.ok(!rewrite(await middleware(req))?.includes('__discovery_shell'));
-}
-const { adapter } = await import('next/dist/server/web/adapter');
-const flight = await adapter({
-  handler: middleware,
-  page: '/middleware',
-  request: {
-    url: 'https://polycord.test/en?_rsc=proof',
-    method: 'GET',
-    headers: { rsc: '1', accept: '*/*' },
-    nextConfig: {},
-  },
-});
-assert.ok(!rewrite(flight.response)?.includes('__discovery_shell'));
-for (const path of [
-  '/__discovery_shell/en.html',
-  '/__discovery_shell/ja',
-  '/__discovery_shell',
-]) {
-  assert.equal((await middleware(request(path))).status, 404);
+  assert.equal(await (await serve(req)).text(), 'next handler');
+  assert.equal(forwarded.headers.get('x-nf-next-middleware'), 'skip');
 }
 ban = { date: new Date('2026-10-04'), reference: 'PC-TEST-0001' };
-const banned = await middleware(request('/en'));
-assert.equal(rewrite(banned), 'https://polycord.test/banned');
-assert.equal(banned.headers.get('cache-control'), 'no-store');
-assert.equal(
-  (await middleware(request('/__discovery_shell/en.html'))).status,
-  403,
-);
+const denied = await serve(request('/ja'));
+assert.equal(denied.status, 403);
+assert.equal(denied.headers.get('cache-control'), 'no-store');
+assert.equal(forwarded.url, 'https://polycord.test/banned');
+assert.equal(forwarded.headers.get('x-polycord-ban-locale'), 'ja');
+assert.equal(forwarded.headers.get('x-polycord-ban-reference'), ban.reference);
+assert.equal((await serve(request('/en', { method: 'POST' }))).status, 403);
 failed = true;
-for (const path of ['/en', '/__discovery_shell/en.html']) {
-  const response = await middleware(request(path));
-  assert.equal(response.status, 503);
-  assert.equal(response.headers.get('cache-control'), 'no-store');
-}
-
+const unavailable = await serve(request('/en'));
+assert.equal(unavailable.status, 503);
+assert.equal(unavailable.headers.get('cache-control'), 'no-store');
 const original = process.cwd();
 const directory = await mkdtemp(join(tmpdir(), 'disc029-shell-'));
 try {
   process.chdir(directory);
   await mkdir('.next/server/app', { recursive: true });
+  await mkdir('.netlify/edge-functions', { recursive: true });
   const manifest = {
     routes: {
       '/en': { initialRevalidateSeconds: false },
@@ -99,16 +114,30 @@ try {
     },
   };
   await writeFile('.next/prerender-manifest.json', JSON.stringify(manifest));
+  await writeFile(
+    '.netlify/edge-functions/manifest.json',
+    JSON.stringify({
+      version: 1,
+      functions: [
+        { function: '___netlify-edge-handler-node-middleware', pattern: '.*' },
+      ],
+    }),
+  );
   for (const locale of ['en', 'ja'])
-    await writeFile(
-      `.next/server/app/${locale}.html`,
-      `<html lang="${locale}">Public shell</html>`,
-    );
+    await writeFile(`.next/server/app/${locale}.html`, documents[locale]);
   const options = { constants: { PUBLISH_DIR: join(directory, '.next') } };
   await plugin.onBuild(options);
   assert.equal(
-    await readFile('.netlify/static/__discovery_shell/ja.html', 'utf8'),
-    '<html lang="ja">Public shell</html>',
+    JSON.parse(await readFile('.netlify/discovery-documents.json', 'utf8')).ja,
+    documents.ja,
+  );
+  const declarations = JSON.parse(
+    await readFile('.netlify/edge-functions/manifest.json', 'utf8'),
+  );
+  assert.equal(declarations.functions[0].function, 'polycord-discovery-shell');
+  assert.equal(
+    declarations.functions[1].excludedPattern,
+    declarations.functions[0].pattern,
   );
   manifest.routes['/en'].initialRevalidateSeconds = 60;
   await writeFile('.next/prerender-manifest.json', JSON.stringify(manifest));

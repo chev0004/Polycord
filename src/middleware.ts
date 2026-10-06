@@ -147,25 +147,7 @@ async function middleware(request: NextRequest) {
     }
   }
 
-  const response = handleI18nRouting(request);
-  if (
-    process.env.POLYCORD_STATIC_DISCOVERY_SHELL === 'true' &&
-    locales.some((lang) => request.nextUrl.pathname === `/${lang}`) &&
-    ['GET', 'HEAD'].includes(request.method) &&
-    (request.headers.get('sec-fetch-dest') === 'document' ||
-      request.headers.get('accept')?.includes('text/html')) &&
-    !request.headers.has('rsc') &&
-    !request.nextUrl.searchParams.has('_rsc') &&
-    !response.headers.has('location')
-  ) {
-    response.headers.delete('x-middleware-next');
-    response.headers.set(
-      'x-middleware-rewrite',
-      new URL(`/__discovery_shell/${locale}.html`, request.url).href,
-    );
-    response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
-  }
-  return response;
+  return handleI18nRouting(request);
 }
 
 export default (request: NextRequest) =>

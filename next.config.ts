@@ -4,10 +4,6 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./next-intl.config.ts');
 
 const nextConfig: NextConfig = {
-  env: {
-    POLYCORD_STATIC_DISCOVERY_SHELL:
-      process.env.POLYCORD_STATIC_DISCOVERY_SHELL ?? 'false',
-  },
   experimental: { globalNotFound: true },
   async headers() {
     return [
