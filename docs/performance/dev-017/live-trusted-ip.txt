@@ -1,0 +1,19 @@
+{
+  "origin": "https://polycord.chev.dev",
+  "outcomes": [
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 403,
+      "ms": 997.3277999999991,
+      "noStore": true,
+      "bannedScreen": false
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "ms": 795.7894000000015,
+      "noStore": true,
+      "bannedScreen": true
+    }
+  ]
+}

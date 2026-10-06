@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-05T21:15:20.548Z",
+  "origin": "https://polycord-disc027-supabase.netlify.app",
+  "outcomes": [
+    {
+      "path": "/api/health",
+      "expected": 200,
+      "status": 200,
+      "noStore": false,
+      "ms": 799.5965
+    },
+    {
+      "path": "/api/discovery?locale=en&count=1",
+      "expected": 200,
+      "status": 200,
+      "noStore": true,
+      "ms": 531.2152000000001
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "expected": 200,
+      "status": 200,
+      "noStore": true,
+      "ms": 358.1351000000002
+    },
+    {
+      "path": "/en",
+      "expected": 200,
+      "status": 200,
+      "noStore": true,
+      "ms": 814.0074000000002
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "expected": 403,
+      "status": 403,
+      "noStore": true,
+      "ms": 255.1192000000001
+    },
+    {
+      "path": "/api/internal/ban-check",
+      "expected": 403,
+      "status": 403,
+      "noStore": true,
+      "ms": 182.52520000000004
+    },
+    {
+      "path": "/api/internal/ban-check",
+      "expected": 200,
+      "status": 200,
+      "noStore": true,
+      "ms": 161.43150000000014
+    }
+  ]
+}
