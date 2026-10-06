@@ -106,6 +106,7 @@ export const moderationSnapshot: ModSnapshot = {
       userId: 'ryan',
       ip: '185.220.101.42',
       createdAt: ago(26 * 60),
+      count: 1,
     },
   ],
 };

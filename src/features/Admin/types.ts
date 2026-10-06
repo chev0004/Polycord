@@ -87,13 +87,15 @@ export type IpBlock = {
 
 export type ObservedIp = { ip: string; lastSeenAt: string };
 
-export type ModSuspicious = {
+export type ModSuspiciousEvent = {
   id: string;
   action: string;
   userId?: string;
   ip?: string;
   createdAt: string;
 };
+
+export type ModSuspicious = ModSuspiciousEvent & { count: number };
 
 export type ModData = {
   users: ModUser[];

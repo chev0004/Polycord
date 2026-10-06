@@ -11,7 +11,7 @@ import {
   listModerationUsers,
   listReportsAgainstUsers,
   listStaffUserIds,
-  listSuspiciousActivity,
+  listSuspiciousGroups,
   type ModerationAction,
   type Report,
   searchModerationUserIds,
@@ -151,7 +151,7 @@ export const loadModerationSnapshot = async (
   const [reports, log, suspicious, staff, pendingCases] = await Promise.all([
     listModerationReports(),
     listModerationActions(),
-    listSuspiciousActivity(),
+    listSuspiciousGroups(),
     listStaffUserIds(ownerDiscordIds()),
     countPendingCases(),
   ]);
@@ -170,6 +170,7 @@ export const loadModerationSnapshot = async (
       userId: row.userId ?? undefined,
       ip: row.ip ?? undefined,
       createdAt: row.createdAt.toISOString(),
+      count: row.total,
     })),
     meId,
   };

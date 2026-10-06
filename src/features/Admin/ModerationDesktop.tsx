@@ -47,7 +47,8 @@ import {
 import { PremiumPanel } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { SeedPanel } from './SeedPanel';
-import type { ModAction, ModUser, SeedStatus } from './types';
+import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
+import type { ModAction, ModSuspicious, ModUser, SeedStatus } from './types';
 import { LOG_ACTIONS } from './types';
 import {
   groupReports,
@@ -868,15 +869,83 @@ const LogTab = ({
   );
 };
 
-export const useEventLabel = () => {
+const SuspiciousRow = ({
+  row,
+  store,
+  openUser,
+}: {
+  row: ModSuspicious;
+  store: ModerationStore;
+  openUser: (userId: string) => void;
+}) => {
   const t = useTranslations('Admin');
-  return (action: string) =>
-    ({
-      report: t('event_report'),
-      bump: t('event_bump'),
-      copy: t('event_copy'),
-      'auth-failure': t('event_authFailure'),
-    })[action] ?? action;
+  const { absolute, relative } = useModFormat();
+  const eventLabel = useEventLabel();
+  const [open, setOpen] = useState(false);
+  const user = store.usersById.get(row.userId ?? '');
+  const eventsId = `suspicious-events-${row.id}`;
+
+  return (
+    <>
+      <div className={`${bodyRow} ${suspiciousColumns}`}>
+        <span className="flex min-w-0 items-start gap-2.5">
+          <MdOutlinedFlag size={18} className="shrink-0 text-discord-yellow" />
+          <span>
+            <span className="font-medium text-foreground">
+              {eventLabel(row.action)}
+            </span>
+            <span className="mt-0.5 block text-muted text-xs">
+              {t('eventReason')}
+            </span>
+            {row.userId && row.count > 1 ? (
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={eventsId}
+                onClick={() => setOpen(!open)}
+                className="mt-1 inline-flex items-center gap-1 font-medium text-primary-light text-xs hover:text-foreground"
+              >
+                {t('flaggedEvents', { count: row.count })}
+                <MdExpandMore
+                  size={16}
+                  className={open ? 'rotate-180' : undefined}
+                />
+              </button>
+            ) : null}
+          </span>
+        </span>
+        <span className="flex flex-wrap items-center gap-2">
+          <UserCell user={user} onClick={() => user && openUser(user.id)} />
+          {user ? <RestrictionChips user={user} small /> : null}
+        </span>
+        <span className="font-mono text-muted text-xs">{row.ip ?? '-'}</span>
+        <time
+          dateTime={row.createdAt}
+          title={relative(row.createdAt)}
+          className="text-muted"
+        >
+          {absolute(row.createdAt)}
+        </time>
+        <span className="text-right">
+          {user ? (
+            <button
+              type="button"
+              onClick={() => openUser(user.id)}
+              className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-[13px] text-primary-light hover:text-foreground"
+            >
+              {t('viewUser')}
+              <MdArrowForward size={16} />
+            </button>
+          ) : null}
+        </span>
+      </div>
+      {open && row.userId ? (
+        <div className="border-[rgba(55,65,81,0.6)] border-t bg-background-darker">
+          <SuspiciousEvents id={eventsId} store={store} userId={row.userId} />
+        </div>
+      ) : null}
+    </>
+  );
 };
 
 const SuspiciousTab = ({
@@ -887,8 +956,6 @@ const SuspiciousTab = ({
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
-  const { absolute, relative } = useModFormat();
-  const eventLabel = useEventLabel();
 
   return (
     <section className={tablePane} aria-label={t('tabSuspicious')}>
@@ -903,56 +970,14 @@ const SuspiciousTab = ({
         <span />
       </div>
       {store.suspicious.length ? (
-        store.suspicious.map((row) => {
-          const user = store.usersById.get(row.userId ?? '');
-          return (
-            <div key={row.id} className={`${bodyRow} ${suspiciousColumns}`}>
-              <span className="flex min-w-0 items-start gap-2.5">
-                <MdOutlinedFlag
-                  size={18}
-                  className="shrink-0 text-discord-yellow"
-                />
-                <span>
-                  <span className="font-medium text-foreground">
-                    {eventLabel(row.action)}
-                  </span>
-                  <span className="mt-0.5 block text-muted text-xs">
-                    {t('eventReason')}
-                  </span>
-                </span>
-              </span>
-              <span className="flex flex-wrap items-center gap-2">
-                <UserCell
-                  user={user}
-                  onClick={() => user && openUser(user.id)}
-                />
-                {user ? <RestrictionChips user={user} small /> : null}
-              </span>
-              <span className="font-mono text-muted text-xs">
-                {row.ip ?? '-'}
-              </span>
-              <time
-                dateTime={row.createdAt}
-                title={relative(row.createdAt)}
-                className="text-muted"
-              >
-                {absolute(row.createdAt)}
-              </time>
-              <span className="text-right">
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={() => openUser(user.id)}
-                    className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-[13px] text-primary-light hover:text-foreground"
-                  >
-                    {t('viewUser')}
-                    <MdArrowForward size={16} />
-                  </button>
-                ) : null}
-              </span>
-            </div>
-          );
-        })
+        store.suspicious.map((row) => (
+          <SuspiciousRow
+            key={row.id}
+            row={row}
+            store={store}
+            openUser={openUser}
+          />
+        ))
       ) : (
         <EmptyState
           className="px-6 py-10"
