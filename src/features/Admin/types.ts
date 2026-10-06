@@ -97,6 +97,8 @@ export type ModSuspiciousEvent = {
 
 export type ActivityRange = { from: string; to: string };
 
+export type ActivityFilters = Record<string, string>;
+
 export type ActivityPage<T> = { rows: T[]; nextCursor?: string };
 
 export type ModSuspicious = ModSuspiciousEvent & { count: number };

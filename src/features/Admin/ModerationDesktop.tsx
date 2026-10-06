@@ -29,6 +29,7 @@ import { Avatar } from '@/components/Avatar';
 import {
   ActivityDayBar,
   ActivityPager,
+  type ActivityPages,
   ActivityStatus,
   useActivityPages,
 } from './ActivityPages';
@@ -57,6 +58,7 @@ import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
   ActivityRange,
   ModAction,
+  ModLogEntry,
   ModSuspicious,
   ModUser,
   SeedStatus,
@@ -771,28 +773,18 @@ const suspiciousColumns =
 
 const LogTab = ({
   store,
+  pages,
   openUser,
 }: {
   store: ModerationStore;
+  pages: ActivityPages<ModLogEntry>;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
   const { absolute, relative } = useModFormat();
   const label = useLogLabel();
-  const [action, setAction] = useState('');
-  const [staff, setStaff] = useState('');
-  const pages = useActivityPages(store.loadActivityLog);
-  const entries = pages.rows ?? [];
-  const rows = entries.filter(
-    (entry) =>
-      (!action || entry.action === action) &&
-      (!staff || entry.staffId === staff),
-  );
-  const staffIds = [...new Set(entries.flatMap((e) => e.staffId ?? []))];
-  const clear = () => {
-    setAction('');
-    setStaff('');
-  };
+  const rows = pages.rows ?? [];
+  const { action = '', staffId = '' } = pages.filters;
 
   return (
     <section className={tablePane} aria-label={t('tabLog')}>
@@ -804,7 +796,7 @@ const LogTab = ({
           icon={MdTune}
           label={t('allActions')}
           value={action}
-          onChange={setAction}
+          onChange={(value) => pages.setFilter('action', value)}
           options={LOG_ACTIONS.map((value) => ({
             value,
             label: t(`action_${value}`),
@@ -813,17 +805,17 @@ const LogTab = ({
         <FilterSelect
           icon={MdAdminPanelSettings}
           label={t('allStaff')}
-          value={staff}
-          onChange={setStaff}
-          options={staffIds.map((id) => ({
+          value={staffId}
+          onChange={(value) => pages.setFilter('staffId', value)}
+          options={store.staff.map((id) => ({
             value: id,
             label: store.usersById.get(id)?.displayName ?? t('unknownUser'),
           }))}
         />
-        {action || staff ? (
+        {pages.filtered ? (
           <button
             type="button"
-            onClick={clear}
+            onClick={pages.clearFilters}
             className="inline-flex h-[34px] items-center gap-1 rounded-full px-2.5 text-muted text-sm hover:bg-background-main hover:text-foreground"
           >
             <MdClose size={16} />
@@ -872,14 +864,18 @@ const LogTab = ({
             </span>
           </div>
         ))
-      ) : entries.length ? (
+      ) : pages.filtered ? (
         <EmptyState
           className="px-6 py-10"
           icon={MdFilterAltOff}
           title={t('noMatchTitle')}
           body={t('noMatchBody')}
         >
-          <button type="button" onClick={clear} className={modButton()}>
+          <button
+            type="button"
+            onClick={pages.clearFilters}
+            className={modButton()}
+          >
             {t('clearFilters')}
           </button>
         </EmptyState>
@@ -984,13 +980,14 @@ const SuspiciousRow = ({
 
 const SuspiciousTab = ({
   store,
+  pages,
   openUser,
 }: {
   store: ModerationStore;
+  pages: ActivityPages<ModSuspicious>;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
-  const pages = useActivityPages(store.loadSuspicious);
 
   return (
     <section className={tablePane} aria-label={t('tabSuspicious')}>
@@ -1049,6 +1046,11 @@ export const ModerationDesktop = ({
 }) => {
   const t = useTranslations('Admin');
   const me = store.usersById.get(store.meId);
+  const logPages = useActivityPages(store.loadActivityLog, tab === 'log');
+  const flagPages = useActivityPages(
+    store.loadSuspicious,
+    tab === 'suspicious',
+  );
   const tabs: { id: ModTab; icon: IconType; label: string; badge?: number }[] =
     [
       {
@@ -1174,9 +1176,11 @@ export const ModerationDesktop = ({
           openUser={openUser}
         />
       ) : null}
-      {tab === 'log' ? <LogTab store={store} openUser={openUser} /> : null}
+      {tab === 'log' ? (
+        <LogTab store={store} pages={logPages} openUser={openUser} />
+      ) : null}
       {tab === 'suspicious' ? (
-        <SuspiciousTab store={store} openUser={openUser} />
+        <SuspiciousTab store={store} pages={flagPages} openUser={openUser} />
       ) : null}
       {tab === 'dummy' && seed ? <SeedPanel initial={seed} /> : null}
     </main>

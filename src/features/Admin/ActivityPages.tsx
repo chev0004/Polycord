@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { ActionError, Spinner, useModFormat } from './ModerationParts';
-import type { ActivityPage, ActivityRange } from './types';
+import type { ActivityFilters, ActivityPage, ActivityRange } from './types';
 
 const addDays = (day: Date, days: number) =>
   new Date(day.getFullYear(), day.getMonth(), day.getDate() + days);
@@ -20,9 +20,15 @@ const fromInputValue = (value: string) => {
 };
 
 export const useActivityPages = <T,>(
-  load: (range: ActivityRange, cursor?: string) => Promise<ActivityPage<T>>,
+  load: (
+    range: ActivityRange,
+    cursor?: string,
+    filters?: ActivityFilters,
+  ) => Promise<ActivityPage<T>>,
+  active: boolean,
 ) => {
   const [day, setDay] = useState(today);
+  const [filters, setFilters] = useState<ActivityFilters>({});
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [page, setPage] = useState<ActivityPage<T> | null>(null);
   const [failed, setFailed] = useState(false);
@@ -35,26 +41,34 @@ export const useActivityPages = <T,>(
   );
 
   useEffect(() => {
+    if (!active) return;
     let current = true;
     setPage(null);
     setFailed(false);
-    load(range, cursors.at(-1)).then(
+    load(range, cursors.at(-1), filters).then(
       (result) => current && setPage(result),
       () => current && setFailed(true),
     );
     return () => {
       current = false;
     };
-  }, [load, range, cursors]);
+  }, [load, range, cursors, filters, active]);
 
   const chooseDay = (next: Date) => {
     setDay(next);
     setCursors([undefined]);
   };
 
+  const chooseFilters = (next: ActivityFilters) => {
+    setFilters(next);
+    setCursors([undefined]);
+  };
+
   return {
     range,
     day,
+    filters,
+    filtered: Object.values(filters).some(Boolean),
     isToday: toInputValue(day) === toInputValue(today()),
     rows: page?.rows,
     pageNumber: cursors.length,
@@ -64,6 +78,9 @@ export const useActivityPages = <T,>(
     chooseDay,
     shiftDay: (days: number) => chooseDay(addDays(day, days)),
     goToday: () => chooseDay(today()),
+    setFilter: (key: string, value: string) =>
+      chooseFilters({ ...filters, [key]: value }),
+    clearFilters: () => chooseFilters({}),
     retry: () => setCursors([...cursors]),
     nextPage: () =>
       page?.nextCursor && setCursors([...cursors, page.nextCursor]),
@@ -71,7 +88,7 @@ export const useActivityPages = <T,>(
   };
 };
 
-export type ActivityPages = ReturnType<typeof useActivityPages>;
+export type ActivityPages<T = unknown> = ReturnType<typeof useActivityPages<T>>;
 
 const stepButton =
   'flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-background-main hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent';

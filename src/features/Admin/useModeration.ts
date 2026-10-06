@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import type {
+  ActivityFilters,
   ActivityPage,
   ActivityRange,
   IpBlock,
@@ -158,11 +159,18 @@ export const useModeration = (initial: ModSnapshot) => {
   );
 
   const loadActivityLog = useCallback(
-    async (range: ActivityRange, cursor?: string) => {
+    async (
+      range: ActivityRange,
+      cursor?: string,
+      filters: ActivityFilters = {},
+    ) => {
       const result = await loadWindow<ModData & { nextCursor?: string }>(
         '/api/admin/activity-log',
         range,
-        cursor ? { cursor } : {},
+        {
+          ...(cursor ? { cursor } : {}),
+          ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)),
+        },
       );
       merge(result);
       return { rows: result.log, nextCursor: result.nextCursor };

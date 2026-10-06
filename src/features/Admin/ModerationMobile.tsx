@@ -49,6 +49,7 @@ import type { WarningCategory } from '@/types';
 import {
   ActivityDayBar,
   ActivityPager,
+  type ActivityPages,
   ActivityStatus,
   useActivityPages,
 } from './ActivityPages';
@@ -87,6 +88,7 @@ import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
   ActivityRange,
   ModAction,
+  ModLogEntry,
   ModReport,
   ModSuspicious,
   ModUser,
@@ -538,29 +540,19 @@ const chipButton = (on: boolean) =>
 
 const LogScreen = ({
   store,
+  pages,
   openUser,
 }: {
   store: ModerationStore;
+  pages: ActivityPages<ModLogEntry>;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
   const { time } = useModFormat();
   const label = useLogLabel();
-  const [action, setAction] = useState('');
-  const [staff, setStaff] = useState('');
   const [sheet, setSheet] = useState<'action' | 'staff' | null>(null);
-  const pages = useActivityPages(store.loadActivityLog);
-  const entries = pages.rows ?? [];
-  const rows = entries.filter(
-    (entry) =>
-      (!action || entry.action === action) &&
-      (!staff || entry.staffId === staff),
-  );
-  const staffIds = [...new Set(entries.flatMap((e) => e.staffId ?? []))];
-  const clear = () => {
-    setAction('');
-    setStaff('');
-  };
+  const rows = pages.rows ?? [];
+  const { action = '', staffId: staff = '' } = pages.filters;
   const staffName = (id?: string) =>
     store.usersById.get(id ?? '')?.displayName ?? t('unknownUser');
 
@@ -592,8 +584,12 @@ const LogScreen = ({
           {staff ? staffName(staff) : t('allStaff')}
           <MdExpandMore size={18} />
         </button>
-        {action || staff ? (
-          <button type="button" onClick={clear} className={chipButton(false)}>
+        {pages.filtered ? (
+          <button
+            type="button"
+            onClick={pages.clearFilters}
+            className={chipButton(false)}
+          >
             <MdClose size={16} />
             {t('clear')}
           </button>
@@ -634,7 +630,7 @@ const LogScreen = ({
               </button>
             ))}
           </div>
-        ) : entries.length ? (
+        ) : pages.filtered ? (
           <MobileEmpty
             icon={MdFilterAltOff}
             title={t('noMatchTitle')}
@@ -642,7 +638,7 @@ const LogScreen = ({
           >
             <button
               type="button"
-              onClick={clear}
+              onClick={pages.clearFilters}
               className="h-10 rounded-full border border-primary-dark px-3.5 font-semibold text-primary-light text-sm"
             >
               {t('clearFilters')}
@@ -667,13 +663,13 @@ const LogScreen = ({
             key: 'all',
             label: t('allActions'),
             selected: !action,
-            onSelect: () => setAction(''),
+            onSelect: () => pages.setFilter('action', ''),
           },
           ...LOG_ACTIONS.map((value) => ({
             key: value,
             label: t(`action_${value}`),
             selected: action === value,
-            onSelect: () => setAction(value),
+            onSelect: () => pages.setFilter('action', value),
           })),
         ]}
       />
@@ -687,13 +683,13 @@ const LogScreen = ({
             key: 'all',
             label: t('allStaff'),
             selected: !staff,
-            onSelect: () => setStaff(''),
+            onSelect: () => pages.setFilter('staffId', ''),
           },
-          ...staffIds.map((id) => ({
+          ...store.staff.map((id) => ({
             key: id,
             label: staffName(id),
             selected: staff === id,
-            onSelect: () => setStaff(id),
+            onSelect: () => pages.setFilter('staffId', id),
           })),
         ]}
       />
@@ -788,13 +784,14 @@ const FlagRow = ({
 
 const FlagsScreen = ({
   store,
+  pages,
   openUser,
 }: {
   store: ModerationStore;
+  pages: ActivityPages<ModSuspicious>;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
-  const pages = useActivityPages(store.loadSuspicious);
 
   return (
     <>
@@ -1903,6 +1900,11 @@ export const ModerationMobile = ({
   const [page, setPage] = useState<Page | null>(null);
   const [closing, setClosing] = useState(false);
   const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);
+  const logPages = useActivityPages(store.loadActivityLog, tab === 'log');
+  const flagPages = useActivityPages(
+    store.loadSuspicious,
+    tab === 'suspicious',
+  );
 
   const back = () => {
     setClosing(true);
@@ -1930,9 +1932,11 @@ export const ModerationMobile = ({
       {tab === 'users' ? (
         <UsersScreen store={store} users={users} openUser={openUser} />
       ) : null}
-      {tab === 'log' ? <LogScreen store={store} openUser={openUser} /> : null}
+      {tab === 'log' ? (
+        <LogScreen store={store} pages={logPages} openUser={openUser} />
+      ) : null}
       {tab === 'suspicious' ? (
-        <FlagsScreen store={store} openUser={openUser} />
+        <FlagsScreen store={store} pages={flagPages} openUser={openUser} />
       ) : null}
       {tab === 'dummy' && seed ? (
         <div className="pt-[calc(env(safe-area-inset-top)+16px)]">
