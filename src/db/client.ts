@@ -63,6 +63,7 @@ const pool =
   new Pool({
     ...connectionConfig(),
     max: 2,
+    maxUses: 1,
     query_timeout: 10000,
     idleTimeoutMillis: 20000,
   });
