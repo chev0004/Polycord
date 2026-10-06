@@ -5,10 +5,10 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 import ca from '../../src/db/supabaseCa.json' with { type: 'json' };
+import { sandboxResource } from './resources.mjs';
 
 const url = new URL(process.env.DATABASE_URL);
-if (url.username !== 'postgres.ftlxjximfprlplbihcph')
-  throw new Error('TEST-006 disposable database required');
+sandboxResource(url.href);
 const client = postgres(url.href, {
   prepare: false,
   max: 1,

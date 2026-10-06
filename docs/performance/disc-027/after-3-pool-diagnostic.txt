@@ -1,0 +1,2 @@
+{"name":"DATABASE_URL","connected":true,"ms":379.7633,"backends":2,"idle_transactions":0}
+{"name":"SESSION_DATABASE_URL","connected":true,"ms":212.57590000000005,"backends":3,"idle_transactions":0}

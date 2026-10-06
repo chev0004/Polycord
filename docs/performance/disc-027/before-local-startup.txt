@@ -1,0 +1,193 @@
+{
+  "at": "2026-10-05T18:52:10.131Z",
+  "commit": "3c1558f3ae958659931f683318a41b268d3fd66b",
+  "node": "v26.1.0",
+  "results": [
+    {
+      "route": "api/internal/ban-check",
+      "tracedFiles": 120,
+      "tracedBytes": 2026850,
+      "p50": 136.4912,
+      "p95": 143.4149,
+      "samples": [
+        {
+          "ms": 129.4058,
+          "uptimeMs": 145.9156,
+          "heapBytes": 17882448,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 141.1196,
+          "uptimeMs": 156.4602,
+          "heapBytes": 17559072,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 141.5719,
+          "uptimeMs": 158.61020000000002,
+          "heapBytes": 17440520,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 134.25900000000001,
+          "uptimeMs": 150.52609999999999,
+          "heapBytes": 17485552,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 143.4149,
+          "uptimeMs": 158.5511,
+          "heapBytes": 17485672,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 135.1658,
+          "uptimeMs": 150.66080000000002,
+          "heapBytes": 17494544,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 125.0507,
+          "uptimeMs": 140.01430000000002,
+          "heapBytes": 17452888,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 136.4912,
+          "uptimeMs": 152.01919999999998,
+          "heapBytes": 17489112,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 135.1069,
+          "uptimeMs": 152.8475,
+          "heapBytes": 17453360,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 143.23319999999998,
+          "uptimeMs": 158.7461,
+          "heapBytes": 17467464,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 131.1027,
+          "uptimeMs": 147.66099999999997,
+          "heapBytes": 17455024,
+          "externalModules": 40,
+          "pushLoaded": false
+        },
+        {
+          "ms": 138.9859,
+          "uptimeMs": 154.33689999999999,
+          "heapBytes": 17453424,
+          "externalModules": 40,
+          "pushLoaded": false
+        }
+      ]
+    },
+    {
+      "route": "api/discovery",
+      "tracedFiles": 122,
+      "tracedBytes": 2055732,
+      "p50": 137.6421,
+      "p95": 154.77599999999998,
+      "samples": [
+        {
+          "ms": 137.6421,
+          "uptimeMs": 152.69,
+          "heapBytes": 17569504,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 139.90200000000002,
+          "uptimeMs": 155.8257,
+          "heapBytes": 17586616,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 135.8232,
+          "uptimeMs": 150.3271,
+          "heapBytes": 17612048,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 154.77599999999998,
+          "uptimeMs": 170.0855,
+          "heapBytes": 17613088,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 145.5106,
+          "uptimeMs": 163.731,
+          "heapBytes": 17612048,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 128.606,
+          "uptimeMs": 145.6246,
+          "heapBytes": 17593720,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 129.1121,
+          "uptimeMs": 144.5635,
+          "heapBytes": 17586680,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 143.5113,
+          "uptimeMs": 159.4827,
+          "heapBytes": 17617048,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 126.3187,
+          "uptimeMs": 142.7978,
+          "heapBytes": 17640432,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 131.47160000000002,
+          "uptimeMs": 146.5478,
+          "heapBytes": 17597496,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 143.54330000000002,
+          "uptimeMs": 159.5665,
+          "heapBytes": 17612224,
+          "externalModules": 42,
+          "pushLoaded": false
+        },
+        {
+          "ms": 131.4302,
+          "uptimeMs": 147.71280000000002,
+          "heapBytes": 17576632,
+          "externalModules": 42,
+          "pushLoaded": false
+        }
+      ]
+    }
+  ]
+}

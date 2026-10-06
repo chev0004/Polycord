@@ -7,17 +7,12 @@ import {
   createBanCheckToken,
   createSessionCookieValue,
 } from '../../src/lib/auth-session';
+import { sandboxOrigin, sandboxResource } from './resources.mjs';
 
 const [origin, mode, output] = process.argv.slice(2);
-assert.match(
-  origin,
-  /^https:\/\/(?:[a-f0-9]+--)?polycord-test006-supabase\.netlify\.app$/,
-);
+const resource = sandboxResource(process.env.SESSION_DATABASE_URL);
+sandboxOrigin(origin, resource);
 assert.ok(['locked', 'paused', 'recovered'].includes(mode));
-assert.equal(
-  new URL(process.env.SESSION_DATABASE_URL).username,
-  'postgres.ftlxjximfprlplbihcph',
-);
 const token = await createBanCheckToken();
 const cookie = `polycord_session=${await createSessionCookieValue(
   { id: 'test006-allowed', name: 'TEST-006' },

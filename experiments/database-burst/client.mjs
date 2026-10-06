@@ -1,13 +1,11 @@
 import pg from 'pg';
 import postgres from 'postgres';
 import ca from '../../src/db/supabaseCa.json' with { type: 'json' };
+import { sandboxResource } from './resources.mjs';
 
 export const createClient = (driver, connectionString) => {
   const max = Number(process.env.PROBE_POOL_SIZE ?? 1);
-  const url = new URL(connectionString);
-  if (url.username !== 'postgres.ftlxjximfprlplbihcph') {
-    throw new Error('TEST-006 disposable database required');
-  }
+  sandboxResource(connectionString);
   if (driver === 'postgres' || driver === 'postgres-serial') {
     const client = postgres(connectionString, {
       prepare: false,

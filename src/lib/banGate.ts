@@ -6,6 +6,7 @@ import {
   readBanCookieValue,
   readSessionFromCookieValue,
 } from './auth-session';
+import { withBanDeadline } from './banDeadline';
 import { clientIp } from './clientIp';
 
 export type BanNotice = { date: Date; reference: string };
@@ -39,16 +40,25 @@ export const findBan = async (
     throw new Error('Ban check token unavailable');
   }
 
+  const input = {
+    ip: clientIp(headers),
+    discordUserIds: [session?.id, banned].flatMap((id) => id ?? []),
+  };
+
+  if (process.env.POLYCORD_DIRECT_BAN_CHECK === 'true') {
+    const { lookupBan } = await import('./banLookup');
+    return withBanDeadline((signal) =>
+      lookupBan(input.ip, input.discordUserIds, signal),
+    );
+  }
+
   const response = await fetch(new URL(BAN_CHECK_PATH, origin), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       [BAN_CHECK_AUTH_HEADER]: token,
     },
-    body: JSON.stringify({
-      ip: clientIp(headers),
-      discordUserIds: [session?.id, banned].flatMap((id) => id ?? []),
-    }),
+    body: JSON.stringify(input),
     cache: 'no-store',
     redirect: 'error',
     signal: AbortSignal.timeout(BAN_CHECK_TIMEOUT_MS),

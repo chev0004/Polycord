@@ -43,6 +43,17 @@ export const createBanClient = (signal: AbortSignal) => {
     query_timeout: 2500,
     stream: () => new Socket({ signal }),
   });
+  if ('Deno' in globalThis) {
+    client.connection.once('sslconnect', () => {
+      const abort = () => {
+        client.connection.stream.destroy();
+        client.connection.emit('end');
+      };
+      signal.addEventListener('abort', abort, { once: true });
+      client.once('end', () => signal.removeEventListener('abort', abort));
+      if (signal.aborted) abort();
+    });
+  }
   client.on('error', () => {});
   return client;
 };

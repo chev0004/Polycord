@@ -8,22 +8,28 @@ import {
   createBanCookieValue,
   createSessionCookieValue,
 } from '../../src/lib/auth-session';
+import { sandboxOrigin, sandboxResource } from './resources.mjs';
 
 const origin = process.argv[2];
 const staging = process.argv[4] === '--staging';
 const prefix = staging ? 'dev017' : 'test006';
-const project = staging ? 'lqyekuxzhxkjsctdpybi' : 'ftlxjximfprlplbihcph';
 const fixtureIp = staging ? '203.0.113.249' : '203.0.113.250';
-assert.equal(
-  new URL(process.env.SESSION_DATABASE_URL).username,
-  `postgres.${project}`,
-);
-assert.match(
-  origin,
-  staging
-    ? /^https:\/\/([a-f0-9]{24}--polycord-staging\.netlify\.app|polycord\.chev\.dev)$/
-    : /^https:\/\/[a-f0-9]{24}--polycord-test006-supabase\.netlify\.app$/,
-);
+if (staging) {
+  assert.equal(
+    new URL(process.env.SESSION_DATABASE_URL).username,
+    'postgres.lqyekuxzhxkjsctdpybi',
+  );
+  assert.match(
+    origin,
+    /^https:\/\/([a-f0-9]{24}--polycord-staging\.netlify\.app|polycord\.chev\.dev)$/,
+  );
+} else {
+  sandboxOrigin(
+    origin,
+    sandboxResource(process.env.SESSION_DATABASE_URL),
+    true,
+  );
+}
 assert.ok(process.env.AUTH_SECRET);
 const monitor = postgres(process.env.SESSION_DATABASE_URL, {
   prepare: false,
@@ -70,6 +76,7 @@ const call = async (path, options = {}) => {
       ...options,
       signal: AbortSignal.timeout(16000),
     });
+    const ttfb = performance.now() - started;
     const body = await response.text();
     const data = response.headers
       .get('content-type')
@@ -96,6 +103,9 @@ const call = async (path, options = {}) => {
           ? data.ban !== null
           : undefined,
       ms: performance.now() - started,
+      ttfb,
+      bytes: Buffer.byteLength(body),
+      serverTiming: response.headers.get('server-timing') ?? '',
       noStore:
         response.headers.get('cache-control')?.includes('no-store') ?? false,
       valid,

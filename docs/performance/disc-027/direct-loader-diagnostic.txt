@@ -1,0 +1,11 @@
+{
+  "deploy": "6ac420e3c5002a1f4a196a74",
+  "build": null,
+  "status": 503,
+  "failure": [
+    "{\"name\":\"TypeError\",\"code\":\"ERR_MODULE_NOT_FOUND\",\"kind\":\"other\",\"databaseConfigured\":true}"
+  ],
+  "timing": [
+    "middleware-instance;desc=\"63b83d2a-daff-457e-bac9-02d6b032e237\", middleware-uptime;dur=967.22, ban-direct;dur=33.78, middleware;dur=37.48"
+  ]
+}

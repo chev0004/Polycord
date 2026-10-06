@@ -1,0 +1,46 @@
+{
+  "at": "2026-10-05T22:41:14.186Z",
+  "origin": "https://6ac42701557d608930be03aa--polycord-disc027-supabase.netlify.app",
+  "mode": "locked",
+  "outcomes": [
+    {
+      "path": "/api/internal/ban-check",
+      "status": 503,
+      "ms": 2805.6354,
+      "noStore": true
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 503,
+      "ms": 2705.0315,
+      "noStore": true
+    },
+    {
+      "path": "/en",
+      "status": 503,
+      "ms": 2729.927199999999,
+      "noStore": true
+    },
+    {
+      "path": "/api/internal/ban-check",
+      "status": 200,
+      "ms": 161.6340999999993,
+      "noStore": true
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 200,
+      "ms": 333.48099999999977,
+      "noStore": true
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "ms": 709.049500000001,
+      "noStore": true
+    },
+    {
+      "idle_transactions": 0
+    }
+  ]
+}

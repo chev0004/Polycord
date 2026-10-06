@@ -1,0 +1,92 @@
+{
+  "before": {
+    "trials": [
+      {
+        "name": "before-1",
+        "nodeInstances": 40,
+        "edgeInstances": 1
+      },
+      {
+        "name": "before-2",
+        "nodeInstances": 56,
+        "edgeInstances": 1
+      },
+      {
+        "name": "local-control-1",
+        "nodeInstances": 48,
+        "edgeInstances": 1
+      }
+    ],
+    "overlap": [
+      {
+        "pair": [
+          "before-1",
+          "before-2"
+        ],
+        "node": 0,
+        "edge": 0
+      },
+      {
+        "pair": [
+          "before-1",
+          "local-control-1"
+        ],
+        "node": 0,
+        "edge": 0
+      },
+      {
+        "pair": [
+          "before-2",
+          "local-control-1"
+        ],
+        "node": 0,
+        "edge": 0
+      }
+    ]
+  },
+  "after": {
+    "trials": [
+      {
+        "name": "cold-direct-1",
+        "nodeInstances": 32,
+        "edgeInstances": 1
+      },
+      {
+        "name": "cold-direct-2",
+        "nodeInstances": 30,
+        "edgeInstances": 1
+      },
+      {
+        "name": "cold-direct-3",
+        "nodeInstances": 31,
+        "edgeInstances": 1
+      }
+    ],
+    "overlap": [
+      {
+        "pair": [
+          "cold-direct-1",
+          "cold-direct-2"
+        ],
+        "node": 0,
+        "edge": 0
+      },
+      {
+        "pair": [
+          "cold-direct-1",
+          "cold-direct-3"
+        ],
+        "node": 0,
+        "edge": 0
+      },
+      {
+        "pair": [
+          "cold-direct-2",
+          "cold-direct-3"
+        ],
+        "node": 0,
+        "edge": 0
+      }
+    ]
+  }
+}

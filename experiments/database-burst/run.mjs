@@ -2,21 +2,12 @@ import { writeFile } from 'node:fs/promises';
 import postgres from 'postgres';
 import ca from '../../src/db/supabaseCa.json' with { type: 'json' };
 import { createClient, workload } from './client.mjs';
+import { sandboxOrigin, sandboxResource } from './resources.mjs';
 
 const origin = process.argv[2];
-if (
-  origin &&
-  !/^https:\/\/polycord-test006-[\w-]+\.netlify\.app$/.test(origin)
-) {
-  throw new Error('TEST-006 disposable Netlify origin required');
-}
+const resource = sandboxResource(process.env.SESSION_DATABASE_URL);
+if (origin) sandboxOrigin(origin, resource);
 const results = [];
-if (
-  new URL(process.env.SESSION_DATABASE_URL).username !==
-  'postgres.ftlxjximfprlplbihcph'
-) {
-  throw new Error('TEST-006 disposable database required');
-}
 const monitor = postgres(process.env.SESSION_DATABASE_URL, {
   prepare: false,
   max: 1,

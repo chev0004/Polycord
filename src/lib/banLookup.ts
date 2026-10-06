@@ -3,8 +3,8 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { findActiveIpBan, findBannedAt } from '@/db';
 import { createBanClient } from '@/db/client';
+import { findActiveIpBan, findBannedAt } from '@/db/ipBans';
 import type { BanNotice } from './banGate';
 
 export const BAN_STATEMENT_TIMEOUT_MS = 2500;
@@ -46,6 +46,11 @@ export const lookupBan = async (
         : null;
     });
   } finally {
-    await client.end();
+    const closed = client.end();
+    if ('Deno' in globalThis) {
+      client.connection.stream.destroy();
+      client.connection.emit('end');
+    }
+    await closed;
   }
 };

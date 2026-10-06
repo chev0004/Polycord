@@ -9,6 +9,9 @@
 [context."test/test-006"]
   command = "node experiments/database-burst/build.mjs"
 
+[context."perf/disc-027"]
+  command = "node experiments/discovery-latency/build.mjs"
+
 [context."chore/dev-017"]
   command = "node experiments/staging-rollout/build.mjs"
 

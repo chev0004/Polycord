@@ -1,0 +1,37 @@
+{
+  "deno": "deno 2.9.7 (stable, release, x86_64-pc-windows-msvc)",
+  "results": [
+    {
+      "stalled": 8,
+      "allFailed": true,
+      "ms": 2850.5480000000002
+    },
+    {
+      "idle_transactions": 0
+    },
+    {
+      "recovered": [
+        {
+          "label": "allowed",
+          "banned": false,
+          "ms": 334.9827
+        },
+        {
+          "label": "account",
+          "banned": true,
+          "ms": 295.1307
+        },
+        {
+          "label": "remembered",
+          "banned": true,
+          "ms": 299.5883
+        },
+        {
+          "label": "ip",
+          "banned": true,
+          "ms": 271.448
+        }
+      ]
+    }
+  ]
+}
