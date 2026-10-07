@@ -270,6 +270,10 @@ export const DiscoveryPage = ({
   const { toasts, addToast, dismissToast } = useToastStack();
 
   useEffect(() => {
+    void import('./ProfileGrid');
+  }, []);
+
+  useEffect(() => {
     setProfileItems(withoutBlocked(profiles));
   }, [profiles]);
 
