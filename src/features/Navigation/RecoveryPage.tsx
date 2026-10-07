@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import en from '@/locales/en.json';
 import ja from '@/locales/ja.json';
+import { PageLoadFailure } from './PageLoadTrace';
 
 export function RecoveryPage({
   kind,
@@ -30,6 +31,7 @@ export function RecoveryPage({
       lang={language}
       className="flex flex-1 items-center justify-center bg-background-main px-4 py-12 text-foreground"
     >
+      <PageLoadFailure />
       <section className="w-full max-w-lg space-y-6 rounded-panel border border-line bg-background-dark p-6 sm:p-10">
         <h1 className="font-bold text-3xl">
           {kind === 'missing' ? copy.missingTitle : copy.errorTitle}

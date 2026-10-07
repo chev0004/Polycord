@@ -7,13 +7,10 @@ import {
 } from '@/db';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import { getCurrentUser } from '@/lib/auth';
+import { tracePage } from '@/lib/pageLoadTrace';
 import { SavedRouteClient } from './SavedRouteClient';
 
-export default async function SavedRoute({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
+async function SavedRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const user = await getCurrentUser();
 
@@ -52,3 +49,5 @@ export default async function SavedRoute({
     />
   );
 }
+
+export default tracePage('saved', SavedRoute);

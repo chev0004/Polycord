@@ -6,6 +6,7 @@ import {
   getTranslations,
   setRequestLocale,
 } from 'next-intl/server';
+import { PageLoadTrace } from '@/features/Navigation/PageLoadTrace';
 import { locales } from '@/utils/locales';
 import { fontVariables } from '../fonts';
 import '../globals.css';
@@ -58,6 +59,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider locale={lang} messages={messages}>
           {children}
+          <PageLoadTrace />
         </NextIntlClientProvider>
       </body>
     </html>

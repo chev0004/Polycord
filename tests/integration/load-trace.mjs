@@ -73,6 +73,14 @@ assert.match(ownerResponse.headers.get('Server-Timing'), /pc_gate;dur=/);
 const html = await ownerResponse.text();
 assert.ok(html.includes('id="polycord-load-trace"'));
 assert.ok(!html.includes(ownerCookie) && !html.includes('synthetic-owner'));
+const rscRequest = request(ownerCookie);
+rscRequest.headers.set('rsc', '1');
+const rscResponse = await serveDiscoveryDocument(rscRequest, context, {
+  en: document,
+});
+assert.equal(await rscResponse.text(), 'delegated');
+assert.match(rscResponse.headers.get('Server-Timing'), /pc_gate;dur=/);
+assert.equal(rscResponse.headers.get('cache-control'), 'private, no-store');
 const otherResponse = await serveDiscoveryDocument(
   request(otherCookie),
   context,
@@ -97,6 +105,53 @@ assert.ok(
   ).includes('polycord-load-trace'),
 );
 const { NextResponse } = await import('next/server');
+let pageHeaders = new Headers({ cookie: `polycord_session=${ownerCookie}` });
+mock.module('next/headers', () => ({ headers: async () => pageHeaders }));
+mock.module('next/navigation', () => ({ usePathname: () => '/en/settings' }));
+const { tracePage, createPageLoadTrace } = await import(
+  '../../src/lib/pageLoadTrace'
+);
+const props = { params: Promise.resolve({ lang: 'en' }) };
+const tracedPage = tracePage('settings', async () => 'Ready settings');
+process.env.POLYCORD_ENVIRONMENT = 'staging';
+const renderedPage = await tracedPage(props);
+assert.equal(renderedPage.props.children[0], 'Ready settings');
+assert.equal(renderedPage.props.children[1].props.route, '/en/settings');
+assert.ok(renderedPage.props.children[1].props.spans.page >= 0);
+assert.equal(
+  (await tracePage('inbox', async () => 'Inbox shell')(props)).props.children[1]
+    .props.deferred,
+  true,
+);
+for (const cookie of [undefined, 'forged', otherCookie]) {
+  pageHeaders = new Headers(
+    cookie ? { cookie: `polycord_session=${cookie}` } : {},
+  );
+  assert.equal(await createPageLoadTrace(), null);
+  assert.equal(await tracedPage(props), 'Ready settings');
+}
+pageHeaders = new Headers({ cookie: `polycord_session=${ownerCookie}` });
+process.env.POLYCORD_ENVIRONMENT = 'production';
+assert.equal(await tracedPage(props), 'Ready settings');
+process.env.POLYCORD_ENVIRONMENT = 'staging';
+const { createElement } = await import('react');
+const { renderToStaticMarkup } = await import('react-dom/server');
+const bootstrapJson = JSON.stringify({
+  transport: 'https',
+  spans: { 'layout-account': 20 },
+});
+const scriptHtml = renderToStaticMarkup(
+  createElement('script', { type: 'application/json' }, bootstrapJson),
+);
+assert.deepEqual(
+  JSON.parse(
+    scriptHtml.slice(
+      scriptHtml.indexOf('>') + 1,
+      scriptHtml.lastIndexOf('</script>'),
+    ),
+  ),
+  JSON.parse(bootstrapJson),
+);
 mock.module('next/server', () => ({ NextResponse, after: () => {} }));
 const ownerIdentity = {
   account: {

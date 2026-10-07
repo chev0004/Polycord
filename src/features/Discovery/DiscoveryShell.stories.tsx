@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fireEvent, waitFor, within } from '@storybook/test';
+import { PageLoadTrace } from '@/features/Navigation/PageLoadTrace';
 import { DiscoveryShell } from './DiscoveryShell';
 
 const meta: Meta<typeof DiscoveryShell> = {
@@ -91,6 +92,12 @@ export const FirstLoadRetry: Story = {
 };
 
 export const TracedOwner: Story = {
+  render: (args) => (
+    <>
+      <DiscoveryShell {...args} />
+      <PageLoadTrace />
+    </>
+  ),
   beforeEach: () => {
     const bootstrap = document.createElement('script');
     bootstrap.id = 'polycord-load-trace';
@@ -146,7 +153,7 @@ export const TracedOwner: Story = {
     const canvas = within(canvasElement);
     await waitFor(() =>
       expect(
-        canvas.getByRole('complementary', { name: 'Discovery load trace' }),
+        canvas.getByRole('complementary', { name: 'Page load trace' }),
       ).toBeInTheDocument(),
     );
     await expect(
@@ -156,7 +163,7 @@ export const TracedOwner: Story = {
     fireEvent.change(input, { target: { value: 'Trace member' } });
     await expect(input).toHaveValue('Trace member');
     await waitFor(
-      () => expect(canvas.getByText(/Initial grid ready/)).toBeInTheDocument(),
+      () => expect(canvas.getByText(/Page ready/)).toBeInTheDocument(),
       { timeout: 10000 },
     );
     await expect(canvas.getAllByText('Trace member').length).toBeGreaterThan(0);

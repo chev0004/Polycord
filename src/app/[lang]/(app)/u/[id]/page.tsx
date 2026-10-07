@@ -16,6 +16,7 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { receiveProfileView } from '@/lib/notifications/profileView';
+import { tracePage } from '@/lib/pageLoadTrace';
 import { PublicProfileClient } from './PublicProfileClient';
 
 const loadPublicProfile = cache(getPublicProfileById);
@@ -49,7 +50,7 @@ export async function generateMetadata({
   return { title, description, openGraph: { title, description } };
 }
 
-export default async function PublicProfileRoute({
+async function PublicProfileRoute({
   params,
 }: {
   params: Promise<{ lang: string; id: string }>;
@@ -110,3 +111,5 @@ export default async function PublicProfileRoute({
     />
   );
 }
+
+export default tracePage('u/[member]', PublicProfileRoute);

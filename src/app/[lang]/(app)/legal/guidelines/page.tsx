@@ -1,6 +1,7 @@
 import { getLegalDocument, LegalDocument } from '@/features/Legal';
+import { tracePage } from '@/lib/pageLoadTrace';
 
-export default async function GuidelinesRoute({
+async function GuidelinesRoute({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -17,3 +18,5 @@ export default async function GuidelinesRoute({
     />
   );
 }
+
+export default tracePage('legal/guidelines', GuidelinesRoute);

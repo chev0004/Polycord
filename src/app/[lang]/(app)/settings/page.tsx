@@ -7,9 +7,10 @@ import {
 } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
+import { tracePage } from '@/lib/pageLoadTrace';
 import { SettingsRouteClient } from './SettingsRouteClient';
 
-export default async function SettingsRoute({
+async function SettingsRoute({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -69,3 +70,5 @@ export default async function SettingsRoute({
     </main>
   );
 }
+
+export default tracePage('settings', SettingsRoute);

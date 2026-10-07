@@ -154,11 +154,12 @@ export default async function middleware(request: NextRequest) {
     request,
     trace?.measure ?? (async (_name, run) => run()),
   );
-  if (trace)
-    response.headers.set(
-      'x-polycord-load-gate',
-      trace.headers('gate')['Server-Timing'],
-    );
+  if (trace) {
+    const serverTiming = trace.headers('gate')['Server-Timing'];
+    response.headers.set('x-polycord-load-gate', serverTiming);
+    response.headers.set('Server-Timing', serverTiming);
+    response.headers.set('Cache-Control', 'private, no-store');
+  }
   return response;
 }
 

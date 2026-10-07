@@ -1,5 +1,8 @@
 import { notFound } from 'next/navigation';
+import { tracePage } from '@/lib/pageLoadTrace';
 
-export default function MissingPage() {
-  notFound();
+function MissingPage() {
+  return notFound();
 }
+
+export default tracePage('[...missing]', MissingPage);

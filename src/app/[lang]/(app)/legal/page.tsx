@@ -1,6 +1,7 @@
 import { LegalHub } from '@/features/Legal';
+import { tracePage } from '@/lib/pageLoadTrace';
 
-export default async function LegalIndexRoute({
+async function LegalIndexRoute({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -9,3 +10,5 @@ export default async function LegalIndexRoute({
 
   return <LegalHub locale={lang} />;
 }
+
+export default tracePage('legal', LegalIndexRoute);

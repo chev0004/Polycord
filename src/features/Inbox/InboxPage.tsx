@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   MdChevronRight,
   MdDeleteOutline,
@@ -15,6 +15,7 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { ActionSheet, type ActionSheetItem } from '@/components/Sheet';
+import { finishPageLoad, startLoadTrace } from '@/features/Discovery/loadTrace';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { hasNotice, type Notifications } from '@/types';
 import { getNotificationMessage } from './NotificationEntry';
@@ -41,6 +42,10 @@ export const InboxPage = ({
     premium,
     persist,
   });
+  useEffect(() => {
+    if (!inbox.loading && startLoadTrace()?.route === `/${locale}/inbox`)
+      finishPageLoad(Boolean(inbox.error));
+  }, [inbox.loading, inbox.error, locale]);
   const openNotice = useOpenNotice();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);

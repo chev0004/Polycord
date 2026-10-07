@@ -3,13 +3,10 @@ import { ModerationPage } from '@/features/Admin/ModerationPage';
 import { getStaffRole } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { loadModerationSnapshot } from '@/lib/moderation';
+import { tracePage } from '@/lib/pageLoadTrace';
 import { getSeedStatus } from '@/lib/seed/access';
 
-export default async function AdminRoute({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
+async function AdminRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const user = await getCurrentUser();
   const role = user ? await getStaffRole(user) : null;
@@ -25,3 +22,5 @@ export default async function AdminRoute({
 
   return <ModerationPage initial={initial} seed={seed} />;
 }
+
+export default tracePage('admin', AdminRoute);
