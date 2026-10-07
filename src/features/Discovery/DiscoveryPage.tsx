@@ -52,6 +52,12 @@ import {
   parseDiscoveryState,
 } from './discoveryUrlState';
 import {
+  beginGridLoad,
+  finishLoadTrace,
+  markControlsReady,
+  traceDiscoveryRequest,
+} from './loadTrace';
+import {
   BackToTop,
   type FilterDraft,
   FilterSheet,
@@ -76,7 +82,10 @@ import { type AppliedFilter, TagCloud } from './TagCloud';
 import { useProfileBump } from './useProfileBump';
 
 const ProfileGrid = dynamic(
-  () => import('./ProfileGrid').then((module) => module.ProfileGrid),
+  () => {
+    beginGridLoad();
+    return import('./ProfileGrid').then((module) => module.ProfileGrid);
+  },
   {
     loading: ProfileGridSkeleton,
   },
@@ -424,15 +433,11 @@ export const DiscoveryPage = ({
     setIsRefreshing(true);
     setRefreshFailed(false);
     try {
-      const response = await fetch(
+      const data = await traceDiscoveryRequest<DiscoveryData>(
+        'discovery',
         `${requestUrl}${fetchOnMount && !hasLoaded.current ? '&initial=1' : ''}`,
-        {
-          cache: 'no-store',
-          signal: controller.signal,
-        },
+        controller.signal,
       );
-      if (!response.ok) throw new Error('Discovery refresh failed');
-      const data: DiscoveryData = await response.json();
       if (controller.signal.aborted) return;
       hasLoaded.current = true;
       setRemoteData(data);
@@ -582,6 +587,19 @@ export const DiscoveryPage = ({
   ]);
 
   const showSkeleton = isLoading || (remote && !remoteData && !refreshFailed);
+  useEffect(() => {
+    if (urlQuery !== null && mobile !== null) markControlsReady();
+  }, [urlQuery, mobile]);
+  const handleGridReady = useCallback(() => {
+    restoreScroll();
+    if (
+      !isLoading &&
+      !isRefreshing &&
+      loadedUrl === requestUrl &&
+      hasLoaded.current
+    )
+      finishLoadTrace();
+  }, [restoreScroll, isLoading, isRefreshing, loadedUrl, requestUrl]);
 
   const trackRequest = () => {
     requestRef.current?.abort();
@@ -1086,7 +1104,7 @@ export const DiscoveryPage = ({
             ) : (
               <ProfileGrid
                 profiles={displayedItems}
-                onReady={restoreScroll}
+                onReady={handleGridReady}
                 isLoggedIn={isLoggedIn}
                 savedProfileIds={remoteData?.savedProfileIds ?? savedProfileIds}
                 currentProfileId={currentProfileId}
