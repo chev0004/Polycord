@@ -272,3 +272,154 @@ test('query history, refresh and failed-data retry preserve the shell', async ({
   ).toBeVisible();
   await expect(search).toHaveValue(owners[0].display_name);
 });
+
+test('restoring pending search text restarts the cancelled request', async ({
+  page,
+}) => {
+  let release: () => void = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let calls = 0;
+  await page.route('**/api/discovery?*', async (route) => {
+    calls++;
+    const response = await route.fetch();
+    await gate;
+    await route.fulfill({ response });
+  });
+  try {
+    await page.goto(`/en?q=${encodeURIComponent(owners[0].display_name)}`);
+    await expect.poll(() => calls).toBe(1);
+    const search = page.getByRole('textbox', {
+      name: en.Discovery.searchLabel,
+    });
+    await search.fill(`${owners[0].display_name}x`);
+    await search.fill(owners[0].display_name);
+    await expect.poll(() => calls).toBe(2);
+    release();
+    await expect(
+      page.getByRole('heading', { name: new RegExp(owners[0].display_name) }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('status', { name: en.Discovery.feedLoadingLabel }),
+    ).toHaveCount(0);
+  } finally {
+    release();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
+});
+
+for (const width of [1440, 390])
+  test(`return scroll waits for the rendered grid at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.addInitScript(() =>
+      sessionStorage.setItem(
+        'polycord:discovery-return',
+        JSON.stringify({ href: '/en', scrollY: 2000 }),
+      ),
+    );
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/api/discovery?*', async (route) => {
+      await gate;
+      await route.fulfill({
+        json: {
+          profiles: Array.from({ length: 21 }, (_, index) => ({
+            id: `return-${index}`,
+            displayName: `Return fixture ${index}`,
+            primaryLanguage: 'en',
+            targetLanguages: [{ language: 'ja', level: 'intermediate' }],
+            about: 'An isolated scroll restoration fixture. '.repeat(15),
+            tags: [],
+          })),
+          total: 21,
+          page: 1,
+          groupSizes: [21],
+          tags: [],
+          savedProfileIds: [],
+        },
+      });
+    });
+    try {
+      await page.goto('/en');
+      await expect(
+        page.getByRole('status', { name: en.Discovery.feedLoadingLabel }),
+      ).toBeVisible();
+      expect(
+        await page.evaluate(() =>
+          sessionStorage.getItem('polycord:discovery-return'),
+        ),
+      ).not.toBeNull();
+      release();
+      await expect.poll(() => page.evaluate(() => scrollY)).toBe(2000);
+      expect(
+        await page.evaluate(() =>
+          sessionStorage.getItem('polycord:discovery-return'),
+        ),
+      ).toBeNull();
+      await expect(
+        page.getByRole('heading', { name: /Return fixture/ }).first(),
+      ).toBeVisible();
+    } finally {
+      release();
+      await page.unrouteAll({ behavior: 'wait' });
+    }
+  });
+
+test('saved viewer availability enables overlap filtering and sorting', async ({
+  page,
+  context,
+}) => {
+  const owner = owners[2];
+  await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,timezone,availability_days,availability_from,availability_to)
+    values (${owner.id},false,'en','ja','intermediate','A viewer availability fixture.','America/Chicago','weekdays','18:00','22:00')`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: {
+        id: owner.discord_user_id,
+        accountId: owner.id,
+        name: owner.display_name,
+      },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  const response = await context.request.get('/api/discovery/viewer?locale=en');
+  expect(response.status()).toBe(200);
+  expect(response.headers()['cache-control']).toBe('private, no-store');
+  expect(await response.json()).toMatchObject({
+    viewerTimezone: 'America/Chicago',
+    viewerAvailability: { days: 'weekdays', from: '18:00', to: '22:00' },
+  });
+  await page.goto('/en');
+  await expect(
+    page.getByRole('button', { name: 'Account menu' }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: en.Discovery.filterAvailability, exact: true })
+    .click();
+  await expect(
+    page.getByText(en.Discovery.filterOverlapsWithMe, { exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page
+    .getByRole('button', { name: en.Discovery.sortLabel, exact: true })
+    .click();
+  await expect(
+    page.getByText(en.Discovery.sortMostOverlap, { exact: true }),
+  ).toBeVisible();
+});
