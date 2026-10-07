@@ -95,8 +95,22 @@ assert.equal(
 );
 const { NextResponse } = await import('next/server');
 mock.module('next/server', () => ({ NextResponse, after: () => {} }));
+const ownerIdentity = {
+  account: {
+    currentUser: { id: 'owner', accountId: 'synthetic-owner' },
+  },
+  restriction: null,
+};
 mock.module('../../src/lib/auth', () => ({
-  getCurrentUser: async () => ({ id: 'owner', accountId: 'synthetic-owner' }),
+  getCurrentUser: async () => ownerIdentity.account.currentUser,
+  getSessionIdentity: async () => ownerIdentity,
+  isBannedIdentity: async () => false,
+}));
+mock.module('../../src/db/client', () => ({
+  withRequestPool: (run) => run(),
+}));
+mock.module('../../src/db/ipBans', () => ({
+  findActiveIpBan: async () => null,
 }));
 mock.module('../../src/lib/moderation', () => ({
   withModerationStates: async (profiles) => profiles,
@@ -122,12 +136,12 @@ mock.module('../../src/db/discovery', () => ({
     savedProfileIds: [],
   }),
 }));
-const { GET: viewer } = await import(
-  '../../src/app/api/discovery/viewer/route'
+const { GET: bootstrap } = await import(
+  '../../src/app/api/discovery/bootstrap/route'
 );
 const { GET: discovery } = await import('../../src/app/api/discovery/route');
 process.env.POLYCORD_ENVIRONMENT = 'staging';
-for (const handler of [viewer, discovery]) {
+for (const handler of [bootstrap, discovery]) {
   const response = await handler(request(ownerCookie));
   assert.equal(response.status, 200);
   assert.match(response.headers.get('Server-Timing'), /pc_handler;dur=/);
