@@ -261,3 +261,32 @@ test('account pages open behind the progress bar without a skeleton', async ({
     await sql.end();
   }
 });
+
+test('account pages do not request a second render after loading', async ({
+  context,
+  page,
+}) => {
+  const { accountId } = await signIn(context);
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const renders: string[] = [];
+  let current = '';
+  page.on('request', (request) => {
+    const headers = request.headers();
+    if (headers.rsc && new URL(request.url()).pathname.endsWith(current))
+      renders.push(request.url());
+  });
+  try {
+    for (const path of ['saved', 'settings', 'profile', 'onboarding']) {
+      current = `/en/${path}`;
+      await page.goto(current);
+      await expect(
+        page.locator('main h1, main fieldset').first(),
+      ).toBeVisible();
+      await page.waitForTimeout(1500);
+      expect(renders, path).toEqual([]);
+    }
+  } finally {
+    await sql`delete from users where id = ${accountId}`;
+    await sql.end();
+  }
+});

@@ -230,10 +230,7 @@ export const useRouteProgressRouter = () => {
       },
       prefetch: router.prefetch,
       push,
-      refresh: () => {
-        beginPageNavigation(undefined, true);
-        router.refresh();
-      },
+      refresh: router.refresh,
       replace,
     }),
     [router, push, replace],
