@@ -943,7 +943,6 @@
     "retryFeed": "Try again",
     "resultsHeading": "Language partners",
     "viewerLoading": "Loading your account",
-    "viewerError": "We couldn't load your account. You can still search while we try again.",
     "feedErrorTitle": "We couldn't load profiles",
     "feedErrorDescription": "Something went wrong while loading public profiles. Refresh the page to try again.",
     "resultsSearching": "Searching…",

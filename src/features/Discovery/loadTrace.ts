@@ -198,32 +198,41 @@ export const finishLoadTrace = () => {
 };
 
 export const traceDiscoveryRequest = async <T>(
-  phase: 'viewer' | 'discovery',
+  phase: 'viewer' | 'discovery' | 'bootstrap',
   url: string,
   signal: AbortSignal,
 ) => {
-  const sequence = ++requests[phase];
+  const phases =
+    phase === 'bootstrap' ? (['viewer', 'discovery'] as const) : [phase];
+  const sequences = phases.map((item) => ++requests[item]);
   const start = performance.now();
   const record = (timing: PhaseTiming) => {
     const current = startLoadTrace();
     if (!current || current.finished !== undefined) return;
-    const attempt = { phase, sequence, ...timing };
-    const previous = current.attempts ?? [];
-    const exists = previous.some(
-      (item) => item.phase === phase && item.sequence === sequence,
-    );
-    trace = {
-      ...current,
-      attempts: exists
-        ? previous.map((item) =>
-            item.phase === phase && item.sequence === sequence ? attempt : item,
-          )
-        : [...previous, attempt],
-      phases:
-        sequence === requests[phase]
-          ? { ...current.phases, [phase]: timing }
-          : current.phases,
-    };
+    let next = current;
+    phases.forEach((item, index) => {
+      const sequence = sequences[index];
+      const attempt = { phase: item, sequence, ...timing };
+      const previous = next.attempts ?? [];
+      const exists = previous.some(
+        (entry) => entry.phase === item && entry.sequence === sequence,
+      );
+      next = {
+        ...next,
+        attempts: exists
+          ? previous.map((entry) =>
+              entry.phase === item && entry.sequence === sequence
+                ? attempt
+                : entry,
+            )
+          : [...previous, attempt],
+        phases:
+          sequence === requests[item]
+            ? { ...next.phases, [item]: timing }
+            : next.phases,
+      };
+    });
+    trace = next;
     emit();
   };
   record({ status: 'loading', start });

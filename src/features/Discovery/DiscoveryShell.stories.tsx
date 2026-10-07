@@ -44,28 +44,26 @@ export const Pending: Story = {
   },
 };
 
-export const AccountRetry: Story = {
+export const FirstLoadRetry: Story = {
   beforeEach: () => {
     const original = globalThis.fetch;
-    let viewerCalls = 0;
+    let calls = 0;
     globalThis.fetch = Object.assign(
       (...args: Parameters<typeof fetch>) => {
-        const url = String(args[0]);
-        if (url.startsWith('/api/discovery/viewer'))
+        if (String(args[0]).startsWith('/api/discovery/bootstrap'))
           return Promise.resolve(
-            ++viewerCalls === 1
+            ++calls === 1
               ? new Response('{}', { status: 503 })
-              : Response.json({ isLoggedIn: false }),
-          );
-        if (url.startsWith('/api/discovery?'))
-          return Promise.resolve(
-            Response.json({
-              profiles: [],
-              total: 0,
-              page: 1,
-              tags: [],
-              savedProfileIds: [],
-            }),
+              : Response.json({
+                  viewer: { isLoggedIn: false },
+                  data: {
+                    profiles: [],
+                    total: 0,
+                    page: 1,
+                    tags: [],
+                    savedProfileIds: [],
+                  },
+                }),
           );
         return original(...args);
       },
@@ -105,36 +103,34 @@ export const TracedOwner: Story = {
         const url = String(args[0]);
         if (url.startsWith('/api/discovery'))
           return new Promise<Response>((resolve) => {
-            const viewer = url.startsWith('/api/discovery/viewer');
             setTimeout(
               () =>
                 resolve(
-                  Response.json(
-                    viewer
-                      ? {
-                          isLoggedIn: true,
-                          staff: { meId: 'trace-owner', role: 'owner' },
-                          pendingCases: 0,
-                        }
-                      : {
-                          profiles: [
-                            {
-                              id: 'trace-profile',
-                              displayName: 'Trace member',
-                              primaryLanguage: 'ja',
-                              targetLanguages: [{ language: 'en' }],
-                              tags: [],
-                              bumpedMinutesAgo: 0,
-                            },
-                          ],
-                          total: 1,
-                          page: 1,
+                  Response.json({
+                    viewer: {
+                      isLoggedIn: true,
+                      staff: { meId: 'trace-owner', role: 'owner' },
+                      pendingCases: 0,
+                    },
+                    data: {
+                      profiles: [
+                        {
+                          id: 'trace-profile',
+                          displayName: 'Trace member',
+                          primaryLanguage: 'ja',
+                          targetLanguages: [{ language: 'en' }],
                           tags: [],
-                          savedProfileIds: [],
+                          bumpedMinutesAgo: 0,
                         },
-                  ),
+                      ],
+                      total: 1,
+                      page: 1,
+                      tags: [],
+                      savedProfileIds: [],
+                    },
+                  }),
                 ),
-              viewer ? 1200 : 2200,
+              2200,
             );
           });
         return Promise.resolve(Response.json({ notifications: [], total: 0 }));
