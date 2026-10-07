@@ -204,6 +204,9 @@ test('desktop pages load behind the progress bar and open at the top', async ({
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`/en?q=Page&tag=${prefix}&country=US&sort=name-desc`);
     await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: `${prefix} Page 20`, exact: true }),
+    ).toBeVisible();
     const bar = page.locator('div.fixed.top-0.h-1');
     const next = page.getByRole('button', { name: 'Next page', exact: true });
     let release: () => void = () => {};
