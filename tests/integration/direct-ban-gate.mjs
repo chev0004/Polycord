@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 
 let input;
 let lookup = async () => null;
+mock.module('server-only', () => ({}));
 mock.module('../../src/lib/banLookup', () => ({
   lookupBan: (ip, ids, signal) => {
     input = { ip, ids, signal };

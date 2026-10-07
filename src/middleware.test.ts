@@ -1,4 +1,12 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'bun:test';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+} from 'bun:test';
 import { NextRequest } from 'next/server';
 import {
   AUTH_SESSION_COOKIE,
@@ -9,6 +17,10 @@ let ban: { date: Date; reference: string } | null = null;
 let banError: Error | null = null;
 
 const realFetch = globalThis.fetch;
+mock.module('server-only', () => ({}));
+afterAll(() => {
+  globalThis.fetch = realFetch;
+});
 
 globalThis.fetch = (async (input: URL) => {
   if (new URL(input).pathname !== '/api/internal/ban-check') {
