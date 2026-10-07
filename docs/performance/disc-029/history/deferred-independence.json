@@ -1,0 +1,126 @@
+{
+  "trials": [
+    {
+      "label": "deferred-https-1",
+      "nodes": 33,
+      "edges": 1
+    },
+    {
+      "label": "deferred-https-2",
+      "nodes": 40,
+      "edges": 2
+    },
+    {
+      "label": "deferred-https-3",
+      "nodes": 42,
+      "edges": 2
+    },
+    {
+      "label": "deferred-direct-1",
+      "nodes": 43,
+      "edges": 1
+    },
+    {
+      "label": "deferred-direct-2",
+      "nodes": 39,
+      "edges": 1
+    },
+    {
+      "label": "deferred-direct-3",
+      "nodes": 40,
+      "edges": 1
+    }
+  ],
+  "pairs": [
+    {
+      "a": "deferred-https-1",
+      "b": "deferred-https-2",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-1",
+      "b": "deferred-https-3",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-1",
+      "b": "deferred-direct-1",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-1",
+      "b": "deferred-direct-2",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-1",
+      "b": "deferred-direct-3",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-2",
+      "b": "deferred-https-3",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-2",
+      "b": "deferred-direct-1",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-2",
+      "b": "deferred-direct-2",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-2",
+      "b": "deferred-direct-3",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-3",
+      "b": "deferred-direct-1",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-3",
+      "b": "deferred-direct-2",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-https-3",
+      "b": "deferred-direct-3",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-direct-1",
+      "b": "deferred-direct-2",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-direct-1",
+      "b": "deferred-direct-3",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    },
+    {
+      "a": "deferred-direct-2",
+      "b": "deferred-direct-3",
+      "nodeOverlap": 0,
+      "edgeOverlap": 0
+    }
+  ]
+}

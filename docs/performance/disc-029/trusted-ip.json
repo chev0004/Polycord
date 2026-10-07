@@ -1,0 +1,19 @@
+{
+  "origin": "https://6ac554751801b989800892dc--polycord-disc027-supabase.netlify.app",
+  "outcomes": [
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 403,
+      "ms": 1801.6957000000002,
+      "noStore": true,
+      "bannedScreen": false
+    },
+    {
+      "path": "/en",
+      "status": 403,
+      "ms": 563.6296999999995,
+      "noStore": true,
+      "bannedScreen": true
+    }
+  ]
+}

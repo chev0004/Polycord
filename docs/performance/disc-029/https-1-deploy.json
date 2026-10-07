@@ -1,0 +1,21 @@
+{
+  "id": "6ac5535dc7473da0ac332f2b",
+  "applicationSource": "67ac960891eee6004bb8bd261165a2874586be2b",
+  "runnerCommit": "67ac960891eee6004bb8bd261165a2874586be2b",
+  "staticShell": true,
+  "nativeShell": true,
+  "nativeSourceSha256": "3AB5E5EA171E0B0B1E203B214CC884508744CE0DDB509EC18009663F26F77A6E",
+  "requiresHandlers": true,
+  "publishedRuntime": "nodejs22.x",
+  "publishedDigest": "4b75ca09e65887486d0821a2c67c432999750982bb33709989164c6fd57a68ba",
+  "transport": "https",
+  "publishDirectory": ".netlify/static",
+  "build": null,
+  "region": "cmh",
+  "created": "2026-10-06T20:00:29.918Z",
+  "origin": "https://6ac5535dc7473da0ac332f2b--polycord-disc027-supabase.netlify.app",
+  "serverZipSha256": "4B75CA09E65887486D0821A2C67C432999750982BB33709989164C6FD57A68BA",
+  "edgeBundleSha256": [
+    "FC7598E469433C71FA47741F871CB602CF30D672210CAD8DF995799B1D6099AB"
+  ]
+}

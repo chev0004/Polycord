@@ -1,0 +1,5889 @@
+{
+  "at": "2026-10-06T06:10:34.175Z",
+  "origin": "https://6ac48efbfdb6fec3e54d3b76--polycord-disc027-supabase.netlify.app",
+  "transport": "https",
+  "fixture": {
+    "profiles": 5000,
+    "discoverable": 4735
+  },
+  "versions": {
+    "runner": "v22.23.3",
+    "chromium": "154.0.8037.98"
+  },
+  "results": [
+    {
+      "startedAt": "2026-10-06T06:08:39.095Z",
+      "firstTraffic": true,
+      "size": 60,
+      "ok": 45,
+      "all": {
+        "count": 60,
+        "p50": 4327.386,
+        "p95": 32321.422099999996,
+        "max": 32483.8179
+      },
+      "successful": {
+        "count": 45,
+        "p50": 4198.4245,
+        "p95": 7384.668699999999,
+        "max": 7578.642199999999
+      },
+      "shellResponse": {
+        "count": 0
+      },
+      "visibleShell": {
+        "count": 0
+      },
+      "dataReady": {
+        "count": 0
+      },
+      "outcomes": [
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.095Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 32321.422099999996,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.096Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4221.3313,
+          "ttfb": 4220.3676,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1991.22, middleware;dur=1991.26",
+          "nodeTiming": "discovery-instance;desc=\"1a4dc8f0-9925-4248-9a65-3c67e9b87b62\", discovery;dur=993.38",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.103Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5349.8624,
+          "ttfb": 5349.3809,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3376.07, middleware;dur=3376.11",
+          "nodeTiming": "discovery-instance;desc=\"0104ec26-56cc-48c0-be06-212e176b5041\", discovery;dur=25.75",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.104Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 1639.2176,
+          "ttfb": 1636.5924999999997,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=3.18",
+          "nodeTiming": "ban-handler-instance;desc=\"4288fcf9-8598-464a-a4f9-d6496e588401\", ban-handler;dur=147.67",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.105Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 32280.1046,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.105Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4204.4503,
+          "ttfb": 4203.5683,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1907.32, middleware;dur=1907.37",
+          "nodeTiming": "discovery-instance;desc=\"71ea6add-80d0-43ac-9c94-c2d30c7fb5bf\", discovery;dur=1016.25",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.106Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4042.2248999999997,
+          "ttfb": 4041.8714999999997,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1954.24, middleware;dur=1954.32",
+          "nodeTiming": "discovery-instance;desc=\"4288fcf9-8598-464a-a4f9-d6496e588401\", discovery;dur=856.05",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.107Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2788.1953000000003,
+          "ttfb": 2785.5119999999997,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=3.57",
+          "nodeTiming": "ban-handler-instance;desc=\"fbf35c92-e472-4a0e-9c16-7181f99f5887\", ban-handler;dur=1123.34",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.107Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 28376.3577,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.108Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5235.722100000001,
+          "ttfb": 5235.040800000001,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3342.06, middleware;dur=3342.19",
+          "nodeTiming": "discovery-instance;desc=\"250e8629-7b83-4752-9165-90dea303c859\", discovery;dur=680.62",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.108Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 7516.9736,
+          "ttfb": 7514.2895,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=6062.13, middleware;dur=6062.17",
+          "nodeTiming": "discovery-instance;desc=\"e70f8326-2cd4-4df0-80c9-fcf95292f646\", discovery;dur=216.87",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.109Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 3059.3688,
+          "ttfb": 3058.9231,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.27",
+          "nodeTiming": "ban-handler-instance;desc=\"b1d33721-a4b7-44a0-a89c-c0dd68810f82\", ban-handler;dur=1345.83",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.111Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 28478.674300000002,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.111Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5154.9785,
+          "ttfb": 5153.9565,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3306.16, middleware;dur=3306.24",
+          "nodeTiming": "discovery-instance;desc=\"858935ce-8d15-4bca-b3dc-932e56834e54\", discovery;dur=641.85",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.112Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5115.6124,
+          "ttfb": 5115.0203,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3292.55, middleware;dur=3292.59",
+          "nodeTiming": "discovery-instance;desc=\"13a7c95f-3ede-4113-9af9-b2aa462f2ce8\", discovery;dur=585.00",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.113Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2742.7742999999996,
+          "ttfb": 2742.1067,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=4.50",
+          "nodeTiming": "ban-handler-instance;desc=\"6bc0895b-2cf8-401f-9dba-bebdae5694bd\", ban-handler;dur=1028.12",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.113Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 28319.3201,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.113Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5006.156300000001,
+          "ttfb": 5005.158600000001,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3283.57, middleware;dur=3283.62",
+          "nodeTiming": "discovery-instance;desc=\"f5f1a58b-c496-48e8-b3b2-207e03b23a49\", discovery;dur=525.07",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.114Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5119.5337,
+          "ttfb": 5119.0312,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3318.52, middleware;dur=3318.56",
+          "nodeTiming": "discovery-instance;desc=\"e18982e2-0de6-4ed4-9cc4-2347b5de41e0\", discovery;dur=578.61",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.114Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2830.483,
+          "ttfb": 2829.5771000000004,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=1.32",
+          "nodeTiming": "ban-handler-instance;desc=\"bca6dbbe-289e-4b9f-85fa-fe7f1914ee73\", ban-handler;dur=1181.29",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.115Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 29509.024699999998,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.115Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4327.386,
+          "ttfb": 4326.7857,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1957.81, middleware;dur=1957.84",
+          "nodeTiming": "discovery-instance;desc=\"1a4dc8f0-9925-4248-9a65-3c67e9b87b62\", discovery;dur=48.57",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.115Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 7384.668699999999,
+          "ttfb": 7383.6251,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=5941.07, middleware;dur=5941.15",
+          "nodeTiming": "discovery-instance;desc=\"13a432c0-c6a8-4154-9994-eac60bf6d739\", discovery;dur=208.87",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.116Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2809.988,
+          "ttfb": 2809.3928,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.96",
+          "nodeTiming": "ban-handler-instance;desc=\"cb3e203d-df09-4360-8da0-483d56e58515\", ban-handler;dur=1177.15",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.116Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 29617.5279,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.116Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4199.4372,
+          "ttfb": 4199.0082,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1962.27, middleware;dur=1962.48",
+          "nodeTiming": "discovery-instance;desc=\"b1d33721-a4b7-44a0-a89c-c0dd68810f82\", discovery;dur=1022.67",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.117Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4248.0845,
+          "ttfb": 4247.687199999999,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1967.00, middleware;dur=1967.04",
+          "nodeTiming": "discovery-instance;desc=\"b1d33721-a4b7-44a0-a89c-c0dd68810f82\", discovery;dur=27.96",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.118Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2941.9366000000005,
+          "ttfb": 2941.5366,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=1.73",
+          "nodeTiming": "ban-handler-instance;desc=\"bca6dbbe-289e-4b9f-85fa-fe7f1914ee73\", ban-handler;dur=55.71",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.118Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 29639.9522,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.118Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4378.9998,
+          "ttfb": 4378.261399999999,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1940.92, middleware;dur=1940.96",
+          "nodeTiming": "discovery-instance;desc=\"fbf35c92-e472-4a0e-9c16-7181f99f5887\", discovery;dur=51.01",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.119Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4198.4245,
+          "ttfb": 4198.0956,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=2017.90, middleware;dur=2017.94",
+          "nodeTiming": "discovery-instance;desc=\"bca6dbbe-289e-4b9f-85fa-fe7f1914ee73\", discovery;dur=49.98",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.119Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2927.619,
+          "ttfb": 2927.2409000000002,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=2.57",
+          "nodeTiming": "ban-handler-instance;desc=\"16072909-7822-460f-9653-8d67dee8de1a\", ban-handler;dur=1275.98",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.119Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 32483.8179,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.119Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5245.565,
+          "ttfb": 5244.6889,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3377.33, middleware;dur=3377.36",
+          "nodeTiming": "discovery-instance;desc=\"27bf3911-45e4-42f5-8e20-2d0302185278\", discovery;dur=675.36",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.120Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4032.6204999999995,
+          "ttfb": 4032.0102999999995,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=2107.63, middleware;dur=2107.68",
+          "nodeTiming": "discovery-instance;desc=\"6bc0895b-2cf8-401f-9dba-bebdae5694bd\", discovery;dur=728.20",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.120Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2806.7787999999996,
+          "ttfb": 2806.2764,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=1.76",
+          "nodeTiming": "ban-handler-instance;desc=\"9f6dec59-e5e8-43ad-a7c4-3a204f487458\", ban-handler;dur=1214.67",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.121Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 28274.5516,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.121Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4194.0592,
+          "ttfb": 4193.5304,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=2010.13, middleware;dur=2010.38",
+          "nodeTiming": "discovery-instance;desc=\"16072909-7822-460f-9653-8d67dee8de1a\", discovery;dur=978.23",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.122Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4222.8928,
+          "ttfb": 4222.404699999999,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1968.46, middleware;dur=1968.51",
+          "nodeTiming": "discovery-instance;desc=\"bca6dbbe-289e-4b9f-85fa-fe7f1914ee73\", discovery;dur=40.84",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.122Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2792.0894000000003,
+          "ttfb": 2791.2824000000005,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.79",
+          "nodeTiming": "ban-handler-instance;desc=\"1a4dc8f0-9925-4248-9a65-3c67e9b87b62\", ban-handler;dur=1162.16",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.122Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 29474.4333,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.122Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5244.7522,
+          "ttfb": 5244.0805,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3340.96, middleware;dur=3341.10",
+          "nodeTiming": "discovery-instance;desc=\"0104ec26-56cc-48c0-be06-212e176b5041\", discovery;dur=689.88",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.123Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5142.574699999999,
+          "ttfb": 5141.226000000001,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3332.49, middleware;dur=3332.58",
+          "nodeTiming": "discovery-instance;desc=\"75484dc3-f035-466f-a9d4-ba723edd6145\", discovery;dur=583.67",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.124Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 1789.6691,
+          "ttfb": 1788.9978,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=4.91",
+          "nodeTiming": "ban-handler-instance;desc=\"d50636b6-8609-47e3-a3f1-bf90bcc2de03\", ban-handler;dur=304.21",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.124Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 32136.743300000002,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.124Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 7578.642199999999,
+          "ttfb": 7577.8684,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=6007.13, middleware;dur=6007.18",
+          "nodeTiming": "discovery-instance;desc=\"0f5c8742-0126-48a6-b5d6-dd27ff7d0619\", discovery;dur=259.88",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.124Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4023.3408,
+          "ttfb": 4022.6490000000003,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=2038.07, middleware;dur=2038.22",
+          "nodeTiming": "discovery-instance;desc=\"785c9ff3-fd64-45de-9cb2-780d29242054\", discovery;dur=804.56",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.125Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2803.1134999999995,
+          "ttfb": 2802.6911,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=5.88",
+          "nodeTiming": "ban-handler-instance;desc=\"785c9ff3-fd64-45de-9cb2-780d29242054\", ban-handler;dur=1173.82",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.125Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 29426.4273,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.125Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4247.973099999999,
+          "ttfb": 4247.382100000001,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=2563.16, middleware;dur=2563.22",
+          "nodeTiming": "discovery-instance;desc=\"fbf35c92-e472-4a0e-9c16-7181f99f5887\", discovery;dur=470.49",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.126Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4030.8046,
+          "ttfb": 4030.3709000000003,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=2002.68, middleware;dur=2002.71",
+          "nodeTiming": "discovery-instance;desc=\"cb3e203d-df09-4360-8da0-483d56e58515\", discovery;dur=761.75",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.126Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2976.2403999999997,
+          "ttfb": 2975.7438,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=2.05",
+          "nodeTiming": "ban-handler-instance;desc=\"71ea6add-80d0-43ac-9c94-c2d30c7fb5bf\", ban-handler;dur=57.41",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.126Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 32475.9812,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.126Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4187.8891,
+          "ttfb": 4187.235999999999,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1962.64, middleware;dur=1962.68",
+          "nodeTiming": "discovery-instance;desc=\"9f6dec59-e5e8-43ad-a7c4-3a204f487458\", discovery;dur=984.70",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.127Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4249.7330999999995,
+          "ttfb": 4249.2804,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1991.14, middleware;dur=1991.19",
+          "nodeTiming": "discovery-instance;desc=\"1a4dc8f0-9925-4248-9a65-3c67e9b87b62\", discovery;dur=28.35",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.127Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2910.921,
+          "ttfb": 2910.4112,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.50",
+          "nodeTiming": "ban-handler-instance;desc=\"785c9ff3-fd64-45de-9cb2-780d29242054\", ban-handler;dur=43.63",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:08:39.127Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 28306.8893,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:08:39.128Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 5233.513800000001,
+          "ttfb": 5232.659299999999,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=3294.71, middleware;dur=3294.74",
+          "nodeTiming": "discovery-instance;desc=\"dcf0d627-1204-420a-bf24-9818af75ef5f\", discovery;dur=699.67",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:08:39.128Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4058.6763,
+          "ttfb": 4058.2689,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1908.26, middleware;dur=1908.31",
+          "nodeTiming": "discovery-instance;desc=\"bca6dbbe-289e-4b9f-85fa-fe7f1914ee73\", discovery;dur=971.91",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:08:39.128Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 2856.5452000000005,
+          "ttfb": 2855.7769,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.31",
+          "nodeTiming": "ban-handler-instance;desc=\"71ea6add-80d0-43ac-9c94-c2d30c7fb5bf\", ban-handler;dur=1204.79",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        }
+      ]
+    },
+    {
+      "startedAt": "2026-10-06T06:09:12.693Z",
+      "firstTraffic": false,
+      "size": 60,
+      "ok": 2,
+      "all": {
+        "count": 60,
+        "p50": 1104.5342999999993,
+        "p95": 26243.841,
+        "max": 26306.095799999996
+      },
+      "successful": {
+        "count": 2,
+        "p50": 906.966800000002,
+        "p95": 906.966800000002,
+        "max": 906.966800000002
+      },
+      "shellResponse": {
+        "count": 0
+      },
+      "visibleShell": {
+        "count": 0
+      },
+      "dataReady": {
+        "count": 0
+      },
+      "outcomes": [
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.693Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25763.029599999994,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.694Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 873.5578999999998,
+          "ttfb": 870.1377999999968,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=628.78, middleware;dur=629.05",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.695Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 865.3833000000013,
+          "ttfb": 864.8036999999968,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=481.48, middleware;dur=481.57",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.695Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 772.8050000000003,
+          "ttfb": 772.1679000000004,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.60",
+          "nodeTiming": "ban-handler-instance;desc=\"ecf0d8c2-bf37-4f8b-b04d-58174f4a14e8\", ban-handler;dur=201.80",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.696Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26243.841,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.696Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 912.0019000000029,
+          "ttfb": 907.4091000000044,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=668.05, middleware;dur=668.48",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.696Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 871.0783999999985,
+          "ttfb": 868.1164999999964,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=544.85, middleware;dur=545.12",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.696Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 798.3554999999978,
+          "ttfb": 795.5679999999993,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.09",
+          "nodeTiming": "ban-handler-instance;desc=\"10698d26-8db3-468b-899f-90011f27cefc\", ban-handler;dur=145.14",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.697Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26056.235999999997,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.697Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1222.7559000000037,
+          "ttfb": 1222.3902000000016,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=840.79, middleware;dur=840.92",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.697Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 870.0786000000007,
+          "ttfb": 867.6295000000027,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=572.88, middleware;dur=573.15",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.698Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 912.3185999999987,
+          "ttfb": 912.0564000000013,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.42",
+          "nodeTiming": "ban-handler-instance;desc=\"b7071e6f-2ec5-482d-b26a-9021b913c2e7\", ban-handler;dur=262.12",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.698Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25853.599499999997,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.698Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1178.1563999999998,
+          "ttfb": 1177.7641999999978,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=900.52, middleware;dur=900.63",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.698Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1120.5861000000004,
+          "ttfb": 1120.0774999999994,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=739.77, middleware;dur=739.84",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.699Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 835.9603999999963,
+          "ttfb": 833.4354999999996,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=4.69",
+          "nodeTiming": "ban-handler-instance;desc=\"effbefd5-58d4-490f-8b9f-21e6bd453a7f\", ban-handler;dur=264.35",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.699Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25975.8554,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.699Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 855.9702000000034,
+          "ttfb": 855.5094000000026,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"74f62ef8-7416-498a-8ebc-15eb1e6d25a7\", ban-http;dur=657.58, middleware;dur=657.73",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.699Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 909.5380999999979,
+          "ttfb": 907.3683999999994,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=672.36, middleware;dur=672.50",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.700Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1104.5342999999993,
+          "ttfb": 1103.9944000000032,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.67",
+          "nodeTiming": "ban-handler-instance;desc=\"93e2e0ae-e52d-4305-9730-ed0f6a13573f\", ban-handler;dur=14.24",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.700Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26052.6193,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.700Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 836.5017999999982,
+          "ttfb": 835.8194999999978,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=601.60, middleware;dur=601.72",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.700Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1213.5576,
+          "ttfb": 1208.6888000000035,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=977.76, middleware;dur=977.84",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.701Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 906.966800000002,
+          "ttfb": 901.9665999999997,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=4.64",
+          "nodeTiming": "ban-handler-instance;desc=\"effbefd5-58d4-490f-8b9f-21e6bd453a7f\", ban-handler;dur=50.96",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.701Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25910.928999999996,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.701Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1149.3404999999984,
+          "ttfb": 1148.8955999999962,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=874.86, middleware;dur=874.95",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.701Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1184.4680999999982,
+          "ttfb": 1184.088499999998,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=897.72, middleware;dur=897.80",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.702Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 549.6240000000034,
+          "ttfb": 549.046699999999,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.29",
+          "nodeTiming": "ban-handler-instance;desc=\"7e89592d-db54-4a6e-8119-6135d6f4bed5\", ban-handler;dur=65.14",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.702Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25800.837799999994,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.702Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1220.1902000000046,
+          "ttfb": 1219.8606,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=694.13, middleware;dur=694.15",
+          "nodeTiming": "discovery-instance;desc=\"d551d99f-aba2-470b-a70a-4f1e8eb65168\", discovery;dur=81.41",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.703Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1119.9271999999983,
+          "ttfb": 1119.557200000003,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=744.36, middleware;dur=744.46",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.703Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 588.6446999999971,
+          "ttfb": 588.1404000000039,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.08",
+          "nodeTiming": "ban-handler-instance;desc=\"56ec51ed-630b-4222-a2c2-e89ff284b6e5\", ban-handler;dur=84.50",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.703Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26306.095799999996,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.703Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 904.5141999999978,
+          "ttfb": 902.5515999999989,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=583.94, middleware;dur=584.37",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.704Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1136.2747000000018,
+          "ttfb": 1135.9256999999998,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=863.95, middleware;dur=864.03",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.704Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 905.1777999999977,
+          "ttfb": 904.3306000000011,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.14",
+          "nodeTiming": "ban-handler-instance;desc=\"ac53c37e-9a07-4cb4-b9a6-027e99e37d0a\", ban-handler;dur=231.02",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.704Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25848.093500000003,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.705Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 842.9017000000022,
+          "ttfb": 842.0648000000001,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=530.91, middleware;dur=530.99",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.705Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1112.8147000000026,
+          "ttfb": 1111.7404999999999,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=845.31, middleware;dur=845.54",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.705Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 893.3525000000009,
+          "ttfb": 892.7212,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.17",
+          "nodeTiming": "ban-handler-instance;desc=\"926aa165-a285-4552-83c1-799c63338445\", ban-handler;dur=70.29",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.705Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25993.743300000002,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.706Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1112.8516000000018,
+          "ttfb": 1111.6811000000016,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=599.07, middleware;dur=599.12",
+          "nodeTiming": "discovery-instance;desc=\"f50c12e0-87d7-484f-897b-f35707b741ac\", discovery;dur=172.64",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.706Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 861.3530000000028,
+          "ttfb": 859.2539000000033,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=548.03, middleware;dur=548.14",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.706Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 934.4628000000012,
+          "ttfb": 933.9452999999994,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.37",
+          "nodeTiming": "ban-handler-instance;desc=\"6bffc38b-bf9d-4dfb-bb87-ca901b60b34e\", ban-handler;dur=84.93",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.707Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26015.368000000002,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.707Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 827.972600000001,
+          "ttfb": 826.5092000000004,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=450.81, middleware;dur=452.92",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.707Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1334.419799999996,
+          "ttfb": 1333.9928999999975,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1006.17, middleware;dur=1006.35",
+          "nodeTiming": "discovery-instance;desc=\"54ae161b-2bad-4015-b3bc-d6d294437e7e\", discovery;dur=27.76",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.708Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 761.4810999999972,
+          "ttfb": 761.0239999999976,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.09",
+          "nodeTiming": "ban-handler-instance;desc=\"b9695b2a-13f4-4378-b0cb-9156daa9ae5f\", ban-handler;dur=86.61",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.710Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25902.981,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.710Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1115.6164999999964,
+          "ttfb": 1115.2361999999994,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=809.68, middleware;dur=809.75",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.710Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 824.505600000004,
+          "ttfb": 822.3127000000022,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=596.76, middleware;dur=598.91",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.711Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 584.7539000000033,
+          "ttfb": 584.4432000000015,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.03",
+          "nodeTiming": "ban-handler-instance;desc=\"8f63253d-8bfe-439a-820d-5049223de81a\", ban-handler;dur=68.17",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.711Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25701.5798,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.711Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1138.4085999999952,
+          "ttfb": 1137.815999999999,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=873.15, middleware;dur=873.24",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.712Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 582.8732000000018,
+          "ttfb": 582.5213000000003,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=398.71, middleware;dur=398.96",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.712Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 765.2069000000047,
+          "ttfb": 764.645500000006,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.17",
+          "nodeTiming": "ban-handler-instance;desc=\"b3ce1438-c490-4aac-807d-3b88c75db835\", ban-handler;dur=161.31",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:12.712Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26274.393600000003,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:12.713Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1061.8804999999993,
+          "ttfb": 1060.899099999995,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=785.80, middleware;dur=785.90",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:12.713Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 954.4567999999999,
+          "ttfb": 953.9431999999942,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=680.22, middleware;dur=680.36",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:12.713Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 480.29389999999694,
+          "ttfb": 479.681700000001,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.17",
+          "nodeTiming": "ban-handler-instance;desc=\"0f542dd8-05b3-4cc4-bbb9-493097c9b57c\", ban-handler;dur=67.33",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        }
+      ]
+    },
+    {
+      "startedAt": "2026-10-06T06:09:40.072Z",
+      "firstTraffic": false,
+      "size": 60,
+      "ok": 26,
+      "all": {
+        "count": 60,
+        "p50": 1753.7877000000008,
+        "p95": 26166.45029999999,
+        "max": 26234.3592
+      },
+      "successful": {
+        "count": 26,
+        "p50": 849.3665999999939,
+        "p95": 2029.231200000002,
+        "max": 2063.1205000000045
+      },
+      "shellResponse": {
+        "count": 0
+      },
+      "visibleShell": {
+        "count": 0
+      },
+      "dataReady": {
+        "count": 0
+      },
+      "outcomes": [
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.072Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26170.358999999997,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.072Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 2064.7801000000036,
+          "ttfb": 2063.6100000000006,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1000.38, middleware;dur=1000.41",
+          "nodeTiming": "discovery-instance;desc=\"398c02bf-3264-4856-abbf-3bcd2c1c2df7\", discovery;dur=303.91",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.073Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 849.3665999999939,
+          "ttfb": 849.0782999999938,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=475.70, middleware;dur=475.76",
+          "nodeTiming": "discovery-instance;desc=\"6cf8a398-e061-4805-8132-118173b4390a\", discovery;dur=136.60",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.073Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 588.8027000000002,
+          "ttfb": 588.4437999999936,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.04",
+          "nodeTiming": "ban-handler-instance;desc=\"d8d36fd5-72e8-4440-8e94-722bc56812fa\", ban-handler;dur=98.15",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.074Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25908.674499999994,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.074Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1628.953999999998,
+          "ttfb": 1628.5104999999967,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=692.37, middleware;dur=692.40",
+          "nodeTiming": "discovery-instance;desc=\"568f90e2-0218-4c34-ba41-932d70f48596\", discovery;dur=658.82",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.074Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1596.4175000000032,
+          "ttfb": 1595.9444000000003,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=688.57, middleware;dur=688.61",
+          "nodeTiming": "discovery-instance;desc=\"d6975558-392a-4e80-81cd-4d024185624f\", discovery;dur=679.57",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.075Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 409.53889999999956,
+          "ttfb": 408.9725000000035,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.04",
+          "nodeTiming": "ban-handler-instance;desc=\"0f542dd8-05b3-4cc4-bbb9-493097c9b57c\", ban-handler;dur=35.51",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.075Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26166.45029999999,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.075Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4869.903400000003,
+          "ttfb": 4868.620000000003,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=1003.96, middleware;dur=1004.00",
+          "nodeTiming": "discovery-instance;desc=\"a254c5b9-35bc-4035-8409-045850c36eee\", discovery;dur=1441.91",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.076Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 2029.231200000002,
+          "ttfb": 2028.0945000000065,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=784.17, middleware;dur=784.21",
+          "nodeTiming": "discovery-instance;desc=\"648109c2-61b6-47bd-b234-82585b046b6f\", discovery;dur=306.20",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.076Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 632.1428000000014,
+          "ttfb": 631.7664000000004,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.06",
+          "nodeTiming": "ban-handler-instance;desc=\"00021712-cedf-4784-9ee3-c953d6a3aa86\", ban-handler;dur=191.03",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.076Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25945.3188,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.076Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1753.7877000000008,
+          "ttfb": 1753.3422999999966,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=938.55, middleware;dur=938.58",
+          "nodeTiming": "discovery-instance;desc=\"07e415c1-76d5-4f8c-84b5-743ed3450ce6\", discovery;dur=581.14",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.077Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1971.2622999999949,
+          "ttfb": 1970.4569999999949,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=681.32, middleware;dur=682.65",
+          "nodeTiming": "discovery-instance;desc=\"b3ce1438-c490-4aac-807d-3b88c75db835\", discovery;dur=83.92",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.077Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 588.0591000000059,
+          "ttfb": 587.8039000000063,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.21",
+          "nodeTiming": "ban-handler-instance;desc=\"d551d99f-aba2-470b-a70a-4f1e8eb65168\", ban-handler;dur=146.56",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.077Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25945.377999999997,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.077Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1871.4398999999976,
+          "ttfb": 1871.0498999999982,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=691.84, middleware;dur=691.87",
+          "nodeTiming": "discovery-instance;desc=\"a46ac21e-652e-456c-bb88-2200192fc221\", discovery;dur=16.97",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.078Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 900.8427000000011,
+          "ttfb": 899.4579999999987,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=738.36, middleware;dur=738.45",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.078Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 509.5421999999962,
+          "ttfb": 509.1484999999957,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.61",
+          "nodeTiming": "ban-handler-instance;desc=\"4bcbf43c-7ec8-4157-9054-b585b8a8c906\", ban-handler;dur=143.28",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.079Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26004.028,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.079Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1749.0963000000047,
+          "ttfb": 1748.3306000000011,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=763.43, middleware;dur=763.46",
+          "nodeTiming": "discovery-instance;desc=\"a46ac21e-652e-456c-bb88-2200192fc221\", discovery;dur=30.97",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.079Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1862.826399999998,
+          "ttfb": 1862.238599999997,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=776.52, middleware;dur=776.56",
+          "nodeTiming": "discovery-instance;desc=\"07e415c1-76d5-4f8c-84b5-743ed3450ce6\", discovery;dur=24.87",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.080Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 452.9617999999973,
+          "ttfb": 452.5757999999987,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.49",
+          "nodeTiming": "ban-handler-instance;desc=\"ac53c37e-9a07-4cb4-b9a6-027e99e37d0a\", ban-handler;dur=42.08",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.080Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26234.3592,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.080Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 4226.691700000003,
+          "ttfb": 4225.893999999993,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=969.00, middleware;dur=969.04",
+          "nodeTiming": "discovery-instance;desc=\"f04a1887-f9a1-4fff-8bff-97143f7529e4\", discovery;dur=1454.49",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.080Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1895.0979000000007,
+          "ttfb": 1894.5553,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=916.38, middleware;dur=916.41",
+          "nodeTiming": "discovery-instance;desc=\"d8d36fd5-72e8-4440-8e94-722bc56812fa\", discovery;dur=64.63",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.081Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 412.97260000000097,
+          "ttfb": 412.71190000000206,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.07",
+          "nodeTiming": "ban-handler-instance;desc=\"5fc14c3e-2009-4622-a778-19ec08bd94ce\", ban-handler;dur=67.79",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.081Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26159.548400000007,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.081Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1053.4343000000008,
+          "ttfb": 1051.979299999999,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=659.07, middleware;dur=659.10",
+          "nodeTiming": "discovery-instance;desc=\"6cf8a398-e061-4805-8132-118173b4390a\", discovery;dur=105.82",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.082Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 901.7492000000057,
+          "ttfb": 900.4563000000053,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=726.69, middleware;dur=726.78",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.082Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 479.5564000000013,
+          "ttfb": 479.13179999999556,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.11",
+          "nodeTiming": "ban-handler-instance;desc=\"568f90e2-0218-4c34-ba41-932d70f48596\", ban-handler;dur=80.75",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.082Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26092.412600000003,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.083Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1898.0342999999993,
+          "ttfb": 1896.5964000000022,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=713.86, middleware;dur=713.89",
+          "nodeTiming": "discovery-instance;desc=\"4b5a6bc7-8409-45f9-b5de-610954de435d\", discovery;dur=810.24",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.083Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1420.1174000000028,
+          "ttfb": 1419.5780000000013,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=875.70, middleware;dur=875.74",
+          "nodeTiming": "discovery-instance;desc=\"1a4dc8f0-9925-4248-9a65-3c67e9b87b62\", discovery;dur=199.93",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.084Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 555.2625000000044,
+          "ttfb": 554.9677000000011,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.21",
+          "nodeTiming": "ban-handler-instance;desc=\"cb85cf99-bfa8-49e3-a970-4a75f0fa0f5d\", ban-handler;dur=160.42",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.084Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25853.228500000005,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.085Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 2010.0319000000018,
+          "ttfb": 2008.8796000000002,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=910.88, middleware;dur=910.91",
+          "nodeTiming": "discovery-instance;desc=\"b3ce1438-c490-4aac-807d-3b88c75db835\", discovery;dur=33.26",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.086Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 897.6103999999978,
+          "ttfb": 896.021799999995,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=709.39, middleware;dur=709.48",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.086Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 608.4968000000008,
+          "ttfb": 608.064099999996,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.09",
+          "nodeTiming": "ban-handler-instance;desc=\"6cf8a398-e061-4805-8132-118173b4390a\", ban-handler;dur=159.00",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.087Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25997.807500000003,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.087Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 2063.1205000000045,
+          "ttfb": 2061.1330000000016,
+          "bytes": 8632,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=956.79, middleware;dur=956.83",
+          "nodeTiming": "discovery-instance;desc=\"ac53c37e-9a07-4cb4-b9a6-027e99e37d0a\", discovery;dur=756.89",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.087Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1875.3430000000008,
+          "ttfb": 1874.9032000000007,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=717.24, middleware;dur=717.27",
+          "nodeTiming": "discovery-instance;desc=\"97e941ee-2ea2-4b4a-a5ad-ffc2804c3709\", discovery;dur=878.09",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.088Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 649.1673999999985,
+          "ttfb": 648.7672999999995,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.26",
+          "nodeTiming": "ban-handler-instance;desc=\"518a24df-aaa5-463b-93e9-fc0193b895fb\", ban-handler;dur=124.34",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.088Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26086.166699999994,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.088Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1908.0314999999973,
+          "ttfb": 1907.3122999999978,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=677.00, middleware;dur=677.02",
+          "nodeTiming": "discovery-instance;desc=\"1e2a89d3-ba96-4c9c-8581-098bf154460e\", discovery;dur=806.16",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.089Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1287.0348999999987,
+          "ttfb": 1284.672599999998,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=895.38, middleware;dur=895.41",
+          "nodeTiming": "discovery-instance;desc=\"f50c12e0-87d7-484f-897b-f35707b741ac\", discovery;dur=114.21",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.090Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 544.1900000000023,
+          "ttfb": 543.7805999999982,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.17",
+          "nodeTiming": "ban-handler-instance;desc=\"ac53c37e-9a07-4cb4-b9a6-027e99e37d0a\", ban-handler;dur=45.78",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.090Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25993.616200000004,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.090Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1725.207899999994,
+          "ttfb": 1724.5766999999978,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=659.90, middleware;dur=659.93",
+          "nodeTiming": "discovery-instance;desc=\"54ae161b-2bad-4015-b3bc-d6d294437e7e\", discovery;dur=758.00",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.090Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1264.6345000000001,
+          "ttfb": 1263.9674999999988,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=559.87, middleware;dur=559.91",
+          "nodeTiming": "discovery-instance;desc=\"518a24df-aaa5-463b-93e9-fc0193b895fb\", discovery;dur=363.69",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.091Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 677.6884999999966,
+          "ttfb": 677.3736999999965,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.19",
+          "nodeTiming": "ban-handler-instance;desc=\"4bcbf43c-7ec8-4157-9054-b585b8a8c906\", ban-handler;dur=97.64",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.091Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25994.587700000004,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.091Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 827.4121999999988,
+          "ttfb": 826.9709000000003,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=647.69, middleware;dur=647.85",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.092Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1644.1323000000048,
+          "ttfb": 1643.5674,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=631.56, middleware;dur=631.59",
+          "nodeTiming": "discovery-instance;desc=\"d8d36fd5-72e8-4440-8e94-722bc56812fa\", discovery;dur=677.15",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.092Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 1098.7096999999994,
+          "ttfb": 1097.9772000000012,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.15",
+          "nodeTiming": "ban-handler-instance;desc=\"720a50bc-7a7e-42de-a81a-639c92b4a573\", ban-handler;dur=215.72",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:09:40.092Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 26081.274300000005,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:09:40.093Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1820.8839999999982,
+          "ttfb": 1820.3992999999973,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=915.66, middleware;dur=915.70",
+          "nodeTiming": "discovery-instance;desc=\"b3ce1438-c490-4aac-807d-3b88c75db835\", discovery;dur=38.72",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:09:40.093Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 1606.7131000000008,
+          "ttfb": 1606.2832000000053,
+          "bytes": 14,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=644.70, middleware;dur=644.74",
+          "nodeTiming": "discovery-instance;desc=\"b3ce1438-c490-4aac-807d-3b88c75db835\", discovery;dur=700.33",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:09:40.094Z",
+          "status": 200,
+          "valid": true,
+          "bannedScreen": false,
+          "banFound": false,
+          "noStore": true,
+          "ms": 669.7263000000021,
+          "ttfb": 669.0889000000025,
+          "bytes": 12,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.32",
+          "nodeTiming": "ban-handler-instance;desc=\"6cf8a398-e061-4805-8132-118173b4390a\", ban-handler;dur=51.20",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        }
+      ]
+    },
+    {
+      "startedAt": "2026-10-06T06:10:06.552Z",
+      "firstTraffic": false,
+      "size": 12,
+      "ok": 0,
+      "all": {
+        "count": 12,
+        "p50": 796.096000000005,
+        "p95": 25953.978300000002,
+        "max": 25953.978300000002
+      },
+      "successful": {
+        "count": 0
+      },
+      "shellResponse": {
+        "count": 0
+      },
+      "visibleShell": {
+        "count": 0
+      },
+      "dataReady": {
+        "count": 0
+      },
+      "outcomes": [
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:10:06.552Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25953.978300000002,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:10:06.552Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 796.096000000005,
+          "ttfb": 795.7593000000052,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=643.98, middleware;dur=644.09",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:10:06.553Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 697.1863000000012,
+          "ttfb": 696.7862000000023,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=567.57, middleware;dur=567.71",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:10:06.554Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 365.821100000001,
+          "ttfb": 365.380799999999,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.26",
+          "nodeTiming": "ban-handler-instance;desc=\"8dcae3b4-fdbd-40a2-a382-a665fed449ad\", ban-handler;dur=64.57",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:10:06.554Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25908.925600000002,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:10:06.554Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 902.5941999999923,
+          "ttfb": 902.1428000000014,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=772.58, middleware;dur=772.67",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:10:06.555Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 937.045100000003,
+          "ttfb": 936.6183000000019,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=787.88, middleware;dur=787.96",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:10:06.555Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 373.98270000000775,
+          "ttfb": 373.6895999999979,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.04",
+          "nodeTiming": "ban-handler-instance;desc=\"cae71b44-182b-4a15-b6df-f17f1dd13bc6\", ban-handler;dur=65.06",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        },
+        {
+          "kind": "browser",
+          "path": "/en",
+          "startedAt": "2026-10-06T06:10:06.555Z",
+          "status": 0,
+          "valid": false,
+          "error": "TimeoutError",
+          "ms": 25908.1982,
+          "visibleShell": null,
+          "dataReady": null,
+          "followups": []
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en",
+          "startedAt": "2026-10-06T06:10:06.556Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 724.5880999999936,
+          "ttfb": 724.2620000000024,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"74f62ef8-7416-498a-8ebc-15eb1e6d25a7\", ban-http;dur=585.90, middleware;dur=586.05",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/discovery?locale=en&count=1",
+          "startedAt": "2026-10-06T06:10:06.556Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 556.5662999999913,
+          "ttfb": 556.2259999999951,
+          "bytes": 35,
+          "serverTiming": "middleware-instance;desc=\"74f62ef8-7416-498a-8ebc-15eb1e6d25a7\", ban-http;dur=417.70, middleware;dur=417.94",
+          "nodeTiming": "",
+          "nodeVersion": "",
+          "transport": "https"
+        },
+        {
+          "kind": "http",
+          "path": "/api/internal/ban-check",
+          "startedAt": "2026-10-06T06:10:06.556Z",
+          "status": 503,
+          "valid": false,
+          "bannedScreen": false,
+          "noStore": true,
+          "ms": 502.25689999999304,
+          "ttfb": 501.9103999999934,
+          "bytes": 23,
+          "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.03",
+          "nodeTiming": "ban-handler-instance;desc=\"9c2203bd-c899-4499-b87b-3653241b0b8c\", ban-handler;dur=180.13",
+          "nodeVersion": "v24.21.0",
+          "transport": "https"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "anonymous shell",
+      "expected": 200,
+      "kind": "http",
+      "path": "/en",
+      "startedAt": "2026-10-06T06:10:32.511Z",
+      "status": 503,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 395.8362000000052,
+      "ttfb": 395.3787000000011,
+      "bytes": 35,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=266.13, middleware;dur=266.24",
+      "nodeTiming": "",
+      "nodeVersion": "",
+      "transport": "https",
+      "passed": false
+    },
+    {
+      "name": "allowed account",
+      "expected": 200,
+      "kind": "http",
+      "path": "/api/discovery?locale=en",
+      "startedAt": "2026-10-06T06:10:32.907Z",
+      "status": 503,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 285.1350999999995,
+      "ttfb": 284.730899999995,
+      "bytes": 35,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=241.40, middleware;dur=241.52",
+      "nodeTiming": "",
+      "nodeVersion": "",
+      "transport": "https",
+      "passed": false
+    },
+    {
+      "name": "account ban",
+      "expected": 403,
+      "kind": "http",
+      "path": "/api/discovery",
+      "startedAt": "2026-10-06T06:10:33.192Z",
+      "status": 503,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 155.03019999999378,
+      "ttfb": 154.6238999999914,
+      "bytes": 35,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=108.92, middleware;dur=109.02",
+      "nodeTiming": "",
+      "nodeVersion": "",
+      "transport": "https",
+      "passed": false
+    },
+    {
+      "name": "banned page",
+      "expected": 200,
+      "kind": "http",
+      "path": "/en",
+      "startedAt": "2026-10-06T06:10:33.347Z",
+      "status": 503,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 126.09919999999693,
+      "ttfb": 125.70990000000165,
+      "bytes": 35,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=83.86, middleware;dur=83.97",
+      "nodeTiming": "",
+      "nodeVersion": "",
+      "transport": "https",
+      "passed": false
+    },
+    {
+      "name": "remembered ban",
+      "expected": 403,
+      "kind": "http",
+      "path": "/api/discovery",
+      "startedAt": "2026-10-06T06:10:33.474Z",
+      "status": 503,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 142.91449999999895,
+      "ttfb": 142.49189999999362,
+      "bytes": 35,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=101.48, middleware;dur=101.60",
+      "nodeTiming": "",
+      "nodeVersion": "",
+      "transport": "https",
+      "passed": false
+    },
+    {
+      "name": "internal authentication",
+      "expected": 403,
+      "kind": "http",
+      "path": "/api/internal/ban-check",
+      "startedAt": "2026-10-06T06:10:33.616Z",
+      "status": 403,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 138.5005000000092,
+      "ttfb": 138.1762000000017,
+      "bytes": 21,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.04",
+      "nodeTiming": "ban-handler-instance;desc=\"cae71b44-182b-4a15-b6df-f17f1dd13bc6\", ban-handler;dur=0.52",
+      "nodeVersion": "v24.21.0",
+      "transport": "https",
+      "passed": true
+    },
+    {
+      "name": "IP lookup",
+      "expected": 200,
+      "kind": "http",
+      "path": "/api/internal/ban-check",
+      "startedAt": "2026-10-06T06:10:33.755Z",
+      "status": 503,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 156.2100999999966,
+      "ttfb": 155.70219999999972,
+      "bytes": 23,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", middleware;dur=0.04",
+      "nodeTiming": "ban-handler-instance;desc=\"cae71b44-182b-4a15-b6df-f17f1dd13bc6\", ban-handler;dur=40.47",
+      "nodeVersion": "v24.21.0",
+      "transport": "https",
+      "passed": false
+    },
+    {
+      "name": "spoofed IP headers",
+      "expected": 200,
+      "kind": "http",
+      "path": "/api/discovery?locale=en",
+      "startedAt": "2026-10-06T06:10:33.911Z",
+      "status": 503,
+      "valid": false,
+      "bannedScreen": false,
+      "noStore": true,
+      "ms": 136.05109999999695,
+      "ttfb": 135.61740000000282,
+      "bytes": 35,
+      "serverTiming": "middleware-instance;desc=\"a8c798a2-e64b-45c3-8620-fe658df01db5\", ban-http;dur=91.51, middleware;dur=91.60",
+      "nodeTiming": "",
+      "nodeVersion": "",
+      "transport": "https",
+      "passed": false
+    }
+  ],
+  "samples": [
+    {
+      "at": "2026-10-06T06:08:38.015Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:38.294Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:38.547Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:38.804Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:39.048Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:39.303Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:39.553Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:39.817Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:40.081Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:40.345Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:40.595Z",
+      "connections": 2,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:40.862Z",
+      "connections": 3,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-06T06:08:41.130Z",
+      "connections": 3,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:41.373Z",
+      "connections": 3,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:41.638Z",
+      "connections": 3,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:41.898Z",
+      "connections": 7,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-06T06:08:42.163Z",
+      "connections": 9,
+      "active": 1,
+      "idle_transactions": 2
+    },
+    {
+      "at": "2026-10-06T06:08:42.422Z",
+      "connections": 12,
+      "active": 10,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:42.671Z",
+      "connections": 14,
+      "active": 11,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:42.930Z",
+      "connections": 16,
+      "active": 12,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:43.191Z",
+      "connections": 18,
+      "active": 11,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:43.440Z",
+      "connections": 18,
+      "active": 2,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:43.696Z",
+      "connections": 18,
+      "active": 8,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:43.965Z",
+      "connections": 18,
+      "active": 13,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:44.212Z",
+      "connections": 18,
+      "active": 6,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:44.455Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:44.722Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:44.987Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:45.231Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:45.503Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:45.747Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:45.997Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-06T06:08:46.256Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-06T06:08:46.513Z",
+      "connections": 18,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:46.762Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:47.014Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:47.261Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:47.529Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:47.777Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:48.037Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:48.304Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:48.563Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:48.823Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:49.076Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:49.326Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:49.589Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:49.840Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:50.090Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:50.350Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:50.602Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:50.862Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:51.126Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:51.377Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:51.649Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:51.904Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:52.169Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:52.432Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:52.690Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:52.943Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:53.194Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:53.444Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:53.707Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:53.973Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:54.233Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:54.500Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:54.760Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:55.026Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:55.288Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:55.553Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:55.815Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:56.081Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:56.350Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:56.609Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:56.872Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:57.135Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:57.403Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:57.662Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:57.928Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:58.193Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:58.444Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:58.695Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:58.959Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:59.221Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:59.486Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:08:59.751Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:00.014Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:00.279Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:00.548Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:00.794Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:01.048Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:01.307Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:01.569Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:01.833Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:02.098Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:02.367Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:02.626Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:02.890Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:03.153Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:03.416Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:03.682Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:03.944Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:04.196Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:04.459Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:04.723Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:04.987Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:05.249Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:05.510Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:05.760Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:06.024Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:06.286Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:06.538Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:06.788Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:07.055Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:07.304Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:07.572Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:07.837Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:08.096Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:08.357Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:08.620Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:08.884Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:09.134Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:09.398Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:09.650Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:09.913Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:10.164Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:10.421Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:10.677Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:10.927Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:11.178Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:11.444Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:11.696Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:11.944Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:12.200Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:12.455Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:12.730Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:12.956Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:13.209Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:13.473Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:13.723Z",
+      "connections": 18,
+      "active": 2,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-06T06:09:13.977Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:14.225Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:14.477Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:14.740Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:15.000Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:15.262Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:15.527Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:15.778Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:16.044Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:16.289Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:16.543Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:16.792Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:17.058Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:17.312Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:17.573Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:17.830Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:18.094Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:18.356Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:18.611Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:18.873Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:19.131Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:19.394Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:19.658Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:19.924Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:20.188Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:20.451Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:20.714Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:20.978Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:21.243Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:21.507Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:21.771Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:22.034Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:22.298Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:22.563Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:22.822Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:23.083Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:23.347Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:23.597Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:23.859Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:24.123Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:24.385Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:24.647Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:24.911Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:25.172Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:25.436Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:25.697Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:25.959Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:26.222Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:26.483Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:26.746Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:27.006Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:27.270Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:27.520Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:27.781Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:28.046Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:28.311Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:28.574Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:28.839Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:29.100Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:29.351Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:29.620Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:29.867Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:30.115Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:30.381Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:30.643Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:30.907Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:31.175Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:31.432Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:31.693Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:31.954Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:32.219Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:32.470Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:32.739Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:32.996Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:33.259Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:33.521Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:33.784Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:34.048Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:34.313Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:34.581Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:34.844Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:35.106Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:35.370Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:35.635Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:35.902Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:36.165Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:36.414Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:36.664Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:36.929Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:37.193Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:37.457Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:37.718Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:37.968Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:38.232Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:38.483Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:38.732Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:38.997Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:39.262Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:39.511Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:39.762Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:40.013Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:40.277Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:40.527Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-06T06:09:40.795Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 1
+    },
+    {
+      "at": "2026-10-06T06:09:41.046Z",
+      "connections": 18,
+      "active": 4,
+      "idle_transactions": 3
+    },
+    {
+      "at": "2026-10-06T06:09:41.305Z",
+      "connections": 18,
+      "active": 11,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:41.551Z",
+      "connections": 18,
+      "active": 12,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:41.797Z",
+      "connections": 18,
+      "active": 7,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:42.043Z",
+      "connections": 18,
+      "active": 3,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:42.299Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:42.555Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:42.820Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:43.084Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:43.337Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:43.591Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:43.844Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:44.099Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:44.349Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:44.600Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:44.859Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:45.105Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:45.367Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:45.626Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:45.883Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:46.143Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:46.401Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:46.662Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:46.927Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:47.178Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:47.426Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:47.688Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:47.958Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:48.216Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:48.477Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:48.739Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:48.994Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:49.255Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:49.518Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:49.770Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:50.032Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:50.298Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:50.563Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:50.819Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:51.083Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:51.352Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:51.597Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:51.861Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:52.123Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:52.383Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:52.648Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:52.910Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:53.172Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:53.435Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:53.705Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:53.965Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:54.225Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:54.492Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:54.755Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:55.017Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:55.279Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:55.539Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:55.805Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:56.068Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:56.330Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:56.591Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:56.854Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:57.116Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:57.381Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:57.630Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:57.880Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:58.143Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:58.393Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:58.642Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:58.905Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:59.170Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:59.433Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:59.695Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:09:59.946Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:00.210Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:00.474Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:00.740Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:01.000Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:01.261Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:01.524Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:01.787Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:02.051Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:02.314Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:02.575Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:02.840Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:03.104Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:03.365Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:03.626Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:03.892Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:04.157Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:04.420Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:04.683Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:04.945Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:05.213Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:05.479Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:05.742Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:06.009Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:06.270Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:06.518Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:06.788Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:07.045Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:07.295Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:07.551Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:07.808Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:08.073Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:08.335Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:08.584Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:08.851Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:09.115Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:09.383Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:09.629Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:09.881Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:10.132Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:10.395Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:10.658Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:10.923Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:11.187Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:11.451Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:11.702Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:11.950Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:12.214Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:12.464Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:12.726Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:12.990Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:13.254Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:13.504Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:13.769Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:14.020Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:14.270Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:14.539Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:14.798Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:15.064Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:15.327Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:15.590Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:15.853Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:16.107Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:16.359Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:16.618Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:16.883Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:17.132Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:17.398Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:17.665Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:17.913Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:18.180Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:18.445Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:18.710Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:18.973Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:19.238Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:19.502Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:19.769Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:20.021Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:20.270Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:20.536Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:20.793Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:21.052Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:21.298Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:21.546Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:21.812Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:22.064Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:22.326Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:22.589Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:22.841Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:23.105Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:23.371Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:23.633Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:23.883Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:24.148Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:24.410Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:24.673Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:24.939Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:25.189Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:25.454Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:25.704Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:25.966Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:26.231Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:26.483Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:26.732Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:26.982Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:27.246Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:27.511Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:27.771Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:28.023Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:28.287Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:28.557Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:28.802Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:29.071Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:29.317Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:29.568Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:29.832Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:30.095Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:30.358Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:30.626Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:30.887Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:31.151Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:31.416Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:31.682Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:31.946Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:32.209Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:32.460Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:32.726Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:32.973Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:33.237Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:33.485Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:33.748Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:34.004Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    },
+    {
+      "at": "2026-10-06T06:10:34.079Z",
+      "connections": 18,
+      "active": 1,
+      "idle_transactions": 0
+    }
+  ]
+}
