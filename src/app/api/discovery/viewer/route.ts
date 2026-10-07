@@ -12,18 +12,21 @@ import { getStaffRole } from '@/lib/admin';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
+import { createLoadTrace, measureLoad } from '@/lib/loadTrace';
 
 export async function GET(request: Request) {
+  const trace = await createLoadTrace(request);
+  const measure = trace?.measure ?? measureLoad;
   try {
-    const user = await getCurrentUser();
+    const user = await measure('account', getCurrentUser);
     const locale =
       new URL(request.url).searchParams.get('locale') === 'ja' ? 'ja' : 'en';
     let viewer: DiscoveryViewer = { isLoggedIn: false };
     if (user) {
       const [profile, settings, role] = await Promise.all([
-        getProfileByUserId(user.accountId),
-        getUserSettingsByUserId(user.accountId),
-        getStaffRole(user),
+        measure('profile', () => getProfileByUserId(user.accountId)),
+        measure('settings', () => getUserSettingsByUserId(user.accountId)),
+        measure('staff', () => getStaffRole(user)),
       ]);
       const discoveryProfile = profile
         ? mapProfileToDiscoveryProfile(profile)
@@ -44,7 +47,9 @@ export async function GET(request: Request) {
         languageDisplay: settings?.languageDisplay,
         timeFormat: settings?.timeFormat,
         staff: role ? { meId: user.accountId, role } : undefined,
-        pendingCases: role ? await countPendingCases() : undefined,
+        pendingCases: role
+          ? await measure('staff-count', countPendingCases)
+          : undefined,
         bumpReadyAt: profile?.profile.isPublic
           ? getBumpCooldown(
               profile.profile.lastBumpedAt,
@@ -61,7 +66,10 @@ export async function GET(request: Request) {
       }),
     );
     return NextResponse.json(viewer, {
-      headers: { 'Cache-Control': 'private, no-store' },
+      headers: {
+        'Cache-Control': 'private, no-store',
+        ...trace?.headers('handler'),
+      },
     });
   } catch {
     return NextResponse.json(
@@ -71,6 +79,7 @@ export async function GET(request: Request) {
         headers: {
           'Cache-Control': 'private, no-store',
           'Retry-After': '5',
+          ...trace?.headers('handler'),
         },
       },
     );

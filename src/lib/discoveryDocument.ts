@@ -10,6 +10,7 @@ import {
   BAN_REFERENCE_HEADER,
 } from './auth-session';
 import { findBan } from './banGate';
+import { createLoadTrace, measureLoad } from './loadTrace';
 
 export const serveDiscoveryDocument = async (
   request: Request,
@@ -19,13 +20,18 @@ export const serveDiscoveryDocument = async (
   const url = new URL(request.url);
   const locale = url.pathname.match(/^\/(en|ja)(?:\.rsc)?\/?$/)?.[1];
   const cookies = new RequestCookies(request.headers);
+  const trace = await createLoadTrace(request);
+  const measure = trace?.measure ?? measureLoad;
   try {
     if (!locale || !documents[locale])
       throw new Error('Missing discovery document');
-    const ban = await findBan(
-      url.origin,
-      request.headers,
-      (name) => cookies.get(name)?.value,
+    const ban = await measure('ban', () =>
+      findBan(
+        url.origin,
+        request.headers,
+        (name) => cookies.get(name)?.value,
+        trace?.measure,
+      ),
     );
     if (ban) {
       if (!['GET', 'HEAD'].includes(request.method))
@@ -58,15 +64,22 @@ export const serveDiscoveryDocument = async (
     }
     if (url.pathname.endsWith('/'))
       return Response.redirect(new URL(`/${locale}${url.search}`, url), 308);
-    const response = new Response(
-      request.method === 'HEAD' ? null : documents[locale],
-      {
-        headers: {
-          'Content-Type': 'text/html; charset=UTF-8',
-          'Cache-Control': 'public, max-age=0, must-revalidate',
-        },
+    const traceHeaders = trace?.headers('gate');
+    const document = trace
+      ? documents[locale].replace(
+          '</head>',
+          `<script id="polycord-load-trace" type="application/json">${JSON.stringify({ spans: trace.spans, transport: process.env.POLYCORD_DIRECT_BAN_CHECK === 'true' ? 'direct' : 'https' }).replaceAll('<', '\\u003c')}</script></head>`,
+        )
+      : documents[locale];
+    const response = new Response(request.method === 'HEAD' ? null : document, {
+      headers: {
+        'Content-Type': 'text/html; charset=UTF-8',
+        'Cache-Control': trace
+          ? 'private, no-store'
+          : 'public, max-age=0, must-revalidate',
+        ...traceHeaders,
       },
-    );
+    });
     if (cookies.get('NEXT_LOCALE')?.value !== locale)
       new ResponseCookies(response.headers).set('NEXT_LOCALE', locale, {
         path: '/',

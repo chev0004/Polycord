@@ -8,6 +8,7 @@ import {
   readSessionFromCookieValue,
 } from './lib/auth-session';
 import { BAN_CHECK_PATH, findBan } from './lib/banGate';
+import { createLoadTrace, type LoadMeasure } from './lib/loadTrace';
 import { locales } from './utils/locales';
 
 export { locales };
@@ -74,13 +75,16 @@ const denyBanned = (
   });
 };
 
-export default async function middleware(request: NextRequest) {
+async function routeMiddleware(request: NextRequest, measure: LoadMeasure) {
   if (!serviceRoutes.has(request.nextUrl.pathname)) {
     try {
-      const ban = await findBan(
-        request.nextUrl.origin,
-        request.headers,
-        (name) => request.cookies.get(name)?.value,
+      const ban = await measure('ban', () =>
+        findBan(
+          request.nextUrl.origin,
+          request.headers,
+          (name) => request.cookies.get(name)?.value,
+          measure,
+        ),
       );
 
       if (ban) {
@@ -141,6 +145,20 @@ export default async function middleware(request: NextRequest) {
   }
 
   return handleI18nRouting(request);
+}
+
+export default async function middleware(request: NextRequest) {
+  const trace = await createLoadTrace(request);
+  const response = await routeMiddleware(
+    request,
+    trace?.measure ?? (async (_name, run) => run()),
+  );
+  if (trace)
+    response.headers.set(
+      'x-polycord-load-gate',
+      trace.headers('gate')['Server-Timing'],
+    );
+  return response;
 }
 
 export const config = {
