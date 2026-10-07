@@ -108,6 +108,11 @@ const { NextResponse } = await import('next/server');
 let pageHeaders = new Headers({ cookie: `polycord_session=${ownerCookie}` });
 mock.module('next/headers', () => ({ headers: async () => pageHeaders }));
 mock.module('next/navigation', () => ({ usePathname: () => '/en/settings' }));
+mock.module('../../src/db/client', () => ({
+  withRequestPool: (run) => run(),
+  withRenderPool: (run) => run(),
+  scopedRoute: (handler) => handler,
+}));
 const { tracePage, createPageLoadTrace } = await import(
   '../../src/lib/pageLoadTrace'
 );
@@ -163,9 +168,6 @@ mock.module('../../src/lib/auth', () => ({
   getCurrentUser: async () => ownerIdentity.account.currentUser,
   getSessionIdentity: async () => ownerIdentity,
   isBannedIdentity: async () => false,
-}));
-mock.module('../../src/db/client', () => ({
-  withRequestPool: (run) => run(),
 }));
 mock.module('../../src/db/ipBans', () => ({
   findActiveIpBan: async () => null,

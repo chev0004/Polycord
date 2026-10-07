@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getProfileByUserId, toViewerAvailabilityContext } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { countDiscovery, listDiscoveryPage } from '@/db/discovery';
 import { parseDiscoveryState } from '@/features/Discovery/discoveryUrlState';
 import { getStaffRole } from '@/lib/admin';
@@ -7,7 +8,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { createLoadTrace, measureLoad } from '@/lib/loadTrace';
 import { withModerationStates } from '@/lib/moderation';
 
-export async function GET(request: Request) {
+export const GET = scopedRoute(async (request: Request) => {
   const trace = await createLoadTrace(request);
   const measure = trace?.measure ?? measureLoad;
   try {
@@ -63,4 +64,4 @@ export async function GET(request: Request) {
       },
     );
   }
-}
+});

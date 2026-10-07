@@ -9,6 +9,7 @@ import {
   setUserBanned,
   setUserSuspendedUntil,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { canModerate } from '@/features/Admin/permissions';
 import { OWNER_ACTIONS } from '@/features/Admin/types';
 import { getStaffRole, isSameOrigin, needsReauth } from '@/lib/admin';
@@ -21,7 +22,7 @@ import {
 } from '@/lib/moderation';
 import { moderationSchema } from '@/lib/moderationRequest';
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getCurrentUser();
   const role = currentUser ? await getStaffRole(currentUser) : null;
 
@@ -147,4 +148,4 @@ export const POST = async (request: Request) => {
     reports: resolved.map(toModReport),
     log: [toModLogEntry(entry)],
   });
-};
+});

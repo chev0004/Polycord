@@ -2,6 +2,7 @@ import {
   getCardThemeByDiscordUserId,
   getUserSettingsByDiscordUserId,
 } from '@/db';
+import { withRenderPool } from '@/db/client';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
@@ -13,7 +14,14 @@ import { createPageLoadTrace } from '@/lib/pageLoadTrace';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AppLayout({
+export default function AppLayout(props: {
+  children: React.ReactNode;
+  params: Promise<{ lang: string }>;
+}) {
+  return withRenderPool(() => renderLayout(props));
+}
+
+async function renderLayout({
   children,
   params,
 }: {

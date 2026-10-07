@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { deleteVoiceIntroForUser, upsertVoiceIntroForUser } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getActiveUser } from '@/lib/auth';
 import { hasEntitlement } from '@/lib/entitlements';
 import { isPremiumUser } from '@/lib/entitlements.server';
@@ -26,7 +27,7 @@ const voiceIntroSchema = z.object({
   audio: z.string().min(1).max(1400000),
 });
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -89,9 +90,9 @@ export const POST = async (request: Request) => {
   }
 
   return NextResponse.json({ durationSeconds: media.durationSeconds });
-};
+});
 
-export const DELETE = async () => {
+export const DELETE = scopedRoute(async () => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -101,4 +102,4 @@ export const DELETE = async () => {
   await deleteVoiceIntroForUser(currentUser.accountId);
 
   return NextResponse.json({ deleted: true });
-};
+});

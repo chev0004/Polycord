@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPublicProfileById, saveProfile, unsaveProfile } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -28,7 +29,7 @@ const readProfileId = async (request: Request): Promise<string | null> => {
   return body.profileId;
 };
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -65,9 +66,9 @@ export const POST = async (request: Request) => {
   }
 
   return NextResponse.json({ saved: true });
-};
+});
 
-export const DELETE = async (request: Request) => {
+export const DELETE = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -83,4 +84,4 @@ export const DELETE = async (request: Request) => {
   await unsaveProfile(currentUser.accountId, profileId);
 
   return NextResponse.json({ saved: false });
-};
+});

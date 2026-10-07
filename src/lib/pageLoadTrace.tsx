@@ -2,6 +2,7 @@ import 'server-only';
 
 import { headers } from 'next/headers';
 import type { ReactNode } from 'react';
+import { withRenderPool } from '@/db/client';
 import { PageLoadReady } from '@/features/Navigation/PageLoadTrace';
 import { createLoadTrace } from './loadTrace';
 
@@ -22,21 +23,22 @@ export const tracePage =
     route: string,
     render: (props: T) => Promise<ReactNode> | ReactNode,
   ) =>
-  async (props: T) => {
-    const trace = await createPageLoadTrace();
-    if (!trace) return render(props);
-    const content = await trace.measure('page', () =>
-      Promise.resolve(render(props)),
-    );
-    const { lang } = await props.params;
-    return (
-      <>
-        {content}
-        <PageLoadReady
-          route={`/${lang}/${route}`}
-          spans={trace.spans}
-          deferred={route === 'inbox'}
-        />
-      </>
-    );
-  };
+  (props: T) =>
+    withRenderPool(async () => {
+      const trace = await createPageLoadTrace();
+      if (!trace) return render(props);
+      const content = await trace.measure('page', () =>
+        Promise.resolve(render(props)),
+      );
+      const { lang } = await props.params;
+      return (
+        <>
+          {content}
+          <PageLoadReady
+            route={`/${lang}/${route}`}
+            spans={trace.spans}
+            deferred={route === 'inbox'}
+          />
+        </>
+      );
+    });

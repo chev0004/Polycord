@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { deleteAccountByUserId, getSubscriptionByUserId } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { clearSessionCookie, getCurrentUser } from '@/lib/auth';
 import { cancelStripeSubscription } from '@/lib/stripe';
 
-export const DELETE = async (request: Request) => {
+export const DELETE = scopedRoute(async (request: Request) => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -52,4 +53,4 @@ export const DELETE = async (request: Request) => {
   clearSessionCookie(response);
 
   return response;
-};
+});

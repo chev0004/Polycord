@@ -2,7 +2,10 @@ import { afterAll, beforeEach, expect, mock, test } from 'bun:test';
 import { createHmac } from 'node:crypto';
 
 mock.module('server-only', () => ({}));
-mock.module('@/db/client', () => ({ db: {} }));
+mock.module('@/db/client', () => ({
+  db: {},
+  scopedRoute: (handler) => handler,
+}));
 const { getPremiumSource, isSubscriptionActive } = await import(
   '../src/db/billing'
 );

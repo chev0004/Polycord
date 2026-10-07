@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPublicProfileById, hasBlocked } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getCurrentUser } from '@/lib/auth';
 import { receiveProfileShare } from '@/lib/notifications/profileShare';
 import {
@@ -9,7 +10,7 @@ import {
   requestIp,
 } from '@/lib/rateLimit';
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const body = await request.json().catch(() => null);
   const profileId = z.uuid().safeParse(body?.profileId);
 
@@ -48,4 +49,4 @@ export const POST = async (request: Request) => {
       ip,
     }),
   });
-};
+});

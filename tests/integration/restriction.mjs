@@ -2,6 +2,7 @@ import { expect, mock } from 'bun:test';
 import { NextRequest } from 'next/server';
 
 mock.module('server-only', () => ({}));
+mock.module('@/db/client', () => ({ scopedRoute: (handler) => handler }));
 const DAY = 24 * 60 * 60 * 1000;
 const discordUser = { id: 'discord-1', username: 'member' };
 let account;

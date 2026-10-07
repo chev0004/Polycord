@@ -6,6 +6,7 @@ import {
   hasBlocked,
   type ReportReason,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getActiveUser } from '@/lib/auth';
 import {
   enforceRateLimit,
@@ -65,7 +66,7 @@ const readReportBody = async (request: Request): Promise<ReportBody | null> => {
   return { profileId, reason: reason as ReportReason, details };
 };
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -112,4 +113,4 @@ export const POST = async (request: Request) => {
   });
 
   return NextResponse.json({ reported: true });
-};
+});
