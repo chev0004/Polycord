@@ -130,12 +130,20 @@ export const setLoadPhase = (phase: LoadPhase, timing: PhaseTiming) => {
 };
 
 export const markControlsReady = () => {
-  if (startLoadTrace()?.phases.controls.status === 'done') return;
-  setLoadPhase('controls', {
-    status: 'done',
-    start: 0,
-    end: performance.now(),
-  });
+  const current = startLoadTrace();
+  if (!current || current.phases.controls.status !== 'pending') return;
+  setLoadPhase('controls', { status: 'loading', start: 0 });
+  void document.fonts.ready.then(() =>
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        setLoadPhase('controls', {
+          status: 'done',
+          start: 0,
+          end: performance.now(),
+        }),
+      ),
+    ),
+  );
 };
 
 export const beginGridLoad = () => {
@@ -153,37 +161,39 @@ export const finishLoadTrace = () => {
     current.phases.discovery.status !== 'done'
   )
     return;
-  requestAnimationFrame(() =>
-    requestAnimationFrame(() => {
-      if (
-        !trace ||
-        trace.finished !== undefined ||
-        trace.phases.viewer.status !== 'done' ||
-        trace.phases.discovery.status !== 'done'
-      )
-        return;
-      refreshNavigationTiming();
-      const finished = performance.now();
-      trace = {
-        ...trace,
-        finished,
-        phases: {
-          ...trace.phases,
-          grid: {
-            ...trace.phases.grid,
-            status: 'done',
-            start:
-              trace.phases.grid.start ??
-              Math.max(
-                trace.phases.viewer.end ?? finished,
-                trace.phases.discovery.end ?? finished,
-              ),
-            end: finished,
+  void document.fonts.ready.then(() =>
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        if (
+          !trace ||
+          trace.finished !== undefined ||
+          trace.phases.viewer.status !== 'done' ||
+          trace.phases.discovery.status !== 'done'
+        )
+          return;
+        refreshNavigationTiming();
+        const finished = performance.now();
+        trace = {
+          ...trace,
+          finished,
+          phases: {
+            ...trace.phases,
+            grid: {
+              ...trace.phases.grid,
+              status: 'done',
+              start:
+                trace.phases.grid.start ??
+                Math.max(
+                  trace.phases.viewer.end ?? finished,
+                  trace.phases.discovery.end ?? finished,
+                ),
+              end: finished,
+            },
           },
-        },
-      };
-      emit();
-    }),
+        };
+        emit();
+      }),
+    ),
   );
 };
 

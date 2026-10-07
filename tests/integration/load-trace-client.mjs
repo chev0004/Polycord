@@ -11,7 +11,10 @@ const navigation = {
   responseStart: 11000,
   responseEnd: 0,
 };
-globalThis.document = { getElementById: () => bootstrap };
+globalThis.document = {
+  getElementById: () => bootstrap,
+  fonts: { ready: Promise.resolve() },
+};
 globalThis.performance = {
   now: () => now,
   getEntriesByType: () => [navigation],
@@ -43,6 +46,10 @@ refreshNavigationTiming();
 assert.equal(startLoadTrace().phases.document.end, 11080);
 assert.equal(startLoadTrace().navigation.firstPaint, 11500);
 markControlsReady();
+assert.equal(startLoadTrace().phases.controls.status, 'loading');
+await Promise.resolve();
+frames.shift()();
+frames.shift()();
 assert.equal(startLoadTrace().phases.controls.end, 12000);
 assert.equal(startLoadTrace().navigation.redirect, 3000);
 finishLoadTrace();
@@ -103,6 +110,7 @@ await traceDiscoveryRequest(
 beginGridLoad();
 finishLoadTrace();
 assert.equal(startLoadTrace().finished, undefined);
+await Promise.resolve();
 frames.shift()();
 assert.equal(startLoadTrace().finished, undefined);
 now = 29000;
