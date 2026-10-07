@@ -507,8 +507,14 @@ export const DiscoveryPage = ({
     debouncedSearch,
   ]);
 
-  useEffect(() => {
-    if (mobile === null || stackPending) return;
+  const restoreScroll = useCallback(() => {
+    if (
+      mobile === null ||
+      stackPending ||
+      isLoading ||
+      (remote && (!remoteData || isRefreshing || loadedUrl !== requestUrl))
+    )
+      return;
     try {
       const stored = sessionStorage.getItem(DISCOVERY_RETURN_KEY);
       if (!stored) return;
@@ -521,7 +527,16 @@ export const DiscoveryPage = ({
         sessionStorage.removeItem(DISCOVERY_RETURN_KEY);
       }
     } catch {}
-  }, [mobile, stackPending]);
+  }, [
+    mobile,
+    stackPending,
+    isLoading,
+    remote,
+    remoteData,
+    isRefreshing,
+    loadedUrl,
+    requestUrl,
+  ]);
 
   useEffect(() => {
     const remember = () => {
@@ -1071,6 +1086,7 @@ export const DiscoveryPage = ({
             ) : (
               <ProfileGrid
                 profiles={displayedItems}
+                onReady={restoreScroll}
                 isLoggedIn={isLoggedIn}
                 savedProfileIds={remoteData?.savedProfileIds ?? savedProfileIds}
                 currentProfileId={currentProfileId}
