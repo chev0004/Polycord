@@ -10,7 +10,20 @@ import {
   BAN_REFERENCE_HEADER,
 } from './auth-session';
 import { findBan } from './banGate';
+import { discoveryBootstrapScript } from './discoveryBootstrapScript';
 import { createLoadTrace, measureLoad } from './loadTrace';
+
+const locales = ['en', 'ja'];
+
+const preferredLocale = (headers: Headers, cookies: RequestCookies) => {
+  const saved = cookies.get('NEXT_LOCALE')?.value;
+  if (saved && locales.includes(saved)) return saved;
+  const accepted = headers
+    .get('accept-language')
+    ?.split(',')
+    .map((entry) => entry.split(';')[0].trim().split('-')[0].toLowerCase());
+  return accepted?.find((tag) => locales.includes(tag)) ?? 'en';
+};
 
 export const serveDiscoveryDocument = async (
   request: Request,
@@ -20,6 +33,24 @@ export const serveDiscoveryDocument = async (
   const url = new URL(request.url);
   const locale = url.pathname.match(/^\/(en|ja)(?:\.rsc)?\/?$/)?.[1];
   const cookies = new RequestCookies(request.headers);
+  if (url.pathname === '/') {
+    if (
+      !['GET', 'HEAD'].includes(request.method) ||
+      request.headers.has('rsc') ||
+      url.searchParams.has('_rsc')
+    )
+      return context.next(request);
+    return new Response(null, {
+      status: 307,
+      headers: {
+        Location: new URL(
+          `/${preferredLocale(request.headers, cookies)}${url.search}`,
+          url,
+        ).href,
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
   const trace = await createLoadTrace(request);
   const measure = trace?.measure ?? measureLoad;
   try {
@@ -65,12 +96,13 @@ export const serveDiscoveryDocument = async (
     if (url.pathname.endsWith('/'))
       return Response.redirect(new URL(`/${locale}${url.search}`, url), 308);
     const traceHeaders = trace?.headers('gate');
-    const document = trace
-      ? documents[locale].replace(
-          '</head>',
-          `<script id="polycord-load-trace" type="application/json">${JSON.stringify({ spans: trace.spans, transport: process.env.POLYCORD_DIRECT_BAN_CHECK === 'true' ? 'direct' : 'https' }).replaceAll('<', '\\u003c')}</script></head>`,
-        )
-      : documents[locale];
+    const traceScript = trace
+      ? `<script id="polycord-load-trace" type="application/json">${JSON.stringify({ spans: trace.spans, transport: process.env.POLYCORD_DIRECT_BAN_CHECK === 'true' ? 'direct' : 'https' }).replaceAll('<', '\\u003c')}</script>`
+      : '';
+    const document = documents[locale].replace(
+      '</head>',
+      `${discoveryBootstrapScript}${traceScript}</head>`,
+    );
     const response = new Response(request.method === 'HEAD' ? null : document, {
       headers: {
         'Content-Type': 'text/html; charset=UTF-8',

@@ -1,10 +1,8 @@
-import { after, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getProfileByUserId, toViewerAvailabilityContext } from '@/db';
 import { countDiscovery, listDiscoveryPage } from '@/db/discovery';
 import { parseDiscoveryState } from '@/features/Discovery/discoveryUrlState';
 import { getStaffRole } from '@/lib/admin';
-import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
-import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { createLoadTrace, measureLoad } from '@/lib/loadTrace';
 import { withModerationStates } from '@/lib/moderation';
@@ -45,19 +43,6 @@ export async function GET(request: Request) {
           withModerationStates(profiles),
         ),
       };
-    }
-    if ('profiles' in data && searchParams.get('initial') === '1') {
-      const count = data.profiles.filter(
-        (profile) => profile.boosted && !profile.synthetic,
-      ).length;
-      if (count > 0)
-        after(() =>
-          trackEvent({
-            name: ANALYTICS_EVENTS.discoveryBoostImpressions,
-            locale,
-            metadata: { count },
-          }),
-        );
     }
     return NextResponse.json(data, {
       headers: {

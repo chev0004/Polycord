@@ -38,6 +38,18 @@ export type DiscoveryLoadTrace = {
   })[];
 };
 
+type EarlyBootstrap = {
+  url: string;
+  start: number;
+  response: Promise<Response | undefined>;
+};
+
+declare global {
+  interface Window {
+    __polycordBootstrap?: EarlyBootstrap;
+  }
+}
+
 let trace: DiscoveryLoadTrace | null = null;
 const listeners = new Set<() => void>();
 const requests = { viewer: 0, discovery: 0 };
@@ -198,39 +210,53 @@ export const finishLoadTrace = () => {
 };
 
 export const traceDiscoveryRequest = async <T>(
-  phase: 'viewer' | 'discovery',
+  phase: 'viewer' | 'discovery' | 'bootstrap',
   url: string,
   signal: AbortSignal,
 ) => {
-  const sequence = ++requests[phase];
-  const start = performance.now();
+  const phases =
+    phase === 'bootstrap' ? (['viewer', 'discovery'] as const) : [phase];
+  const sequences = phases.map((item) => ++requests[item]);
+  const early =
+    window.__polycordBootstrap?.url === url ? window.__polycordBootstrap : null;
+  window.__polycordBootstrap = undefined;
+  const start = early?.start ?? performance.now();
   const record = (timing: PhaseTiming) => {
     const current = startLoadTrace();
     if (!current || current.finished !== undefined) return;
-    const attempt = { phase, sequence, ...timing };
-    const previous = current.attempts ?? [];
-    const exists = previous.some(
-      (item) => item.phase === phase && item.sequence === sequence,
-    );
-    trace = {
-      ...current,
-      attempts: exists
-        ? previous.map((item) =>
-            item.phase === phase && item.sequence === sequence ? attempt : item,
-          )
-        : [...previous, attempt],
-      phases:
-        sequence === requests[phase]
-          ? { ...current.phases, [phase]: timing }
-          : current.phases,
-    };
+    let next = current;
+    phases.forEach((item, index) => {
+      const sequence = sequences[index];
+      const attempt = { phase: item, sequence, ...timing };
+      const previous = next.attempts ?? [];
+      const exists = previous.some(
+        (entry) => entry.phase === item && entry.sequence === sequence,
+      );
+      next = {
+        ...next,
+        attempts: exists
+          ? previous.map((entry) =>
+              entry.phase === item && entry.sequence === sequence
+                ? attempt
+                : entry,
+            )
+          : [...previous, attempt],
+        phases:
+          sequence === requests[item]
+            ? { ...next.phases, [item]: timing }
+            : next.phases,
+      };
+    });
+    trace = next;
     emit();
   };
   record({ status: 'loading', start });
   const spans: Record<string, number> = {};
   let httpStatus: number | undefined;
   try {
-    const response = await fetch(url, { cache: 'no-store', signal });
+    const response =
+      (early && (await early.response)) ||
+      (await fetch(url, { cache: 'no-store', signal }));
     httpStatus = response.status;
     for (const header of ['Server-Timing', 'x-polycord-load-gate']) {
       for (const metric of response.headers.get(header)?.split(',') ?? []) {

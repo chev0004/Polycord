@@ -99,6 +99,7 @@ test.describe('ip bans', () => {
 
     for (const path of [
       '/api/discovery',
+      '/api/discovery/bootstrap',
       '/api/voice/00000000-0000-0000-0000-000000000000',
       '/api/notifications',
       '/_next/image?url=%2Ficon-192.png&w=64&q=75',
@@ -228,9 +229,15 @@ test.describe('ip bans', () => {
 
     await sql`update ip_bans set revoked_at = now() where id = ${first.id}`;
     expect((await request.get('/en', from(BLOCKED))).status()).toBe(403);
+    expect(
+      (await request.get('/api/discovery/bootstrap', from(BLOCKED))).status(),
+    ).toBe(403);
 
     await sql`update ip_bans set revoked_at = now() where id = ${second.id}`;
     expect((await request.get('/en', from(BLOCKED))).status()).toBe(200);
+    expect(
+      (await request.get('/api/discovery/bootstrap', from(BLOCKED))).status(),
+    ).toBe(200);
   });
 
   test('a banned identity is denied from any ip, signed in or not', async ({
@@ -248,6 +255,12 @@ test.describe('ip bans', () => {
         from(ip, withSession(member)),
       );
       expect(api.status()).toBe(403);
+      const bootstrap = await request.get(
+        '/api/discovery/bootstrap',
+        from(ip, withSession(member)),
+      );
+      expect(bootstrap.status()).toBe(403);
+      expect(bootstrap.headers()['cache-control']).toBe('no-store');
     }
 
     const marker = from(OTHER, {
@@ -255,7 +268,18 @@ test.describe('ip bans', () => {
     });
     expect((await request.get('/en', marker)).status()).toBe(403);
     expect(
+      (await request.get('/api/discovery/bootstrap', marker)).status(),
+    ).toBe(403);
+    expect(
       (await request.get('/en', from(OTHER, withSession(other)))).status(),
+    ).toBe(200);
+    expect(
+      (
+        await request.get(
+          '/api/discovery/bootstrap',
+          from(OTHER, withSession(other)),
+        )
+      ).status(),
     ).toBe(200);
 
     await sql`update users set banned_at = null where id = ${member.id}`;
@@ -263,6 +287,9 @@ test.describe('ip bans', () => {
       (await request.get('/en', from(OTHER, withSession(member)))).status(),
     ).toBe(200);
     expect((await request.get('/en', marker)).status()).toBe(200);
+    expect(
+      (await request.get('/api/discovery/bootstrap', marker)).status(),
+    ).toBe(200);
   });
 
   test('a durable restriction keeps a recreated account banned', async ({
@@ -273,6 +300,14 @@ test.describe('ip bans', () => {
 
     const response = await request.get('/en', from(OTHER, withSession(member)));
     expect(response.status()).toBe(403);
+    expect(
+      (
+        await request.get(
+          '/api/discovery/bootstrap',
+          from(OTHER, withSession(member)),
+        )
+      ).status(),
+    ).toBe(403);
   });
 
   test('only owners manage ip blocks and every change is audited', async ({

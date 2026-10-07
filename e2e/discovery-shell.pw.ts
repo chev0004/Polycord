@@ -2,6 +2,7 @@ import { createHmac, randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import postgres from 'postgres';
+import { discoveryBootstrapScript } from '../src/lib/discoveryBootstrapScript';
 import en from '../src/locales/en.json';
 import ja from '../src/locales/ja.json';
 
@@ -35,19 +36,11 @@ for (const locale of ['en', 'ja'] as const)
       const t = messages.Discovery;
       await page.setViewportSize({ width, height: 900 });
       let releaseData: () => void = () => {};
-      let releaseViewer: () => void = () => {};
       const dataGate = new Promise<void>((resolve) => {
         releaseData = resolve;
       });
-      const viewerGate = new Promise<void>((resolve) => {
-        releaseViewer = resolve;
-      });
       const calls: string[] = [];
-      await page.route('**/api/discovery/viewer?*', async (route) => {
-        await viewerGate;
-        await route.continue();
-      });
-      await page.route('**/api/discovery?*', async (route) => {
+      await page.route('**/api/discovery/bootstrap?*', async (route) => {
         const url = new URL(route.request().url());
         if (url.searchParams.get('count') !== '1') calls.push(url.search);
         if (
@@ -125,7 +118,6 @@ for (const locale of ['en', 'ja'] as const)
           path: testInfo.outputPath('pending-shell.png'),
           animations: 'disabled',
         });
-        releaseViewer();
         await expect(
           page.getByRole('heading', {
             name: new RegExp(owners[1].display_name),
@@ -152,7 +144,6 @@ for (const locale of ['en', 'ja'] as const)
         });
       } finally {
         releaseData();
-        releaseViewer();
         await page.unrouteAll({ behavior: 'wait' });
       }
     });
@@ -191,7 +182,7 @@ for (const width of [1440, 390])
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
-    await page.route('**/api/discovery/viewer?*', async (route) => {
+    await page.route('**/api/discovery/bootstrap?*', async (route) => {
       await gate;
       await route.continue();
     });
@@ -281,7 +272,7 @@ test('restoring pending search text restarts the cancelled request', async ({
     release = resolve;
   });
   let calls = 0;
-  await page.route('**/api/discovery?*', async (route) => {
+  await page.route('**/api/discovery/bootstrap?*', async (route) => {
     calls++;
     const response = await route.fetch();
     await gate;
@@ -324,23 +315,26 @@ for (const width of [1440, 390])
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
-    await page.route('**/api/discovery?*', async (route) => {
+    await page.route('**/api/discovery/bootstrap?*', async (route) => {
       await gate;
       await route.fulfill({
         json: {
-          profiles: Array.from({ length: 21 }, (_, index) => ({
-            id: `return-${index}`,
-            displayName: `Return fixture ${index}`,
-            primaryLanguage: 'en',
-            targetLanguages: [{ language: 'ja', level: 'intermediate' }],
-            about: 'An isolated scroll restoration fixture. '.repeat(15),
+          viewer: { isLoggedIn: false },
+          data: {
+            profiles: Array.from({ length: 21 }, (_, index) => ({
+              id: `return-${index}`,
+              displayName: `Return fixture ${index}`,
+              primaryLanguage: 'en',
+              targetLanguages: [{ language: 'ja', level: 'intermediate' }],
+              about: 'An isolated scroll restoration fixture. '.repeat(15),
+              tags: [],
+            })),
+            total: 21,
+            page: 1,
+            groupSizes: [21],
             tags: [],
-          })),
-          total: 21,
-          page: 1,
-          groupSizes: [21],
-          tags: [],
-          savedProfileIds: [],
+            savedProfileIds: [],
+          },
         },
       });
     });
@@ -398,10 +392,12 @@ test('saved viewer availability enables overlap filtering and sorting', async ({
       path: '/',
     },
   ]);
-  const response = await context.request.get('/api/discovery/viewer?locale=en');
+  const response = await context.request.get(
+    '/api/discovery/bootstrap?&locale=en',
+  );
   expect(response.status()).toBe(200);
   expect(response.headers()['cache-control']).toBe('private, no-store');
-  expect(await response.json()).toMatchObject({
+  expect((await response.json()).viewer).toMatchObject({
     viewerTimezone: 'America/Chicago',
     viewerAvailability: { days: 'weekdays', from: '18:00', to: '22:00' },
   });
@@ -422,4 +418,30 @@ test('saved viewer availability enables overlap filtering and sorting', async ({
   await expect(
     page.getByText(en.Discovery.sortMostOverlap, { exact: true }),
   ).toBeVisible();
+});
+
+test('the served document starts the bootstrap request and the page reuses it', async ({
+  page,
+}) => {
+  await page.route('**/en', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      body: (await response.text()).replace(
+        '</head>',
+        `${discoveryBootstrapScript}</head>`,
+      ),
+    });
+  });
+  const paths: string[] = [];
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url());
+    if (pathname.startsWith('/api/discovery')) paths.push(pathname);
+  });
+  await page.goto('/en');
+  await expect(
+    page.getByRole('heading', { name: new RegExp(prefix) }).first(),
+  ).toBeVisible();
+  expect(paths).toEqual(['/api/discovery/bootstrap']);
+  expect(await page.evaluate(() => window.__polycordBootstrap)).toBeUndefined();
 });

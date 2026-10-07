@@ -71,6 +71,14 @@ for (const locale of ['en', 'ja']) {
     response.headers.get('set-cookie').includes(`NEXT_LOCALE=${locale}`),
   );
 }
+const headed = await (
+  await serveDiscoveryDocument(request('/en'), context, {
+    en: '<html><head></head><body>Public shell</body></html>',
+  })
+).text();
+assert.ok(headed.startsWith('<html><head><script>'));
+assert.ok(headed.includes('/api/discovery/bootstrap?&locale='));
+assert.ok(headed.endsWith('</script></head><body>Public shell</body></html>'));
 assert.equal(
   await (await serve(request('/en', { method: 'HEAD' }))).text(),
   '',
@@ -88,6 +96,30 @@ for (const req of [
 ]) {
   assert.equal(await (await serve(req)).text(), 'next handler');
   assert.equal(forwarded.headers.get('x-nf-next-middleware'), 'skip');
+}
+input = undefined;
+for (const [headers, expected] of [
+  [{}, 'en'],
+  [{ 'accept-language': 'ja-JP,ja;q=0.9,en;q=0.8' }, 'ja'],
+  [{ 'accept-language': 'fr-FR,fr;q=0.9' }, 'en'],
+  [{ 'accept-language': 'ja', cookie: 'NEXT_LOCALE=en' }, 'en'],
+]) {
+  const redirect = await serve(request('/?q=pending', { headers }));
+  assert.equal(redirect.status, 307);
+  assert.equal(
+    redirect.headers.get('location'),
+    `https://polycord.test/${expected}?q=pending`,
+  );
+  assert.equal(redirect.headers.get('cache-control'), 'no-store');
+}
+assert.equal(input, undefined);
+forwarded = undefined;
+for (const req of [
+  request('/', { method: 'POST' }),
+  request('/', { headers: { rsc: '1', accept: '*/*' } }),
+]) {
+  assert.equal(await (await serve(req)).text(), 'next handler');
+  assert.equal(forwarded.headers.get('x-nf-next-middleware'), null);
 }
 ban = { date: new Date('2026-10-04'), reference: 'PC-TEST-0001' };
 const denied = await serve(request('/ja'));
@@ -139,6 +171,10 @@ try {
     declarations.functions[1].excludedPattern,
     declarations.functions[0].pattern,
   );
+  for (const path of ['/', '/en', '/ja', '/en.rsc', '/ja/'])
+    assert.match(path, new RegExp(declarations.functions[0].pattern));
+  for (const path of ['/fr', '/en/profile', '/api/discovery'])
+    assert.doesNotMatch(path, new RegExp(declarations.functions[0].pattern));
   manifest.routes['/en'].initialRevalidateSeconds = 60;
   await writeFile('.next/prerender-manifest.json', JSON.stringify(manifest));
   await assert.rejects(plugin.onBuild(options), /must be fully prerendered/);

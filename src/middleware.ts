@@ -36,6 +36,7 @@ const getProtectedRouteLocale = (pathname: string) => {
 const serviceRoutes = new Set([
   '/api/billing/webhook',
   '/api/health',
+  '/api/discovery/bootstrap',
   BAN_CHECK_PATH,
 ]);
 const nonPageRoute = /^\/(api|_next)(\/|$)|\./;

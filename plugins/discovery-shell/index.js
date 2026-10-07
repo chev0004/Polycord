@@ -73,7 +73,7 @@ module.exports = {
     );
     if (!nextMiddleware)
       throw new Error('Next middleware declaration is missing');
-    const pattern = '^/(en|ja)(?:\\.rsc)?/?$';
+    const pattern = '^/((en|ja)(?:\\.rsc)?/?)?$';
     nextMiddleware.excludedPattern = pattern;
     declarations.functions.unshift({
       function: 'polycord-discovery-shell',

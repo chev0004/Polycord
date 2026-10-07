@@ -51,6 +51,7 @@ import {
   MAX_STACK_PAGES,
   parseDiscoveryState,
 } from './discoveryUrlState';
+import type { DiscoveryViewer } from './discoveryViewer';
 import {
   beginGridLoad,
   finishLoadTrace,
@@ -128,6 +129,7 @@ type DiscoveryPageProps = {
   userAvatarUrl?: string;
   staff?: { meId: string; role: StaffRole };
   onBumpProfile?: () => Promise<BumpProfileResponse>;
+  onViewer?: (viewer: DiscoveryViewer) => void;
 };
 
 const BUMP_TOAST_DURATION = 4000;
@@ -201,6 +203,7 @@ export const DiscoveryPage = ({
   userAvatarUrl,
   staff,
   onBumpProfile,
+  onViewer,
 }: DiscoveryPageProps) => {
   const router = useRouteProgressRouter();
   const { navigate } = useRouteProgress();
@@ -265,6 +268,10 @@ export const DiscoveryPage = ({
     trigger: HTMLElement | null;
   } | null>(null);
   const { toasts, addToast, dismissToast } = useToastStack();
+
+  useEffect(() => {
+    void import('./ProfileGrid');
+  }, []);
 
   useEffect(() => {
     setProfileItems(withoutBlocked(profiles));
@@ -433,12 +440,27 @@ export const DiscoveryPage = ({
     setIsRefreshing(true);
     setRefreshFailed(false);
     try {
-      const data = await traceDiscoveryRequest<DiscoveryData>(
-        'discovery',
-        `${requestUrl}${fetchOnMount && !hasLoaded.current ? '&initial=1' : ''}`,
-        controller.signal,
-      );
-      if (controller.signal.aborted) return;
+      let data: DiscoveryData;
+      if (fetchOnMount && !hasLoaded.current) {
+        const bootstrap = await traceDiscoveryRequest<{
+          viewer: DiscoveryViewer;
+          data: DiscoveryData;
+        }>(
+          'bootstrap',
+          requestUrl.replace('/api/discovery?', '/api/discovery/bootstrap?'),
+          controller.signal,
+        );
+        if (controller.signal.aborted) return;
+        onViewer?.(bootstrap.viewer);
+        data = bootstrap.data;
+      } else {
+        data = await traceDiscoveryRequest<DiscoveryData>(
+          'discovery',
+          requestUrl,
+          controller.signal,
+        );
+        if (controller.signal.aborted) return;
+      }
       hasLoaded.current = true;
       setRemoteData(data);
       setProfileItems(withoutBlocked(data.profiles));
@@ -450,7 +472,7 @@ export const DiscoveryPage = ({
       if (!controller.signal.aborted) setIsRefreshing(false);
       if (requestRef.current === controller) requestRef.current = null;
     }
-  }, [remote, urlQuery, mobile, requestUrl, fetchOnMount]);
+  }, [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer]);
 
   const countResults = useCallback(
     async (draft: FilterDraft, signal: AbortSignal) => {

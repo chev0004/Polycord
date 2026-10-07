@@ -15,6 +15,8 @@ export const banReference = (seed: string) => {
   return `PC-${code.slice(0, 4).join('')}-${code.slice(4).join('')}`;
 };
 
+type BanRow = { kind: 'ip' | 'identity'; ref: string | null; at: Date };
+
 export const lookupBan = async (
   ip: string | null,
   discordUserIds: string[],
@@ -25,50 +27,31 @@ export const lookupBan = async (
   const client = createBanClient(signal);
 
   try {
+    const ids = `array[${discordUserIds.map((id) => client.escapeLiteral(id)).join(',')}]::varchar[]`;
+    const found = [
+      ip &&
+        `(select 'ip' as kind, id::text as ref, created_at as at from ip_bans where ip = ${client.escapeLiteral(ip)} and revoked_at is null order by created_at asc limit 1)`,
+      discordUserIds.length &&
+        `select 'identity' as kind, null as ref, banned_at as at from users where discord_user_id = any(${ids}) and banned_at is not null`,
+      discordUserIds.length &&
+        `select 'identity' as kind, null as ref, banned_at as at from moderation_restrictions where discord_user_id = any(${ids}) and banned_at is not null`,
+    ].filter(Boolean);
+    if (!found.length) return null;
     await measure('ban-connect', () => client.connect());
-    await client.query('begin');
-    try {
-      signal.throwIfAborted();
-      await client.query("select set_config('statement_timeout', $1, true)", [
-        String(BAN_STATEMENT_TIMEOUT_MS),
-      ]);
-      const ipBan = ip
-        ? (
-            await measure('ban-ip', () =>
-              client.query<{ id: string; created_at: Date }>(
-                'select id, created_at from ip_bans where ip = $1 and revoked_at is null order by created_at asc limit 1',
-                [ip],
-              ),
-            )
-          ).rows[0]
-        : null;
-      let notice: BanNotice | null = null;
-      if (ipBan) {
-        notice = { date: ipBan.created_at, reference: banReference(ipBan.id) };
-      } else if (discordUserIds.length) {
-        signal.throwIfAborted();
-        const dates: number[] = [];
-        for (const table of ['users', 'moderation_restrictions']) {
-          const { rows } = await measure('ban-identity', () =>
-            client.query<{ at: Date }>(
-              `select banned_at as at from ${table} where discord_user_id = any($1::varchar[]) and banned_at is not null`,
-              [discordUserIds],
-            ),
-          );
-          dates.push(...rows.map(({ at }) => Number(at)));
-        }
-        if (dates.length)
-          notice = {
-            date: new Date(Math.min(...dates)),
-            reference: banReference(discordUserIds.join('+')),
-          };
-      }
-      await client.query('commit');
-      return notice;
-    } catch (error) {
-      await client.query('rollback');
-      throw error;
-    }
+    const results = await measure('ban-query', () =>
+      client.query<BanRow>(
+        `begin; set local statement_timeout = ${BAN_STATEMENT_TIMEOUT_MS}; ${found.join(' union all ')}; commit`,
+      ),
+    );
+    const rows = (results as unknown as { rows: BanRow[] }[])[2].rows;
+    const ipBan = rows.find(({ kind }) => kind === 'ip');
+    if (ipBan)
+      return { date: ipBan.at, reference: banReference(ipBan.ref ?? '') };
+    if (!rows.length) return null;
+    return {
+      date: new Date(Math.min(...rows.map(({ at }) => Number(at)))),
+      reference: banReference(discordUserIds.join('+')),
+    };
   } finally {
     const closed = client.end();
     if ('Deno' in globalThis) {
