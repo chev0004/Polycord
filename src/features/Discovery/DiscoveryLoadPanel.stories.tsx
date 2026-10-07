@@ -37,11 +37,11 @@ export const Loading: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
-      canvas.getByRole('complementary', { name: 'Discovery load trace' }),
+      canvas.getByRole('complementary', { name: 'Page load trace' }),
     ).toBeInTheDocument();
     await expect(canvas.getByText('12.00 s')).toBeInTheDocument();
     await expect(canvas.getByText('Not started')).toBeInTheDocument();
-    fireEvent.click(canvas.getByText('Discovery load trace'));
+    fireEvent.click(canvas.getByText('Page load trace'));
     await expect(
       canvas.getByRole('complementary').querySelector('details'),
     ).not.toHaveAttribute('open');
@@ -88,7 +88,7 @@ export const Complete: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('29.00 s')).toBeInTheDocument();
     await expect(
-      canvas.getByText(/Initial grid ready: timers stopped/),
+      canvas.getByText(/Page ready: timers stopped/),
     ).toBeInTheDocument();
     await expect(canvas.queryByText('45.00 s')).not.toBeInTheDocument();
   },
@@ -112,5 +112,72 @@ export const Failed: Story = {
         grid: { status: 'pending' },
       },
     },
+  },
+};
+
+export const SettingsNavigation: Story = {
+  args: {
+    now: 52000,
+    trace: {
+      transport: 'https',
+      kind: 'client',
+      route: '/en/settings',
+      routes: ['/en/user/[member]', '/en/u/[member]', '/en/settings'],
+      startedAt: 50000,
+      finished: 1700,
+      navigation: { redirect: 0, connection: 0, firstByte: 0, download: 0 },
+      phases: {
+        document: { status: 'done', start: 0, end: 1600 },
+        controls: { status: 'done', start: 0, end: 1700 },
+        viewer: { status: 'pending' },
+        discovery: { status: 'pending' },
+        grid: { status: 'pending' },
+        page: { status: 'done', start: 0, end: 1700, spans: { page: 900 } },
+      },
+      resources: [
+        {
+          name: '/en/settings',
+          start: 30,
+          end: 1500,
+          redirect: 250,
+          firstByte: 1400,
+          spans: { gate: 400 },
+        },
+      ],
+      history: [
+        {
+          transport: 'https',
+          route: '/en',
+          finished: 8500,
+          navigation: {
+            redirect: 1000,
+            connection: 0,
+            firstByte: 2700,
+            download: 0,
+          },
+          phases: {
+            document: { status: 'done', start: 0, end: 2700 },
+            controls: { status: 'done', start: 0, end: 3200 },
+            viewer: { status: 'done', start: 3100, end: 7300 },
+            discovery: { status: 'done', start: 3100, end: 8100 },
+            grid: { status: 'done', start: 8100, end: 8500 },
+          },
+        },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getAllByText('1.70 s').length).toBeGreaterThan(0);
+    await expect(
+      canvas.getByText('Navigation to destination'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByText('Discovery results'),
+    ).not.toBeInTheDocument();
+    fireEvent.click(canvas.getByText('Previous navigations (1)'));
+    await expect(canvas.getByText('8.50 s')).toBeVisible();
+    fireEvent.click(canvas.getByText('Network requests (1)'));
+    await expect(canvas.getByText('0.25 s')).toBeVisible();
   },
 };
