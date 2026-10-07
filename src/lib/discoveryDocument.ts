@@ -12,6 +12,18 @@ import {
 import { findBan } from './banGate';
 import { createLoadTrace, measureLoad } from './loadTrace';
 
+const locales = ['en', 'ja'];
+
+const preferredLocale = (headers: Headers, cookies: RequestCookies) => {
+  const saved = cookies.get('NEXT_LOCALE')?.value;
+  if (saved && locales.includes(saved)) return saved;
+  const accepted = headers
+    .get('accept-language')
+    ?.split(',')
+    .map((entry) => entry.split(';')[0].trim().split('-')[0].toLowerCase());
+  return accepted?.find((tag) => locales.includes(tag)) ?? 'en';
+};
+
 export const serveDiscoveryDocument = async (
   request: Request,
   context: { next: (request: Request) => Promise<Response> },
@@ -20,6 +32,24 @@ export const serveDiscoveryDocument = async (
   const url = new URL(request.url);
   const locale = url.pathname.match(/^\/(en|ja)(?:\.rsc)?\/?$/)?.[1];
   const cookies = new RequestCookies(request.headers);
+  if (url.pathname === '/') {
+    if (
+      !['GET', 'HEAD'].includes(request.method) ||
+      request.headers.has('rsc') ||
+      url.searchParams.has('_rsc')
+    )
+      return context.next(request);
+    return new Response(null, {
+      status: 307,
+      headers: {
+        Location: new URL(
+          `/${preferredLocale(request.headers, cookies)}${url.search}`,
+          url,
+        ).href,
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
   const trace = await createLoadTrace(request);
   const measure = trace?.measure ?? measureLoad;
   try {
