@@ -1,20 +1,16 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getTranslations } from 'next-intl/server';
 import {
-  getCardThemeByDiscordUserId,
-  getUserSettingsByDiscordUserId,
-} from '@/db';
-import { AppShell } from '@/features/Navigation/AppShell';
-import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
-import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
-import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
-import { loadStaffNav } from '@/lib/admin';
-import { getCurrentUser } from '@/lib/auth';
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from 'next-intl/server';
 import { locales } from '@/utils/locales';
 import { fontVariables } from '../fonts';
 import '../globals.css';
+
+export const generateStaticParams = () => locales.map((lang) => ({ lang }));
 
 export async function generateMetadata({
   params,
@@ -51,15 +47,8 @@ export default async function RootLayout({
     notFound();
   }
 
+  setRequestLocale(lang);
   const messages = await getMessages({ locale: lang });
-  const user = await getCurrentUser();
-  const [settings, cardTheme, staffNav] = user
-    ? await Promise.all([
-        getUserSettingsByDiscordUserId(user.id),
-        getCardThemeByDiscordUserId(user.id),
-        loadStaffNav(user),
-      ])
-    : [null, undefined, null];
 
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -68,20 +57,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={lang} messages={messages}>
-          <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
-            <TimeFormatProvider value={settings?.timeFormat ?? '24hr'}>
-              <RouteProgressProvider theme={cardTheme}>
-                <AppShell
-                  locale={lang}
-                  isLoggedIn={Boolean(user)}
-                  userAvatarUrl={user?.avatarUrl}
-                  pendingCases={staffNav?.pendingCases}
-                >
-                  {children}
-                </AppShell>
-              </RouteProgressProvider>
-            </TimeFormatProvider>
-          </LanguageDisplayProvider>
+          {children}
         </NextIntlClientProvider>
       </body>
     </html>

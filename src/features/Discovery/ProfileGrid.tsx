@@ -22,6 +22,7 @@ import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
 
 type ProfileGridProps = {
   profiles: DiscoveryProfile[];
+  onReady?: () => void;
   showBoostedBadge?: boolean;
   emptyState?: ReactNode;
   isLoggedIn?: boolean;
@@ -76,6 +77,7 @@ const layOutMasonry = (grid: HTMLDivElement | null) => {
 
 export const ProfileGrid = ({
   profiles,
+  onReady,
   showBoostedBadge = true,
   emptyState,
   isLoggedIn = false,
@@ -189,6 +191,10 @@ export const ProfileGrid = ({
   }, [displayedProfiles]);
 
   const hasProfiles = displayedProfiles.length > 0;
+
+  useEffect(() => {
+    if (mobile !== null) onReady?.();
+  }, [mobile, onReady]);
 
   const handleCopyUsername = (
     username: string,

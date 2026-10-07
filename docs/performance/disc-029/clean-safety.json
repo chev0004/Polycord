@@ -1,0 +1,75 @@
+{
+  "origin": "https://6ac595ae44d5c81dd446984f--polycord-disc027-supabase.netlify.app",
+  "outcomes": [
+    {
+      "identity": "account",
+      "path": "/en",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "account",
+      "path": "/ja",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "account",
+      "path": "/api/discovery?locale=en",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "account",
+      "path": "/api/discovery/viewer?locale=en",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "account",
+      "path": "/en?_rsc=clean",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "remembered",
+      "path": "/en",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "remembered",
+      "path": "/ja",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "remembered",
+      "path": "/api/discovery?locale=en",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "remembered",
+      "path": "/api/discovery/viewer?locale=en",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "identity": "remembered",
+      "path": "/en?_rsc=clean",
+      "status": 403,
+      "noStore": true
+    },
+    {
+      "unsignedCookiesAndSpoofedHeaders": true,
+      "status": 200,
+      "probesAbsent": true
+    },
+    {
+      "internalUnauthenticated": true,
+      "status": 403,
+      "noStore": true
+    }
+  ]
+}

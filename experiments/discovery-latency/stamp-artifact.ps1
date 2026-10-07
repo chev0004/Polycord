@@ -16,3 +16,7 @@ try {
   $taskWriter=[IO.StreamWriter]::new($taskNew.Open(),[Text.UTF8Encoding]::new($false))
   try { $taskWriter.Write("// DISC027 independent package: $Stamp`n$taskSource") } finally { $taskWriter.Dispose() }
 } finally { $taskZip.Dispose() }
+$taskManifest=Join-Path (Get-Location) '.netlify/functions/manifest.json'
+$taskCache=Get-Content -Raw -LiteralPath $taskManifest | ConvertFrom-Json
+$taskCache.timestamp=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+[IO.File]::WriteAllText($taskManifest,($taskCache | ConvertTo-Json -Depth 16),[Text.UTF8Encoding]::new($false))

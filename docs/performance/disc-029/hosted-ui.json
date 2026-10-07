@@ -1,0 +1,92 @@
+{
+  "origin": "https://6ac595ae44d5c81dd446984f--polycord-disc027-supabase.netlify.app",
+  "results": [
+    {
+      "locale": "en",
+      "width": 1440,
+      "status": 200,
+      "pendingInputPreserved": true,
+      "focusPreserved": true,
+      "searchPositionPreserved": true,
+      "supersededResponseIgnored": true,
+      "accessibilityViolations": 0,
+      "clientNavigationHistoryRefresh": true
+    },
+    {
+      "locale": "en",
+      "width": 390,
+      "status": 200,
+      "pendingInputPreserved": true,
+      "focusPreserved": true,
+      "searchPositionPreserved": true,
+      "supersededResponseIgnored": true,
+      "accessibilityViolations": 0,
+      "clientNavigationHistoryRefresh": true
+    },
+    {
+      "locale": "ja",
+      "width": 1440,
+      "status": 200,
+      "pendingInputPreserved": true,
+      "focusPreserved": true,
+      "searchPositionPreserved": true,
+      "supersededResponseIgnored": true,
+      "accessibilityViolations": 0,
+      "clientNavigationHistoryRefresh": true
+    },
+    {
+      "locale": "ja",
+      "width": 390,
+      "status": 200,
+      "pendingInputPreserved": true,
+      "focusPreserved": true,
+      "searchPositionPreserved": true,
+      "supersededResponseIgnored": true,
+      "accessibilityViolations": 0,
+      "clientNavigationHistoryRefresh": true
+    },
+    {
+      "path": "/__discovery_shell/en.html",
+      "status": 404,
+      "noStore": true
+    },
+    {
+      "path": "/__discovery_shell/ja.html",
+      "status": 404,
+      "noStore": true
+    },
+    {
+      "path": "/__discovery_shell/en",
+      "status": 404,
+      "noStore": true
+    },
+    {
+      "path": "/__discovery_shell",
+      "status": 404,
+      "noStore": true
+    },
+    {
+      "head": 200,
+      "rsc": 200,
+      "rscContentType": "text/x-component"
+    },
+    {
+      "freshLegalToDiscovery": true,
+      "documentNavigations": 0,
+      "flightResponses": 1
+    },
+    {
+      "locale": "en",
+      "missingRoute": true,
+      "status": 404,
+      "navigationAndFooter": true
+    },
+    {
+      "locale": "ja",
+      "missingRoute": true,
+      "status": 404,
+      "navigationAndFooter": true
+    }
+  ],
+  "pageErrors": []
+}

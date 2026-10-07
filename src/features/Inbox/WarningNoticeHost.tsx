@@ -9,8 +9,14 @@ const OpenNoticeContext = createContext<(id: string) => void>(() => {});
 
 export const useOpenNotice = () => useContext(OpenNoticeContext);
 
-export const WarningNoticeHost = ({ children }: { children: ReactNode }) => {
-  const inbox = useInbox({ notifications: [] });
+export const WarningNoticeHost = ({
+  children,
+  enabled = true,
+}: {
+  children: ReactNode;
+  enabled?: boolean;
+}) => {
+  const inbox = useInbox({ notifications: [], persist: enabled });
   const [openId, setOpenId] = useState<string | null>(null);
   const shown =
     inbox.notifications.find((n) => n.id === openId && hasNotice(n)) ??
@@ -21,7 +27,7 @@ export const WarningNoticeHost = ({ children }: { children: ReactNode }) => {
       {children}
       <WarningNotice
         key={shown?.id}
-        open={shown !== undefined}
+        open={enabled && shown !== undefined}
         acknowledged={shown?.acknowledgedAt !== undefined}
         busy={inbox.pending}
         onAcknowledge={() => {

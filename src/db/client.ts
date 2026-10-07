@@ -1,68 +1,22 @@
 import 'server-only';
 
-import { Socket } from 'node:net';
 import { type ExtractTablesWithRelations, sql } from 'drizzle-orm';
 import { drizzle, NodePgTransaction } from 'drizzle-orm/node-postgres';
 import { PgDialect } from 'drizzle-orm/pg-core';
-import { Client, Pool } from 'pg';
+import { Pool } from 'pg';
+import { connectionConfig } from './connection';
 import * as schema from './schema';
-import supabaseCa from './supabaseCa.json';
 
 declare global {
   var polycordPool: Pool | undefined;
 }
-
-const connectionConfig = () => {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL is required to connect to the database.');
-  }
-
-  const url = new URL(databaseUrl);
-  for (const key of ['ssl', 'sslmode', 'sslcert', 'sslkey', 'sslrootcert']) {
-    url.searchParams.delete(key);
-  }
-  return {
-    connectionString: url.href,
-    connectionTimeoutMillis: 3000,
-    ssl: ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
-      ? false
-      : {
-          rejectUnauthorized: true,
-          ...(url.hostname.endsWith('.pooler.supabase.com') && {
-            ca: supabaseCa,
-          }),
-        },
-  };
-};
-
-export const createBanClient = (signal: AbortSignal) => {
-  const client = new Client({
-    ...connectionConfig(),
-    query_timeout: 2500,
-    stream: () => new Socket({ signal }),
-  });
-  if ('Deno' in globalThis) {
-    client.connection.once('sslconnect', () => {
-      const abort = () => {
-        client.connection.stream.destroy();
-        client.connection.emit('end');
-      };
-      signal.addEventListener('abort', abort, { once: true });
-      client.once('end', () => signal.removeEventListener('abort', abort));
-      if (signal.aborted) abort();
-    });
-  }
-  client.on('error', () => {});
-  return client;
-};
 
 const pool =
   globalThis.polycordPool ??
   new Pool({
     ...connectionConfig(),
     max: 2,
+    maxUses: process.env.AWS_LAMBDA_FUNCTION_NAME ? 1 : Infinity,
     query_timeout: 10000,
     idleTimeoutMillis: 20000,
   });

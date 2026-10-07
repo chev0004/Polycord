@@ -1,0 +1,121 @@
+{
+  "at": "2026-10-06T20:09:01.455Z",
+  "origin": "https://6ac554751801b989800892dc--polycord-disc027-supabase.netlify.app",
+  "outcomes": [
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 503,
+      "expected": 503,
+      "ms": 3474.8646,
+      "cacheControl": "no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=2710.49, middleware;dur=2711.13"
+    },
+    {
+      "path": "/en",
+      "status": 503,
+      "expected": 503,
+      "ms": 3472.7807000000003,
+      "cacheControl": "no-store",
+      "serverTiming": "middleware-instance;desc=\"e86daf2d-c900-46c8-a905-69306dc3e83a\", ban-direct;dur=2746.25, middleware;dur=2746.96"
+    },
+    {
+      "path": "/api/discovery/viewer?locale=en",
+      "status": 503,
+      "expected": 503,
+      "ms": 3482.9491,
+      "cacheControl": "no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=2729.77, middleware;dur=2730.09"
+    },
+    {
+      "path": "/api/internal/ban-check",
+      "status": 503,
+      "expected": 503,
+      "ms": 3799.682,
+      "cacheControl": "no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", middleware;dur=3.35"
+    },
+    {
+      "path": "/api/internal/ban-check",
+      "status": 200,
+      "expected": 200,
+      "ms": 242.19779999999992,
+      "cacheControl": "no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", middleware;dur=0.11"
+    },
+    {
+      "path": "/api/discovery/viewer?locale=en",
+      "status": 200,
+      "expected": 200,
+      "ms": 440.6296000000002,
+      "cacheControl": "private,no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=155.71, middleware;dur=155.91"
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "expected": 200,
+      "ms": 552.3969999999999,
+      "cacheControl": "public,max-age=0,must-revalidate",
+      "serverTiming": "middleware-instance;desc=\"e86daf2d-c900-46c8-a905-69306dc3e83a\", ban-direct;dur=174.26, middleware;dur=458.09"
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 200,
+      "expected": 200,
+      "ms": 861.0931,
+      "cacheControl": "private,no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=152.70, middleware;dur=152.82"
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "expected": 200,
+      "ms": 373.02430000000004,
+      "cacheControl": "public,max-age=0,must-revalidate",
+      "serverTiming": "middleware-instance;desc=\"e86daf2d-c900-46c8-a905-69306dc3e83a\", ban-direct;dur=170.35, middleware;dur=216.98"
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 503,
+      "expected": 503,
+      "ms": 10645.5093,
+      "cacheControl": "private,no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=169.56, middleware;dur=169.69"
+    },
+    {
+      "path": "/api/discovery/viewer?locale=en",
+      "status": 503,
+      "expected": 503,
+      "ms": 10774.3021,
+      "cacheControl": "private,no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=201.70, middleware;dur=201.88"
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "expected": 200,
+      "ms": 438.90669999999955,
+      "cacheControl": "public,max-age=0,must-revalidate",
+      "serverTiming": "middleware-instance;desc=\"e86daf2d-c900-46c8-a905-69306dc3e83a\", ban-direct;dur=197.02, middleware;dur=278.67"
+    },
+    {
+      "path": "/api/discovery/viewer?locale=en",
+      "status": 200,
+      "expected": 200,
+      "ms": 478.52400000000125,
+      "cacheControl": "private,no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=174.89, middleware;dur=174.98"
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 200,
+      "expected": 200,
+      "ms": 605.275599999999,
+      "cacheControl": "private,no-store",
+      "serverTiming": "middleware-instance;desc=\"cedd2dad-0f30-4669-a3b4-12a4af21f8e6\", ban-direct;dur=178.47, middleware;dur=178.61"
+    },
+    {
+      "idle_transactions": 0
+    }
+  ]
+}

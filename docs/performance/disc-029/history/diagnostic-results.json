@@ -1,0 +1,52 @@
+[
+  {
+    "path": "/api/internal/ban-check",
+    "status": 200,
+    "ms": 654.7754,
+    "failure": null,
+    "code": null,
+    "timing": "ban-handler-instance;desc=\"3cdaa81d-8287-4fe9-8009-f312f7d2417f\", ban-handler;dur=154.01",
+    "middleware": "middleware-instance;desc=\"0412abad-b0a5-4f02-a4fe-ed01edb72bb5\", middleware;dur=0.20",
+    "transport": "https",
+    "contentType": "application/json",
+    "bytes": 12,
+    "wordmark": false,
+    "search": false
+  },
+  {
+    "path": "/api/discovery?locale=en&count=1",
+    "status": 200,
+    "ms": 957.9731999999999,
+    "failure": null,
+    "code": null,
+    "timing": "discovery-instance;desc=\"3cdaa81d-8287-4fe9-8009-f312f7d2417f\", discovery;dur=653.22",
+    "middleware": "middleware-instance;desc=\"0412abad-b0a5-4f02-a4fe-ed01edb72bb5\", ban-http;dur=180.37, middleware;dur=180.43",
+    "transport": "https",
+    "contentType": "application/json",
+    "bytes": 14,
+    "wordmark": false,
+    "search": false
+  },
+  {
+    "path": "/en",
+    "status": 200,
+    "ms": 298.0590000000002,
+    "failure": null,
+    "code": null,
+    "timing": null,
+    "middleware": "middleware-instance;desc=\"0412abad-b0a5-4f02-a4fe-ed01edb72bb5\", ban-http;dur=128.95, middleware;dur=131.67",
+    "transport": "https",
+    "contentType": "text/html; charset=utf-8",
+    "bytes": 119233,
+    "wordmark": true,
+    "search": true
+  },
+  {
+    "kind": "browser",
+    "status": 200,
+    "search": 1,
+    "wordmark": 1,
+    "scripts": 28,
+    "errors": []
+  }
+]

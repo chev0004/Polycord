@@ -1,0 +1,1732 @@
+{
+  "trials": [
+    {
+      "label": "https-1",
+      "metadata": {
+        "id": "6ac5535dc7473da0ac332f2b",
+        "applicationSource": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "runnerCommit": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "staticShell": true,
+        "nativeShell": true,
+        "nativeSourceSha256": "3AB5E5EA171E0B0B1E203B214CC884508744CE0DDB509EC18009663F26F77A6E",
+        "requiresHandlers": true,
+        "publishedRuntime": "nodejs22.x",
+        "publishedDigest": "4b75ca09e65887486d0821a2c67c432999750982bb33709989164c6fd57a68ba",
+        "transport": "https",
+        "publishDirectory": ".netlify/static",
+        "build": null,
+        "region": "cmh",
+        "created": "2026-10-06T20:00:29.918Z",
+        "origin": "https://6ac5535dc7473da0ac332f2b--polycord-disc027-supabase.netlify.app",
+        "serverZipSha256": "4B75CA09E65887486D0821A2C67C432999750982BB33709989164C6FD57A68BA",
+        "edgeBundleSha256": [
+          "FC7598E469433C71FA47741F871CB602CF30D672210CAD8DF995799B1D6099AB"
+        ]
+      },
+      "fixture": {
+        "profiles": 5000,
+        "discoverable": 4735
+      },
+      "versions": {
+        "runner": "v22.23.3",
+        "chromium": "154.0.8037.98"
+      },
+      "phases": [
+        {
+          "startedAt": "2026-10-06T20:00:34.364Z",
+          "firstTraffic": true,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 9952.120200000001,
+            "p95": 11426.7105,
+            "max": 11536.814999999999
+          },
+          "successful": {
+            "count": 60,
+            "p50": 9952.120200000001,
+            "p95": 11426.7105,
+            "max": 11536.814999999999
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 8705.095299999999,
+            "p95": 9336.117400000001,
+            "max": 9336.117400000001
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 9109.800000011921,
+            "p95": 9671.5,
+            "max": 9671.5
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 11002.900000035763,
+            "p95": 11400,
+            "max": 11400
+          },
+          "observedCompletionMs": 11556.81494140625,
+          "logicalRequestsPerSecond": 5.191741868689913
+        },
+        {
+          "startedAt": "2026-10-06T20:00:47.267Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 963.4220999999998,
+            "p95": 4243.521500000001,
+            "max": 4516.827799999999
+          },
+          "successful": {
+            "count": 60,
+            "p50": 963.4220999999998,
+            "p95": 4243.521500000001,
+            "max": 4516.827799999999
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 760.8342999999986,
+            "p95": 892.2892999999985,
+            "max": 892.2892999999985
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1529.300000011921,
+            "p95": 1899.7000000476837,
+            "max": 1899.7000000476837
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 3261.100000023842,
+            "p95": 4409.300000011921,
+            "max": 4409.300000011921
+          },
+          "observedCompletionMs": 4518.827880859375,
+          "logicalRequestsPerSecond": 13.277779455629412
+        },
+        {
+          "startedAt": "2026-10-06T20:00:52.916Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 943.8450000000012,
+            "p95": 3038.655899999998,
+            "max": 3175.5985
+          },
+          "successful": {
+            "count": 60,
+            "p50": 943.8450000000012,
+            "p95": 3038.655899999998,
+            "max": 3175.5985
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 751.0194999999985,
+            "p95": 847.4537999999993,
+            "max": 847.4537999999993
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1494.199999988079,
+            "p95": 1704.300000011921,
+            "max": 1704.300000011921
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2604.800000011921,
+            "p95": 3036.800000011921,
+            "max": 3036.800000011921
+          },
+          "observedCompletionMs": 3180.598388671875,
+          "logicalRequestsPerSecond": 18.864374771017303
+        },
+        {
+          "startedAt": "2026-10-06T20:00:56.348Z",
+          "firstTraffic": false,
+          "size": 12,
+          "ok": 12,
+          "errors": 0,
+          "all": {
+            "count": 12,
+            "p50": 715.917300000001,
+            "p95": 2177.7170000000006,
+            "max": 2177.7170000000006
+          },
+          "successful": {
+            "count": 12,
+            "p50": 715.917300000001,
+            "p95": 2177.7170000000006,
+            "max": 2177.7170000000006
+          },
+          "shellResponse": {
+            "count": 3,
+            "p50": 589.2724000000017,
+            "p95": 830.0488000000005,
+            "max": 830.0488000000005
+          },
+          "visibleShell": {
+            "count": 3,
+            "p50": 1069.2000000476837,
+            "p95": 1220.199999988079,
+            "max": 1220.199999988079
+          },
+          "dataReady": {
+            "count": 3,
+            "p50": 1998.2000000476837,
+            "p95": 2152,
+            "max": 2152
+          },
+          "observedCompletionMs": 2178.717041015625,
+          "logicalRequestsPerSecond": 5.507828586316152
+        }
+      ],
+      "safetyPassed": 8,
+      "database": {
+        "maxConnections": 18,
+        "maxIdleTransactions": 4,
+        "finalSample": {
+          "at": "2026-10-06T20:01:01.390Z",
+          "connections": 18,
+          "active": 1,
+          "idle_transactions": 0
+        }
+      },
+      "actualNodeVersions": [
+        "v22.23.2"
+      ],
+      "cold": [
+        {
+          "shellResponse": 8902.2816,
+          "visibleShell": 9376,
+          "dataReady": 11238.300000011921
+        },
+        {
+          "shellResponse": 8804.3218,
+          "visibleShell": 9216.100000023842,
+          "dataReady": 10802.100000023842
+        },
+        {
+          "shellResponse": 8840.8397,
+          "visibleShell": 9342.200000047684,
+          "dataReady": 11075.400000035763
+        },
+        {
+          "shellResponse": 4991.7578,
+          "visibleShell": 5497.5,
+          "dataReady": 10969.700000047684
+        },
+        {
+          "shellResponse": 8705.095299999999,
+          "visibleShell": 9109.800000011921,
+          "dataReady": 11298
+        },
+        {
+          "shellResponse": 5075.8292,
+          "visibleShell": 5480.299999952316,
+          "dataReady": 11292.599999964237
+        },
+        {
+          "shellResponse": 5092.5436,
+          "visibleShell": 5635.100000023842,
+          "dataReady": 11400
+        },
+        {
+          "shellResponse": 8748.1986,
+          "visibleShell": 9208.399999976158,
+          "dataReady": 10559.399999976158
+        },
+        {
+          "shellResponse": 5052.7536,
+          "visibleShell": 5480.800000011921,
+          "dataReady": 10922
+        },
+        {
+          "shellResponse": 9148.8852,
+          "visibleShell": 9538.300000011921,
+          "dataReady": 11182.5
+        },
+        {
+          "shellResponse": 5007.472,
+          "visibleShell": 5460.899999976158,
+          "dataReady": 10287.899999976158
+        },
+        {
+          "shellResponse": 5109.41,
+          "visibleShell": 5431.900000035763,
+          "dataReady": 10864.600000023842
+        },
+        {
+          "shellResponse": 9094.0171,
+          "visibleShell": 9454.699999988079,
+          "dataReady": 11311.399999976158
+        },
+        {
+          "shellResponse": 9336.117400000001,
+          "visibleShell": 9671.5,
+          "dataReady": 10955.199999988079
+        },
+        {
+          "shellResponse": 8610.755099999998,
+          "visibleShell": 9009.200000047684,
+          "dataReady": 11002.900000035763
+        }
+      ]
+    },
+    {
+      "label": "https-2",
+      "metadata": {
+        "id": "6ac553943036562bbc6caa76",
+        "applicationSource": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "runnerCommit": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "staticShell": true,
+        "nativeShell": true,
+        "nativeSourceSha256": "3AB5E5EA171E0B0B1E203B214CC884508744CE0DDB509EC18009663F26F77A6E",
+        "requiresHandlers": true,
+        "publishedRuntime": "nodejs22.x",
+        "publishedDigest": "bc5557e8e4aabe198eae339f67a0e96cbc8cd4294ed1f2a3d4a3a30596d4d0c1",
+        "transport": "https",
+        "publishDirectory": ".netlify/static",
+        "build": null,
+        "region": "cmh",
+        "created": "2026-10-06T20:01:24.543Z",
+        "origin": "https://6ac553943036562bbc6caa76--polycord-disc027-supabase.netlify.app",
+        "serverZipSha256": "BC5557E8E4AABE198EAE339F67A0E96CBC8CD4294ED1F2A3D4A3A30596D4D0C1",
+        "edgeBundleSha256": [
+          "FC7598E469433C71FA47741F871CB602CF30D672210CAD8DF995799B1D6099AB"
+        ]
+      },
+      "fixture": {
+        "profiles": 5000,
+        "discoverable": 4735
+      },
+      "versions": {
+        "runner": "v22.23.3",
+        "chromium": "154.0.8037.98"
+      },
+      "phases": [
+        {
+          "startedAt": "2026-10-06T20:01:27.893Z",
+          "firstTraffic": true,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 6903.053400000001,
+            "p95": 10951.2479,
+            "max": 11388.2491
+          },
+          "successful": {
+            "count": 60,
+            "p50": 6903.053400000001,
+            "p95": 10951.2479,
+            "max": 11388.2491
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 5630.1365,
+            "p95": 9484.3255,
+            "max": 9484.3255
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 6520.799999952316,
+            "p95": 9793.900000035763,
+            "max": 9793.900000035763
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 7748,
+            "p95": 11273.199999988079,
+            "max": 11273.199999988079
+          },
+          "observedCompletionMs": 11403.2490234375,
+          "logicalRequestsPerSecond": 5.261658311300567
+        },
+        {
+          "startedAt": "2026-10-06T20:01:40.380Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 1077.4166000000005,
+            "p95": 4500.456700000001,
+            "max": 4707.464800000002
+          },
+          "successful": {
+            "count": 60,
+            "p50": 1077.4166000000005,
+            "p95": 4500.456700000001,
+            "max": 4707.464800000002
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 780.0689999999995,
+            "p95": 1073.9928,
+            "max": 1073.9928
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1568.199999988079,
+            "p95": 1935.699999988079,
+            "max": 1935.699999988079
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2719.600000023842,
+            "p95": 4561.400000035763,
+            "max": 4561.400000035763
+          },
+          "observedCompletionMs": 4719.46484375,
+          "logicalRequestsPerSecond": 12.713305848534535
+        },
+        {
+          "startedAt": "2026-10-06T20:01:46.190Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 1014.3317999999999,
+            "p95": 4647.899799999999,
+            "max": 4774.0092
+          },
+          "successful": {
+            "count": 60,
+            "p50": 1014.3317999999999,
+            "p95": 4647.899799999999,
+            "max": 4774.0092
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 792.2510999999977,
+            "p95": 953.6000999999997,
+            "max": 953.6000999999997
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1584.2000000476837,
+            "p95": 1810.699999988079,
+            "max": 1810.699999988079
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 4289,
+            "p95": 4627.600000023842,
+            "max": 4627.600000023842
+          },
+          "observedCompletionMs": 4786.00927734375,
+          "logicalRequestsPerSecond": 12.536540679942057
+        },
+        {
+          "startedAt": "2026-10-06T20:01:51.236Z",
+          "firstTraffic": false,
+          "size": 12,
+          "ok": 12,
+          "errors": 0,
+          "all": {
+            "count": 12,
+            "p50": 644.9349000000002,
+            "p95": 1888.8938999999991,
+            "max": 1888.8938999999991
+          },
+          "successful": {
+            "count": 12,
+            "p50": 644.9349000000002,
+            "p95": 1888.8938999999991,
+            "max": 1888.8938999999991
+          },
+          "shellResponse": {
+            "count": 3,
+            "p50": 450.65840000000026,
+            "p95": 465.23809999999867,
+            "max": 465.23809999999867
+          },
+          "visibleShell": {
+            "count": 3,
+            "p50": 821.8000000119209,
+            "p95": 826.6999999880791,
+            "max": 826.6999999880791
+          },
+          "dataReady": {
+            "count": 3,
+            "p50": 1849.2999999523163,
+            "p95": 1857.5,
+            "max": 1857.5
+          },
+          "observedCompletionMs": 1890.893798828125,
+          "logicalRequestsPerSecond": 6.346205168919037
+        }
+      ],
+      "safetyPassed": 8,
+      "database": {
+        "maxConnections": 18,
+        "maxIdleTransactions": 9,
+        "finalSample": {
+          "at": "2026-10-06T20:01:56.217Z",
+          "connections": 18,
+          "active": 1,
+          "idle_transactions": 0
+        }
+      },
+      "actualNodeVersions": [
+        "v22.23.2"
+      ],
+      "cold": [
+        {
+          "shellResponse": 5676.6126,
+          "visibleShell": 6561.799999952316,
+          "dataReady": 7607.699999988079
+        },
+        {
+          "shellResponse": 9484.3255,
+          "visibleShell": 9793.900000035763,
+          "dataReady": 10837.5
+        },
+        {
+          "shellResponse": 5731.0589,
+          "visibleShell": 6648.300000011921,
+          "dataReady": 7734.800000011921
+        },
+        {
+          "shellResponse": 5961.8458,
+          "visibleShell": 6610.899999976158,
+          "dataReady": 11273.199999988079
+        },
+        {
+          "shellResponse": 5198.5098,
+          "visibleShell": 5670.799999952316,
+          "dataReady": 10586.199999988079
+        },
+        {
+          "shellResponse": 5865.3401,
+          "visibleShell": 6624.5,
+          "dataReady": 7789.800000011921
+        },
+        {
+          "shellResponse": 5862.7608,
+          "visibleShell": 6523.899999976158,
+          "dataReady": 7652.199999988079
+        },
+        {
+          "shellResponse": 5297.135700000001,
+          "visibleShell": 5986.299999952316,
+          "dataReady": 7255.899999976158
+        },
+        {
+          "shellResponse": 5451.6795,
+          "visibleShell": 6058.600000023842,
+          "dataReady": 7257.899999976158
+        },
+        {
+          "shellResponse": 5521.0789,
+          "visibleShell": 6179.699999988079,
+          "dataReady": 10422
+        },
+        {
+          "shellResponse": 5466.545099999999,
+          "visibleShell": 5948.800000011921,
+          "dataReady": 10402.200000047684
+        },
+        {
+          "shellResponse": 5549.1296,
+          "visibleShell": 6293.699999988079,
+          "dataReady": 7265.300000011921
+        },
+        {
+          "shellResponse": 5503.9411,
+          "visibleShell": 6175.5,
+          "dataReady": 7278.099999964237
+        },
+        {
+          "shellResponse": 5660.3307,
+          "visibleShell": 6655.5,
+          "dataReady": 7748
+        },
+        {
+          "shellResponse": 5630.1365,
+          "visibleShell": 6520.799999952316,
+          "dataReady": 10942.299999952316
+        }
+      ]
+    },
+    {
+      "label": "https-3",
+      "metadata": {
+        "id": "6ac553ce0ee5de6e6f431a52",
+        "applicationSource": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "runnerCommit": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "staticShell": true,
+        "nativeShell": true,
+        "nativeSourceSha256": "3AB5E5EA171E0B0B1E203B214CC884508744CE0DDB509EC18009663F26F77A6E",
+        "requiresHandlers": true,
+        "publishedRuntime": "nodejs22.x",
+        "publishedDigest": "4024660d6ca1638e2ff6a353ab2ed70f0970f2fea95f69e195bdcbd48355a6c9",
+        "transport": "https",
+        "publishDirectory": ".netlify/static",
+        "build": null,
+        "region": "cmh",
+        "created": "2026-10-06T20:02:22.86Z",
+        "origin": "https://6ac553ce0ee5de6e6f431a52--polycord-disc027-supabase.netlify.app",
+        "serverZipSha256": "4024660D6CA1638E2FF6A353AB2ED70F0970F2FEA95F69E195BDCBD48355A6C9",
+        "edgeBundleSha256": [
+          "FC7598E469433C71FA47741F871CB602CF30D672210CAD8DF995799B1D6099AB"
+        ]
+      },
+      "fixture": {
+        "profiles": 5000,
+        "discoverable": 4735
+      },
+      "versions": {
+        "runner": "v22.23.3",
+        "chromium": "154.0.8037.98"
+      },
+      "phases": [
+        {
+          "startedAt": "2026-10-06T20:02:26.419Z",
+          "firstTraffic": true,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 6809.3724999999995,
+            "p95": 11551.393,
+            "max": 11675.9672
+          },
+          "successful": {
+            "count": 60,
+            "p50": 6809.3724999999995,
+            "p95": 11551.393,
+            "max": 11675.9672
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 5924.4220000000005,
+            "p95": 9893.008000000002,
+            "max": 9893.008000000002
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 6430.600000023842,
+            "p95": 10224.900000035763,
+            "max": 10224.900000035763
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 11167.399999976158,
+            "p95": 11569.300000011921,
+            "max": 11569.300000011921
+          },
+          "observedCompletionMs": 11691.96728515625,
+          "logicalRequestsPerSecond": 5.131728351324938
+        },
+        {
+          "startedAt": "2026-10-06T20:02:39.228Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 935.1014999999989,
+            "p95": 4465.812900000001,
+            "max": 4588.932100000002
+          },
+          "successful": {
+            "count": 60,
+            "p50": 935.1014999999989,
+            "p95": 4465.812900000001,
+            "max": 4588.932100000002
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 867.362799999999,
+            "p95": 1100.7785999999996,
+            "max": 1100.7785999999996
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1544.199999988079,
+            "p95": 1896.3999999761581,
+            "max": 1896.3999999761581
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2726.600000023842,
+            "p95": 4448.800000011921,
+            "max": 4448.800000011921
+          },
+          "observedCompletionMs": 4596.93212890625,
+          "logicalRequestsPerSecond": 13.052183133770964
+        },
+        {
+          "startedAt": "2026-10-06T20:02:44.944Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 984.3106999999982,
+            "p95": 2975.0884000000005,
+            "max": 3720.1103000000003
+          },
+          "successful": {
+            "count": 60,
+            "p50": 984.3106999999982,
+            "p95": 2975.0884000000005,
+            "max": 3720.1103000000003
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 801.2259999999987,
+            "p95": 2150.014000000003,
+            "max": 2150.014000000003
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1513.7999999523163,
+            "p95": 2571.099999964237,
+            "max": 2571.099999964237
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2707.7000000476837,
+            "p95": 3609,
+            "max": 3609
+          },
+          "observedCompletionMs": 3724.1103515625,
+          "logicalRequestsPerSecond": 16.11123042442236
+        },
+        {
+          "startedAt": "2026-10-06T20:02:48.914Z",
+          "firstTraffic": false,
+          "size": 12,
+          "ok": 12,
+          "errors": 0,
+          "all": {
+            "count": 12,
+            "p50": 1118.25,
+            "p95": 2427.911500000002,
+            "max": 2427.911500000002
+          },
+          "successful": {
+            "count": 12,
+            "p50": 1118.25,
+            "p95": 2427.911500000002,
+            "max": 2427.911500000002
+          },
+          "shellResponse": {
+            "count": 3,
+            "p50": 860.0812000000005,
+            "p95": 894.1016999999993,
+            "max": 894.1016999999993
+          },
+          "visibleShell": {
+            "count": 3,
+            "p50": 1233.2999999523163,
+            "p95": 1276.199999988079,
+            "max": 1276.199999988079
+          },
+          "dataReady": {
+            "count": 3,
+            "p50": 2340.899999976158,
+            "p95": 2395.699999988079,
+            "max": 2395.699999988079
+          },
+          "observedCompletionMs": 2429.91162109375,
+          "logicalRequestsPerSecond": 4.938451216015243
+        }
+      ],
+      "safetyPassed": 8,
+      "database": {
+        "maxConnections": 18,
+        "maxIdleTransactions": 5,
+        "finalSample": {
+          "at": "2026-10-06T20:02:55.460Z",
+          "connections": 18,
+          "active": 1,
+          "idle_transactions": 0
+        }
+      },
+      "actualNodeVersions": [
+        "v22.23.2"
+      ],
+      "cold": [
+        {
+          "shellResponse": 9771.1455,
+          "visibleShell": 10177.599999964237,
+          "dataReady": 11375.5
+        },
+        {
+          "shellResponse": 5733.8393,
+          "visibleShell": 6186.899999976158,
+          "dataReady": 10678.199999988079
+        },
+        {
+          "shellResponse": 5880.8074,
+          "visibleShell": 6430.600000023842,
+          "dataReady": 11339.800000011921
+        },
+        {
+          "shellResponse": 9685.383000000002,
+          "visibleShell": 10077.5,
+          "dataReady": 11569.300000011921
+        },
+        {
+          "shellResponse": 6029.2508,
+          "visibleShell": 6501.100000023842,
+          "dataReady": 11454.300000011921
+        },
+        {
+          "shellResponse": 9710.2376,
+          "visibleShell": 10108.5,
+          "dataReady": 11167.399999976158
+        },
+        {
+          "shellResponse": 6036.1111,
+          "visibleShell": 6494.399999976158,
+          "dataReady": 11144.899999976158
+        },
+        {
+          "shellResponse": 5689.889499999999,
+          "visibleShell": 6246.100000023842,
+          "dataReady": 11029.100000023842
+        },
+        {
+          "shellResponse": 5920.728,
+          "visibleShell": 6395,
+          "dataReady": 10938.399999976158
+        },
+        {
+          "shellResponse": 5803.225399999999,
+          "visibleShell": 6299.199999988079,
+          "dataReady": 10786.300000011921
+        },
+        {
+          "shellResponse": 5773.7127,
+          "visibleShell": 6344,
+          "dataReady": 11189.600000023842
+        },
+        {
+          "shellResponse": 9633.689299999998,
+          "visibleShell": 10061.800000011921,
+          "dataReady": 11197.200000047684
+        },
+        {
+          "shellResponse": 5924.4220000000005,
+          "visibleShell": 6365.5,
+          "dataReady": 10678.600000023842
+        },
+        {
+          "shellResponse": 9893.008000000002,
+          "visibleShell": 10224.900000035763,
+          "dataReady": 11390.800000011921
+        },
+        {
+          "shellResponse": 5827.796200000001,
+          "visibleShell": 6317.5,
+          "dataReady": 11008.900000035763
+        }
+      ]
+    },
+    {
+      "label": "direct-1",
+      "metadata": {
+        "id": "6ac554097522cc7e11f4593a",
+        "applicationSource": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "runnerCommit": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "staticShell": true,
+        "nativeShell": true,
+        "nativeSourceSha256": "3AB5E5EA171E0B0B1E203B214CC884508744CE0DDB509EC18009663F26F77A6E",
+        "requiresHandlers": true,
+        "publishedRuntime": "nodejs22.x",
+        "publishedDigest": "a5fc15d624679fde30e1261d6858fcc8f6b2949c751602bfd5ffb8f964cc34ab",
+        "transport": "direct",
+        "publishDirectory": ".netlify/static",
+        "build": null,
+        "region": "cmh",
+        "created": "2026-10-06T20:03:21.049Z",
+        "origin": "https://6ac554097522cc7e11f4593a--polycord-disc027-supabase.netlify.app",
+        "serverZipSha256": "A5FC15D624679FDE30E1261D6858FCC8F6B2949C751602BFD5FFB8F964CC34AB",
+        "edgeBundleSha256": [
+          "FC7598E469433C71FA47741F871CB602CF30D672210CAD8DF995799B1D6099AB"
+        ]
+      },
+      "fixture": {
+        "profiles": 5000,
+        "discoverable": 4735
+      },
+      "versions": {
+        "runner": "v22.23.3",
+        "chromium": "154.0.8037.98"
+      },
+      "phases": [
+        {
+          "startedAt": "2026-10-06T20:03:36.515Z",
+          "firstTraffic": true,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 6869.3748,
+            "p95": 8496.4308,
+            "max": 8571.5751
+          },
+          "successful": {
+            "count": 60,
+            "p50": 6869.3748,
+            "p95": 8496.4308,
+            "max": 8571.5751
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 1754.3164000000002,
+            "p95": 2040.7055,
+            "max": 2040.7055
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 2522.699999988079,
+            "p95": 2720,
+            "max": 2720
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 7824.699999988079,
+            "p95": 8427.700000047684,
+            "max": 8427.700000047684
+          },
+          "observedCompletionMs": 8589.5751953125,
+          "logicalRequestsPerSecond": 6.9852115658459075
+        },
+        {
+          "startedAt": "2026-10-06T20:03:46.242Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 904.9219000000012,
+            "p95": 3775.708699999999,
+            "max": 3810.3400999999994
+          },
+          "successful": {
+            "count": 60,
+            "p50": 904.9219000000012,
+            "p95": 3775.708699999999,
+            "max": 3810.3400999999994
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 823.3950999999997,
+            "p95": 869.595299999999,
+            "max": 869.595299999999
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1641.0999999642372,
+            "p95": 2097.100000023842,
+            "max": 2097.100000023842
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2711.199999988079,
+            "p95": 3695.7000000476837,
+            "max": 3695.7000000476837
+          },
+          "observedCompletionMs": 3812.340087890625,
+          "logicalRequestsPerSecond": 15.738365050532025
+        },
+        {
+          "startedAt": "2026-10-06T20:03:51.207Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 925.0764999999992,
+            "p95": 2789.8292,
+            "max": 2957.877700000001
+          },
+          "successful": {
+            "count": 60,
+            "p50": 925.0764999999992,
+            "p95": 2789.8292,
+            "max": 2957.877700000001
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 684.2993000000024,
+            "p95": 969.5368000000017,
+            "max": 969.5368000000017
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1493.800000011921,
+            "p95": 1710,
+            "max": 1710
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2437.400000035763,
+            "p95": 2801.7000000476837,
+            "max": 2801.7000000476837
+          },
+          "observedCompletionMs": 2967.877685546875,
+          "logicalRequestsPerSecond": 20.216466565381424
+        },
+        {
+          "startedAt": "2026-10-06T20:03:54.415Z",
+          "firstTraffic": false,
+          "size": 12,
+          "ok": 12,
+          "errors": 0,
+          "all": {
+            "count": 12,
+            "p50": 565.781500000001,
+            "p95": 1673.307200000003,
+            "max": 1673.307200000003
+          },
+          "successful": {
+            "count": 12,
+            "p50": 565.781500000001,
+            "p95": 1673.307200000003,
+            "max": 1673.307200000003
+          },
+          "shellResponse": {
+            "count": 3,
+            "p50": 356.78819999999905,
+            "p95": 369.8761000000013,
+            "max": 369.8761000000013
+          },
+          "visibleShell": {
+            "count": 3,
+            "p50": 727,
+            "p95": 752.8000000119209,
+            "max": 752.8000000119209
+          },
+          "dataReady": {
+            "count": 3,
+            "p50": 1592.1000000238419,
+            "p95": 1642.6000000238419,
+            "max": 1642.6000000238419
+          },
+          "observedCompletionMs": 1674.30712890625,
+          "logicalRequestsPerSecond": 7.167143824943912
+        }
+      ],
+      "safetyPassed": 8,
+      "database": {
+        "maxConnections": 18,
+        "maxIdleTransactions": 16,
+        "finalSample": {
+          "at": "2026-10-06T20:03:58.737Z",
+          "connections": 18,
+          "active": 1,
+          "idle_transactions": 0
+        }
+      },
+      "actualNodeVersions": [
+        "v22.23.2"
+      ],
+      "cold": [
+        {
+          "shellResponse": 1377.0942,
+          "visibleShell": 1872.800000011921,
+          "dataReady": 7511.599999964237
+        },
+        {
+          "shellResponse": 1944.1044000000002,
+          "visibleShell": 2720,
+          "dataReady": 8427.700000047684
+        },
+        {
+          "shellResponse": 1685.8811999999998,
+          "visibleShell": 2542.300000011921,
+          "dataReady": 7425.699999988079
+        },
+        {
+          "shellResponse": 1626.3989000000001,
+          "visibleShell": 2280.100000023842,
+          "dataReady": 7487.800000011921
+        },
+        {
+          "shellResponse": 1934.2873999999997,
+          "visibleShell": 2555.399999976158,
+          "dataReady": 8417.399999976158
+        },
+        {
+          "shellResponse": 2015.2549,
+          "visibleShell": 2655.199999988079,
+          "dataReady": 8207.799999952316
+        },
+        {
+          "shellResponse": 1838.2858,
+          "visibleShell": 2554.7000000476837,
+          "dataReady": 8153.100000023842
+        },
+        {
+          "shellResponse": 1608.1662999999999,
+          "visibleShell": 2045.8999999761581,
+          "dataReady": 7709.399999976158
+        },
+        {
+          "shellResponse": 1645.0838000000003,
+          "visibleShell": 2362.899999976158,
+          "dataReady": 8323.600000023842
+        },
+        {
+          "shellResponse": 2040.7055,
+          "visibleShell": 2698.399999976158,
+          "dataReady": 7470.299999952316
+        },
+        {
+          "shellResponse": 1754.3164000000002,
+          "visibleShell": 2482.600000023842,
+          "dataReady": 7954
+        },
+        {
+          "shellResponse": 1818.9832999999999,
+          "visibleShell": 2522.699999988079,
+          "dataReady": 8290
+        },
+        {
+          "shellResponse": 1658.4241000000002,
+          "visibleShell": 2503,
+          "dataReady": 7824.699999988079
+        },
+        {
+          "shellResponse": 1871.5951999999997,
+          "visibleShell": 2524.899999976158,
+          "dataReady": 7721
+        },
+        {
+          "shellResponse": 1398.4290999999998,
+          "visibleShell": 1784.9000000357628,
+          "dataReady": 7740.400000035763
+        }
+      ]
+    },
+    {
+      "label": "direct-2",
+      "metadata": {
+        "id": "6ac554443a4383d0b88382df",
+        "applicationSource": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "runnerCommit": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "staticShell": true,
+        "nativeShell": true,
+        "nativeSourceSha256": "3AB5E5EA171E0B0B1E203B214CC884508744CE0DDB509EC18009663F26F77A6E",
+        "requiresHandlers": true,
+        "publishedRuntime": "nodejs22.x",
+        "publishedDigest": "fc991f4c55dfce1a56bf38c39afdef71af2aea7630885d4b19046244de627966",
+        "transport": "direct",
+        "publishDirectory": ".netlify/static",
+        "build": null,
+        "region": "cmh",
+        "created": "2026-10-06T20:04:20.461Z",
+        "origin": "https://6ac554443a4383d0b88382df--polycord-disc027-supabase.netlify.app",
+        "serverZipSha256": "FC991F4C55DFCE1A56BF38C39AFDEF71AF2AEA7630885D4B19046244DE627966",
+        "edgeBundleSha256": [
+          "FC7598E469433C71FA47741F871CB602CF30D672210CAD8DF995799B1D6099AB"
+        ]
+      },
+      "fixture": {
+        "profiles": 5000,
+        "discoverable": 4735
+      },
+      "versions": {
+        "runner": "v22.23.3",
+        "chromium": "154.0.8037.98"
+      },
+      "phases": [
+        {
+          "startedAt": "2026-10-06T20:04:24.050Z",
+          "firstTraffic": true,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 6391.388200000001,
+            "p95": 7848.4547,
+            "max": 8097.0568
+          },
+          "successful": {
+            "count": 60,
+            "p50": 6391.388200000001,
+            "p95": 7848.4547,
+            "max": 8097.0568
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 1465.239,
+            "p95": 1582.0232999999998,
+            "max": 1582.0232999999998
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 2110.399999976158,
+            "p95": 2284.100000023842,
+            "max": 2284.100000023842
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 7389.100000023842,
+            "p95": 7905.100000023842,
+            "max": 7905.100000023842
+          },
+          "observedCompletionMs": 8137.056884765625,
+          "logicalRequestsPerSecond": 7.373673411615606
+        },
+        {
+          "startedAt": "2026-10-06T20:04:33.379Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 1083.7837,
+            "p95": 2844.6667000000016,
+            "max": 3122.5565000000006
+          },
+          "successful": {
+            "count": 60,
+            "p50": 1083.7837,
+            "p95": 2844.6667000000016,
+            "max": 3122.5565000000006
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 792.8531000000003,
+            "p95": 1005.8351000000002,
+            "max": 1005.8351000000002
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1502,
+            "p95": 1926.800000011921,
+            "max": 1926.800000011921
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2563.5,
+            "p95": 2971.699999988079,
+            "max": 2971.699999988079
+          },
+          "observedCompletionMs": 3128.556396484375,
+          "logicalRequestsPerSecond": 19.178174338625723
+        },
+        {
+          "startedAt": "2026-10-06T20:04:37.708Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 835.3917999999994,
+            "p95": 2648.4993000000013,
+            "max": 2736.746800000001
+          },
+          "successful": {
+            "count": 60,
+            "p50": 835.3917999999994,
+            "p95": 2648.4993000000013,
+            "max": 2736.746800000001
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 629.9213,
+            "p95": 879.4940999999981,
+            "max": 879.4940999999981
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1376.5,
+            "p95": 1647.699999988079,
+            "max": 1647.699999988079
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2356,
+            "p95": 2612.600000023842,
+            "max": 2612.600000023842
+          },
+          "observedCompletionMs": 2740.746826171875,
+          "logicalRequestsPerSecond": 21.89184328411855
+        },
+        {
+          "startedAt": "2026-10-06T20:04:40.692Z",
+          "firstTraffic": false,
+          "size": 12,
+          "ok": 12,
+          "errors": 0,
+          "all": {
+            "count": 12,
+            "p50": 617.2610000000022,
+            "p95": 1624.168099999999,
+            "max": 1624.168099999999
+          },
+          "successful": {
+            "count": 12,
+            "p50": 617.2610000000022,
+            "p95": 1624.168099999999,
+            "max": 1624.168099999999
+          },
+          "shellResponse": {
+            "count": 3,
+            "p50": 324.4495999999999,
+            "p95": 346.03770000000077,
+            "max": 346.03770000000077
+          },
+          "visibleShell": {
+            "count": 3,
+            "p50": 692.6000000238419,
+            "p95": 704.9000000357628,
+            "max": 704.9000000357628
+          },
+          "dataReady": {
+            "count": 3,
+            "p50": 1551.199999988079,
+            "p95": 1600.2000000476837,
+            "max": 1600.2000000476837
+          },
+          "observedCompletionMs": 1624.168212890625,
+          "logicalRequestsPerSecond": 7.388397276069647
+        }
+      ],
+      "safetyPassed": 8,
+      "database": {
+        "maxConnections": 18,
+        "maxIdleTransactions": 16,
+        "finalSample": {
+          "at": "2026-10-06T20:04:45.097Z",
+          "connections": 18,
+          "active": 1,
+          "idle_transactions": 0
+        }
+      },
+      "actualNodeVersions": [
+        "v22.23.2"
+      ],
+      "cold": [
+        {
+          "shellResponse": 1316.5285,
+          "visibleShell": 1925.8999999761581,
+          "dataReady": 7144.699999988079
+        },
+        {
+          "shellResponse": 1388.3120000000004,
+          "visibleShell": 2201.400000035763,
+          "dataReady": 6754.600000023842
+        },
+        {
+          "shellResponse": 1189.4042999999997,
+          "visibleShell": 1693.8999999761581,
+          "dataReady": 7151.399999976158
+        },
+        {
+          "shellResponse": 1174.4038,
+          "visibleShell": 1695.9000000357628,
+          "dataReady": 7245
+        },
+        {
+          "shellResponse": 1582.0232999999998,
+          "visibleShell": 2284.100000023842,
+          "dataReady": 7400.300000011921
+        },
+        {
+          "shellResponse": 1531.2858,
+          "visibleShell": 2196.100000023842,
+          "dataReady": 7454.900000035763
+        },
+        {
+          "shellResponse": 1228.7429000000002,
+          "visibleShell": 1676.300000011921,
+          "dataReady": 7389.100000023842
+        },
+        {
+          "shellResponse": 1465.239,
+          "visibleShell": 2230.100000023842,
+          "dataReady": 7905.100000023842
+        },
+        {
+          "shellResponse": 1316.3139999999999,
+          "visibleShell": 2137.300000011921,
+          "dataReady": 6873.200000047684
+        },
+        {
+          "shellResponse": 1520.8509999999997,
+          "visibleShell": 2214.600000023842,
+          "dataReady": 7502.900000035763
+        },
+        {
+          "shellResponse": 1348.7797999999998,
+          "visibleShell": 2068.100000023842,
+          "dataReady": 6773
+        },
+        {
+          "shellResponse": 1538.7212,
+          "visibleShell": 2103.400000035763,
+          "dataReady": 7637.5
+        },
+        {
+          "shellResponse": 1551.5439000000001,
+          "visibleShell": 2143.100000023842,
+          "dataReady": 7629.199999988079
+        },
+        {
+          "shellResponse": 1534.1939000000002,
+          "visibleShell": 2100.5,
+          "dataReady": 7744.399999976158
+        },
+        {
+          "shellResponse": 1547.161,
+          "visibleShell": 2110.399999976158,
+          "dataReady": 7328.300000011921
+        }
+      ]
+    },
+    {
+      "label": "direct-3",
+      "metadata": {
+        "id": "6ac554751801b989800892dc",
+        "applicationSource": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "runnerCommit": "67ac960891eee6004bb8bd261165a2874586be2b",
+        "staticShell": true,
+        "nativeShell": true,
+        "nativeSourceSha256": "3AB5E5EA171E0B0B1E203B214CC884508744CE0DDB509EC18009663F26F77A6E",
+        "requiresHandlers": true,
+        "publishedRuntime": "nodejs22.x",
+        "publishedDigest": "48c6298484e146351044a076f1985ded2c3ee14acfdeb8977f31ce267ab8d007",
+        "transport": "direct",
+        "publishDirectory": ".netlify/static",
+        "build": null,
+        "region": "cmh",
+        "created": "2026-10-06T20:05:09.226Z",
+        "origin": "https://6ac554751801b989800892dc--polycord-disc027-supabase.netlify.app",
+        "serverZipSha256": "48C6298484E146351044A076F1985DED2C3EE14ACFDEB8977F31CE267AB8D007",
+        "edgeBundleSha256": [
+          "FC7598E469433C71FA47741F871CB602CF30D672210CAD8DF995799B1D6099AB"
+        ]
+      },
+      "fixture": {
+        "profiles": 5000,
+        "discoverable": 4735
+      },
+      "versions": {
+        "runner": "v22.23.3",
+        "chromium": "154.0.8037.98"
+      },
+      "phases": [
+        {
+          "startedAt": "2026-10-06T20:05:12.088Z",
+          "firstTraffic": true,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 6437.389299999999,
+            "p95": 7809.4107,
+            "max": 7844.860199999999
+          },
+          "successful": {
+            "count": 60,
+            "p50": 6437.389299999999,
+            "p95": 7809.4107,
+            "max": 7844.860199999999
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 1604.4274,
+            "p95": 1681.1024000000002,
+            "max": 1681.1024000000002
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 2358.5,
+            "p95": 2563,
+            "max": 2563
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 7448.699999988079,
+            "p95": 7704.5,
+            "max": 7704.5
+          },
+          "observedCompletionMs": 7846.41064453125,
+          "logicalRequestsPerSecond": 7.646808549565078
+        },
+        {
+          "startedAt": "2026-10-06T20:05:21.261Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 1142.9547000000002,
+            "p95": 3114.7132,
+            "max": 3269.8901000000005
+          },
+          "successful": {
+            "count": 60,
+            "p50": 1142.9547000000002,
+            "p95": 3114.7132,
+            "max": 3269.8901000000005
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 729.6005999999998,
+            "p95": 913.6306999999997,
+            "max": 913.6306999999997
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1541.3999999761581,
+            "p95": 1954.699999988079,
+            "max": 1954.699999988079
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2505.199999988079,
+            "p95": 3112.400000035763,
+            "max": 3112.400000035763
+          },
+          "observedCompletionMs": 3274.89013671875,
+          "logicalRequestsPerSecond": 18.321225291580777
+        },
+        {
+          "startedAt": "2026-10-06T20:05:25.738Z",
+          "firstTraffic": false,
+          "size": 60,
+          "ok": 60,
+          "errors": 0,
+          "all": {
+            "count": 60,
+            "p50": 771.0749999999989,
+            "p95": 2788.495999999999,
+            "max": 2905.9483
+          },
+          "successful": {
+            "count": 60,
+            "p50": 771.0749999999989,
+            "p95": 2788.495999999999,
+            "max": 2905.9483
+          },
+          "shellResponse": {
+            "count": 15,
+            "p50": 660.3652999999995,
+            "p95": 851.9015999999992,
+            "max": 851.9015999999992
+          },
+          "visibleShell": {
+            "count": 15,
+            "p50": 1411.7000000476837,
+            "p95": 1637.199999988079,
+            "max": 1637.199999988079
+          },
+          "dataReady": {
+            "count": 15,
+            "p50": 2440.7000000476837,
+            "p95": 2748.800000011921,
+            "max": 2748.800000011921
+          },
+          "observedCompletionMs": 2910.9482421875,
+          "logicalRequestsPerSecond": 20.611840200536026
+        },
+        {
+          "startedAt": "2026-10-06T20:05:28.882Z",
+          "firstTraffic": false,
+          "size": 12,
+          "ok": 12,
+          "errors": 0,
+          "all": {
+            "count": 12,
+            "p50": 541.6684999999998,
+            "p95": 1736.5730000000003,
+            "max": 1736.5730000000003
+          },
+          "successful": {
+            "count": 12,
+            "p50": 541.6684999999998,
+            "p95": 1736.5730000000003,
+            "max": 1736.5730000000003
+          },
+          "shellResponse": {
+            "count": 3,
+            "p50": 343.6239999999998,
+            "p95": 419.9189000000006,
+            "max": 419.9189000000006
+          },
+          "visibleShell": {
+            "count": 3,
+            "p50": 717.1000000238419,
+            "p95": 821.1000000238419,
+            "max": 821.1000000238419
+          },
+          "dataReady": {
+            "count": 3,
+            "p50": 1584.199999988079,
+            "p95": 1704.1000000238419,
+            "max": 1704.1000000238419
+          },
+          "observedCompletionMs": 1738.572998046875,
+          "logicalRequestsPerSecond": 6.902212339361582
+        }
+      ],
+      "safetyPassed": 8,
+      "database": {
+        "maxConnections": 18,
+        "maxIdleTransactions": 16,
+        "finalSample": {
+          "at": "2026-10-06T20:05:33.669Z",
+          "connections": 18,
+          "active": 1,
+          "idle_transactions": 0
+        }
+      },
+      "actualNodeVersions": [
+        "v22.23.2"
+      ],
+      "cold": [
+        {
+          "shellResponse": 1434.3590999999997,
+          "visibleShell": 2563,
+          "dataReady": 7704.5
+        },
+        {
+          "shellResponse": 1235.3418000000001,
+          "visibleShell": 1931.5,
+          "dataReady": 7097
+        },
+        {
+          "shellResponse": 1254.6814999999997,
+          "visibleShell": 1926.699999988079,
+          "dataReady": 6854
+        },
+        {
+          "shellResponse": 1167.8656,
+          "visibleShell": 1909.8999999761581,
+          "dataReady": 6936.699999988079
+        },
+        {
+          "shellResponse": 1204.0644000000002,
+          "visibleShell": 1926.4000000357628,
+          "dataReady": 7449.900000035763
+        },
+        {
+          "shellResponse": 1634.4211,
+          "visibleShell": 2519,
+          "dataReady": 7181.300000011921
+        },
+        {
+          "shellResponse": 1137.4283,
+          "visibleShell": 1922.6000000238419,
+          "dataReady": 7109.100000023842
+        },
+        {
+          "shellResponse": 1604.9546999999998,
+          "visibleShell": 2504.800000011921,
+          "dataReady": 7566.800000011921
+        },
+        {
+          "shellResponse": 1604.4274,
+          "visibleShell": 2498.199999988079,
+          "dataReady": 7654.600000023842
+        },
+        {
+          "shellResponse": 1309.192,
+          "visibleShell": 2207.300000011921,
+          "dataReady": 6979.399999976158
+        },
+        {
+          "shellResponse": 1675.4966,
+          "visibleShell": 2361,
+          "dataReady": 7628.699999988079
+        },
+        {
+          "shellResponse": 1681.1024000000002,
+          "visibleShell": 2358.5,
+          "dataReady": 7435.5
+        },
+        {
+          "shellResponse": 1652.2938999999997,
+          "visibleShell": 2347.800000011921,
+          "dataReady": 7536.600000023842
+        },
+        {
+          "shellResponse": 1613.3595,
+          "visibleShell": 2460.400000035763,
+          "dataReady": 7448.699999988079
+        },
+        {
+          "shellResponse": 1676.5280000000002,
+          "visibleShell": 2425.600000023842,
+          "dataReady": 7608.199999988079
+        }
+      ]
+    }
+  ],
+  "pooled": {
+    "https": {
+      "shellResponse": {
+        "count": 45,
+        "p50": 5862.7608,
+        "p95": 9710.2376,
+        "max": 9893.008000000002
+      },
+      "visibleShell": {
+        "count": 45,
+        "p50": 6501.100000023842,
+        "p95": 10108.5,
+        "max": 10224.900000035763
+      },
+      "dataReady": {
+        "count": 45,
+        "p50": 10942.299999952316,
+        "p95": 11400,
+        "max": 11569.300000011921
+      }
+    },
+    "direct": {
+      "shellResponse": {
+        "count": 45,
+        "p50": 1551.5439000000001,
+        "p95": 1944.1044000000002,
+        "max": 2040.7055
+      },
+      "visibleShell": {
+        "count": 45,
+        "p50": 2230.100000023842,
+        "p95": 2655.199999988079,
+        "max": 2720
+      },
+      "dataReady": {
+        "count": 45,
+        "p50": 7502.900000035763,
+        "p95": 8323.600000023842,
+        "max": 8427.700000047684
+      }
+    }
+  }
+}

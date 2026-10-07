@@ -26,8 +26,8 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css}": [
-      "biome format --write",
-      "biome lint --write"
+      "biome format --write --no-errors-on-unmatched",
+      "biome lint --write --no-errors-on-unmatched"
     ]
   },
   "dependencies": {
@@ -72,6 +72,7 @@
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "0.25.10",
     "postcss": "^8",
     "storybook": "^8.5.3",
     "tailwindcss": "^3.4.1",

@@ -97,6 +97,13 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
+  if (request.nextUrl.pathname.startsWith('/__discovery_shell')) {
+    return new NextResponse(null, {
+      status: 404,
+      headers: { 'Cache-Control': 'no-store' },
+    });
+  }
+
   if (nonPageRoute.test(request.nextUrl.pathname)) {
     return NextResponse.next();
   }

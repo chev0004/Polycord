@@ -18,6 +18,9 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[[plugins]]
+  package = "./plugins/discovery-shell"
+
 [[headers]]
   for = "/*"
   [headers.values]

@@ -1,0 +1,15 @@
+{
+  "id": "6ac49dce98537c1eb71426e5",
+  "applicationSource": "5a5b55ab5d824c1b4c792c43ce30651cd1cd2478",
+  "runnerCommit": "5a5b55ab5d824c1b4c792c43ce30651cd1cd2478",
+  "transport": "direct",
+  "publishDirectory": ".netlify/static",
+  "build": null,
+  "region": "cmh",
+  "created": "2026-10-06T07:05:50.835Z",
+  "origin": "https://6ac49dce98537c1eb71426e5--polycord-disc027-supabase.netlify.app",
+  "serverZipSha256": "6071B07E3EBB329D516BAF491798D01664DB9B269F8AAA56EB7E77CA9D6AFFC2",
+  "edgeBundleSha256": [
+    "6191140E3E40FED208DBCF68DB86A91D7255F0797F0C0C65FF9381346B5D9AA1"
+  ]
+}

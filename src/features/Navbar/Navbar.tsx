@@ -13,6 +13,7 @@ import { UserMenu } from './UserMenu';
 type NavbarProps = {
   iconUrl?: string;
   isLoggedIn: boolean;
+  viewerLoading?: boolean;
   dockable?: boolean;
   badge?: React.ReactNode;
   notifications: Notifications;
@@ -32,6 +33,7 @@ type NavbarProps = {
 export const Navbar: React.FC<NavbarProps> = ({
   iconUrl,
   isLoggedIn,
+  viewerLoading = false,
   dockable = false,
   badge,
   onHomeClick,
@@ -82,7 +84,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <AdminButton pendingCases={pendingCases} />
           )}
 
-          {docked ? null : isLoggedIn ? (
+          {viewerLoading ? (
+            <output
+              aria-label={t('Discovery.viewerLoading')}
+              className="skeleton-shimmer h-9 w-36 rounded-lg"
+            />
+          ) : docked ? null : isLoggedIn ? (
             <div
               className={`flex items-center gap-4 ${dockable ? 'max-md:hidden' : ''}`}
             >
