@@ -1,0 +1,31 @@
+{
+  "id": "6ac5eadf43da969dfe35417a",
+  "source": "ea3c39430f80c39d84e0fc8a545704e1f90b8657",
+  "patchSha256": "3282A3AE66FA75786241024052985222D1D7322FFF4C52A866BAF5303D0E60C1",
+  "runtime": "nodejs22.x",
+  "publishedDigest": "125c58232e77bc7da0e46e5c79acf6a2eae04ed70eb7f7454e2cef26c42a6d4a",
+  "transport": "direct",
+  "control": "fixed",
+  "workload": "burst",
+  "build": null,
+  "region": "cmh",
+  "created": "2026-10-07T06:46:55.689Z",
+  "origin": "https://6ac5eadf43da969dfe35417a--polycord-disc027-supabase.netlify.app",
+  "staticSha256": null,
+  "edgeSourceSha256": "60B0131170975C625DAEB0B56E8AF5DD3994A785EEAFDEB993688F9879FBEBE2",
+  "edgeBundleSha256": [
+    "4F17DC79D314471B75F39B47AB3448DA1814AE712B2E404359269C6E637ED720"
+  ],
+  "functions": [
+    {
+      "n": "disc031-minimal",
+      "r": "nodejs22.x",
+      "d": "ec6c37a9ff194a68e1fb76377be3117aab81dbbe894bdcaaa1fed37763456077"
+    },
+    {
+      "n": "___netlify-server-handler",
+      "r": "nodejs22.x",
+      "d": "125c58232e77bc7da0e46e5c79acf6a2eae04ed70eb7f7454e2cef26c42a6d4a"
+    }
+  ]
+}

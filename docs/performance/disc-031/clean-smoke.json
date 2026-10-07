@@ -1,0 +1,77 @@
+{
+  "at": "2026-10-07T07:38:23.311Z",
+  "origin": "https://6ac595ae44d5c81dd446984f--polycord-disc027-supabase.netlify.app",
+  "checks": [
+    {
+      "locale": "en",
+      "status": 200,
+      "hydrated": true,
+      "cards": true,
+      "apis": [
+        {
+          "path": "/api/discovery/viewer",
+          "status": 200,
+          "private": true,
+          "noStore": true,
+          "probe": false
+        },
+        {
+          "path": "/api/discovery",
+          "status": 200,
+          "private": true,
+          "noStore": true,
+          "probe": false
+        }
+      ]
+    },
+    {
+      "locale": "ja",
+      "status": 200,
+      "hydrated": true,
+      "cards": true,
+      "apis": [
+        {
+          "path": "/api/discovery/viewer",
+          "status": 200,
+          "private": true,
+          "noStore": true,
+          "probe": false
+        },
+        {
+          "path": "/api/discovery",
+          "status": 200,
+          "private": true,
+          "noStore": true,
+          "probe": false
+        }
+      ]
+    },
+    {
+      "path": "/en",
+      "status": 200,
+      "contentType": "text/x-component",
+      "cacheControl": "public,max-age=0,must-revalidate",
+      "probe": false
+    },
+    {
+      "path": "/__discovery_shell/en.html",
+      "status": 404,
+      "contentType": null,
+      "cacheControl": "no-store",
+      "probe": false
+    },
+    {
+      "path": "/api/internal/disc031-minimal",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "private,no-cache,no-store,max-age=0,must-revalidate",
+      "probe": false
+    },
+    {
+      "name": "serving origin",
+      "status": 200,
+      "total": 4735,
+      "noStore": true
+    }
+  ]
+}
