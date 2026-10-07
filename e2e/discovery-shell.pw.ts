@@ -2,6 +2,7 @@ import { createHmac, randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import postgres from 'postgres';
+import { discoveryBootstrapScript } from '../src/lib/discoveryBootstrapScript';
 import en from '../src/locales/en.json';
 import ja from '../src/locales/ja.json';
 
@@ -417,4 +418,30 @@ test('saved viewer availability enables overlap filtering and sorting', async ({
   await expect(
     page.getByText(en.Discovery.sortMostOverlap, { exact: true }),
   ).toBeVisible();
+});
+
+test('the served document starts the bootstrap request and the page reuses it', async ({
+  page,
+}) => {
+  await page.route('**/en', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      body: (await response.text()).replace(
+        '</head>',
+        `${discoveryBootstrapScript}</head>`,
+      ),
+    });
+  });
+  const paths: string[] = [];
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url());
+    if (pathname.startsWith('/api/discovery')) paths.push(pathname);
+  });
+  await page.goto('/en');
+  await expect(
+    page.getByRole('heading', { name: new RegExp(prefix) }).first(),
+  ).toBeVisible();
+  expect(paths).toEqual(['/api/discovery/bootstrap']);
+  expect(await page.evaluate(() => window.__polycordBootstrap)).toBeUndefined();
 });

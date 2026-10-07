@@ -78,20 +78,23 @@ const otherResponse = await serveDiscoveryDocument(
   context,
   { en: document },
 );
-assert.equal(await otherResponse.text(), document);
+const otherHtml = await otherResponse.text();
+assert.ok(otherHtml.includes('/api/discovery/bootstrap'));
+assert.ok(!otherHtml.includes('polycord-load-trace'));
 assert.equal(otherResponse.headers.get('Server-Timing'), null);
 assert.equal(
   otherResponse.headers.get('cache-control'),
   'public, max-age=0, must-revalidate',
 );
 process.env.POLYCORD_ENVIRONMENT = 'production';
-assert.equal(
-  await (
-    await serveDiscoveryDocument(request(ownerCookie), context, {
-      en: document,
-    })
-  ).text(),
-  document,
+assert.ok(
+  !(
+    await (
+      await serveDiscoveryDocument(request(ownerCookie), context, {
+        en: document,
+      })
+    ).text()
+  ).includes('polycord-load-trace'),
 );
 const { NextResponse } = await import('next/server');
 mock.module('next/server', () => ({ NextResponse, after: () => {} }));

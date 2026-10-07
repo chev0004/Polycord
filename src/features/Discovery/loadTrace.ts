@@ -38,6 +38,18 @@ export type DiscoveryLoadTrace = {
   })[];
 };
 
+type EarlyBootstrap = {
+  url: string;
+  start: number;
+  response: Promise<Response | undefined>;
+};
+
+declare global {
+  interface Window {
+    __polycordBootstrap?: EarlyBootstrap;
+  }
+}
+
 let trace: DiscoveryLoadTrace | null = null;
 const listeners = new Set<() => void>();
 const requests = { viewer: 0, discovery: 0 };
@@ -205,7 +217,10 @@ export const traceDiscoveryRequest = async <T>(
   const phases =
     phase === 'bootstrap' ? (['viewer', 'discovery'] as const) : [phase];
   const sequences = phases.map((item) => ++requests[item]);
-  const start = performance.now();
+  const early =
+    window.__polycordBootstrap?.url === url ? window.__polycordBootstrap : null;
+  window.__polycordBootstrap = undefined;
+  const start = early?.start ?? performance.now();
   const record = (timing: PhaseTiming) => {
     const current = startLoadTrace();
     if (!current || current.finished !== undefined) return;
@@ -239,7 +254,9 @@ export const traceDiscoveryRequest = async <T>(
   const spans: Record<string, number> = {};
   let httpStatus: number | undefined;
   try {
-    const response = await fetch(url, { cache: 'no-store', signal });
+    const response =
+      (early && (await early.response)) ||
+      (await fetch(url, { cache: 'no-store', signal }));
     httpStatus = response.status;
     for (const header of ['Server-Timing', 'x-polycord-load-gate']) {
       for (const metric of response.headers.get(header)?.split(',') ?? []) {

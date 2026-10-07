@@ -11,6 +11,7 @@ const navigation = {
   responseStart: 11000,
   responseEnd: 0,
 };
+globalThis.window = globalThis;
 globalThis.document = {
   getElementById: () => bootstrap,
   fonts: { ready: Promise.resolve() },
@@ -126,4 +127,30 @@ await traceDiscoveryRequest(
 );
 assert.equal(startLoadTrace().finished, 29000);
 assert.equal(startLoadTrace().phases.discovery.end, 27000);
+const early = '/api/discovery/bootstrap?&locale=en';
+let fetched = 0;
+globalThis.fetch = async () => {
+  fetched++;
+  return Response.json({ viewer: { isLoggedIn: false } });
+};
+window.__polycordBootstrap = {
+  url: early,
+  start: 1,
+  response: Promise.resolve(Response.json({ viewer: { isLoggedIn: true } })),
+};
+assert.deepEqual(
+  await traceDiscoveryRequest('bootstrap', early, new AbortController().signal),
+  { viewer: { isLoggedIn: true } },
+);
+assert.equal(fetched, 0);
+assert.equal(window.__polycordBootstrap, undefined);
+for (const [url, response] of [
+  [early, Promise.resolve(undefined)],
+  ['/api/discovery/bootstrap?&locale=ja', Promise.resolve(Response.json({}))],
+]) {
+  window.__polycordBootstrap = { url, start: 1, response };
+  fetched = 0;
+  await traceDiscoveryRequest('bootstrap', early, new AbortController().signal);
+  assert.equal(fetched, 1);
+}
 console.log('load trace lifecycle passed');

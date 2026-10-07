@@ -10,6 +10,7 @@ import {
   BAN_REFERENCE_HEADER,
 } from './auth-session';
 import { findBan } from './banGate';
+import { discoveryBootstrapScript } from './discoveryBootstrapScript';
 import { createLoadTrace, measureLoad } from './loadTrace';
 
 const locales = ['en', 'ja'];
@@ -95,12 +96,13 @@ export const serveDiscoveryDocument = async (
     if (url.pathname.endsWith('/'))
       return Response.redirect(new URL(`/${locale}${url.search}`, url), 308);
     const traceHeaders = trace?.headers('gate');
-    const document = trace
-      ? documents[locale].replace(
-          '</head>',
-          `<script id="polycord-load-trace" type="application/json">${JSON.stringify({ spans: trace.spans, transport: process.env.POLYCORD_DIRECT_BAN_CHECK === 'true' ? 'direct' : 'https' }).replaceAll('<', '\\u003c')}</script></head>`,
-        )
-      : documents[locale];
+    const traceScript = trace
+      ? `<script id="polycord-load-trace" type="application/json">${JSON.stringify({ spans: trace.spans, transport: process.env.POLYCORD_DIRECT_BAN_CHECK === 'true' ? 'direct' : 'https' }).replaceAll('<', '\\u003c')}</script>`
+      : '';
+    const document = documents[locale].replace(
+      '</head>',
+      `${discoveryBootstrapScript}${traceScript}</head>`,
+    );
     const response = new Response(request.method === 'HEAD' ? null : document, {
       headers: {
         'Content-Type': 'text/html; charset=UTF-8',

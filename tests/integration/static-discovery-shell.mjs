@@ -71,6 +71,14 @@ for (const locale of ['en', 'ja']) {
     response.headers.get('set-cookie').includes(`NEXT_LOCALE=${locale}`),
   );
 }
+const headed = await (
+  await serveDiscoveryDocument(request('/en'), context, {
+    en: '<html><head></head><body>Public shell</body></html>',
+  })
+).text();
+assert.ok(headed.startsWith('<html><head><script>'));
+assert.ok(headed.includes('/api/discovery/bootstrap?&locale='));
+assert.ok(headed.endsWith('</script></head><body>Public shell</body></html>'));
 assert.equal(
   await (await serve(request('/en', { method: 'HEAD' }))).text(),
   '',
