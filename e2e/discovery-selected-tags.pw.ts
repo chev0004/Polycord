@@ -14,7 +14,7 @@ test('a selected tag outside the popular tags stays visible and removable', asyn
   const ids = owners.map((owner) => owner.id);
   try {
     await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio, tags)
-      select now(), id, true, 'en', 'ja', 'intermediate', repeat('A selected tag fixture. ', 6),
+      select case when rn = 1 then now() else now() - interval '1 second' end, id, true, 'en', 'ja', 'intermediate', repeat('A selected tag fixture. ', 6),
         array(select ${prefix} || 'f' || ((rn + k) % 34) from generate_series(0, case when rn = 1 then 6 else 7 end) k) || case when rn = 1 then array[${cricket}] else array[]::text[] end
       from (select id, row_number() over (order by id) - 1 as rn from users where id in ${sql(ids)}) numbered`;
 
@@ -23,7 +23,7 @@ test('a selected tag outside the popular tags stays visible and removable', asyn
       await page.goto('/en');
       const cloud = page.getByRole('button', { pressed: false });
       await expect(
-        page.getByRole('button', { name: new RegExp(cricket) }),
+        page.getByRole('button', { name: `${cricket} (1)`, exact: true }),
       ).toHaveCount(0);
       await expect(cloud.first()).toBeVisible();
 
@@ -39,8 +39,14 @@ test('a selected tag outside the popular tags stays visible and removable', asyn
       await selected.click();
       await expect(page).not.toHaveURL(new RegExp(cricket));
       await expect(
-        page.getByRole('button', { name: new RegExp(cricket) }),
+        page.getByRole('button', { name: `${cricket} (1)`, exact: true }),
       ).toHaveCount(0);
+      await expect(
+        page.getByRole('article').getByRole('button', {
+          name: cricket,
+          exact: true,
+        }),
+      ).toBeVisible();
     }
   } finally {
     await sql`delete from users where id in ${sql(ids)}`;
