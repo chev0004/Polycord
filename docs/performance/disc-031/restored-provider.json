@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-07T07:32:39.8393153+00:00",
+  "site": "0c36e849-7617-4665-a657-1eb2b60da3d2",
+  "published": "6ac595ae44d5c81dd446984f",
+  "stopBuilds": true,
+  "functions": [
+    {
+      "n": "___netlify-server-handler",
+      "r": "nodejs22.x",
+      "d": "67cb6fb642502fa66064f7f42fabd49c63b7b9d50908ddf6860cb21aa08c2be1",
+      "m": 1024,
+      "rg": "us-east-2",
+      "s": 43623235
+    }
+  ]
+}
