@@ -12,6 +12,10 @@ import {
   useTransition,
 } from 'react';
 import { type CardTheme, isValidHex } from '@/features/Discovery/cardTheme';
+import {
+  beginPageNavigation,
+  cancelPageNavigation,
+} from '@/features/Discovery/loadTrace';
 import { UrlObserver } from './UrlObserver';
 
 type RouteProgressContextValue = {
@@ -95,6 +99,7 @@ export const RouteProgressProvider = ({
   const start = useCallback(
     (href?: string) => {
       if (href && !shouldStartProgress(href)) return;
+      if (href) beginPageNavigation(href);
       clearTimers();
       pendingRef.current = true;
       setIsVisible(true);
@@ -177,9 +182,12 @@ export const useRouteProgressRouter = () => {
         !window.dispatchEvent(
           new Event('polycord:navigate', { cancelable: true }),
         )
-      )
+      ) {
+        cancelPageNavigation();
         return;
+      }
       if (shouldStartProgress(href)) {
+        beginPageNavigation(href);
         navigate(() => router.push(href));
         return;
       }
@@ -195,9 +203,12 @@ export const useRouteProgressRouter = () => {
         !window.dispatchEvent(
           new Event('polycord:navigate', { cancelable: true }),
         )
-      )
+      ) {
+        cancelPageNavigation();
         return;
+      }
       if (shouldStartProgress(href)) {
+        beginPageNavigation(href);
         navigate(() => router.replace(href));
         return;
       }
@@ -209,20 +220,22 @@ export const useRouteProgressRouter = () => {
 
   return useMemo(
     () => ({
-      back: router.back,
-      forward: router.forward,
+      back: () => {
+        beginPageNavigation(undefined, true);
+        router.back();
+      },
+      forward: () => {
+        beginPageNavigation(undefined, true);
+        router.forward();
+      },
       prefetch: router.prefetch,
       push,
-      refresh: router.refresh,
+      refresh: () => {
+        beginPageNavigation(undefined, true);
+        router.refresh();
+      },
       replace,
     }),
-    [
-      router.back,
-      router.forward,
-      router.prefetch,
-      router.refresh,
-      push,
-      replace,
-    ],
+    [router, push, replace],
   );
 };
