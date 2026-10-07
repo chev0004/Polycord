@@ -133,18 +133,34 @@ export const normalizeDiscordUser = (discordUser: DiscordUser): CurrentUser => {
   };
 };
 
-export const getIdentityRestriction = async (
-  discordUserId: string,
+const identityRestriction = (
   user: { suspendedUntil: Date | null; bannedAt: Date | null } | null,
+  restriction: { suspendedUntil: Date | null; bannedAt: Date | null } | null,
 ) => {
-  const restriction = await getModerationRestrictionByDiscordId(discordUserId);
   const records = [user, restriction].flatMap((record) => record ?? []);
 
   if (records.some(({ bannedAt }) => bannedAt)) return 'banned';
   return records.some(isSuspended) ? 'suspended' : null;
 };
 
-const getSessionAccount = cache(async () => {
+export const getIdentityRestriction = async (
+  discordUserId: string,
+  user: { suspendedUntil: Date | null; bannedAt: Date | null } | null,
+) =>
+  identityRestriction(
+    user,
+    await getModerationRestrictionByDiscordId(discordUserId),
+  );
+
+export const isBannedIdentity = async (discordUserId: string) => {
+  const [user, restriction] = await Promise.all([
+    getUserByDiscordId(discordUserId),
+    getModerationRestrictionByDiscordId(discordUserId),
+  ]);
+  return identityRestriction(user, restriction) === 'banned';
+};
+
+export const getSessionIdentity = cache(async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
 
@@ -155,12 +171,23 @@ const getSessionAccount = cache(async () => {
   const session = await readSessionFromCookieValue(sessionCookie);
   if (!session) return null;
 
-  const user = await getUserByDiscordId(session.id);
-  return user?.id === session.accountId &&
-    !(await getIdentityRestriction(session.id, user))
-    ? { user, currentUser: { ...session, email: user.email ?? undefined } }
-    : null;
+  const [user, restriction] = await Promise.all([
+    getUserByDiscordId(session.id),
+    getModerationRestrictionByDiscordId(session.id),
+  ]);
+  return {
+    account:
+      user?.id === session.accountId
+        ? { user, currentUser: { ...session, email: user.email ?? undefined } }
+        : null,
+    restriction: identityRestriction(user, restriction),
+  };
 });
+
+const getSessionAccount = async () => {
+  const identity = await getSessionIdentity();
+  return identity?.restriction ? null : (identity?.account ?? null);
+};
 
 export const getCurrentUser = async () =>
   (await getSessionAccount())?.currentUser ?? null;
