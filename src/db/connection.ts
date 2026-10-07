@@ -32,7 +32,7 @@ export const connectionConfig = () => {
 export const createBanClient = (signal: AbortSignal) => {
   const client = new Client({
     ...connectionConfig(),
-    query_timeout: 2500,
+    query_timeout: 2750,
     stream: () => new Socket({ signal }),
   });
   if ('Deno' in globalThis) {
