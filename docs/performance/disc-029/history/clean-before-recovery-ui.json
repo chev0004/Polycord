@@ -1,5 +1,5 @@
 {
-  "origin": "https://6ac595ae44d5c81dd446984f--polycord-disc027-supabase.netlify.app",
+  "origin": "https://6ac590ae3621e74662052b8d--polycord-disc027-supabase.netlify.app",
   "results": [
     {
       "locale": "en",
@@ -74,18 +74,6 @@
       "freshLegalToDiscovery": true,
       "documentNavigations": 0,
       "flightResponses": 1
-    },
-    {
-      "locale": "en",
-      "missingRoute": true,
-      "status": 404,
-      "navigationAndFooter": true
-    },
-    {
-      "locale": "ja",
-      "missingRoute": true,
-      "status": 404,
-      "navigationAndFooter": true
     }
   ],
   "pageErrors": []

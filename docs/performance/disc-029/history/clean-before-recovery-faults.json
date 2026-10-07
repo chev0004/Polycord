@@ -1,20 +1,12 @@
 {
-  "at": "2026-10-07T00:46:11.107Z",
-  "origin": "https://6ac595ae44d5c81dd446984f--polycord-disc027-supabase.netlify.app",
+  "at": "2026-10-07T00:23:37.006Z",
+  "origin": "https://6ac590ae3621e74662052b8d--polycord-disc027-supabase.netlify.app",
   "outcomes": [
     {
-      "path": "/api/discovery?locale=en",
-      "status": 503,
-      "expected": 503,
-      "ms": 3481.1118,
-      "cacheControl": "no-store",
-      "serverTiming": null
-    },
-    {
       "path": "/en",
       "status": 503,
       "expected": 503,
-      "ms": 3481.8513,
+      "ms": 2778.9186,
       "cacheControl": "no-store",
       "serverTiming": null
     },
@@ -22,7 +14,15 @@
       "path": "/api/discovery/viewer?locale=en",
       "status": 503,
       "expected": 503,
-      "ms": 3489.8386,
+      "ms": 2780.1309,
+      "cacheControl": "no-store",
+      "serverTiming": null
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 503,
+      "expected": 503,
+      "ms": 2781.9471,
       "cacheControl": "no-store",
       "serverTiming": null
     },
@@ -30,7 +30,7 @@
       "path": "/api/internal/ban-check",
       "status": 503,
       "expected": 503,
-      "ms": 3902.2101,
+      "ms": 2814.3773,
       "cacheControl": "no-store",
       "serverTiming": null
     },
@@ -38,7 +38,7 @@
       "path": "/api/internal/ban-check",
       "status": 200,
       "expected": 200,
-      "ms": 186.83899999999994,
+      "ms": 168.35789999999997,
       "cacheControl": "no-store",
       "serverTiming": null
     },
@@ -46,23 +46,23 @@
       "path": "/en",
       "status": 200,
       "expected": 200,
-      "ms": 364.0752000000002,
+      "ms": 355.7464,
       "cacheControl": "public,max-age=0,must-revalidate",
-      "serverTiming": null
-    },
-    {
-      "path": "/api/discovery?locale=en",
-      "status": 200,
-      "expected": 200,
-      "ms": 565.7764999999999,
-      "cacheControl": "private,no-store",
       "serverTiming": null
     },
     {
       "path": "/api/discovery/viewer?locale=en",
       "status": 200,
       "expected": 200,
-      "ms": 679.7418000000007,
+      "ms": 393.39609999999993,
+      "cacheControl": "private,no-store",
+      "serverTiming": null
+    },
+    {
+      "path": "/api/discovery?locale=en",
+      "status": 200,
+      "expected": 200,
+      "ms": 781.2429999999999,
       "cacheControl": "private,no-store",
       "serverTiming": null
     },
@@ -70,7 +70,7 @@
       "path": "/en",
       "status": 200,
       "expected": 200,
-      "ms": 378.1855000000005,
+      "ms": 276.02759999999944,
       "cacheControl": "public,max-age=0,must-revalidate",
       "serverTiming": null
     },
@@ -78,7 +78,7 @@
       "path": "/api/discovery?locale=en",
       "status": 503,
       "expected": 503,
-      "ms": 10409.8686,
+      "ms": 10342.124600000001,
       "cacheControl": "private,no-store",
       "serverTiming": null
     },
@@ -86,15 +86,7 @@
       "path": "/api/discovery/viewer?locale=en",
       "status": 503,
       "expected": 503,
-      "ms": 10409.223000000002,
-      "cacheControl": "private,no-store",
-      "serverTiming": null
-    },
-    {
-      "path": "/api/discovery/viewer?locale=en",
-      "status": 200,
-      "expected": 200,
-      "ms": 375.15279999999984,
+      "ms": 10393.3358,
       "cacheControl": "private,no-store",
       "serverTiming": null
     },
@@ -102,15 +94,23 @@
       "path": "/en",
       "status": 200,
       "expected": 200,
-      "ms": 470.255799999999,
+      "ms": 343.1827999999987,
       "cacheControl": "public,max-age=0,must-revalidate",
+      "serverTiming": null
+    },
+    {
+      "path": "/api/discovery/viewer?locale=en",
+      "status": 200,
+      "expected": 200,
+      "ms": 382.8555000000015,
+      "cacheControl": "private,no-store",
       "serverTiming": null
     },
     {
       "path": "/api/discovery?locale=en",
       "status": 200,
       "expected": 200,
-      "ms": 574.0329999999994,
+      "ms": 581.8519000000015,
       "cacheControl": "private,no-store",
       "serverTiming": null
     },
