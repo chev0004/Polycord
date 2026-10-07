@@ -53,19 +53,29 @@ pool.on('error', () => {});
 
 const createRequestPool = () => {
   const scoped = new Pool({ ...poolOptions(), max: 3 });
+  const closed: Promise<void>[] = [];
+  scoped.on('connect', (client) => {
+    closed.push(new Promise((resolve) => client.once('end', resolve)));
+  });
   scoped.on('error', () => {});
   for (const _ of [0, 1])
     scoped.connect().then(
       (client) => client.release(),
       () => {},
     );
-  return scoped;
+  return {
+    pool: scoped,
+    close: async () => {
+      await scoped.end();
+      await Promise.all(closed);
+    },
+  };
 };
 
 const renderPool = cache(() => {
-  const scoped = createRequestPool();
-  after(() => scoped.end());
-  return scoped;
+  const { pool, close } = createRequestPool();
+  after(close);
+  return pool;
 });
 
 export const withRenderPool = <T>(run: () => Promise<T>) =>
@@ -75,11 +85,11 @@ export const withRenderPool = <T>(run: () => Promise<T>) =>
 
 export const withRequestPool = async <T>(run: () => Promise<T>) => {
   if (!lambda || requestPools.getStore()) return run();
-  const scoped = createRequestPool();
+  const { pool: scoped, close } = createRequestPool();
   try {
     return await requestPools.run(scoped, run);
   } finally {
-    void scoped.end();
+    await close();
   }
 };
 
