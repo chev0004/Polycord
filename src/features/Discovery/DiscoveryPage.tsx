@@ -475,7 +475,11 @@ export const DiscoveryPage = ({
   );
 
   useEffect(() => {
-    if (remote && (urlQuery === null || mobile === null)) return;
+    if (
+      remote &&
+      (urlQuery === null || mobile === null || searchQuery !== debouncedSearch)
+    )
+      return;
     const refresh = refreshDiscovery;
     if (skipInitialRefresh.current) skipInitialRefresh.current = false;
     else refresh();
@@ -494,7 +498,14 @@ export const DiscoveryPage = ({
       window.removeEventListener('pageshow', restored);
       window.removeEventListener('polycord:profiles-changed', refresh);
     };
-  }, [refreshDiscovery, remote, urlQuery, mobile]);
+  }, [
+    refreshDiscovery,
+    remote,
+    urlQuery,
+    mobile,
+    searchQuery,
+    debouncedSearch,
+  ]);
 
   useEffect(() => {
     if (mobile === null || stackPending) return;
