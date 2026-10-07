@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { MdBookmarkBorder, MdErrorOutline } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { siteContainerClass } from '@/components/Container';
@@ -34,6 +34,7 @@ import { useProfileBump } from '@/features/Discovery/useProfileBump';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { BackButton } from '@/features/Navigation/BackButton';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
 import { useProfileActions } from '@/features/Profile/useProfileActions';
 
 type SavedRouteClientProps = {
@@ -91,14 +92,7 @@ export const SavedRouteClient = ({
 
   const { refresh } = router;
 
-  useEffect(() => {
-    const refreshRestored = (event: PageTransitionEvent) => {
-      if (event.persisted) refresh();
-    };
-    refresh();
-    window.addEventListener('pageshow', refreshRestored);
-    return () => window.removeEventListener('pageshow', refreshRestored);
-  }, [refresh]);
+  useHistoryRefresh(refresh);
 
   const profiles = initialProfiles.filter(
     (profile) => !removedIds.includes(profile.id),
