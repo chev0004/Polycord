@@ -6,6 +6,7 @@ import {
   listPushSubscriptionsForUser,
   savePushSubscription,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getActiveUser } from '@/lib/auth';
 import { isPushConfigured, isPushEndpoint } from '@/lib/push/server';
 
@@ -19,7 +20,7 @@ const subscriptionSchema = z.object({
   }),
 });
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -57,9 +58,9 @@ export const POST = async (request: Request) => {
   });
 
   return NextResponse.json({ saved: true });
-};
+});
 
-export const DELETE = async () => {
+export const DELETE = scopedRoute(async () => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -69,9 +70,9 @@ export const DELETE = async () => {
   await deletePushSubscriptionsForUser(currentUser.accountId);
 
   return NextResponse.json({ deleted: true });
-};
+});
 
-export const GET = async () => {
+export const GET = scopedRoute(async () => {
   const currentUser = await getActiveUser();
   if (!currentUser)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -83,4 +84,4 @@ export const GET = async () => {
     enabled: settings?.pushNotifications ?? false,
     endpoints: subscriptions.map((subscription) => subscription.endpoint),
   });
-};
+});

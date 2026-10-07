@@ -7,6 +7,7 @@ import {
   type ModerationAction,
   revokePremiumGrant,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { authorizeOwner, readBody } from '@/lib/admin';
 import { toModLogEntry, toModUser } from '@/lib/moderation';
 import { premiumGrantSchema } from '@/lib/premiumGrant';
@@ -22,7 +23,7 @@ const respond = async (targetUserId: string, entry: ModerationAction) => {
   });
 };
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const { currentUser, error } = await authorizeOwner(request);
   if (error) return error;
 
@@ -51,9 +52,9 @@ export const POST = async (request: Request) => {
       expiresAt,
     }),
   );
-};
+});
 
-export const DELETE = async (request: Request) => {
+export const DELETE = scopedRoute(async (request: Request) => {
   const { currentUser, error } = await authorizeOwner(request);
   if (error) return error;
 
@@ -76,4 +77,4 @@ export const DELETE = async (request: Request) => {
       expiresAt: revokedUntil,
     }),
   );
-};
+});

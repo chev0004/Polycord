@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { addDummies, countAccounts, removeDummies } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { isSameOrigin } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { getSeedStatus } from '@/lib/seed/access';
@@ -13,12 +14,12 @@ const targetSchema = z.object({
   target: z.number().int().min(0).max(SEED_CAP),
 });
 
-export const GET = async () => {
+export const GET = scopedRoute(async () => {
   const status = await getSeedStatus(await getCurrentUser());
   return status ? NextResponse.json(status) : notFound();
-};
+});
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const user = await getCurrentUser();
   if (!(await getSeedStatus(user))) return notFound();
   if (!isSameOrigin(request)) {
@@ -36,4 +37,4 @@ export const POST = async (request: Request) => {
   if (target < dummies) await removeDummies(dummies - target);
 
   return NextResponse.json(await getSeedStatus(user));
-};
+});

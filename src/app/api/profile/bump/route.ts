@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { bumpProfileForUser, getProfileByUserId } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
@@ -8,7 +9,7 @@ import { getActiveUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { enforceRateLimit, requestIp } from '@/lib/rateLimit';
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -72,4 +73,4 @@ export const POST = async (request: Request) => {
     ).nextBumpAt.toISOString(),
     premium,
   });
-};
+});

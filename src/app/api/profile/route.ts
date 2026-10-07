@@ -7,6 +7,7 @@ import {
   type ProfileTargetLanguageValue,
   upsertProfileForUser,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import {
   CUSTOM_CARD_THEME_ID,
   FREE_CARD_COLORS,
@@ -26,7 +27,7 @@ const isAllowedCardColor = (id: string, premiumThemes: boolean) =>
     (id === CUSTOM_CARD_THEME_ID ||
       PREMIUM_CARD_THEMES.some((theme) => theme.id === id)));
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -188,9 +189,9 @@ export const POST = async (request: Request) => {
   }
 
   return NextResponse.json({ profileId: profile.id });
-};
+});
 
-export const DELETE = async () => {
+export const DELETE = scopedRoute(async () => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -201,4 +202,4 @@ export const DELETE = async () => {
   await deleteVoiceIntroForUser(currentUser.accountId);
 
   return NextResponse.json({ deleted });
-};
+});

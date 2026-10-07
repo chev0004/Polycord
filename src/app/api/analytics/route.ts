@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getProfileById, getProfileByUserId, getUserByDiscordId } from '@/db';
+import { scopedRoute } from '@/db/client';
 import {
   ANALYTICS_EVENTS,
   isClientAnalyticsEvent,
@@ -10,7 +11,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 const noContent = () => new NextResponse(null, { status: 204 });
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   let body: unknown;
 
   try {
@@ -64,4 +65,4 @@ export const POST = async (request: Request) => {
   });
 
   return noContent();
-};
+});

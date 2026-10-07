@@ -9,12 +9,13 @@ import {
   listBlockedUsers,
   unblockUser,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getActiveUser } from '@/lib/auth';
 
 const profileBody = z.object({ profileId: z.uuid() });
 const unblockBody = z.union([z.object({ userId: z.uuid() }), profileBody]);
 
-export const GET = async () => {
+export const GET = scopedRoute(async () => {
   const currentUser = await getActiveUser();
   if (!currentUser)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,9 +32,9 @@ export const GET = async () => {
     },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
-};
+});
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
   if (!currentUser)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -54,9 +55,9 @@ export const POST = async (request: Request) => {
   await blockUser(currentUser.accountId, target.profile.userId);
   revalidatePath('/[lang]', 'layout');
   return NextResponse.json({ blocked: true });
-};
+});
 
-export const DELETE = async (request: Request) => {
+export const DELETE = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
   if (!currentUser)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -72,4 +73,4 @@ export const DELETE = async (request: Request) => {
     revalidatePath('/[lang]', 'layout');
   }
   return NextResponse.json({ blocked: false });
-};
+});

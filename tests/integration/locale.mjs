@@ -2,6 +2,7 @@ import { expect, mock } from 'bun:test';
 import { NextRequest } from 'next/server';
 
 mock.module('server-only', () => ({}));
+mock.module('@/db/client', () => ({ scopedRoute: (handler) => handler }));
 let settings;
 let redirectTo;
 const writes = [];

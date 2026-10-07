@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getAccountExportByUserId } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getCurrentUser } from '@/lib/auth';
 
-export const GET = async () => {
+export const GET = scopedRoute(async () => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -22,4 +23,4 @@ export const GET = async () => {
         'attachment; filename="polycord-account-export.json"',
     },
   });
-};
+});

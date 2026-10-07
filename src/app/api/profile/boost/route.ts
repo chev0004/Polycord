@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { boostProfileForUser, getBoostStatusForUser } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 
-export const GET = async () => {
+export const GET = scopedRoute(async () => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -28,9 +29,9 @@ export const GET = async () => {
     },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
-};
+});
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -65,4 +66,4 @@ export const POST = async (request: Request) => {
     boostedUntil: result.boostedUntil.toISOString(),
     remaining: result.remaining,
   });
-};
+});

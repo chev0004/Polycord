@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPremiumAccountByDiscordUserId, getPremiumSource } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { getCurrentUser } from '@/lib/auth';
 import {
   createCheckoutSession,
@@ -7,7 +8,7 @@ import {
   isBillingConfigured,
 } from '@/lib/stripe';
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -63,4 +64,4 @@ export const POST = async (request: Request) => {
       { status: 502 },
     );
   }
-};
+});

@@ -11,6 +11,7 @@ import {
   recordProfileInteraction,
   setNotificationRead,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromRequest } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -36,7 +37,7 @@ const parseBody = async (
   }
 };
 
-export const GET = async () => {
+export const GET = scopedRoute(async () => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -76,9 +77,9 @@ export const GET = async () => {
     },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
-};
+});
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser && (await getCurrentUser())) {
@@ -150,9 +151,9 @@ export const POST = async (request: Request) => {
   });
 
   return NextResponse.json({ created: notification !== null });
-};
+});
 
-export const PATCH = async (request: Request) => {
+export const PATCH = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -181,9 +182,9 @@ export const PATCH = async (request: Request) => {
   await setNotificationRead(currentUser.accountId, id.data, body.read);
 
   return NextResponse.json({ ok: true });
-};
+});
 
-export const DELETE = async (request: Request) => {
+export const DELETE = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -206,4 +207,4 @@ export const DELETE = async (request: Request) => {
   await deleteNotification(currentUser.accountId, id.data);
 
   return NextResponse.json({ ok: true });
-};
+});

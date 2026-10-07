@@ -4,6 +4,7 @@ import {
   updateUserEmail,
   upsertUserSettings,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { settingsSchema } from '@/features/Settings/schema';
 import { getActiveUser } from '@/lib/auth';
 import type { locales } from '@/utils/locales';
@@ -18,7 +19,7 @@ const savedResponse = (locale: (typeof locales)[number]) => {
   return response;
 };
 
-export const PATCH = async (request: Request) => {
+export const PATCH = scopedRoute(async (request: Request) => {
   const payload = settingsSchema
     .pick({ applicationLanguage: true })
     .safeParse(await request.json().catch(() => null));
@@ -30,9 +31,9 @@ export const PATCH = async (request: Request) => {
     await upsertUserSettings(currentUser.accountId, payload.data);
   }
   return savedResponse(payload.data.applicationLanguage);
-};
+});
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
   if (!currentUser) {
@@ -75,4 +76,4 @@ export const POST = async (request: Request) => {
   });
 
   return savedResponse(values.applicationLanguage);
-};
+});

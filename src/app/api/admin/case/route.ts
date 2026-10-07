@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { scopedRoute } from '@/db/client';
 import { getStaffRole } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { loadProfileCase } from '@/lib/moderation';
 
-export const GET = async (request: Request) => {
+export const GET = scopedRoute(async (request: Request) => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || !(await getStaffRole(currentUser))) {
@@ -20,4 +21,4 @@ export const GET = async (request: Request) => {
   return NextResponse.json(found, {
     headers: { 'Cache-Control': 'private, no-store' },
   });
-};
+});

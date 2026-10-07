@@ -6,6 +6,7 @@ import {
   upsertDiscordUser,
   upsertUserSettings,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { localeFromPath } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -97,7 +98,7 @@ const fetchDiscordUser = async (accessToken: string, tokenType = 'Bearer') => {
   return response.json();
 };
 
-export const GET = async (request: NextRequest) => {
+export const GET = scopedRoute(async (request: NextRequest) => {
   const error = request.nextUrl.searchParams.get('error');
   const code = request.nextUrl.searchParams.get('code');
   const state = request.nextUrl.searchParams.get('state');
@@ -200,4 +201,4 @@ export const GET = async (request: NextRequest) => {
   } catch {
     return redirectWithFailure('oauth_failed');
   }
-};
+});

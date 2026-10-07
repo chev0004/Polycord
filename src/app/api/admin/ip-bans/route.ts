@@ -10,6 +10,7 @@ import {
   logModerationAction,
   revokeIpBan,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import { authorizeOwner, getStaffRole } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { clientIp, normalizeIp } from '@/lib/clientIp';
@@ -36,7 +37,7 @@ const targetOf = async (discordUserId: string | null | undefined) =>
     ? ((await getUserByDiscordId(discordUserId))?.id ?? null)
     : null;
 
-export const GET = async (request: Request) => {
+export const GET = scopedRoute(async (request: Request) => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || (await getStaffRole(currentUser)) !== 'owner') {
@@ -56,9 +57,9 @@ export const GET = async (request: Request) => {
       lastSeenAt: lastSeenAt.toISOString(),
     })),
   });
-};
+});
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const { currentUser, error } = await authorizeOwner(request);
   if (error) return error;
 
@@ -107,9 +108,9 @@ export const POST = async (request: Request) => {
     bans: (await listActiveIpBans()).map(toView),
     log,
   });
-};
+});
 
-export const DELETE = async (request: Request) => {
+export const DELETE = scopedRoute(async (request: Request) => {
   const { currentUser, error } = await authorizeOwner(request);
   if (error) return error;
 
@@ -134,4 +135,4 @@ export const DELETE = async (request: Request) => {
     bans: (await listActiveIpBans()).map(toView),
     log: [toModLogEntry(entry)],
   });
-};
+});

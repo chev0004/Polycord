@@ -3,6 +3,7 @@ import {
   updateSubscriptionByCustomerId,
   upsertSubscriptionForUser,
 } from '@/db';
+import { scopedRoute } from '@/db/client';
 import {
   getStripeSubscription,
   getSubscriptionPeriodEnd,
@@ -14,7 +15,7 @@ type StripeEvent = {
   data: { object: Record<string, unknown> };
 };
 
-export const POST = async (request: Request) => {
+export const POST = scopedRoute(async (request: Request) => {
   const payload = await request.text();
   if (
     !verifyStripeSignature(payload, request.headers.get('stripe-signature'))
@@ -98,4 +99,4 @@ export const POST = async (request: Request) => {
   }
 
   return NextResponse.json({ received: true });
-};
+});
