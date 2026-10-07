@@ -4,9 +4,10 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
+import { tracePage } from '@/lib/pageLoadTrace';
 import { OnboardingRouteClient } from './OnboardingRouteClient';
 
-export default async function OnboardingRoute({
+async function OnboardingRoute({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -43,3 +44,5 @@ export default async function OnboardingRoute({
     </main>
   );
 }
+
+export default tracePage('onboarding', OnboardingRoute);

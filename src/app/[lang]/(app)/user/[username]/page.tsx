@@ -1,8 +1,9 @@
 import { notFound, redirect } from 'next/navigation';
 import { getPublicProfileIdByUsername } from '@/db';
 import { getCurrentUser } from '@/lib/auth';
+import { tracePage } from '@/lib/pageLoadTrace';
 
-export default async function UsernameRoute({
+async function UsernameRoute({
   params,
 }: {
   params: Promise<{ lang: string; username: string }>;
@@ -18,5 +19,7 @@ export default async function UsernameRoute({
     notFound();
   }
 
-  redirect(`/${lang}/u/${profileId}`);
+  return redirect(`/${lang}/u/${profileId}`);
 }
+
+export default tracePage('user/[member]', UsernameRoute);

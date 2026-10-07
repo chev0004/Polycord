@@ -8,6 +8,8 @@ import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
 import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
 import { loadStaffNav } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
+import { measureLoad } from '@/lib/loadTrace';
+import { createPageLoadTrace } from '@/lib/pageLoadTrace';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,17 +21,32 @@ export default async function AppLayout({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
-  const user = await getCurrentUser();
+  const trace = await createPageLoadTrace();
+  const measure = trace?.measure ?? measureLoad;
+  const user = await measure('layout-account', getCurrentUser);
   const [settings, cardTheme, staffNav] = user
     ? await Promise.all([
-        getUserSettingsByDiscordUserId(user.id),
-        getCardThemeByDiscordUserId(user.id),
-        loadStaffNav(user),
+        measure('layout-settings', () =>
+          getUserSettingsByDiscordUserId(user.id),
+        ),
+        measure('layout-theme', () => getCardThemeByDiscordUserId(user.id)),
+        measure('layout-staff', () => loadStaffNav(user)),
       ])
     : [null, undefined, null];
 
   return (
     <LanguageDisplayProvider value={settings?.languageDisplay ?? 'long'}>
+      {trace && (
+        <script id="polycord-load-trace" type="application/json">
+          {JSON.stringify({
+            spans: trace.spans,
+            transport:
+              process.env.POLYCORD_DIRECT_BAN_CHECK === 'true'
+                ? 'direct'
+                : 'https',
+          }).replaceAll('<', '\\u003c')}
+        </script>
+      )}
       <TimeFormatProvider value={settings?.timeFormat ?? '24hr'}>
         <RouteProgressProvider theme={cardTheme}>
           <AppShell

@@ -1,12 +1,9 @@
 import { redirect } from 'next/navigation';
 import { InboxPage } from '@/features/Inbox/InboxPage';
 import { getCurrentUser } from '@/lib/auth';
+import { tracePage } from '@/lib/pageLoadTrace';
 
-export default async function InboxRoute({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
+async function InboxRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const user = await getCurrentUser();
 
@@ -16,3 +13,5 @@ export default async function InboxRoute({
 
   return <InboxPage />;
 }
+
+export default tracePage('inbox', InboxRoute);

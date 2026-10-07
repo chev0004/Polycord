@@ -8,11 +8,12 @@ import {
 import { AnalyticsDashboard } from '@/features/Analytics/AnalyticsDashboard';
 import { isOwner } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
+import { tracePage } from '@/lib/pageLoadTrace';
 
 const RANGE_DAYS = 30;
 const DAILY_DAYS = 14;
 
-export default async function AnalyticsRoute({
+async function AnalyticsRoute({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -52,3 +53,5 @@ export default async function AnalyticsRoute({
     </main>
   );
 }
+
+export default tracePage('analytics', AnalyticsRoute);

@@ -91,7 +91,18 @@ export const serveDiscoveryDocument = async (
       )
     ) {
       request.headers.set('x-nf-next-middleware', 'skip');
-      return context.next(request);
+      const gateHeaders = trace?.headers('gate');
+      const response = await context.next(request);
+      if (!trace) return response;
+      const headers = new Headers(response.headers);
+      headers.set(
+        'Server-Timing',
+        [headers.get('Server-Timing'), gateHeaders?.['Server-Timing']]
+          .filter(Boolean)
+          .join(', '),
+      );
+      headers.set('Cache-Control', 'private, no-store');
+      return new Response(response.body, { status: response.status, headers });
     }
     if (url.pathname.endsWith('/'))
       return Response.redirect(new URL(`/${locale}${url.search}`, url), 308);

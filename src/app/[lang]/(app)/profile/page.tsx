@@ -14,6 +14,7 @@ import { getBumpCooldown } from '@/features/Profile/bumpProfile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
+import { tracePage } from '@/lib/pageLoadTrace';
 import { ProfileRouteClient } from './ProfileRouteClient';
 
 const toProfileFormValues = ({
@@ -43,11 +44,7 @@ const toProfileFormValues = ({
   timezone: profile.timezone ?? '',
 });
 
-export default async function ProfileRoute({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
+async function ProfileRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const user = await getCurrentUser();
 
@@ -97,3 +94,5 @@ export default async function ProfileRoute({
     </main>
   );
 }
+
+export default tracePage('profile', ProfileRoute);

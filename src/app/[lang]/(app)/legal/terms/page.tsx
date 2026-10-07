@@ -1,10 +1,7 @@
 import { getLegalDocument, LegalDocument } from '@/features/Legal';
+import { tracePage } from '@/lib/pageLoadTrace';
 
-export default async function TermsRoute({
-  params,
-}: {
-  params: Promise<{ lang: string }>;
-}) {
+async function TermsRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const { content, isFallback } = getLegalDocument(lang, 'terms');
 
@@ -17,3 +14,5 @@ export default async function TermsRoute({
     />
   );
 }
+
+export default tracePage('legal/terms', TermsRoute);
