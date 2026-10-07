@@ -4,7 +4,9 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { type ExtractTablesWithRelations, sql } from 'drizzle-orm';
 import { drizzle, NodePgTransaction } from 'drizzle-orm/node-postgres';
 import { PgDialect } from 'drizzle-orm/pg-core';
+import { after } from 'next/server';
 import { Pool } from 'pg';
+import { cache } from 'react';
 import { connectionConfig } from './connection';
 import * as schema from './schema';
 
@@ -18,21 +20,23 @@ const poolOptions = () => ({
   idleTimeoutMillis: 20000,
 });
 
+const lambda = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
 const requestPools = new AsyncLocalStorage<Pool>();
+
+const activePool = (fallback: Pool) => {
+  const scoped = requestPools.getStore();
+  return scoped && !scoped.ending ? scoped : fallback;
+};
 
 class RequestPool extends Pool {
   query(...args: never[]): never {
-    return Reflect.apply(
-      Pool.prototype.query,
-      requestPools.getStore() ?? this,
-      args,
-    ) as never;
+    return Reflect.apply(Pool.prototype.query, activePool(this), args) as never;
   }
 
   connect(...args: never[]): never {
     return Reflect.apply(
       Pool.prototype.connect,
-      requestPools.getStore() ?? this,
+      activePool(this),
       args,
     ) as never;
   }
@@ -43,11 +47,11 @@ const pool =
   new RequestPool({
     ...poolOptions(),
     max: 2,
-    maxUses: process.env.AWS_LAMBDA_FUNCTION_NAME ? 1 : Infinity,
+    maxUses: lambda ? 1 : Infinity,
   });
 pool.on('error', () => {});
 
-export const withRequestPool = async <T>(run: () => Promise<T>) => {
+const createRequestPool = () => {
   const scoped = new Pool({ ...poolOptions(), max: 3 });
   scoped.on('error', () => {});
   for (const _ of [0, 1])
@@ -55,12 +59,34 @@ export const withRequestPool = async <T>(run: () => Promise<T>) => {
       (client) => client.release(),
       () => {},
     );
+  return scoped;
+};
+
+const renderPool = cache(() => {
+  const scoped = createRequestPool();
+  after(() => scoped.end());
+  return scoped;
+});
+
+export const withRenderPool = <T>(run: () => Promise<T>) =>
+  !lambda || requestPools.getStore()
+    ? run()
+    : requestPools.run(renderPool(), run);
+
+export const withRequestPool = async <T>(run: () => Promise<T>) => {
+  if (!lambda || requestPools.getStore()) return run();
+  const scoped = createRequestPool();
   try {
     return await requestPools.run(scoped, run);
   } finally {
     void scoped.end();
   }
 };
+
+export const scopedRoute =
+  <A extends unknown[], R>(handler: (...args: A) => Promise<R>) =>
+  (...args: A) =>
+    withRequestPool(() => handler(...args));
 
 if (process.env.NODE_ENV !== 'production') {
   globalThis.polycordPool = pool;

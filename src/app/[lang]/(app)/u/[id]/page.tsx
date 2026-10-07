@@ -12,6 +12,7 @@ import {
   toViewerAvailabilityContext,
   type ViewerAvailabilityContext,
 } from '@/db';
+import { withRenderPool } from '@/db/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
@@ -21,34 +22,38 @@ import { PublicProfileClient } from './PublicProfileClient';
 
 const loadPublicProfile = cache(getPublicProfileById);
 
-export async function generateMetadata({
+export const generateMetadata = ({
   params,
 }: {
   params: Promise<{ lang: string; id: string }>;
-}): Promise<Metadata> {
-  const { lang, id } = await params;
-  const user = await getCurrentUser();
-  const row = await loadPublicProfile(id, user?.accountId);
+}): Promise<Metadata> =>
+  withRenderPool(async () => {
+    const { lang, id } = await params;
+    const user = await getCurrentUser();
+    const row = await loadPublicProfile(id, user?.accountId);
 
-  if (!row) {
-    return {};
-  }
+    if (!row) {
+      return {};
+    }
 
-  const t = await getTranslations({ locale: lang, namespace: 'PublicProfile' });
-  const profile = mapProfileToDiscoveryProfile(row);
-  const title = t('metaTitle', { name: profile.displayName });
-  const description = t('metaDescription', {
-    name: profile.displayName,
-    primary: getLanguageName(profile.primaryLanguage, lang),
-    targets: new Intl.ListFormat(lang).format(
-      profile.targetLanguages.map(({ language }) =>
-        getLanguageName(language, lang),
+    const t = await getTranslations({
+      locale: lang,
+      namespace: 'PublicProfile',
+    });
+    const profile = mapProfileToDiscoveryProfile(row);
+    const title = t('metaTitle', { name: profile.displayName });
+    const description = t('metaDescription', {
+      name: profile.displayName,
+      primary: getLanguageName(profile.primaryLanguage, lang),
+      targets: new Intl.ListFormat(lang).format(
+        profile.targetLanguages.map(({ language }) =>
+          getLanguageName(language, lang),
+        ),
       ),
-    ),
-  });
+    });
 
-  return { title, description, openGraph: { title, description } };
-}
+    return { title, description, openGraph: { title, description } };
+  });
 
 async function PublicProfileRoute({
   params,
