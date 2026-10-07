@@ -30,6 +30,9 @@ const NavigationDemo = () => {
             {route}
           </button>
         ))}
+        <button type="button" onClick={() => router.refresh()}>
+          refresh
+        </button>
       </nav>
       <h1 className="mt-8 font-bold text-2xl">{page}</h1>
       <PageLoadReady route={page} spans={spans} />
@@ -110,5 +113,34 @@ export const RepeatedNavigation: Story = {
     await expect(
       canvas.getByRole('complementary').querySelector('summary')?.textContent,
     ).toBe(timer);
+  },
+};
+
+export const RefreshKeepsVisit: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() =>
+      expect(
+        canvas.getByText(/Page ready: timers stopped/),
+      ).toBeInTheDocument(),
+    );
+    fireEvent.click(canvas.getByRole('button', { name: 'profile' }));
+    await waitFor(() =>
+      expect(canvas.getByText(/counting from navigation/)).toBeInTheDocument(),
+    );
+    fireEvent.click(canvas.getByRole('button', { name: 'refresh' }));
+    await expect(getRouter().refresh).toHaveBeenCalledOnce();
+    await expect(canvas.getByText(/counting from navigation/)).toBeVisible();
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('heading', { name: '/en/profile' }),
+      ).toBeInTheDocument(),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getByText(/Page ready: timers stopped/),
+      ).toBeInTheDocument(),
+    );
+    await expect(canvas.getByText('Previous navigations (1)')).toBeVisible();
   },
 };

@@ -21,9 +21,7 @@ const RetryExample = () => {
   const t = useTranslations('DiscoveryStories');
 
   useLayoutEffect(() => {
-    getRouter()
-      .refresh.mockImplementationOnce(() => {})
-      .mockImplementation(() => setFailed(false));
+    getRouter().refresh.mockImplementation(() => setFailed(false));
     return () => {
       getRouter().refresh.mockReset();
     };
@@ -72,7 +70,7 @@ export const RetrySuccess: Story = {
       expect(canvas.queryByRole('alert')).not.toBeInTheDocument(),
     );
     expect(canvas.getAllByText('Yuki').length).toBeGreaterThan(0);
-    expect(getRouter().refresh).toHaveBeenCalledTimes(2);
+    expect(getRouter().refresh).toHaveBeenCalledTimes(1);
   },
 };
 
