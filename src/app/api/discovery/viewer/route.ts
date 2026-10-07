@@ -28,6 +28,9 @@ export async function GET(request: Request) {
       const discoveryProfile = profile
         ? mapProfileToDiscoveryProfile(profile)
         : null;
+      const availability = profile
+        ? toViewerAvailabilityContext(profile.profile)
+        : {};
       viewer = {
         isLoggedIn: true,
         userId: user.id,
@@ -35,7 +38,8 @@ export async function GET(request: Request) {
         userAvatarUrl: user.avatarUrl,
         needsOnboarding: !profile,
         currentProfileId: profile?.profile.id,
-        ...(profile ? toViewerAvailabilityContext(profile.profile) : {}),
+        viewerTimezone: availability.timezone,
+        viewerAvailability: availability.availability,
         cardTheme: discoveryProfile?.cardTheme,
         languageDisplay: settings?.languageDisplay,
         timeFormat: settings?.timeFormat,
