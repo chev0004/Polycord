@@ -6,8 +6,10 @@ import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
 import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
+import { DiscoveryLoadPanel } from './DiscoveryLoadPanel';
 import { DiscoveryPage } from './DiscoveryPage';
 import type { DiscoveryViewer } from './discoveryViewer';
+import { traceDiscoveryRequest } from './loadTrace';
 
 export const DiscoveryShell = ({ locale }: { locale: string }) => {
   const t = useTranslations('Discovery');
@@ -20,12 +22,11 @@ export const DiscoveryShell = ({ locale }: { locale: string }) => {
     request.current = controller;
     setFailed(false);
     try {
-      const response = await fetch(`/api/discovery/viewer?locale=${locale}`, {
-        cache: 'no-store',
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error('Viewer load failed');
-      const data: DiscoveryViewer = await response.json();
+      const data = await traceDiscoveryRequest<DiscoveryViewer>(
+        'viewer',
+        `/api/discovery/viewer?locale=${locale}`,
+        controller.signal,
+      );
       if (!controller.signal.aborted) setViewer(data);
     } catch {
       if (!controller.signal.aborted) setFailed(true);
@@ -67,6 +68,9 @@ export const DiscoveryShell = ({ locale }: { locale: string }) => {
               fetchOnMount
               isLoading={viewer === null}
             />
+            {!viewer || viewer.staff?.role === 'owner' ? (
+              <DiscoveryLoadPanel />
+            ) : null}
           </AppShell>
         </RouteProgressProvider>
       </TimeFormatProvider>

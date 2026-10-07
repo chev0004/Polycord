@@ -8,6 +8,7 @@ import {
 } from './auth-session';
 import { withBanDeadline } from './banDeadline';
 import { clientIp } from './clientIp';
+import type { LoadMeasure } from './loadTrace';
 
 export type BanNotice = { date: Date; reference: string };
 
@@ -27,6 +28,7 @@ export const findBan = async (
   origin: string,
   headers: Headers,
   cookie: (name: string) => string | undefined,
+  measure?: LoadMeasure,
 ): Promise<BanNotice | null> => {
   const sessionCookie = cookie(AUTH_SESSION_COOKIE);
   const banCookie = cookie(AUTH_BAN_COOKIE);
@@ -48,7 +50,7 @@ export const findBan = async (
   if (process.env.POLYCORD_DIRECT_BAN_CHECK === 'true') {
     const { lookupBan } = await import('./banLookup');
     return withBanDeadline((signal) =>
-      lookupBan(input.ip, input.discordUserIds, signal),
+      lookupBan(input.ip, input.discordUserIds, signal, measure),
     );
   }
 

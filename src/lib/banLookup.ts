@@ -3,6 +3,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { createBanClient } from '@/db/connection';
 import type { BanNotice } from './banGate';
+import { type LoadMeasure, measureLoad } from './loadTrace';
 
 export const BAN_STATEMENT_TIMEOUT_MS = 2500;
 
@@ -18,12 +19,13 @@ export const lookupBan = async (
   ip: string | null,
   discordUserIds: string[],
   signal: AbortSignal,
+  measure: LoadMeasure = measureLoad,
 ): Promise<BanNotice | null> => {
   signal.throwIfAborted();
   const client = createBanClient(signal);
 
   try {
-    await client.connect();
+    await measure('ban-connect', () => client.connect());
     await client.query('begin');
     try {
       signal.throwIfAborted();
@@ -32,9 +34,11 @@ export const lookupBan = async (
       ]);
       const ipBan = ip
         ? (
-            await client.query<{ id: string; created_at: Date }>(
-              'select id, created_at from ip_bans where ip = $1 and revoked_at is null order by created_at asc limit 1',
-              [ip],
+            await measure('ban-ip', () =>
+              client.query<{ id: string; created_at: Date }>(
+                'select id, created_at from ip_bans where ip = $1 and revoked_at is null order by created_at asc limit 1',
+                [ip],
+              ),
             )
           ).rows[0]
         : null;
@@ -45,9 +49,11 @@ export const lookupBan = async (
         signal.throwIfAborted();
         const dates: number[] = [];
         for (const table of ['users', 'moderation_restrictions']) {
-          const { rows } = await client.query<{ at: Date }>(
-            `select banned_at as at from ${table} where discord_user_id = any($1::varchar[]) and banned_at is not null`,
-            [discordUserIds],
+          const { rows } = await measure('ban-identity', () =>
+            client.query<{ at: Date }>(
+              `select banned_at as at from ${table} where discord_user_id = any($1::varchar[]) and banned_at is not null`,
+              [discordUserIds],
+            ),
           );
           dates.push(...rows.map(({ at }) => Number(at)));
         }
@@ -69,6 +75,6 @@ export const lookupBan = async (
       client.connection.stream.destroy();
       client.connection.emit('end');
     }
-    await closed;
+    await measure('ban-close', () => closed);
   }
 };
