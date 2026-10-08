@@ -12,6 +12,7 @@ export async function deployStaging(run = spawnSync, request = fetch) {
     ['push', 'workflow_dispatch'].includes(process.env.GITHUB_EVENT_NAME),
   );
   assert.ok(process.env.NETLIFY_AUTH_TOKEN, 'Netlify credential is required');
+  assert.ok(process.env.DATABASE_URL, 'Staging database URL is required');
   assert.ok(process.version.startsWith('v22.'), 'Node 22 is required');
 
   const execute = (command, args, env = process.env, inherit = false) => {
@@ -70,10 +71,7 @@ export async function deployStaging(run = spawnSync, request = fetch) {
       '--json',
     ]),
   );
-  assert.ok(
-    values.DATABASE_URL && values.AUTH_SECRET,
-    'Staging build variables are required',
-  );
+  assert.ok(values.AUTH_SECRET, 'Staging build variables are required');
   if (process.env.GITHUB_ACTIONS === 'true') {
     for (const value of Object.values(values)) {
       if (value)
@@ -85,6 +83,7 @@ export async function deployStaging(run = spawnSync, request = fetch) {
   const env = {
     ...process.env,
     ...values,
+    DATABASE_URL: process.env.DATABASE_URL,
     NETLIFY_SITE_ID: siteId,
     SITE_ID: siteId,
     BRANCH: 'develop',
