@@ -3,24 +3,34 @@
 import { useEffect, useState } from 'react';
 import { Sheet } from '@/components/Sheet';
 import type { ToastData } from '@/hooks/useToast';
+import { type CasePreview, CaseSkeleton } from './CaseShell';
+import { ModerationChips } from './ModerationChips';
 import { ActionSheets, type SheetKind } from './ModerationMobile';
-import { ActionError, Spinner } from './ModerationParts';
+import { ActionError } from './ModerationParts';
 import type { ModState, StaffRole } from './types';
 import { toModState, useModeration } from './useModeration';
 import { useModerationNotify } from './useModerationToasts';
-import { type ProfileCase, useProfileCase } from './useProfileCase';
+import {
+  type ProfileCase,
+  useCaseSync,
+  useProfileCase,
+} from './useProfileCase';
 
 const CLOSE_DELAY = 350;
 
 const MobileCase = ({
+  profileId,
   found,
+  refreshed,
   meId,
   meRole,
   addToast,
   onClose,
   onStateChange,
 }: {
+  profileId: string;
   found: ProfileCase;
+  refreshed: ProfileCase | null;
   meId: string;
   meRole: StaffRole;
   addToast: (toast: Omit<ToastData, 'id'>) => void;
@@ -36,6 +46,7 @@ const MobileCase = ({
     meId,
     meRole,
   });
+  useCaseSync(profileId, found, refreshed, store);
   const notify = useModerationNotify(addToast);
   const [sheet, setSheet] = useState<SheetKind | null>('act');
   const user = store.usersById.get(found.userId);
@@ -86,6 +97,7 @@ export const MobileTakeAction = ({
   addToast,
   onClose,
   onStateChange,
+  preview,
 }: {
   profileId: string;
   displayName: string;
@@ -94,13 +106,16 @@ export const MobileTakeAction = ({
   addToast: (toast: Omit<ToastData, 'id'>) => void;
   onClose: () => void;
   onStateChange?: (state: ModState) => void;
+  preview?: CasePreview;
 }) => {
-  const { found, failed, load } = useProfileCase(profileId);
+  const { found, refreshed, failed, load } = useProfileCase(profileId);
 
   if (found) {
     return (
       <MobileCase
+        profileId={profileId}
         found={found}
+        refreshed={refreshed}
         meId={meId}
         meRole={meRole}
         addToast={addToast}
@@ -119,9 +134,14 @@ export const MobileTakeAction = ({
       {failed ? (
         <ActionError mobile onRetry={load} />
       ) : (
-        <div className="flex justify-center p-6 text-muted">
-          <Spinner className="h-5 w-5" />
-        </div>
+        <>
+          {preview?.state ? (
+            <div className="flex flex-wrap gap-1.5 px-5">
+              <ModerationChips state={preview.state} />
+            </div>
+          ) : null}
+          <CaseSkeleton actions={false} />
+        </>
       )}
     </Sheet>
   );

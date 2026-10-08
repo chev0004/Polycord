@@ -8,6 +8,7 @@ import {
   waitFor,
   within,
 } from '@storybook/test';
+import { clearCases } from './caseCache';
 import { moderationSnapshot } from './moderationFixtures';
 import { TakeActionPanel } from './TakeActionPanel';
 
@@ -18,6 +19,7 @@ const mockPanelApi =
   () => {
     const original = globalThis.fetch;
     let remaining = failures;
+    clearCases();
     actionFetch.mockReset();
     globalThis.fetch = Object.assign(
       async (...args: Parameters<typeof fetch>) => {
@@ -93,12 +95,12 @@ export const Owner: Story = {
       await screen.findByRole('dialog', { name: 'Moderate Ryan Mercer' }),
     );
     await expect(
-      await panel.findByRole('heading', { name: 'Ryan Mercer' }),
+      await panel.findByRole('button', { name: 'Ban' }),
+    ).toBeInTheDocument();
+    await expect(
+      panel.getByRole('heading', { name: 'Ryan Mercer' }),
     ).toBeInTheDocument();
     await expect(panel.getByText('2 pending reports')).toBeInTheDocument();
-    await expect(
-      panel.getByRole('button', { name: 'Ban' }),
-    ).toBeInTheDocument();
     await userEvent.click(panel.getByRole('button', { name: 'Hide profile' }));
     const confirmation = within(
       await screen.findByRole('dialog', {
