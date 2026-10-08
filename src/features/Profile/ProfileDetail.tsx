@@ -20,6 +20,7 @@ import {
   MdFlag,
   MdLink,
   MdMoreHoriz,
+  MdOutlineShield,
   MdWorkspacePremium,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
@@ -76,6 +77,7 @@ type ProfileDetailProps = {
   onToggleSave?: () => void;
   onReport?: () => void;
   onBlock?: () => Promise<void> | void;
+  onModerate?: (trigger: HTMLElement | null) => void;
   onEdit?: () => void;
   onSignIn?: () => void;
   onTagClick: (tag: string) => void;
@@ -309,6 +311,7 @@ export const ProfileDetail = ({
   onToggleSave,
   onReport,
   onBlock,
+  onModerate,
   onEdit,
   onSignIn,
   onTagClick,
@@ -384,6 +387,12 @@ export const ProfileDetail = ({
       danger: true,
       disabled: blocking,
       onSelect: () => setBlockOpen(true),
+    },
+    onModerate && {
+      key: 'moderate',
+      icon: MdOutlineShield,
+      label: tDiscovery('moderateProfile'),
+      onSelect: () => onModerate(menuTriggerRef.current),
     },
   ].filter((item) => item !== undefined);
 

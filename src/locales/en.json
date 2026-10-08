@@ -381,6 +381,7 @@
     "noStaffMatches": "No matching accounts.",
     "searchingAccounts": "Searching accounts…",
     "accountSearchFailed": "Account search failed.",
+    "showMoreAccounts": "Show more accounts",
     "removeModerator": "Remove {name} as moderator",
     "reauthRequired": "Owner actions need a sign-in from the last 12 hours.",
     "signInAgain": "Sign in again",

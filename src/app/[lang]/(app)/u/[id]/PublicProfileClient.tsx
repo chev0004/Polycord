@@ -1,9 +1,11 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import type { AvailabilityPattern } from '@/constants/availability';
+import type { StaffRole } from '@/features/Admin/types';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
@@ -15,6 +17,18 @@ import { MemberEmptyState } from '@/features/Profile/MemberEmptyState';
 import { ProfileDetail } from '@/features/Profile/ProfileDetail';
 import { profileReturn } from '@/features/Profile/profileReturn';
 import { useProfileActions } from '@/features/Profile/useProfileActions';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+
+const MobileTakeAction = dynamic(() =>
+  import('@/features/Admin/MobileTakeAction').then(
+    (module) => module.MobileTakeAction,
+  ),
+);
+const TakeActionPanel = dynamic(() =>
+  import('@/features/Admin/TakeActionPanel').then(
+    (module) => module.TakeActionPanel,
+  ),
+);
 
 type PublicProfileClientProps = {
   locale: string;
@@ -24,6 +38,7 @@ type PublicProfileClientProps = {
   currentProfileId?: string;
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern;
+  staff?: { meId: string; role: StaffRole };
 };
 
 export const PublicProfileClient = ({
@@ -34,6 +49,7 @@ export const PublicProfileClient = ({
   currentProfileId,
   viewerTimezone,
   viewerAvailability,
+  staff,
 }: PublicProfileClientProps) => {
   const router = useRouteProgressRouter();
   const t = useTranslations('Discovery');
@@ -44,6 +60,10 @@ export const PublicProfileClient = ({
   const actions = useProfileActions(locale, isLoggedIn, () => setBlocked(true));
   const [isSaved, setIsSaved] = useState(initialSaved);
   const [isSaving, setIsSaving] = useState(false);
+  const [moderationTrigger, setModerationTrigger] = useState<
+    HTMLElement | null | undefined
+  >();
+  const mobile = useIsMobile();
   const isOwnProfile = profile.id === currentProfileId;
   const { refresh } = router;
   const signIn = () => window.location.assign(signInHref(locale));
@@ -97,6 +117,9 @@ export const PublicProfileClient = ({
             onShare={() => actions.share(profile)}
             onReport={isOwnProfile ? undefined : () => actions.report(profile)}
             onBlock={isOwnProfile ? undefined : () => actions.block(profile.id)}
+            onModerate={
+              staff && !isOwnProfile ? setModerationTrigger : undefined
+            }
             onEdit={
               isOwnProfile ? () => router.push(`/${locale}/profile`) : undefined
             }
@@ -119,6 +142,26 @@ export const PublicProfileClient = ({
           />
         )}
       </main>
+      {staff && moderationTrigger !== undefined && mobile ? (
+        <MobileTakeAction
+          profileId={profile.id}
+          displayName={profile.displayName}
+          meId={staff.meId}
+          meRole={staff.role}
+          addToast={actions.addToast}
+          onClose={() => setModerationTrigger(undefined)}
+        />
+      ) : null}
+      {staff && moderationTrigger !== undefined && !mobile ? (
+        <TakeActionPanel
+          profileId={profile.id}
+          displayName={profile.displayName}
+          meId={staff.meId}
+          meRole={staff.role}
+          returnFocus={moderationTrigger}
+          onClose={() => setModerationTrigger(undefined)}
+        />
+      ) : null}
       {actions.feedback}
     </>
   );
