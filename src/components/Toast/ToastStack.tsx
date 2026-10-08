@@ -28,6 +28,7 @@ const ToastItem = React.memo(
         duration={toast.duration}
         timerRef={timerRef}
         iconUrl={toast.iconUrl}
+        action={toast.action}
       />
     );
   },

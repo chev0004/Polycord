@@ -47,6 +47,10 @@ const blockFromDiscovery = async (page: Page, name: string) => {
       response.request().method() === 'POST',
   );
   await page.getByRole('button', { name: 'Block user', exact: true }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Block user', exact: true })
+    .click();
   expect((await blocked).status()).toBe(200);
   await expect(page.getByText('User blocked')).toBeVisible();
   await page.evaluate(() => sessionStorage.setItem('blocked-watch', '1'));

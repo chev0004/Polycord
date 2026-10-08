@@ -46,6 +46,7 @@ import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { AvailabilityRow } from './AvailabilityRow';
+import { BlockDialog } from './BlockDialog';
 import {
   type CardTheme,
   deriveCardAccent,
@@ -53,7 +54,6 @@ import {
   getFreeCardTheme,
   tintedSurface,
 } from './cardTheme';
-
 import { DummyChip } from './DummyChip';
 import { MobileNameCopy, MobileProfileSheet } from './MobileProfileSheet';
 import { recordProfileView } from './profileViewRequest';
@@ -195,6 +195,8 @@ export const ProfileCard = ({
   const usernameCopy = useUsernameCopy(profile, onCopyUsername);
   const { copied, copyFailed } = usernameCopy;
   const [detailOpen, setDetailOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const openSheet = () => {
     setDetailOpen(true);
     recordProfileView(profile.id);
@@ -328,10 +330,8 @@ export const ProfileCard = ({
       icon: MdBlock,
       label: t('blockProfile'),
       danger: true,
-      onSelect: () => {
-        if (mobile) setDetailOpen(false);
-        return onBlock(profile.id);
-      },
+      disabled: blocking,
+      onSelect: () => setBlockOpen(true),
     },
     onModerate
       ? {
@@ -434,344 +434,367 @@ export const ProfileCard = ({
     .join(' ');
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: the display name button opens the profile from the keyboard
-    <article
-      style={themeStyle}
-      className={cardClassName}
-      onClick={opensProfile || opensSheet ? handleCardClick : undefined}
-    >
-      <div className="-mx-5 -mt-5 relative h-[84px] flex-shrink-0">
-        <div
-          className="flex h-16 items-center justify-end rounded-t-3xl px-2.5"
-          style={{ background: theme.banner }}
-        >
-          <div className="flex items-center gap-1.5">
-            {lastBumpRelative && (
-              <span
-                data-bump-pill
-                className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide backdrop-blur-sm"
-              >
-                {lastBumpRelative}
-              </span>
-            )}
-            {!isPreview && mobile ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setIsMenuOpen(true)}
-                  className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50"
-                  aria-label={t('cardMenu')}
+    <>
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: the display name button opens the profile from the keyboard */}
+      <article
+        style={themeStyle}
+        className={cardClassName}
+        onClick={opensProfile || opensSheet ? handleCardClick : undefined}
+      >
+        <div className="-mx-5 -mt-5 relative h-[84px] flex-shrink-0">
+          <div
+            className="flex h-16 items-center justify-end rounded-t-3xl px-2.5"
+            style={{ background: theme.banner }}
+          >
+            <div className="flex items-center gap-1.5">
+              {lastBumpRelative && (
+                <span
+                  data-bump-pill
+                  className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide backdrop-blur-sm"
                 >
-                  <MdMoreVert size={19} />
-                </button>
-                <ActionSheet
-                  open={isMenuOpen}
-                  onOpenChange={setIsMenuOpen}
-                  title={profile.displayName}
-                  items={menuItems}
-                />
-                <MobileProfileSheet
-                  profile={profile}
-                  open={detailOpen}
-                  onOpenChange={setDetailOpen}
-                  isLoggedIn={isLoggedIn}
-                  viewerTimezone={viewerTimezone}
-                  onCopyUsername={onCopyUsername}
-                  menuItems={menuItems.filter(
-                    ({ key }) => key !== 'view' && key !== 'moderate',
-                  )}
-                />
-              </>
-            ) : null}
-            {!isPreview && !mobile && (
-              <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                <Popover.Trigger asChild>
+                  {lastBumpRelative}
+                </span>
+              )}
+              {!isPreview && mobile ? (
+                <>
                   <button
-                    ref={menuTrigger}
                     type="button"
-                    suppressHydrationWarning
-                    className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground focus-visible:bg-black/50"
+                    onClick={() => setIsMenuOpen(true)}
+                    className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50"
                     aria-label={t('cardMenu')}
                   >
-                    <MdMoreVert size={17} />
+                    <MdMoreVert size={19} />
                   </button>
-                </Popover.Trigger>
-                <Popover.Portal>
-                  <Popover.Content
-                    className={`${menuContentClass} w-[200px]`}
-                    side="bottom"
-                    align="end"
-                    sideOffset={5}
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                  >
-                    <div className="flex flex-col">
-                      {menuItems.map(
-                        (
-                          { key, icon: Icon, label, danger, onSelect },
-                          index,
-                        ) => (
-                          <Fragment key={key}>
-                            {(danger && !menuItems[index - 1]?.danger) ||
-                            key === 'moderate' ? (
-                              <div className={menuDividerClass} />
-                            ) : null}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                onSelect();
-                                setIsMenuOpen(false);
-                              }}
-                              className={`${menuItemClass} hover:bg-background-main ${danger ? 'text-danger' : key === 'moderate' ? 'text-primary-light' : 'text-foreground'}`}
-                            >
-                              {Icon ? (
-                                <Icon
-                                  size={20}
-                                  className={
-                                    danger
-                                      ? 'text-danger'
-                                      : key === 'moderate'
-                                        ? 'text-primary'
-                                        : key === 'save' && isSaved
-                                          ? 'text-[var(--ct-accent,var(--color-primary))]'
-                                          : 'text-muted'
-                                  }
-                                />
+                  <ActionSheet
+                    open={isMenuOpen}
+                    onOpenChange={setIsMenuOpen}
+                    title={profile.displayName}
+                    items={menuItems}
+                  />
+                  <MobileProfileSheet
+                    profile={profile}
+                    open={detailOpen}
+                    onOpenChange={setDetailOpen}
+                    isLoggedIn={isLoggedIn}
+                    viewerTimezone={viewerTimezone}
+                    onCopyUsername={onCopyUsername}
+                    menuItems={menuItems.filter(
+                      ({ key }) => key !== 'view' && key !== 'moderate',
+                    )}
+                  />
+                </>
+              ) : null}
+              {!isPreview && !mobile && (
+                <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                  <Popover.Trigger asChild>
+                    <button
+                      ref={menuTrigger}
+                      type="button"
+                      suppressHydrationWarning
+                      className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground focus-visible:bg-black/50"
+                      aria-label={t('cardMenu')}
+                    >
+                      <MdMoreVert size={17} />
+                    </button>
+                  </Popover.Trigger>
+                  <Popover.Portal>
+                    <Popover.Content
+                      className={`${menuContentClass} w-[200px]`}
+                      side="bottom"
+                      align="end"
+                      sideOffset={5}
+                      onOpenAutoFocus={(e) => e.preventDefault()}
+                    >
+                      <div className="flex flex-col">
+                        {menuItems.map(
+                          (
+                            { key, icon: Icon, label, danger, onSelect },
+                            index,
+                          ) => (
+                            <Fragment key={key}>
+                              {(danger && !menuItems[index - 1]?.danger) ||
+                              key === 'moderate' ? (
+                                <div className={menuDividerClass} />
                               ) : null}
-                              {label}
-                            </button>
-                          </Fragment>
-                        ),
-                      )}
-                    </div>
-                    <Popover.Arrow className="fill-gray-500/50" />
-                  </Popover.Content>
-                </Popover.Portal>
-              </Popover.Root>
-            )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onSelect();
+                                  setIsMenuOpen(false);
+                                }}
+                                className={`${menuItemClass} hover:bg-background-main ${danger ? 'text-danger' : key === 'moderate' ? 'text-primary-light' : 'text-foreground'}`}
+                              >
+                                {Icon ? (
+                                  <Icon
+                                    size={20}
+                                    className={
+                                      danger
+                                        ? 'text-danger'
+                                        : key === 'moderate'
+                                          ? 'text-primary'
+                                          : key === 'save' && isSaved
+                                            ? 'text-[var(--ct-accent,var(--color-primary))]'
+                                            : 'text-muted'
+                                    }
+                                  />
+                                ) : null}
+                                {label}
+                              </button>
+                            </Fragment>
+                          ),
+                        )}
+                      </div>
+                      <Popover.Arrow className="fill-gray-500/50" />
+                    </Popover.Content>
+                  </Popover.Portal>
+                </Popover.Root>
+              )}
+            </div>
+          </div>
+
+          {boostedVisible ? (
+            <span
+              style={{ background: tintedSurface }}
+              className="-top-[26px] -right-3.5 absolute z-[2] inline-flex h-[30px] items-center whitespace-nowrap rounded-full pr-[13px] pl-2.5 font-bold text-[12px] text-[var(--ct-chip-text)] uppercase tracking-[0.06em] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14),0_0_0_8px_var(--color-background-main)]"
+            >
+              {t('boostedBadge')}
+            </span>
+          ) : null}
+
+          <div
+            className="absolute top-[29px] left-5 rounded-full bg-background-dark p-[7px]"
+            style={
+              profile.premium && theme.tint
+                ? { background: tintedSurface }
+                : undefined
+            }
+          >
+            <Avatar avatarUrl={profile.avatarUrl} size="md" />
           </div>
         </div>
 
-        {boostedVisible ? (
-          <span
-            style={{ background: tintedSurface }}
-            className="-top-[26px] -right-3.5 absolute z-[2] inline-flex h-[30px] items-center whitespace-nowrap rounded-full pr-[13px] pl-2.5 font-bold text-[12px] text-[var(--ct-chip-text)] uppercase tracking-[0.06em] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14),0_0_0_8px_var(--color-background-main)]"
-          >
-            {t('boostedBadge')}
-          </span>
-        ) : null}
-
-        <div
-          className="absolute top-[29px] left-5 rounded-full bg-background-dark p-[7px]"
-          style={
-            profile.premium && theme.tint
-              ? { background: tintedSurface }
-              : undefined
-          }
-        >
-          <Avatar avatarUrl={profile.avatarUrl} size="md" />
-        </div>
-      </div>
-
-      <div className="flex min-w-0 flex-col gap-[3px]">
-        {opensSheet && canCopyUsername ? (
-          <h3 className="min-w-0">
-            <MobileNameCopy
-              name={profile.displayName}
-              copied={copied}
-              onCopy={handleCopyUsername}
-            />
-          </h3>
-        ) : (
-          <>
-            <h3 className="truncate font-figtree font-semibold text-foreground text-lg">
-              {opensProfile ? (
+        <div className="flex min-w-0 flex-col gap-[3px]">
+          {opensSheet && canCopyUsername ? (
+            <h3 className="min-w-0">
+              <MobileNameCopy
+                name={profile.displayName}
+                copied={copied}
+                onCopy={handleCopyUsername}
+              />
+            </h3>
+          ) : (
+            <>
+              <h3 className="truncate font-figtree font-semibold text-foreground text-lg">
+                {opensProfile ? (
+                  <button
+                    type="button"
+                    onClick={() => onViewProfile?.(profile.id)}
+                    className="max-w-full truncate text-left transition-colors focus:outline-none focus-visible:bg-clip-text focus-visible:text-transparent group-hover/card:bg-clip-text group-hover/card:text-transparent focus-visible:[background-image:var(--card-banner-fill)] group-hover/card:[background-image:var(--card-banner-fill)]"
+                  >
+                    {profile.displayName}
+                  </button>
+                ) : (
+                  profile.displayName
+                )}
+              </h3>
+              {isPreview ? (
+                <span className="flex items-center gap-1.5 self-start text-muted text-xs">
+                  <MdContentCopy size={14} />
+                  <span>{t('copyUsername')}</span>
+                </span>
+              ) : canCopyUsername ? (
                 <button
                   type="button"
-                  onClick={() => onViewProfile?.(profile.id)}
-                  className="max-w-full truncate text-left transition-colors focus:outline-none focus-visible:bg-clip-text focus-visible:text-transparent group-hover/card:bg-clip-text group-hover/card:text-transparent focus-visible:[background-image:var(--card-banner-fill)] group-hover/card:[background-image:var(--card-banner-fill)]"
+                  onClick={handleCopyUsername}
+                  className="-my-2 group flex items-center gap-1.5 self-start py-2 text-left transition-colors"
+                  aria-label={t('copyUsername')}
                 >
-                  {profile.displayName}
+                  <div
+                    className={`flex items-center justify-center transition-all duration-200 ${
+                      copied
+                        ? 'scale-110 text-discord-blue-light'
+                        : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
+                    }`}
+                  >
+                    {copied ? (
+                      <MdCheck size={14} />
+                    ) : (
+                      <MdContentCopy size={14} />
+                    )}
+                  </div>
+                  <span
+                    className={`truncate text-xs transition-colors duration-200 ${
+                      copied
+                        ? 'font-medium text-discord-blue-light'
+                        : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
+                    }`}
+                  >
+                    {copied ? t('copied') : t('copyUsername')}
+                  </span>
                 </button>
               ) : (
-                profile.displayName
-              )}
-            </h3>
-            {isPreview ? (
-              <span className="flex items-center gap-1.5 self-start text-muted text-xs">
-                <MdContentCopy size={14} />
-                <span>{t('copyUsername')}</span>
-              </span>
-            ) : canCopyUsername ? (
-              <button
-                type="button"
-                onClick={handleCopyUsername}
-                className="-my-2 group flex items-center gap-1.5 self-start py-2 text-left transition-colors"
-                aria-label={t('copyUsername')}
-              >
-                <div
-                  className={`flex items-center justify-center transition-all duration-200 ${
-                    copied
-                      ? 'scale-110 text-discord-blue-light'
-                      : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
-                  }`}
-                >
-                  {copied ? <MdCheck size={14} /> : <MdContentCopy size={14} />}
-                </div>
-                <span
-                  className={`truncate text-xs transition-colors duration-200 ${
-                    copied
-                      ? 'font-medium text-discord-blue-light'
-                      : 'text-muted group-hover:text-foreground group-focus-visible:text-foreground'
-                  }`}
-                >
-                  {copied ? t('copied') : t('copyUsername')}
+                <span className="truncate text-subtle text-xs">
+                  {t('signInToViewUsername')}
                 </span>
-              </button>
-            ) : (
-              <span className="truncate text-subtle text-xs">
-                {t('signInToViewUsername')}
-              </span>
-            )}
-          </>
-        )}
-        {!isPreview && hasModeration(profile.moderation) ? (
-          <div data-moderation-chips className="mt-1.5 flex flex-wrap gap-1">
-            <ModerationChips state={profile.moderation} />
-          </div>
-        ) : null}
-      </div>
-      {copyFailed && profile.discordUsername ? (
-        <p role="alert" className="text-danger text-sm">
-          {t('copyFailed', { username: profile.discordUsername })}
-        </p>
-      ) : null}
-      <div className="flex flex-wrap items-center gap-2">
-        {profile.synthetic ? <DummyChip /> : null}
-        {renderLanguagePill(
-          profile.primaryLanguage,
-          profile.primaryLanguageLevel,
-          true,
-          `${profile.id}-primary`,
-        )}
-        {displayedTargetLanguages.map((lang) =>
-          renderLanguagePill(
-            lang.language,
-            lang.level,
-            false,
-            `${profile.id}-${lang.language}-target`,
-          ),
-        )}
-        {remainingLanguagesCount > 0 && (
-          <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-            <Popover.Trigger asChild>
-              <button
-                type="button"
-                suppressHydrationWarning
-                className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main hover:text-foreground focus-visible:text-foreground"
-                ref={languageTrigger}
-                aria-label={t('showMoreLanguages', {
-                  count: remainingLanguagesCount,
-                })}
-              >
-                <MdAdd size={14} />
-                {remainingLanguagesCount}
-              </button>
-            </Popover.Trigger>
-            <Popover.Portal>
-              <Popover.Content
-                className="PopoverContent z-50 w-[240px] rounded-menu border border-gray-500/50 bg-background-dark p-3 shadow-lg"
-                onCloseAutoFocus={(event) => {
-                  if (closedOutOfView.current) event.preventDefault();
-                }}
-                style={
-                  tinted
-                    ? ({
-                        '--card-tint': theme.tint,
-                        background: tintedSurface,
-                      } as React.CSSProperties)
-                    : undefined
-                }
-                side="bottom"
-                align="start"
-                sideOffset={5}
-              >
-                <div className="flex flex-wrap gap-2">
-                  {remainingTargetLanguages.map((lang, index) =>
-                    renderLanguagePill(
-                      lang.language,
-                      lang.level,
-                      false,
-                      `${profile.id}-remaining-${lang.language}-${index}`,
-                    ),
-                  )}
-                </div>
-                <Popover.Arrow className="fill-gray-500/50" />
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
-        )}
-      </div>
-
-      {profile.availability && (
-        <AvailabilityRow
-          availability={profile.availability}
-          ownerTimezone={profile.timezone}
-          viewerTimezone={viewerTimezone}
-        />
-      )}
-
-      <ProfileVoiceChip profile={profile} />
-
-      <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
-        {(profile.tags.length > 0 || isPreview) && (
-          <section className="flex flex-col gap-2">
-            <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
-              {t('tagsLabel')}
-            </span>
-            <div className="flex flex-wrap items-center gap-2">
-              {profile.tags.length > 0
-                ? profile.tags.map((tag) =>
-                    renderTag(tag, `${profile.id}-tag-${tag}`),
-                  )
-                : emptyTagsLabel && (
-                    <span className="text-subtle text-xs">
-                      {emptyTagsLabel}
-                    </span>
-                  )}
+              )}
+            </>
+          )}
+          {!isPreview && hasModeration(profile.moderation) ? (
+            <div data-moderation-chips className="mt-1.5 flex flex-wrap gap-1">
+              <ModerationChips state={profile.moderation} />
             </div>
-          </section>
+          ) : null}
+        </div>
+        {copyFailed && profile.discordUsername ? (
+          <p role="alert" className="text-danger text-sm">
+            {t('copyFailed', { username: profile.discordUsername })}
+          </p>
+        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {profile.synthetic ? <DummyChip /> : null}
+          {renderLanguagePill(
+            profile.primaryLanguage,
+            profile.primaryLanguageLevel,
+            true,
+            `${profile.id}-primary`,
+          )}
+          {displayedTargetLanguages.map((lang) =>
+            renderLanguagePill(
+              lang.language,
+              lang.level,
+              false,
+              `${profile.id}-${lang.language}-target`,
+            ),
+          )}
+          {remainingLanguagesCount > 0 && (
+            <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <Popover.Trigger asChild>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  className="inline-flex items-center gap-0.5 rounded-md bg-background-darker px-[9px] py-[5px] font-medium text-[11px] text-soft transition-colors hover:bg-background-main hover:text-foreground focus-visible:text-foreground"
+                  ref={languageTrigger}
+                  aria-label={t('showMoreLanguages', {
+                    count: remainingLanguagesCount,
+                  })}
+                >
+                  <MdAdd size={14} />
+                  {remainingLanguagesCount}
+                </button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  className="PopoverContent z-50 w-[240px] rounded-menu border border-gray-500/50 bg-background-dark p-3 shadow-lg"
+                  onCloseAutoFocus={(event) => {
+                    if (closedOutOfView.current) event.preventDefault();
+                  }}
+                  style={
+                    tinted
+                      ? ({
+                          '--card-tint': theme.tint,
+                          background: tintedSurface,
+                        } as React.CSSProperties)
+                      : undefined
+                  }
+                  side="bottom"
+                  align="start"
+                  sideOffset={5}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {remainingTargetLanguages.map((lang, index) =>
+                      renderLanguagePill(
+                        lang.language,
+                        lang.level,
+                        false,
+                        `${profile.id}-remaining-${lang.language}-${index}`,
+                      ),
+                    )}
+                  </div>
+                  <Popover.Arrow className="fill-gray-500/50" />
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          )}
+        </div>
+
+        {profile.availability && (
+          <AvailabilityRow
+            availability={profile.availability}
+            ownerTimezone={profile.timezone}
+            viewerTimezone={viewerTimezone}
+          />
         )}
 
-        {(profile.about || (isPreview && bioFallback)) && (
-          <section className="flex flex-col gap-2">
-            <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
-              {t('descriptionLabel')}
-            </span>
-            <p className="whitespace-pre-wrap break-words font-light text-sm text-soft leading-normal">
-              {profile.about || bioFallback}
-            </p>
-          </section>
-        )}
+        <ProfileVoiceChip profile={profile} />
 
-        <div className="mt-auto flex flex-wrap items-start justify-between gap-3 text-muted text-xs">
-          <div className="flex flex-col gap-1">
-            {profile.country && isPreview ? (
-              <span className="flex items-center gap-1.5">
-                {renderLocationContent()}
+        <div className="flex h-full flex-col gap-4 rounded-3xl bg-background-darker p-4">
+          {(profile.tags.length > 0 || isPreview) && (
+            <section className="flex flex-col gap-2">
+              <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
+                {t('tagsLabel')}
               </span>
-            ) : null}
-            {profile.country && !isPreview ? (
-              <button
-                type="button"
-                onClick={handleCountryClick}
-                className="-my-2 flex items-center gap-1.5 py-2 transition-opacity hover:opacity-80 focus-visible:opacity-80 active:opacity-60"
-              >
-                {renderLocationContent()}
-              </button>
-            ) : null}
+              <div className="flex flex-wrap items-center gap-2">
+                {profile.tags.length > 0
+                  ? profile.tags.map((tag) =>
+                      renderTag(tag, `${profile.id}-tag-${tag}`),
+                    )
+                  : emptyTagsLabel && (
+                      <span className="text-subtle text-xs">
+                        {emptyTagsLabel}
+                      </span>
+                    )}
+              </div>
+            </section>
+          )}
+
+          {(profile.about || (isPreview && bioFallback)) && (
+            <section className="flex flex-col gap-2">
+              <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
+                {t('descriptionLabel')}
+              </span>
+              <p className="whitespace-pre-wrap break-words font-light text-sm text-soft leading-normal">
+                {profile.about || bioFallback}
+              </p>
+            </section>
+          )}
+
+          <div className="mt-auto flex flex-wrap items-start justify-between gap-3 text-muted text-xs">
+            <div className="flex flex-col gap-1">
+              {profile.country && isPreview ? (
+                <span className="flex items-center gap-1.5">
+                  {renderLocationContent()}
+                </span>
+              ) : null}
+              {profile.country && !isPreview ? (
+                <button
+                  type="button"
+                  onClick={handleCountryClick}
+                  className="-my-2 flex items-center gap-1.5 py-2 transition-opacity hover:opacity-80 focus-visible:opacity-80 active:opacity-60"
+                >
+                  {renderLocationContent()}
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+      {onBlock ? (
+        <BlockDialog
+          open={blockOpen}
+          onOpenChange={setBlockOpen}
+          profileName={profile.displayName}
+          returnFocus={menuTrigger}
+          onConfirm={async () => {
+            if (mobile) setDetailOpen(false);
+            setBlocking(true);
+            try {
+              await onBlock(profile.id);
+            } finally {
+              setBlocking(false);
+            }
+          }}
+        />
+      ) : null}
+    </>
   );
 };

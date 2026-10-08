@@ -25,6 +25,7 @@ export type PhaseTiming = {
 export type DiscoveryLoadTrace = {
   startedAt?: number;
   route?: string;
+  trigger?: 'query' | 'refresh';
   kind?: 'document' | 'client';
   routes?: string[];
   resources?: {
@@ -148,14 +149,20 @@ export const disableLoadTrace = () => {
   emit();
 };
 
+export const isDiscoveryPath = (pathname: string) =>
+  /^\/[a-z]{2}\/?$/.test(pathname);
+
 export const beginPageNavigation = (href?: string, force = false) => {
   const current = startLoadTrace();
   if (!current) return;
   const target = href ? new URL(href, window.location.href) : null;
+  const sameRoute = target?.pathname === window.location.pathname;
   if (
     target &&
     (target.origin !== window.location.origin ||
-      target.pathname === window.location.pathname)
+      (sameRoute &&
+        (target.search === window.location.search ||
+          isDiscoveryPath(target.pathname))))
   )
     return;
   const next = target ? `${target.pathname}${target.search}` : '';
@@ -172,6 +179,7 @@ export const beginPageNavigation = (href?: string, force = false) => {
   trace = {
     transport: current.transport,
     kind: 'client',
+    trigger: sameRoute ? 'query' : undefined,
     route: target ? traceRouteName(target.href) : undefined,
     routes: target ? [traceRouteName(target.href)] : [],
     startedAt: performance.now(),
@@ -198,12 +206,33 @@ export const beginPageNavigation = (href?: string, force = false) => {
       },
     ].slice(-15),
     phases: {
-      document: { status: 'loading', start: 0 },
+      document: sameRoute
+        ? { status: 'done', start: 0, end: 0 }
+        : { status: 'loading', start: 0 },
       controls: { status: 'pending' },
       viewer: { status: 'pending' },
       discovery: { status: 'pending' },
       grid: { status: 'pending' },
       page: { status: 'pending' },
+    },
+  };
+  emit();
+};
+
+export const beginInteractionLoad = (trigger: 'query' | 'refresh') => {
+  const current = startLoadTrace();
+  if (!current || current.finished === undefined) return;
+  beginPageNavigation(undefined, true);
+  if (!trace) return;
+  const route = traceRouteName(window.location.href);
+  trace = {
+    ...trace,
+    trigger,
+    route,
+    routes: [route],
+    phases: {
+      ...trace.phases,
+      document: { status: 'done', start: 0, end: 0 },
     },
   };
   emit();
@@ -398,14 +427,13 @@ export const beginGridLoad = () => {
     setLoadPhase('grid', { status: 'loading', start: time() });
 };
 
+const discoveryReady = (current: DiscoveryLoadTrace) =>
+  (current.trigger !== undefined || current.phases.viewer.status === 'done') &&
+  current.phases.discovery.status === 'done';
+
 export const finishLoadTrace = () => {
   const current = startLoadTrace();
-  if (
-    !current ||
-    current.finished !== undefined ||
-    current.phases.viewer.status !== 'done' ||
-    current.phases.discovery.status !== 'done'
-  )
+  if (!current || current.finished !== undefined || !discoveryReady(current))
     return;
   const active = generation;
   void document.fonts.ready.then(() =>
@@ -415,8 +443,7 @@ export const finishLoadTrace = () => {
           !trace ||
           active !== generation ||
           trace.finished !== undefined ||
-          trace.phases.viewer.status !== 'done' ||
-          trace.phases.discovery.status !== 'done'
+          !discoveryReady(trace)
         )
           return;
         refreshNavigationTiming();
@@ -457,7 +484,9 @@ export const traceDiscoveryRequest = async <T>(
   phase: 'viewer' | 'discovery' | 'bootstrap',
   url: string,
   signal: AbortSignal,
+  trigger?: 'query' | 'refresh',
 ) => {
+  if (trigger) beginInteractionLoad(trigger);
   const phases =
     phase === 'bootstrap' ? (['viewer', 'discovery'] as const) : [phase];
   const sequences = phases.map((item) => ++requests[item]);

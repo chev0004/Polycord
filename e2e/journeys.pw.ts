@@ -86,8 +86,20 @@ test('a populated saved list supports every card action and return path', async 
 
     const blocked = page.locator('article').first();
     const blockedName = await blocked.locator('h3').innerText();
-    await blocked.getByRole('button', { name: 'Card menu' }).click();
+    const cardMenu = blocked.getByRole('button', { name: 'Card menu' });
+    await cardMenu.click();
     await page.getByRole('button', { name: 'Block user', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(cardMenu).toBeFocused();
+    await expect(page.getByText(blockedName, { exact: true })).toHaveCount(1);
+    await cardMenu.click();
+    await page.getByRole('button', { name: 'Block user', exact: true }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Block user', exact: true })
+      .click();
     await expect(page.getByText(blockedName, { exact: true })).toHaveCount(0);
     await page.reload();
     await expect(page.locator('article')).toHaveCount(1);
@@ -387,6 +399,36 @@ test('admins moderate a report while members cannot reach admin tools', async ({
       .profiles;
     expect(memberCards).toHaveLength(1);
     expect(memberCards[0]).not.toHaveProperty('moderation');
+    await page.goto(`/en/u/${profile.id}`);
+    const profilePanel = page.getByRole('dialog', {
+      name: `Moderate ${prefix} Reported`,
+    });
+    const moreActions = page.getByRole('button', { name: 'More actions' });
+    await moreActions.click();
+    await page.getByRole('button', { name: 'Take action' }).click();
+    await expect(profilePanel).toBeVisible();
+    await expect(
+      profilePanel.getByRole('button', { name: 'Hide profile' }),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(profilePanel).toBeHidden();
+    await expect(moreActions).toBeFocused();
+    await expect(page).toHaveURL(`/en/u/${profile.id}`);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await moreActions.click();
+    await page.getByRole('button', { name: 'Take action' }).click();
+    await expect(
+      page.getByRole('dialog', { name: `${prefix} Reported` }),
+    ).toBeVisible();
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await memberPage.goto(`/en/u/${profile.id}`);
+    await memberPage.getByRole('button', { name: 'More actions' }).click();
+    await expect(
+      memberPage.getByRole('button', { name: 'Report profile' }),
+    ).toBeVisible();
+    await expect(
+      memberPage.getByRole('button', { name: 'Take action' }),
+    ).toHaveCount(0);
     await page.goto(`/en?q=${encodeURIComponent(`${prefix} Reported`)}`);
     await page.getByRole('button', { name: 'Card menu' }).first().click();
     await page.getByRole('button', { name: 'Take action' }).click();

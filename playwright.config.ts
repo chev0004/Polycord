@@ -29,6 +29,8 @@ export default defineConfig({
     env: {
       DATABASE_URL: databaseUrl,
       AUTH_SECRET: 'polycord-isolated-audit-secret',
+      NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED:
+        process.env.NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED ?? 'true',
       POLYCORD_ANALYTICS_DISABLED: 'true',
       POLYCORD_PREMIUM_USER_IDS: '',
       POLYCORD_ADMIN_USER_IDS: 'e2e-admin',

@@ -111,17 +111,9 @@ const BlockToastDemo = () => {
           onClick={() =>
             addToast({
               title: 'User blocked',
-              description: (
-                <span className="flex items-center gap-2">
-                  Their profiles won't appear in your discovery feed.
-                  <button
-                    type="button"
-                    className="font-semibold text-primary underline-offset-2 hover:underline"
-                  >
-                    Undo
-                  </button>
-                </span>
-              ),
+              description:
+                "Their profiles won't appear in your discovery feed.",
+              action: { label: 'Undo', onClick: () => {} },
               duration: 60000,
             })
           }
@@ -141,6 +133,64 @@ export const BlockUndo: Story = {
 
     await userEvent.click(canvas.getByText('Block user'));
 
-    await expect(await canvas.findByText('User blocked')).toBeInTheDocument();
+    const title = await canvas.findByText('User blocked');
+    await expectActionCentered(title, await canvas.findByText('Undo'));
+  },
+};
+
+const centerOf = (element: Element) => {
+  const box = element.getBoundingClientRect();
+  return box.top + box.height / 2;
+};
+
+const expectActionCentered = async (title: Element, action: Element) => {
+  const toast = title.closest('li');
+  if (!toast) throw new Error('Toast root not found');
+  await expect(
+    Math.abs(centerOf(action) - centerOf(toast)),
+  ).toBeLessThanOrEqual(2);
+};
+
+const ActionToast = ({
+  description,
+  iconUrl,
+}: {
+  description: string;
+  iconUrl?: string;
+}) => (
+  <div className="p-10">
+    <Toast
+      title="User blocked"
+      description={description}
+      iconUrl={iconUrl}
+      action={{ label: 'Undo', onClick: () => {} }}
+    />
+  </div>
+);
+
+export const ActionOneLine: Story = {
+  render: () => <ActionToast description="Hidden from discovery." />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expectActionCentered(
+      await canvas.findByText('User blocked'),
+      await canvas.findByText('Undo'),
+    );
+  },
+};
+
+export const ActionWrappedWithAvatar: Story = {
+  render: () => (
+    <ActionToast
+      description="Their profiles won't appear in your discovery feed until you unblock them from your settings, which is a longer wrapped line."
+      iconUrl="/polycord-wordmark.svg"
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expectActionCentered(
+      await canvas.findByText('User blocked'),
+      await canvas.findByText('Undo'),
+    );
   },
 };

@@ -8,6 +8,7 @@ import type {
 import { useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import './style.css';
+import type { ToastAction } from '@/hooks/useToast';
 import { Avatar } from '../Avatar';
 
 export const ToastProvider = ({ children }: { children?: ReactNode }) => {
@@ -31,6 +32,7 @@ type ToastProps = {
   timerRef?: RefObject<HTMLDivElement | null>;
   duration?: number;
   iconUrl?: string;
+  action?: ToastAction;
 } & ToastRootProps;
 
 export const Toast = ({
@@ -39,6 +41,7 @@ export const Toast = ({
   duration = 5000,
   timerRef,
   iconUrl,
+  action,
   open = true,
   onOpenChange,
   onMouseEnter,
@@ -65,7 +68,9 @@ export const Toast = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="col-span-3 grid grid-cols-[auto_1fr_max-content] items-center gap-x-4 p-4">
+      <div
+        className={`col-span-3 grid items-center gap-x-4 p-4 ${action ? 'grid-cols-[auto_1fr_auto_max-content]' : 'grid-cols-[auto_1fr_max-content]'}`}
+      >
         {iconUrl ? (
           <Avatar avatarUrl={iconUrl} size={'md'} />
         ) : (
@@ -80,6 +85,15 @@ export const Toast = ({
             {description}
           </div>
         </div>
+        {action ? (
+          <button
+            type="button"
+            onClick={action.onClick}
+            className="self-center rounded-md px-2 py-1 font-figtree font-semibold text-[13px] text-primary underline-offset-2 transition-colors hover:underline focus-visible:underline"
+          >
+            {action.label}
+          </button>
+        ) : null}
         <button
           type="button"
           className="flex text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground focus-visible:text-foreground"

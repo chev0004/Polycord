@@ -1,0 +1,2 @@
+export const DISCOVERY_SKELETON_ENABLED =
+  process.env.NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED === 'true';

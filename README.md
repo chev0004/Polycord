@@ -99,6 +99,11 @@ same header to server-rendered responses on `polycord.chev.dev`. Leave
 `POLYCORD_PUBLIC_URL` unset on staging so `robots.txt` disallows all crawling and
 the sitemap stays empty.
 
+`NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` selects the Discovery loading experience.
+`true` shows the skeleton and the early usable controls. `false` or unset shows only
+the loading bar until the completed interface is ready. It is inlined at build time,
+so rebuild and redeploy after changing it.
+
 ## Operations
 
 `GET /api/health` returns `200` when the app can reach the database and `503`

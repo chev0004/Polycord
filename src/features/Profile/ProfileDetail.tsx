@@ -7,6 +7,7 @@ import {
   Fragment,
   type ReactNode,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -19,6 +20,7 @@ import {
   MdFlag,
   MdLink,
   MdMoreHoriz,
+  MdOutlineShield,
   MdWorkspacePremium,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
@@ -45,6 +47,7 @@ import {
   isValidLanguageCode,
   type Proficiency,
 } from '@/constants/languages';
+import { BlockDialog } from '@/features/Discovery/BlockDialog';
 import {
   deriveCardAccent,
   FREE_ACCENT,
@@ -73,7 +76,8 @@ type ProfileDetailProps = {
   onShare?: () => void;
   onToggleSave?: () => void;
   onReport?: () => void;
-  onBlock?: () => void;
+  onBlock?: () => Promise<void> | void;
+  onModerate?: (trigger: HTMLElement | null) => void;
   onEdit?: () => void;
   onSignIn?: () => void;
   onTagClick: (tag: string) => void;
@@ -307,6 +311,7 @@ export const ProfileDetail = ({
   onToggleSave,
   onReport,
   onBlock,
+  onModerate,
   onEdit,
   onSignIn,
   onTagClick,
@@ -323,6 +328,9 @@ export const ProfileDetail = ({
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
   const tinted = Boolean(profile.premium && theme.tint);
   const canCopy = isLoggedIn || profile.allowAnonymousCopy !== false;
@@ -377,7 +385,14 @@ export const ProfileDetail = ({
       icon: MdBlock,
       label: tDiscovery('blockProfile'),
       danger: true,
-      onSelect: onBlock,
+      disabled: blocking,
+      onSelect: () => setBlockOpen(true),
+    },
+    onModerate && {
+      key: 'moderate',
+      icon: MdOutlineShield,
+      label: tDiscovery('moderateProfile'),
+      onSelect: () => onModerate(menuTriggerRef.current),
     },
   ].filter((item) => item !== undefined);
 
@@ -394,6 +409,7 @@ export const ProfileDetail = ({
 
   const menuTrigger = (
     <button
+      ref={menuTriggerRef}
       type="button"
       onClick={mobile ? () => setMenuOpen(true) : undefined}
       aria-label={t('moreActions')}
@@ -663,6 +679,22 @@ export const ProfileDetail = ({
           </div>
         </dl>
       </div>
+      {onBlock ? (
+        <BlockDialog
+          open={blockOpen}
+          onOpenChange={setBlockOpen}
+          profileName={profile.displayName}
+          returnFocus={menuTriggerRef}
+          onConfirm={async () => {
+            setBlocking(true);
+            try {
+              await onBlock();
+            } finally {
+              setBlocking(false);
+            }
+          }}
+        />
+      ) : null}
     </article>
   );
 };

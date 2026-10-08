@@ -14,11 +14,17 @@ export type ToastActivity = {
   onOpen: () => void;
 };
 
+export type ToastAction = {
+  label: string;
+  onClick: () => void;
+};
+
 export type ToastData = {
   id: number;
   title: string;
   description: ReactNode;
   mobileDescription?: string;
+  action?: ToastAction;
   duration?: number;
   iconUrl?: string;
   variant?: 'error';
