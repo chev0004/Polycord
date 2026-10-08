@@ -631,7 +631,7 @@ export const DiscoveryPage = ({
     urlQuery,
   ]);
 
-  const showSkeleton = isLoading || (remote && !remoteData && !refreshFailed);
+  const showSkeleton = (isLoading || (remote && !remoteData)) && !refreshFailed;
   useEffect(() => {
     if (urlQuery !== null && mobile !== null) markControlsReady();
   }, [urlQuery, mobile]);
