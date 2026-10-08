@@ -16,6 +16,8 @@ import { siteContainerClass } from '@/components/Container';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
+import type { CasePreview } from '@/features/Admin/CaseShell';
+import { prefetchCase } from '@/features/Admin/caseCache';
 import type { ModState, StaffRole } from '@/features/Admin/types';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { DISCOVERY_RETURN_KEY } from '@/features/Navigation/ReturnLink';
@@ -97,6 +99,10 @@ const ProfileGrid = dynamic(
     loading: DISCOVERY_SKELETON_ENABLED ? ProfileGridSkeleton : () => null,
   },
 );
+const preloadModeration = () => {
+  void import('@/features/Admin/TakeActionPanel');
+  void import('@/features/Admin/MobileTakeAction');
+};
 const MobileTakeAction = dynamic(() =>
   import('@/features/Admin/MobileTakeAction').then(
     (module) => module.MobileTakeAction,
@@ -273,12 +279,26 @@ export const DiscoveryPage = ({
     id: string;
     name: string;
     trigger: HTMLElement | null;
+    preview: CasePreview;
   } | null>(null);
   const { toasts, addToast, dismissToast } = useToastStack();
 
   useEffect(() => {
     void import('./ProfileGrid');
   }, []);
+
+  const isStaff = Boolean(staff);
+  useEffect(() => {
+    if (!isStaff) return;
+    if (!('requestIdleCallback' in window)) {
+      const timer = setTimeout(preloadModeration, 2000);
+      return () => clearTimeout(timer);
+    }
+    const idle = window.requestIdleCallback(preloadModeration, {
+      timeout: 5000,
+    });
+    return () => window.cancelIdleCallback(idle);
+  }, [isStaff]);
 
   useEffect(() => {
     setProfileItems(withoutBlocked(profiles));
@@ -847,8 +867,18 @@ export const DiscoveryPage = ({
       id: profileId,
       name: target?.displayName ?? '',
       trigger,
+      preview: {
+        username: target?.discordUsername,
+        avatarUrl: target?.avatarUrl,
+        state: moderationOverrides[profileId] ?? target?.moderation,
+      },
     });
   };
+
+  const handleModerateIntent = useCallback((profileId: string) => {
+    preloadModeration();
+    prefetchCase(profileId);
+  }, []);
 
   const handleModerationChange = useCallback(
     (state: ModState) => {
@@ -1221,6 +1251,7 @@ export const DiscoveryPage = ({
                 onViewProfile={handleViewProfile}
                 onShare={handleShareProfile}
                 onModerate={staff ? handleModerateProfile : undefined}
+                onModerateIntent={staff ? handleModerateIntent : undefined}
                 onReport={handleReportProfile}
                 onBlock={handleBlockProfile}
                 onTagClick={(tag) => handleAddTagFilter(tag)}
@@ -1273,6 +1304,7 @@ export const DiscoveryPage = ({
           meId={staff.meId}
           meRole={staff.role}
           addToast={addToast}
+          preview={moderationTarget.preview}
           onClose={() => setModerationTarget(null)}
           onStateChange={handleModerationChange}
         />
@@ -1284,6 +1316,7 @@ export const DiscoveryPage = ({
           meId={staff.meId}
           meRole={staff.role}
           returnFocus={moderationTarget.trigger}
+          preview={moderationTarget.preview}
           onClose={() => setModerationTarget(null)}
           onStateChange={handleModerationChange}
         />

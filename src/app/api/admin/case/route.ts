@@ -5,17 +5,17 @@ import { loadProfileCase } from '@/lib/moderation';
 
 export const GET = gatedRoute(
   async ({ user: currentUser, measure }, request: Request) => {
-    if (
-      !currentUser ||
-      !(await measure('staff', () => getStaffRole(currentUser)))
-    ) {
+    if (!currentUser) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     const profileId = new URL(request.url).searchParams.get('profileId') ?? '';
-    const found = await measure('case', () => loadProfileCase(profileId));
+    const [role, found] = await Promise.all([
+      measure('staff', () => getStaffRole(currentUser)),
+      measure('case', () => loadProfileCase(profileId)),
+    ]);
 
-    if (!found) {
+    if (!role || !found) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 

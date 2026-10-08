@@ -5,20 +5,29 @@ import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { MdClose, MdOutlineShield } from 'react-icons/md';
 import { ToastStack } from '@/components/Toast';
+import { type CasePreview, CaseShell } from './CaseShell';
 import { UserDetail } from './ModerationDesktop';
-import { ActionError, Spinner } from './ModerationParts';
+import { ActionError } from './ModerationParts';
 import type { ModState, StaffRole } from './types';
 import { toModState, useModeration } from './useModeration';
 import { useModerationToasts } from './useModerationToasts';
-import { type ProfileCase, useProfileCase } from './useProfileCase';
+import {
+  type ProfileCase,
+  useCaseSync,
+  useProfileCase,
+} from './useProfileCase';
 
 const CaseBody = ({
+  profileId,
   found,
+  refreshed,
   meId,
   meRole,
   onStateChange,
 }: {
+  profileId: string;
   found: ProfileCase;
+  refreshed: ProfileCase | null;
   meId: string;
   meRole: StaffRole;
   onStateChange?: (state: ModState) => void;
@@ -33,6 +42,7 @@ const CaseBody = ({
     meId,
     meRole,
   });
+  useCaseSync(profileId, found, refreshed, store);
   const { notify, toasts, dismissToast } = useModerationToasts();
   const user = store.usersById.get(found.userId);
 
@@ -76,6 +86,7 @@ export const TakeActionPanel = ({
   onClose,
   onStateChange,
   returnFocus,
+  preview,
 }: {
   profileId: string;
   displayName: string;
@@ -84,9 +95,10 @@ export const TakeActionPanel = ({
   onClose: () => void;
   onStateChange?: (state: ModState) => void;
   returnFocus?: HTMLElement | null;
+  preview?: CasePreview;
 }) => {
   const t = useTranslations('Admin');
-  const { found, failed, load } = useProfileCase(profileId);
+  const { found, refreshed, failed, load } = useProfileCase(profileId);
 
   useEffect(() => {
     document.body.classList.add('mdr-open');
@@ -126,7 +138,9 @@ export const TakeActionPanel = ({
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             {found ? (
               <CaseBody
+                profileId={profileId}
                 found={found}
+                refreshed={refreshed}
                 meId={meId}
                 meRole={meRole}
                 onStateChange={onStateChange}
@@ -136,9 +150,7 @@ export const TakeActionPanel = ({
                 <ActionError onRetry={load} />
               </div>
             ) : (
-              <div className="flex justify-center p-10 text-muted">
-                <Spinner className="h-5 w-5" />
-              </div>
+              <CaseShell name={displayName} preview={preview} />
             )}
           </div>
         </Dialog.Content>

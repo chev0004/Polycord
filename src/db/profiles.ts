@@ -10,6 +10,7 @@ import {
   lt,
   notInArray,
   or,
+  type SQLWrapper,
   sql,
 } from 'drizzle-orm';
 import { z } from 'zod';
@@ -233,10 +234,12 @@ export const targetLanguagesForProfile = (
         },
       ];
 
-export const listTargetLanguagesByProfileIds = async (profileIds: string[]) => {
+export const listTargetLanguagesByProfileIds = async (
+  profileIds: string[] | SQLWrapper,
+) => {
   const byProfile = new Map<string, ProfileTargetLanguageValue[]>();
 
-  if (!profileIds.length) {
+  if (Array.isArray(profileIds) && !profileIds.length) {
     return byProfile;
   }
 

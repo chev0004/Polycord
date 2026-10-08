@@ -8,6 +8,7 @@ import {
   waitFor,
   within,
 } from '@storybook/test';
+import { clearCases } from './caseCache';
 import { MobileTakeAction } from './MobileTakeAction';
 import { moderationSnapshot } from './moderationFixtures';
 import type { ModUser } from './types';
@@ -28,6 +29,7 @@ let subject = flagged;
 
 const mockCaseApi = () => {
   const original = globalThis.fetch;
+  clearCases();
   actionFetch.mockReset();
   globalThis.fetch = Object.assign(
     async (...args: Parameters<typeof fetch>) => {
@@ -141,6 +143,7 @@ const protectedSheet = (
     ...args,
   },
   beforeEach: () => {
+    clearCases();
     subject = target;
     return () => {
       subject = flagged;
@@ -164,6 +167,7 @@ const protectedSheet = (
 export const OwnerModeratesModerator: Story = {
   args: { profileId: 'profile-tomas', displayName: 'Tomás Ruiz' },
   beforeEach: () => {
+    clearCases();
     subject = tomas;
     return () => {
       subject = flagged;
@@ -301,6 +305,7 @@ export const UnhideConfirmation: Story = {
 
 export const HideConfirmation: Story = {
   beforeEach: () => {
+    clearCases();
     subject = ryan;
     return () => {
       subject = flagged;

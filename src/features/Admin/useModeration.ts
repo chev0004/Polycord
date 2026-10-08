@@ -82,6 +82,7 @@ const send = async (url: string, method: string, body: object) => {
 export const useModeration = (initial: ModSnapshot) => {
   const [data, setData] = useState<ModData>(initial);
   const [staff, setStaff] = useState(initial.staff);
+  const [revision, setRevision] = useState(0);
 
   const merge = useCallback(
     (next: ModData) =>
@@ -93,15 +94,23 @@ export const useModeration = (initial: ModSnapshot) => {
     [],
   );
 
+  const commit = useCallback(
+    (next: ModData) => {
+      merge(next);
+      setRevision((current) => current + 1);
+    },
+    [merge],
+  );
+
   const act = useCallback(
     async (request: ModRequest) =>
-      merge(
+      commit(
         await send('/api/admin/moderation', 'POST', {
           ...request,
           note: request.note.trim() || undefined,
         }),
       ),
-    [merge],
+    [commit],
   );
 
   const changeStaff = useCallback(
@@ -111,16 +120,16 @@ export const useModeration = (initial: ModSnapshot) => {
         method,
         target,
       );
-      merge(result);
+      commit(result);
       setStaff(result.staff);
     },
-    [merge],
+    [commit],
   );
 
   const changePremium = useCallback(
     async (method: 'POST' | 'DELETE', body: object) =>
-      merge(await send('/api/admin/premium', method, body)),
-    [merge],
+      commit(await send('/api/admin/premium', method, body)),
+    [commit],
   );
 
   const loadIpBlocks = useCallback(async (userId?: string) => {
@@ -141,10 +150,10 @@ export const useModeration = (initial: ModSnapshot) => {
         method,
         body,
       );
-      merge({ users: [], reports: [], log: result.log });
+      commit({ users: [], reports: [], log: result.log });
       return result.bans;
     },
-    [merge],
+    [commit],
   );
 
   const loadWindow = useCallback(
@@ -249,6 +258,8 @@ export const useModeration = (initial: ModSnapshot) => {
 
   return {
     ...data,
+    merge,
+    revision,
     usersById,
     pendingGroups,
     pendingCases,
