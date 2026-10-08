@@ -416,12 +416,21 @@ test('phone filter changes use the progress bar and load more keeps the position
     const scrolled = await page.evaluate(() => window.scrollY);
     expect(scrolled).toBeGreaterThan(300);
 
+    const anchor = await page.evaluateHandle(
+      () =>
+        [...document.querySelectorAll('article')].find(
+          (card) => card.getBoundingClientRect().bottom > 100,
+        ) as Element,
+    );
+    const anchorTop = () =>
+      anchor.evaluate((card) => Math.round(card.getBoundingClientRect().top));
+    const before = await anchorTop();
     let release = await gateDiscovery(page);
     await french.last().click();
     await expect(bar).toHaveClass(/opacity-100/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.waitForTimeout(500);
-    expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+    expect(Math.abs((await anchorTop()) - before)).toBeLessThanOrEqual(2);
     await release();
     await expect(page.getByText('10 partners', { exact: true })).toBeVisible();
     await expect(bar).toHaveClass(/opacity-0/);
