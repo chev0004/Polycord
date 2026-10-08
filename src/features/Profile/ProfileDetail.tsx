@@ -47,6 +47,7 @@ import {
   isValidLanguageCode,
   type Proficiency,
 } from '@/constants/languages';
+import { BlockDialog } from '@/features/Discovery/BlockDialog';
 import {
   deriveCardAccent,
   FREE_ACCENT,
@@ -75,7 +76,7 @@ type ProfileDetailProps = {
   onShare?: () => void;
   onToggleSave?: () => void;
   onReport?: () => void;
-  onBlock?: () => void;
+  onBlock?: () => Promise<void> | void;
   onModerate?: (trigger: HTMLElement | null) => void;
   onEdit?: () => void;
   onSignIn?: () => void;
@@ -328,6 +329,8 @@ export const ProfileDetail = ({
   const [copyFailed, setCopyFailed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
   const tinted = Boolean(profile.premium && theme.tint);
   const canCopy = isLoggedIn || profile.allowAnonymousCopy !== false;
@@ -382,7 +385,8 @@ export const ProfileDetail = ({
       icon: MdBlock,
       label: tDiscovery('blockProfile'),
       danger: true,
-      onSelect: onBlock,
+      disabled: blocking,
+      onSelect: () => setBlockOpen(true),
     },
     onModerate && {
       key: 'moderate',
@@ -675,6 +679,22 @@ export const ProfileDetail = ({
           </div>
         </dl>
       </div>
+      {onBlock ? (
+        <BlockDialog
+          open={blockOpen}
+          onOpenChange={setBlockOpen}
+          profileName={profile.displayName}
+          returnFocus={menuTriggerRef}
+          onConfirm={async () => {
+            setBlocking(true);
+            try {
+              await onBlock();
+            } finally {
+              setBlocking(false);
+            }
+          }}
+        />
+      ) : null}
     </article>
   );
 };
