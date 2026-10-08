@@ -2,12 +2,53 @@ name: Tests
 
 on:
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - LICENSE
   push:
     branches: [develop, main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - LICENSE
   workflow_dispatch:
 
+concurrency:
+  group: tests-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  test:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      skip: ${{ steps.tested.outputs.skip }}
+    steps:
+      - id: tested
+        run: |
+          set +e
+          skip=false
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            tree=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" --jq .commit.tree.sha)
+            for parent in $(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" --jq '.parents[].sha'); do
+              parent_tree=$(gh api "repos/$GITHUB_REPOSITORY/commits/$parent" --jq .commit.tree.sha)
+              passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/tests.yml/runs?head_sha=$parent&status=success" --jq .total_count)
+              if [ "$parent_tree" = "$tree" ] && [ "$passed" -gt 0 ]; then
+                skip=true
+              fi
+            done
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  unit:
+    needs: gate
+    if: needs.gate.outputs.skip != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -28,17 +69,37 @@ jobs:
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/polycord_test
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.14'
-      - run: bun install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - run: bun run db:migrate
       - run: bun run check:all
       - run: node --test scripts/deploy-staging.node.mjs
       - run: bun test
+
+  package:
+    needs: gate
+    if: needs.gate.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: polycord_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/polycord_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/polycord_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: bun run db:migrate
       - name: Verify Netlify packaging
         run: bun run netlify build --offline --context production
         env:
@@ -47,19 +108,55 @@ jobs:
           POLYCORD_ENVIRONMENT: local
           POLYCORD_ANALYTICS_DISABLED: 'true'
       - run: node scripts/check-netlify-package.mjs
-      - run: bun run playwright install --with-deps chromium
-        timeout-minutes: 8
-      - run: bun run test:e2e
-      - run: bun run test:e2e e2e/discovery-bar-only.pw.ts
+
+  e2e:
+    needs: gate
+    if: needs.gate.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - args: --shard=1/2
+            skeleton: 'true'
+          - args: --shard=2/2
+            skeleton: 'true'
+          - args: e2e/discovery-bar-only.pw.ts
+            skeleton: 'false'
+    services:
+      postgres:
+        image: postgres:17
         env:
-          NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED: 'false'
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: polycord_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/polycord_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/polycord_test
+      NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED: ${{ matrix.skeleton }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: bun run db:migrate
+      - uses: ./.github/actions/playwright
+        timeout-minutes: 8
+      - run: bun run test:e2e ${{ matrix.args }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: browser-test-results
+          name: browser-test-results-${{ strategy.job-index }}
           path: test-results/
 
   storybook:
+    needs: gate
+    if: needs.gate.outputs.skip != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -69,7 +166,7 @@ jobs:
       - run: bun run build-storybook
         env:
           NODE_OPTIONS: --max-old-space-size=8192
-      - run: bun run playwright install --with-deps chromium
+      - uses: ./.github/actions/playwright
         timeout-minutes: 8
       - run: bun run test:storybook
       - uses: actions/upload-artifact@v4
@@ -79,8 +176,10 @@ jobs:
           path: test-results/
 
   deploy-staging:
-    needs: [test, storybook]
+    needs: [gate, unit, package, e2e, storybook]
     if: >-
+      !cancelled() &&
+      !contains(needs.*.result, 'failure') &&
       github.repository == 'chev0004/Polycord' &&
       github.ref == 'refs/heads/develop' &&
       github.event_name != 'pull_request' &&
@@ -100,11 +199,5 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.14'
-      - run: bun install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - run: node scripts/deploy-staging.mjs
