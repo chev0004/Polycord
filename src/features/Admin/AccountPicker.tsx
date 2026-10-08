@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type KeyboardEvent, useEffect, useId, useState } from 'react';
+import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Spinner } from './ModerationParts';
@@ -30,7 +30,12 @@ export const AccountPicker = ({
   const [status, setStatus] = useState<Status>('idle');
   const [attempt, setAttempt] = useState(0);
   const [active, setActive] = useState(0);
-  const { search, usersById } = store;
+  const [hasMore, setHasMore] = useState(false);
+  const [moreStatus, setMoreStatus] = useState<'idle' | 'loading' | 'error'>(
+    'idle',
+  );
+  const { searchPage, usersById } = store;
+  const searchGeneration = useRef(0);
   const selected = value ? usersById.get(value) : undefined;
   const candidates = matches.flatMap((id) => {
     const user = usersById.get(id);
@@ -42,6 +47,9 @@ export const AccountPicker = ({
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt re-runs the search on retry
   useEffect(() => {
     const trimmed = query.trim();
+    searchGeneration.current += 1;
+    setHasMore(false);
+    setMoreStatus('idle');
     if (!trimmed || value) {
       setMatches([]);
       setStatus('idle');
@@ -51,10 +59,11 @@ export const AccountPicker = ({
     setStatus('loading');
     let current = true;
     const timer = setTimeout(() => {
-      search(trimmed)
-        .then((ids) => {
+      searchPage(trimmed)
+        .then(({ ids, hasMore: more }) => {
           if (!current) return;
           setMatches(ids);
+          setHasMore(more);
           setActive(0);
           setStatus('ready');
         })
@@ -64,7 +73,32 @@ export const AccountPicker = ({
       current = false;
       clearTimeout(timer);
     };
-  }, [query, value, search, attempt]);
+  }, [query, value, searchPage, attempt]);
+
+  useEffect(() => {
+    if (navigable)
+      document
+        .getElementById(`${listId}-${active}`)
+        ?.scrollIntoView({ block: 'nearest' });
+  }, [navigable, active, listId]);
+
+  const loadMore = () => {
+    const generation = searchGeneration.current;
+    setMoreStatus('loading');
+    searchPage(query.trim(), matches.length)
+      .then(({ ids, hasMore: more }) => {
+        if (searchGeneration.current !== generation) return;
+        setMatches((previous) => [
+          ...previous,
+          ...ids.filter((id) => !previous.includes(id)),
+        ]);
+        setHasMore(more);
+        setMoreStatus('idle');
+      })
+      .catch(
+        () => searchGeneration.current === generation && setMoreStatus('error'),
+      );
+  };
 
   const choose = (user: ModUser) => {
     setQuery('');
@@ -155,36 +189,61 @@ export const AccountPicker = ({
           </button>
         </p>
       ) : null}
-      {open && status === 'ready' && !candidates.length ? (
+      {open && status === 'ready' && !candidates.length && !hasMore ? (
         <output className="px-2 py-2 text-[13px] text-subtle">
           {t('noStaffMatches')}
         </output>
       ) : null}
-      {open && status === 'ready' && candidates.length ? (
-        <div id={listId} role="listbox" aria-label={label}>
-          {candidates.map((user, index) => (
-            <button
-              key={user.id}
-              id={`${listId}-${index}`}
-              type="button"
-              role="option"
-              tabIndex={-1}
-              aria-selected={index === active}
-              onClick={() => choose(user)}
-              onMouseEnter={() => setActive(index)}
-              className={`flex w-full items-center gap-2.5 rounded-xl p-2 text-left ${index === active ? 'bg-background-main' : ''}`}
-            >
-              <Avatar avatarUrl={user.avatarUrl} size="sm" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-[13px] text-foreground">
-                  {user.displayName}
-                </p>
-                <p className="truncate text-[11.5px] text-subtle">
-                  @{user.username}
-                </p>
-              </div>
-            </button>
-          ))}
+      {open && status === 'ready' && (candidates.length > 0 || hasMore) ? (
+        <div className="max-h-64 overflow-y-auto">
+          <div id={listId} role="listbox" aria-label={label}>
+            {candidates.map((user, index) => (
+              <button
+                key={user.id}
+                id={`${listId}-${index}`}
+                type="button"
+                role="option"
+                tabIndex={-1}
+                aria-selected={index === active}
+                onClick={() => choose(user)}
+                onMouseEnter={() => setActive(index)}
+                className={`flex w-full items-center gap-2.5 rounded-xl p-2 text-left ${index === active ? 'bg-background-main' : ''}`}
+              >
+                <Avatar avatarUrl={user.avatarUrl} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-[13px] text-foreground">
+                    {user.displayName}
+                  </p>
+                  <p className="truncate text-[11.5px] text-subtle">
+                    @{user.username}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+          {hasMore ? (
+            <div className="flex items-center gap-2 px-2 py-2 text-[13px]">
+              {moreStatus === 'loading' ? (
+                <output className="flex items-center gap-2 text-subtle">
+                  <Spinner />
+                  {t('searchingAccounts')}
+                </output>
+              ) : (
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  className="font-semibold text-primary-light"
+                >
+                  {t(moreStatus === 'error' ? 'retry' : 'showMoreAccounts')}
+                </button>
+              )}
+              {moreStatus === 'error' ? (
+                <span role="alert" className="text-red-400">
+                  {t('accountSearchFailed')}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

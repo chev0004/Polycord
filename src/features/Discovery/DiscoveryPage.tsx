@@ -435,14 +435,14 @@ export const DiscoveryPage = ({
   const [loadedUrl, setLoadedUrl] = useState(requestUrl);
 
   const refreshDiscovery = useCallback(
-    async (interactive = false) => {
+    async (trigger?: 'query' | 'refresh') => {
       if (!remote || urlQuery === null || mobile === null) return;
       requestRef.current?.abort();
       const controller = new AbortController();
       requestRef.current = controller;
       if (
         !DISCOVERY_SKELETON_ENABLED &&
-        interactive &&
+        trigger &&
         hasLoaded.current &&
         !settleRequest.current &&
         !barSettle.current
@@ -474,6 +474,7 @@ export const DiscoveryPage = ({
             'discovery',
             requestUrl,
             controller.signal,
+            trigger,
           );
           if (controller.signal.aborted) return;
         }
@@ -530,9 +531,9 @@ export const DiscoveryPage = ({
     )
       return;
     const refresh = refreshDiscovery;
-    const profilesChanged = () => refresh(true);
+    const profilesChanged = () => refresh('refresh');
     if (skipInitialRefresh.current) skipInitialRefresh.current = false;
-    else refresh(true);
+    else refresh('query');
     const focus = () => {
       if (!requestRef.current) void refresh();
     };
@@ -862,7 +863,7 @@ export const DiscoveryPage = ({
   ) => {
     try {
       await blockProfileRequest(profileId, false);
-      refreshDiscovery();
+      refreshDiscovery('refresh');
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -912,7 +913,7 @@ export const DiscoveryPage = ({
           previous.filter((profile) => profile.id !== profileId),
         );
       }
-      refreshDiscovery();
+      refreshDiscovery('refresh');
       addToast({
         title: t('blockSuccessTitle'),
         description: (
@@ -1002,7 +1003,7 @@ export const DiscoveryPage = ({
     addToast,
     request: onBumpProfile,
     onBumped: async (result) => {
-      await refreshDiscovery();
+      await refreshDiscovery('refresh');
       if (!remote)
         setProfileItems((previous) =>
           previous.map((profile) =>
@@ -1141,7 +1142,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               className="mt-2 underline hover:text-foreground focus-visible:text-foreground"
-              onClick={() => refreshDiscovery(true)}
+              onClick={() => refreshDiscovery('query')}
             >
               {t('retryFeed')}
             </button>

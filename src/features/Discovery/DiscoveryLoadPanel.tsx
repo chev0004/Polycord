@@ -53,9 +53,12 @@ export const DiscoveryLoadPanelView = ({
       trace.phases.page?.status === 'done' &&
       trace.phases.viewer.status === 'pending'
     );
-  const phases: LoadPhase[] = discovery
+  const basePhases: LoadPhase[] = discovery
     ? discoveryPhases
     : ['document', 'controls', 'page'];
+  const phases = basePhases.filter(
+    (phase) => !(trace.trigger && phase === 'viewer'),
+  );
   const elapsed =
     trace.finished ??
     Math.max(
@@ -94,6 +97,11 @@ export const DiscoveryLoadPanelView = ({
         </p>
         {trace.route && (
           <p className="mt-1 font-mono text-muted text-xs">{trace.route}</p>
+        )}
+        {trace.trigger && (
+          <p className="mt-1 text-muted text-xs">
+            {t(trace.trigger === 'refresh' ? 'triggerRefresh' : 'triggerQuery')}
+          </p>
         )}
         <dl className="mt-3 space-y-3">
           {phases.map((phase) => {
