@@ -94,17 +94,42 @@ export const Staff: Story = {
       {...args}
       iconUrl={MOCK_USER_AVATAR_URL}
       isLoggedIn
-      notifications={[]}
+      notifications={[{ id: '1', kind: 'copy', isGuest: true }]}
       persistNotifications={false}
       pendingCases={3}
     />
   ),
   play: async ({ canvasElement }) => {
-    const admin = within(canvasElement).getByRole('link', {
+    const canvas = within(canvasElement);
+    const admin = canvas.getByRole('link', {
       name: 'Admin, 3 pending cases',
     });
     await expect(admin).toHaveAttribute('href', '/en/admin');
     await expect(admin).toHaveTextContent('3');
+    await expect(getComputedStyle(admin).textTransform).toBe('none');
+
+    const language = await canvas.findByRole('button', {
+      name: 'Change language',
+    });
+    await expect(
+      admin.compareDocumentPosition(language) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    const inbox = await canvas.findByRole('button', {
+      name: 'Notifications',
+    });
+    const icon = inbox.querySelector('svg');
+    const badge = inbox.querySelector('span span');
+    await expect(badge).toHaveTextContent('1');
+    const iconRect = icon?.getBoundingClientRect();
+    const badgeRect = badge?.getBoundingClientRect();
+    await expect(Math.round(iconRect?.top ?? 0) - 5).toBe(
+      Math.round(badgeRect?.top ?? 0),
+    );
+    await expect(Math.round(badgeRect?.right ?? 0) - 6).toBe(
+      Math.round(iconRect?.right ?? 0),
+    );
   },
 };
 
