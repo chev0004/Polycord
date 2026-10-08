@@ -844,7 +844,7 @@ export const DiscoveryPage = ({
   ) => {
     try {
       await blockProfileRequest(profileId, false);
-      refreshDiscovery();
+      refreshDiscovery('refresh');
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -894,7 +894,7 @@ export const DiscoveryPage = ({
           previous.filter((profile) => profile.id !== profileId),
         );
       }
-      refreshDiscovery();
+      refreshDiscovery('refresh');
       addToast({
         title: t('blockSuccessTitle'),
         description: (
@@ -960,7 +960,7 @@ export const DiscoveryPage = ({
     addToast,
     request: onBumpProfile,
     onBumped: async (result) => {
-      await refreshDiscovery();
+      await refreshDiscovery('refresh');
       if (!remote)
         setProfileItems((previous) =>
           previous.map((profile) =>
