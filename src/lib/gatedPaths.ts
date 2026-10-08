@@ -1,6 +1,6 @@
 const gatedPaths = [
   /^\/api\/discovery\/bootstrap$/,
-  /^\/api\/voice\/[^/]+$/,
+  /^\/api\/voice(\/[^/]+)?$/,
   /^\/api\/admin\/case$/,
 ];
 

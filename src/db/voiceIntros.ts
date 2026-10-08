@@ -1,8 +1,18 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { and, eq, gt, inArray, notExists, or } from 'drizzle-orm';
+import { z } from 'zod';
+import { isPremiumAccount } from './billing';
 import { db } from './client';
-import { profiles, type VoiceIntro, voiceIntros } from './schema';
+import { publiclyVisible } from './profiles';
+import {
+  profiles,
+  subscriptions,
+  userBlocks,
+  users,
+  type VoiceIntro,
+  voiceIntros,
+} from './schema';
 
 export const getVoiceIntroByUserId = async (
   userId: string,
@@ -14,6 +24,57 @@ export const getVoiceIntroByUserId = async (
     .limit(1);
 
   return intro ?? null;
+};
+
+export const listPlayableVoiceIntros = async (
+  profileIds: string[],
+  viewerUserId?: string,
+) => {
+  const ids = profileIds.filter((id) => z.uuid().safeParse(id).success);
+  if (!ids.length) return [];
+
+  const rows = await db
+    .select({
+      profileId: profiles.id,
+      user: users,
+      subscription: subscriptions,
+      mimeType: voiceIntros.mimeType,
+      data: voiceIntros.data,
+    })
+    .from(profiles)
+    .innerJoin(users, eq(profiles.userId, users.id))
+    .innerJoin(voiceIntros, eq(voiceIntros.userId, profiles.userId))
+    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
+    .where(
+      and(
+        inArray(profiles.id, ids),
+        gt(profiles.voiceIntroSeconds, 0),
+        publiclyVisible(),
+        viewerUserId
+          ? notExists(
+              db
+                .select({ id: userBlocks.id })
+                .from(userBlocks)
+                .where(
+                  or(
+                    and(
+                      eq(userBlocks.blockerUserId, viewerUserId),
+                      eq(userBlocks.blockedUserId, profiles.userId),
+                    ),
+                    and(
+                      eq(userBlocks.blockerUserId, profiles.userId),
+                      eq(userBlocks.blockedUserId, viewerUserId),
+                    ),
+                  ),
+                ),
+            )
+          : undefined,
+      ),
+    );
+
+  return rows
+    .filter(({ user, subscription }) => isPremiumAccount(user, subscription))
+    .map(({ profileId, mimeType, data }) => ({ profileId, mimeType, data }));
 };
 
 export const upsertVoiceIntroForUser = async (
