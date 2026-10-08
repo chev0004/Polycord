@@ -261,6 +261,7 @@ export const DiscoveryPage = ({
   const [page, setPage] = useState(initialState.page);
   const [remoteData, setRemoteData] = useState(discoveryData);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refilling, setRefilling] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(feedError);
   const requestRef = useRef<AbortController | null>(null);
   const [draft, setDraft] = useState<ProfileDraft>({});
@@ -524,7 +525,10 @@ export const DiscoveryPage = ({
       } catch {
         if (!controller.signal.aborted) setRefreshFailed(true);
       } finally {
-        if (!controller.signal.aborted) setIsRefreshing(false);
+        if (!controller.signal.aborted) {
+          setIsRefreshing(false);
+          setRefilling(false);
+        }
         if (requestRef.current === controller) {
           requestRef.current = null;
           barSettle.current?.();
@@ -682,6 +686,7 @@ export const DiscoveryPage = ({
   ]);
 
   const showSkeleton = (isLoading || (remote && !remoteData)) && !refreshFailed;
+  const showRefillSkeleton = refilling && profileItems.length === 0;
   useEffect(() => {
     if (urlQuery !== null && mobile !== null) markControlsReady();
   }, [urlQuery, mobile]);
@@ -963,6 +968,7 @@ export const DiscoveryPage = ({
     }
 
     const blocked = profileItems[index];
+    if (remote) setRefilling(true);
     if (!mobile) {
       setProfileItems((previous) =>
         previous.filter((profile) => profile.id !== profileId),
@@ -987,6 +993,7 @@ export const DiscoveryPage = ({
         duration: BUMP_TOAST_DURATION,
       });
     } catch {
+      setRefilling(false);
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -1234,7 +1241,7 @@ export const DiscoveryPage = ({
               </div>
             </div>
 
-            {showSkeleton ? (
+            {showSkeleton || showRefillSkeleton ? (
               <ProfileGridSkeleton />
             ) : (
               <ProfileGrid
@@ -1271,7 +1278,7 @@ export const DiscoveryPage = ({
               />
             )}
 
-            {showSkeleton ? null : stacked ? (
+            {showSkeleton || showRefillSkeleton ? null : stacked ? (
               safePage < Math.min(totalPages, MAX_STACK_PAGES) ? (
                 <button
                   type="button"
