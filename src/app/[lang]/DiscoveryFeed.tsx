@@ -7,6 +7,7 @@ import type { DiscoveryData } from '@/features/Discovery/discoveryData';
 import type { DiscoveryUrlState } from '@/features/Discovery/discoveryUrlState';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
+import { type LoadMeasure, measureLoad } from '@/lib/loadTrace';
 import { withModerationStates } from '@/lib/moderation';
 
 type DiscoveryFeedProps = {
@@ -23,6 +24,7 @@ type DiscoveryFeedProps = {
   viewerAvailability?: AvailabilityPattern;
   userAvatarUrl?: string;
   staff?: { meId: string; role: StaffRole };
+  measure?: LoadMeasure;
 };
 
 export const DiscoveryFeed = async ({
@@ -39,6 +41,7 @@ export const DiscoveryFeed = async ({
   viewerAvailability,
   userAvatarUrl,
   staff,
+  measure = measureLoad,
 }: DiscoveryFeedProps) => {
   let data: DiscoveryData = {
     profiles: [],
@@ -50,11 +53,13 @@ export const DiscoveryFeed = async ({
   let feedError = false;
 
   try {
-    data = await listDiscoveryPage(
-      state,
-      locale,
-      { timezone: viewerTimezone, availability: viewerAvailability },
-      viewerUserId,
+    data = await measure('query', () =>
+      listDiscoveryPage(
+        state,
+        locale,
+        { timezone: viewerTimezone, availability: viewerAvailability },
+        viewerUserId,
+      ),
     );
   } catch (error) {
     console.error('Failed to load public profiles:', error);
@@ -62,7 +67,12 @@ export const DiscoveryFeed = async ({
   }
 
   if (staff)
-    data = { ...data, profiles: await withModerationStates(data.profiles) };
+    data = {
+      ...data,
+      profiles: await measure('moderation', () =>
+        withModerationStates(data.profiles),
+      ),
+    };
 
   const boostedCount = data.profiles.filter(
     (profile) => profile.boosted && !profile.synthetic,
