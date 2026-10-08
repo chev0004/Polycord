@@ -61,6 +61,8 @@ test('account search returns bounded pages and loads more on request', async ({
     expect(sizes).toEqual([20]);
     const box = await page.getByRole('listbox').locator('..').boundingBox();
     expect(box?.height).toBeLessThanOrEqual(260);
+    for (let step = 0; step < 19; step++) await picker.press('ArrowDown');
+    await expect(options.nth(19)).toBeInViewport({ ratio: 1 });
 
     await page.getByRole('button', { name: 'Show more accounts' }).click();
     await expect(options).toHaveCount(40);
@@ -84,6 +86,36 @@ test('account search returns bounded pages and loads more on request', async ({
       name: 'Pick an account to see its IP addresses',
     });
     await ipPicker.fill(`${prefix} Bulk`);
+    await expect(options).toHaveCount(20);
+    await expect(
+      page.getByRole('button', { name: 'Show more accounts' }),
+    ).toBeVisible();
+
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(
+      (url) => url.search.includes('offset=20'),
+      async (route) => {
+        await gate;
+        await route.continue();
+      },
+      { times: 1 },
+    );
+    const stale = page.waitForResponse((response) =>
+      response.url().includes('offset=20'),
+    );
+    await page.getByRole('button', { name: 'Show more accounts' }).click();
+    await ipPicker.fill(`${prefix} Bulk 04`);
+    await expect(options).toHaveCount(1);
+    await ipPicker.fill(`${prefix} Bulk`);
+    await expect(options).toHaveCount(20);
+    release();
+    await stale;
+    await page.evaluate(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
+    );
     await expect(options).toHaveCount(20);
     await expect(
       page.getByRole('button', { name: 'Show more accounts' }),
