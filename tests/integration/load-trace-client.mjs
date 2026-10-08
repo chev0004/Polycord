@@ -313,6 +313,68 @@ for (let index = 0; index < 20; index++) {
   frames.shift()();
 }
 assert.equal(startLoadTrace().history.length, 15);
+const settle = async () => {
+  await Promise.resolve();
+  frames.shift()();
+  frames.shift()();
+};
+globalThis.window.location = new URL('https://polycord.test/en?page=2');
+const interactionResponses = [];
+globalThis.fetch = () =>
+  new Promise((resolve) => interactionResponses.push(resolve));
+now = 60000;
+const superseded = traceDiscoveryRequest(
+  'discovery',
+  '/api/discovery?page=2',
+  new AbortController().signal,
+  'query',
+);
+assert.equal(startLoadTrace().trigger, 'query');
+assert.equal(startLoadTrace().kind, 'client');
+assert.equal(startLoadTrace().phases.document.status, 'done');
+assert.equal(startLoadTrace().phases.viewer.status, 'pending');
+const startedAt = startLoadTrace().startedAt;
+now = 60400;
+const latestInteraction = traceDiscoveryRequest(
+  'discovery',
+  '/api/discovery?page=3',
+  new AbortController().signal,
+  'query',
+);
+assert.equal(startLoadTrace().startedAt, startedAt);
+now = 61000;
+interactionResponses[1](Response.json({ total: 1 }));
+await latestInteraction;
+now = 62000;
+interactionResponses[0](Response.json({ total: 2 }));
+await superseded;
+assert.equal(startLoadTrace().phases.discovery.end, 1000);
+finishLoadTrace();
+now = 61500;
+await settle();
+assert.equal(startLoadTrace().finished, 1500);
+assert.equal(startLoadTrace().phases.page.status, 'done');
+const finishedInteraction = startLoadTrace().startedAt;
+globalThis.window.location = new URL('https://polycord.test/en?page=4');
+beginPageNavigation('/en?page=4');
+assert.equal(startLoadTrace().startedAt, finishedInteraction);
+globalThis.window.location = new URL('https://polycord.test/en/saved?page=1');
+now = 63000;
+beginPageNavigation('/en/saved?page=2');
+assert.equal(startLoadTrace().trigger, 'query');
+assert.equal(startLoadTrace().route, '/en/saved');
+assert.equal(startLoadTrace().phases.document.status, 'done');
+beginPageNavigation('/en/saved?page=2');
+assert.equal(startLoadTrace().history.length, 15);
+commitPageNavigation('/en/saved');
+finishPageLoad();
+now = 63500;
+await settle();
+assert.equal(startLoadTrace().finished, 500);
+globalThis.window.location = new URL('https://polycord.test/en/saved?page=2');
+now = 64000;
+beginPageNavigation('/en/saved?page=2');
+assert.equal(startLoadTrace().finished, 500);
 disableLoadTrace();
 beginPageNavigation('/en/settings');
 assert.equal(startLoadTrace(), null);
