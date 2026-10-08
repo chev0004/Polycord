@@ -327,6 +327,7 @@ export const ProfileDetail = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const [blockOpen, setBlockOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
   const tinted = Boolean(profile.premium && theme.tint);
   const canCopy = isLoggedIn || profile.allowAnonymousCopy !== false;
@@ -381,6 +382,7 @@ export const ProfileDetail = ({
       icon: MdBlock,
       label: tDiscovery('blockProfile'),
       danger: true,
+      disabled: blocking,
       onSelect: () => setBlockOpen(true),
     },
   ].filter((item) => item !== undefined);
@@ -674,7 +676,14 @@ export const ProfileDetail = ({
           onOpenChange={setBlockOpen}
           profileName={profile.displayName}
           returnFocus={menuTriggerRef}
-          onConfirm={onBlock}
+          onConfirm={async () => {
+            setBlocking(true);
+            try {
+              await onBlock();
+            } finally {
+              setBlocking(false);
+            }
+          }}
         />
       ) : null}
     </article>

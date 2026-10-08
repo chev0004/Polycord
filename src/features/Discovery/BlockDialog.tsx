@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
-import { type RefObject, useEffect, useState } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { Button } from '@/components/Button';
 
 type BlockDialogProps = {
@@ -21,21 +21,18 @@ export const BlockDialog = ({
   onConfirm,
 }: BlockDialogProps) => {
   const t = useTranslations('Discovery');
-  const [isBlocking, setIsBlocking] = useState(false);
+  const confirmed = useRef(false);
+
+  const handleConfirm = () => {
+    if (confirmed.current) return;
+    confirmed.current = true;
+    onOpenChange(false);
+    void onConfirm();
+  };
 
   useEffect(() => {
-    if (!open) setIsBlocking(false);
+    if (open) confirmed.current = false;
   }, [open]);
-
-  const handleConfirm = async () => {
-    if (isBlocking) return;
-    setIsBlocking(true);
-    try {
-      await onConfirm();
-    } finally {
-      onOpenChange(false);
-    }
-  };
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -58,16 +55,11 @@ export const BlockDialog = ({
               </Dialog.Description>
             </div>
             <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                disabled={isBlocking}
-                onClick={() => onOpenChange(false)}
-              >
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
                 {t('blockCancel')}
               </Button>
               <button
                 type="button"
-                disabled={isBlocking}
                 onClick={handleConfirm}
                 className="flex select-none items-center justify-center rounded-control bg-red-700 px-4 py-2 font-figtree text-sm text-white transition-colors hover:bg-red-600 focus:outline-none focus-visible:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >

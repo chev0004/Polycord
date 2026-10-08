@@ -193,7 +193,9 @@ const mobileBlock = (status: number | null, fromSheet = false): Story => {
         await screen.findByRole('button', { name: 'Block user' }),
       );
       await userEvent.click(
-        within(await screen.findByRole('dialog')).getByRole('button', {
+        within(
+          await screen.findByRole('dialog', { name: 'Block Yuki?' }),
+        ).getByRole('button', {
           name: 'Block user',
         }),
       );

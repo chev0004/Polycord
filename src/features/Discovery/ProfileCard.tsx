@@ -196,6 +196,7 @@ export const ProfileCard = ({
   const { copied, copyFailed } = usernameCopy;
   const [detailOpen, setDetailOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const openSheet = () => {
     setDetailOpen(true);
     recordProfileView(profile.id);
@@ -329,6 +330,7 @@ export const ProfileCard = ({
       icon: MdBlock,
       label: t('blockProfile'),
       danger: true,
+      disabled: blocking,
       onSelect: () => setBlockOpen(true),
     },
     onModerate
@@ -782,9 +784,14 @@ export const ProfileCard = ({
           onOpenChange={setBlockOpen}
           profileName={profile.displayName}
           returnFocus={menuTrigger}
-          onConfirm={() => {
+          onConfirm={async () => {
             if (mobile) setDetailOpen(false);
-            return onBlock(profile.id);
+            setBlocking(true);
+            try {
+              await onBlock(profile.id);
+            } finally {
+              setBlocking(false);
+            }
           }}
         />
       ) : null}
