@@ -131,6 +131,10 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
         exact: true,
       })
       .click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Unblock', exact: true })
+      .click();
     await expect(page.getByText('You have no blocked accounts.')).toBeVisible();
     await page.reload();
     await page.getByRole('button', { name: 'Privacy', exact: true }).click();
