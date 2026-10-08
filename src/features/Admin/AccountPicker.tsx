@@ -75,6 +75,13 @@ export const AccountPicker = ({
     };
   }, [query, value, searchPage, attempt]);
 
+  useEffect(() => {
+    if (navigable)
+      document
+        .getElementById(`${listId}-${active}`)
+        ?.scrollIntoView({ block: 'nearest' });
+  }, [navigable, active, listId]);
+
   const loadMore = () => {
     const generation = searchGeneration.current;
     setMoreStatus('loading');
