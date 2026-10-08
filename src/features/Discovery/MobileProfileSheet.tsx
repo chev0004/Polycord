@@ -240,7 +240,11 @@ export const MobileProfileSheet = ({
               </p>
             ) : null}
           </div>
-          <ProfileVoiceChip profile={profile} className="self-start" />
+          <ProfileVoiceChip
+            profile={profile}
+            fetchMode="mount"
+            className="self-start"
+          />
           <div>
             <SheetLabel>{t('languagesLabel')}</SheetLabel>
             <SheetGroup>

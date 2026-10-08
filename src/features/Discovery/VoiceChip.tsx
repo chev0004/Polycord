@@ -3,6 +3,13 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { MdPlayArrow, MdStop } from 'react-icons/md';
+import {
+  ensureClip,
+  peekClip,
+  pendingClip,
+  prefetchClip,
+  preloadClip,
+} from './voiceClips';
 
 const VOICE_BARS = [45, 30, 70, 95, 30, 70, 45, 95, 70, 45, 30, 95, 45, 30].map(
   (height, index) => ({
@@ -15,6 +22,8 @@ const VOICE_BARS = [45, 30, 70, 95, 30, 70, 45, 95, 70, 45, 30, 95, 45, 30].map(
 type VoiceChipProps = {
   seconds: number;
   src?: string;
+  clipId?: string;
+  fetchMode?: 'visible' | 'mount';
   className?: string;
 };
 
@@ -23,14 +32,23 @@ let activeAudio: HTMLAudioElement | null = null;
 const formatRemaining = (value: number) =>
   `0:${String(Math.max(0, Math.ceil(value))).padStart(2, '0')}`;
 
-export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
+export const VoiceChip = ({
+  seconds,
+  src,
+  clipId,
+  fetchMode = 'visible',
+  className,
+}: VoiceChipProps) => {
   const t = useTranslations('Discovery');
   const [playing, setPlaying] = useState(false);
   const [remaining, setRemaining] = useState(seconds);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const pressRef = useRef(0);
+  const remote = Boolean(src || clipId);
 
   useEffect(() => {
-    if (!src) return;
+    if (!remote) return;
 
     setRemaining(seconds);
 
@@ -38,10 +56,33 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
       audioRef.current?.pause();
       audioRef.current = null;
     };
-  }, [src, seconds]);
+  }, [remote, seconds]);
 
   useEffect(() => {
-    if (src) return;
+    if (!clipId) return;
+
+    if (fetchMode === 'mount') {
+      preloadClip(clipId);
+      return;
+    }
+
+    const button = buttonRef.current;
+    if (!button || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        void prefetchClip(clipId);
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(button);
+
+    return () => observer.disconnect();
+  }, [clipId, fetchMode]);
+
+  useEffect(() => {
+    if (remote) return;
 
     if (!playing) {
       setRemaining(seconds);
@@ -59,21 +100,26 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [playing, seconds, src]);
+  }, [playing, seconds, remote]);
 
   const reset = () => {
     setPlaying(false);
     setRemaining(seconds);
   };
 
+  const start = (audio: HTMLAudioElement, url: string) => {
+    if (audio.getAttribute('src') !== url) audio.src = url;
+    void audio.play().catch(() => audio.paused && reset());
+  };
+
   const togglePlayback = () => {
-    if (!src) {
+    if (!remote) {
       setPlaying((value) => !value);
       return;
     }
 
     if (!audioRef.current) {
-      const audio = new Audio(src);
+      const audio = new Audio();
       const sync = () => (audio.paused ? reset() : setPlaying(true));
       audio.onplay = sync;
       audio.onpause = sync;
@@ -87,24 +133,42 @@ export const VoiceChip = ({ seconds, src, className }: VoiceChipProps) => {
       audioRef.current = audio;
     }
     const audio = audioRef.current;
+    const press = ++pressRef.current;
 
     if (playing) {
       audio.pause();
+      audio.currentTime = 0;
       reset();
       return;
     }
 
     if (activeAudio !== audio) activeAudio?.pause();
     activeAudio = audio;
-    audio.currentTime = 0;
     setPlaying(true);
-    void audio.play().catch(() => audio.paused && reset());
+
+    const ready = src ?? (clipId ? peekClip(clipId) : undefined);
+    if (ready) return start(audio, ready);
+
+    const endpoint = `/api/voice/${clipId}`;
+    const loading = clipId ? pendingClip(clipId) : undefined;
+    if (!loading) return start(audio, endpoint);
+    void loading.then((url) => {
+      if (pressRef.current === press) start(audio, url ?? endpoint);
+    });
+  };
+
+  const requestClip = () => {
+    if (clipId && !peekClip(clipId)) void ensureClip(clipId);
   };
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       onClick={togglePlayback}
+      onPointerEnter={requestClip}
+      onPointerDown={requestClip}
+      onFocus={requestClip}
       aria-label={playing ? t('voiceIntroStop') : t('voiceIntroPlay')}
       className={`inline-flex h-8 shrink-0 items-center gap-[9px] self-start rounded-full bg-background-darker py-0 pr-3 pl-[9px] transition-colors hover:bg-background-main hover:text-foreground focus-visible:bg-background-main focus-visible:text-foreground ${playing ? 'text-primary-light' : 'text-soft'} ${className ?? ''}`}
     >
@@ -147,22 +211,25 @@ type ProfileVoiceChipProps = {
     voiceIntroSeconds?: number;
     voiceIntroSrc?: string;
   };
+  fetchMode?: 'visible' | 'mount';
   className?: string;
 };
 
 export const ProfileVoiceChip = ({
   profile,
+  fetchMode,
   className,
 }: ProfileVoiceChipProps) =>
   profile.premium && profile.voiceIntroSeconds ? (
     <VoiceChip
       seconds={profile.voiceIntroSeconds}
-      src={
-        profile.voiceIntroSrc ??
-        (profile.id === 'profile-preview'
+      src={profile.voiceIntroSrc}
+      clipId={
+        profile.voiceIntroSrc || profile.id === 'profile-preview'
           ? undefined
-          : `/api/voice/${profile.id}`)
+          : profile.id
       }
+      fetchMode={fetchMode}
       className={className}
     />
   ) : null;

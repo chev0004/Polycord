@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MdDeleteOutline, MdMic, MdStop } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { FormGroup } from '@/components/Form';
+import { clearClips } from '@/features/Discovery/voiceClips';
 
 const MAX_INTRO_SECONDS = 20;
 
@@ -160,6 +161,7 @@ export const VoiceIntroEditor = ({
         throw new Error('Voice intro save failed');
       }
 
+      clearClips();
       const saved = (await response.json()) as { durationSeconds: number };
       onChange(saved.durationSeconds);
       URL.revokeObjectURL(pending.url);
@@ -190,6 +192,7 @@ export const VoiceIntroEditor = ({
         throw new Error('Voice intro delete failed');
       }
 
+      clearClips();
       onChange(0);
     } catch {
       setError('save');

@@ -558,7 +558,7 @@ export const ProfileDetail = ({
           ) : null}
           {profile.premium ? (
             <div className="flex items-center gap-3 text-muted text-sm">
-              <ProfileVoiceChip profile={profile} />
+              <ProfileVoiceChip profile={profile} fetchMode="mount" />
               <span className="inline-flex h-6 items-center gap-1 rounded-full bg-[var(--ct-chip-bg)] pr-2.5 pl-[7px] font-semibold text-[var(--ct-chip-text)] text-xs">
                 <MdWorkspacePremium size={15} />
                 {t('premium')}
