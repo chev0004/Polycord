@@ -39,6 +39,10 @@ mock.module('next/server', () => ({
 }));
 const { scopedRoute, withRenderPool } = await import('../../src/db/client');
 const { POST } = await import('../../src/app/api/billing/webhook/route');
+const drain = async () => {
+  await Promise.all(callbacks.splice(0).map((callback) => callback()));
+  assert.equal(connections, 0);
+};
 const response = await POST(
   new Request('http://localhost/api/billing/webhook', {
     method: 'POST',
@@ -46,24 +50,25 @@ const response = await POST(
   }),
 );
 assert.equal(response.status, 400);
-assert.equal(connections, 0);
+assert.ok(connections > 0);
+assert.equal(callbacks.length, 1);
+await drain();
 await assert.rejects(
   scopedRoute(async () => {
     throw new Error('early failure');
   })(),
   /early failure/,
 );
-assert.equal(connections, 0);
+assert.equal(callbacks.length, 1);
+await drain();
 await withRenderPool(async () => true);
 assert.equal(callbacks.length, 1);
-await callbacks[0]();
-assert.equal(connections, 0);
+await drain();
 await assert.rejects(
   withRenderPool(async () => {
     throw new Error('render failure');
   }),
   /render failure/,
 );
-await callbacks[1]();
-assert.equal(connections, 0);
+await drain();
 console.log('early request pool cleanup passed');

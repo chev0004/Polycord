@@ -83,14 +83,11 @@ export const withRenderPool = <T>(run: () => Promise<T>) =>
     ? run()
     : requestPools.run(renderPool(), run);
 
-export const withRequestPool = async <T>(run: () => Promise<T>) => {
+export const withRequestPool = <T>(run: () => Promise<T>) => {
   if (!lambda || requestPools.getStore()) return run();
   const { pool: scoped, close } = createRequestPool();
-  try {
-    return await requestPools.run(scoped, run);
-  } finally {
-    await close();
-  }
+  after(close);
+  return requestPools.run(scoped, run);
 };
 
 export const scopedRoute =

@@ -1,5 +1,6 @@
 import { mock } from 'bun:test';
 import assert from 'node:assert/strict';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { sql } from 'drizzle-orm';
 import { Client } from 'pg';
@@ -9,8 +10,21 @@ assert.ok(['localhost', '127.0.0.1'].includes(url.hostname));
 url.searchParams.set('application_name', 'request-pool-test');
 process.env.DATABASE_URL = url.href;
 process.env.AWS_LAMBDA_FUNCTION_NAME = 'request-pool';
+const closers = new AsyncLocalStorage();
 mock.module('server-only', () => ({}));
-const { db, scopedRoute } = await import('../../src/db/client');
+mock.module('next/server', () => ({
+  after: (callback) => closers.getStore().push(callback),
+}));
+const { db, scopedRoute: route } = await import('../../src/db/client');
+
+const scopedRoute = (handler) => async () => {
+  const callbacks = [];
+  try {
+    return await closers.run(callbacks, route(handler));
+  } finally {
+    await Promise.all(callbacks.map((callback) => callback()));
+  }
+};
 
 const observer = new Client({ connectionString: process.env.DATABASE_URL });
 await observer.connect();
