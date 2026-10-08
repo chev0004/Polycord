@@ -446,6 +446,7 @@ export const DiscoveryPage = ({
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
+    const generation = discoveryCache.begin(requestUrl);
     setIsRefreshing(true);
     setRefreshFailed(false);
     try {
@@ -460,7 +461,7 @@ export const DiscoveryPage = ({
           controller.signal,
         );
         discoveryCache.setViewer(bootstrap.viewer);
-        discoveryCache.set(requestUrl, bootstrap.data);
+        discoveryCache.set(requestUrl, bootstrap.data, generation);
         if (controller.signal.aborted) return;
         onViewer?.(bootstrap.viewer);
         data = bootstrap.data;
@@ -470,7 +471,7 @@ export const DiscoveryPage = ({
           requestUrl,
           controller.signal,
         );
-        discoveryCache.set(requestUrl, data);
+        discoveryCache.set(requestUrl, data, generation);
         if (controller.signal.aborted) return;
       }
       hasLoaded.current = true;
