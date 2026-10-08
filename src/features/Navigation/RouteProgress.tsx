@@ -13,8 +13,10 @@ import {
 } from 'react';
 import { type CardTheme, isValidHex } from '@/features/Discovery/cardTheme';
 import {
+  beginInteractionLoad,
   beginPageNavigation,
   cancelPageNavigation,
+  isDiscoveryPath,
 } from '@/features/Discovery/loadTrace';
 import { UrlObserver } from './UrlObserver';
 
@@ -230,7 +232,11 @@ export const useRouteProgressRouter = () => {
       },
       prefetch: router.prefetch,
       push,
-      refresh: router.refresh,
+      refresh: () => {
+        if (!isDiscoveryPath(window.location.pathname))
+          beginInteractionLoad('refresh');
+        router.refresh();
+      },
       replace,
     }),
     [router, push, replace],
