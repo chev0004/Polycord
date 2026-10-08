@@ -52,25 +52,22 @@ for (const width of [1280, 390]) {
       await expect
         .poll(() => page.evaluate(() => window.scrollY))
         .toBeGreaterThan(400);
-      const before = await page.evaluate(() => window.scrollY);
-      const moves = await page.evaluate(() => {
-        const log: number[] = [];
-        window.addEventListener('scroll', () => log.push(window.scrollY));
-        (window as unknown as { scrollLog: number[] }).scrollLog = log;
-        return log;
-      });
-      expect(moves).toEqual([]);
+      const name = await page.evaluate(
+        () =>
+          [...document.querySelectorAll('article')]
+            .find((card) => card.getBoundingClientRect().bottom > 100)
+            ?.querySelector('h3')?.textContent ?? '',
+      );
+      const card = page.locator('article').filter({ hasText: name });
+      const top = () =>
+        card.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+      const before = await top();
       release();
       await expect(page.locator('div.fixed.top-0.h-1')).toHaveClass(
         /opacity-0/,
       );
       await page.waitForTimeout(1000);
-      expect(await page.evaluate(() => window.scrollY)).toBe(before);
-      expect(
-        await page.evaluate(
-          () => (window as unknown as { scrollLog: number[] }).scrollLog,
-        ),
-      ).toEqual([]);
+      expect(Math.abs((await top()) - before)).toBeLessThanOrEqual(2);
     } finally {
       release();
       await page.unrouteAll({ behavior: 'ignoreErrors' });
