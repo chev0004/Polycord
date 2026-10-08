@@ -310,6 +310,9 @@ const languageFixture = async (sql: postgres.Sql) => {
   };
 };
 
+const centerInView = (target: import('@playwright/test').Locator) =>
+  target.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+
 const gateDiscovery = async (page: import('@playwright/test').Page) => {
   let release: () => void = () => {};
   const gate = new Promise<void>((resolve) => {
@@ -346,7 +349,7 @@ test('desktop filter changes load behind the progress bar and open at the top', 
     await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
     const bar = page.locator('div.fixed.top-0.h-1');
     const french = page.getByRole('button', { name: 'French', exact: true });
-    await french.last().scrollIntoViewIfNeeded();
+    await centerInView(french.last());
     const scrolled = await page.evaluate(() => window.scrollY);
     expect(scrolled).toBeGreaterThan(300);
     await recordScrolls(page);
@@ -409,7 +412,7 @@ test('phone filter changes use the progress bar and load more keeps the position
     await expect(page.getByText('20 partners', { exact: true })).toBeVisible();
     const bar = page.locator('div.fixed.top-0.h-1');
     const french = page.getByRole('button', { name: 'French', exact: true });
-    await french.last().scrollIntoViewIfNeeded();
+    await centerInView(french.last());
     const scrolled = await page.evaluate(() => window.scrollY);
     expect(scrolled).toBeGreaterThan(300);
 
@@ -425,7 +428,7 @@ test('phone filter changes use the progress bar and load more keeps the position
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
     const more = page.getByRole('button', { name: 'Show more partners' });
-    await more.scrollIntoViewIfNeeded();
+    await centerInView(more);
     const loadedCards = await page.locator('article').count();
     const beforeMore = await page.evaluate(() => window.scrollY);
     release = await gateDiscovery(page);
