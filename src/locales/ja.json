@@ -9,6 +9,8 @@
     "firstPaint": "最初のコンテンツ描画",
     "notReported": "未報告",
     "cancelled": "キャンセル",
+    "triggerQuery": "結果またはクエリの変更で開始",
+    "triggerRefresh": "更新で開始",
     "attempts": "リクエスト履歴 ({count})",
     "title": "ページ読み込み計測",
     "seconds": "{seconds} 秒",
