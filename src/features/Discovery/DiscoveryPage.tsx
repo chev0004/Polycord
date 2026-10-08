@@ -931,7 +931,6 @@ export const DiscoveryPage = ({
   ) => {
     try {
       await blockProfileRequest(profileId, false);
-      refreshDiscovery('refresh');
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -982,7 +981,6 @@ export const DiscoveryPage = ({
           previous.filter((profile) => profile.id !== profileId),
         );
       }
-      refreshDiscovery('refresh');
       addToast({
         title: t('blockSuccessTitle'),
         description: t('blockSuccessDescription'),
