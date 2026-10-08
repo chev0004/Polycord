@@ -595,7 +595,7 @@ export const DiscoveryPage = ({
       mobile === null ||
       stackPending ||
       isLoading ||
-      (remote && (!remoteData || isRefreshing || loadedUrl !== requestUrl))
+      (remote && (!remoteData || loadedUrl !== requestUrl))
     )
       return;
     try {
@@ -616,7 +616,6 @@ export const DiscoveryPage = ({
     isLoading,
     remote,
     remoteData,
-    isRefreshing,
     loadedUrl,
     requestUrl,
   ]);
