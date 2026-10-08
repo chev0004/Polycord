@@ -1,5 +1,5 @@
 import { createHmac, randomUUID } from 'node:crypto';
-import { expect, type Page, test } from '@playwright/test';
+import { type BrowserContext, expect, type Page, test } from '@playwright/test';
 import postgres from 'postgres';
 
 const PROFILES = 30;
@@ -22,6 +22,43 @@ const blockFirstCard = async (page: Page) => {
   expect((await blocked).status()).toBe(200);
 };
 
+const seed = async (
+  sql: postgres.Sql,
+  context: BrowserContext,
+  prefix: string,
+) => {
+  const accounts: string[] = [];
+  const viewerId = `${prefix}-viewer`;
+  const [viewer] =
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${viewerId}, ${viewerId}, 'Viewer') returning id`;
+  accounts.push(viewer.id);
+  for (let index = 0; index < PROFILES; index++) {
+    const name = `Card ${String(index).padStart(2, '0')} ${prefix}`;
+    const [account] =
+      await sql`insert into users (discord_user_id, discord_username, display_name) values (${`${prefix}-${index}`}, ${`${prefix}-${index}`}, ${name}) returning id`;
+    await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio) values (now() - ${`${index} minutes`}::interval, ${account.id}, true, 'en', 'ja', 'beginner', 'Block refill fixture.')`;
+    accounts.push(account.id);
+  }
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id: viewerId, name: 'Viewer', accountId: viewer.id },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  return accounts;
+};
+
 for (const layout of ['desktop', 'mobile'] as const) {
   test(`blocking a full discovery page refills it without repeats on ${layout}`, async ({
     page,
@@ -31,34 +68,7 @@ for (const layout of ['desktop', 'mobile'] as const) {
     const prefix = randomUUID().slice(0, 8);
     const accounts: string[] = [];
     try {
-      const viewerId = `${prefix}-viewer`;
-      const [viewer] =
-        await sql`insert into users (discord_user_id, discord_username, display_name) values (${viewerId}, ${viewerId}, 'Viewer') returning id`;
-      accounts.push(viewer.id);
-      for (let index = 0; index < PROFILES; index++) {
-        const name = `Card ${String(index).padStart(2, '0')} ${prefix}`;
-        const [account] =
-          await sql`insert into users (discord_user_id, discord_username, display_name) values (${`${prefix}-${index}`}, ${`${prefix}-${index}`}, ${name}) returning id`;
-        await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio) values (now() - ${`${index} minutes`}::interval, ${account.id}, true, 'en', 'ja', 'beginner', 'Block refill fixture.')`;
-        accounts.push(account.id);
-      }
-      const payload = Buffer.from(
-        JSON.stringify({
-          user: { id: viewerId, name: 'Viewer', accountId: viewer.id },
-          expiresAt: Date.now() + 3600000,
-        }),
-      ).toString('base64url');
-      const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
-        .update(payload)
-        .digest('base64url');
-      await context.addCookies([
-        {
-          name: 'polycord_session',
-          value: `${payload}.${signature}`,
-          domain: 'localhost',
-          path: '/',
-        },
-      ]);
+      accounts.push(...(await seed(sql, context, prefix)));
       if (layout === 'mobile')
         await page.setViewportSize({ width: 390, height: 844 });
 
@@ -143,3 +153,27 @@ for (const layout of ['desktop', 'mobile'] as const) {
     }
   });
 }
+
+test('undoing a block restores the card and keeps the page at nine cards', async ({
+  page,
+  context,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const accounts: string[] = [];
+  try {
+    accounts.push(...(await seed(sql, context, randomUUID().slice(0, 8))));
+    await page.goto('/en');
+    await expect(page.locator('article')).toHaveCount(9);
+    await blockFirstCard(page);
+    await expect(page.locator('article h3').last()).toContainText('Card 09');
+    await page.getByRole('button', { name: 'Undo' }).click();
+    await expect(page.locator('article h3').first()).toContainText('Card 00');
+    await expect(page.locator('article')).toHaveCount(9);
+    await expect(
+      page.locator('article h3', { hasText: 'Card 09' }),
+    ).toHaveCount(0);
+  } finally {
+    await sql`delete from users where id in ${sql(accounts)}`;
+    await sql.end();
+  }
+});
