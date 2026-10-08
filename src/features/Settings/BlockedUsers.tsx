@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
 import {
   bannerButton,
@@ -154,6 +155,9 @@ export const BlockedUsers = ({
     null,
   );
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [confirming, setConfirming] = useState<BlockedUser | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const unblockTrigger = useRef<HTMLElement | null>(null);
   const reload = useCallback(async () => {
     setLoadFailed(false);
     setUsers(null);
@@ -270,7 +274,12 @@ export const BlockedUsers = ({
                   type="button"
                   variant="outline"
                   disabled={pendingId !== null}
-                  onClick={() => handleUnblock(user.id)}
+                  onClick={() => {
+                    unblockTrigger.current =
+                      document.activeElement as HTMLElement | null;
+                    setConfirming(user);
+                    setConfirmOpen(true);
+                  }}
                   aria-label={t('unblockUserLabel', { name: user.displayName })}
                 >
                   {t(pendingId === user.id ? 'unblockingUser' : 'unblockUser')}
@@ -285,6 +294,21 @@ export const BlockedUsers = ({
           {t('blockedUsersUnblockError')}
         </p>
       )}
+      {confirming ? (
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title={t('unblockDialogTitle', { name: confirming.displayName })}
+          description={t('unblockDialogDescription', {
+            name: confirming.displayName,
+          })}
+          cancelLabel={t('unblockCancel')}
+          confirmLabel={t('unblockUser')}
+          tone="primary"
+          returnFocus={unblockTrigger}
+          onConfirm={() => handleUnblock(confirming.id)}
+        />
+      ) : null}
       {previewProfile ? (
         <BlockedProfilePreview
           profile={previewProfile}

@@ -1,9 +1,8 @@
 'use client';
 
-import * as Dialog from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
-import { type RefObject, useEffect, useRef } from 'react';
-import { Button } from '@/components/Button';
+import type { RefObject } from 'react';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type BlockDialogProps = {
   open: boolean;
@@ -13,62 +12,16 @@ type BlockDialogProps = {
   onConfirm: () => Promise<void> | void;
 };
 
-export const BlockDialog = ({
-  open,
-  onOpenChange,
-  profileName,
-  returnFocus,
-  onConfirm,
-}: BlockDialogProps) => {
+export const BlockDialog = ({ profileName, ...props }: BlockDialogProps) => {
   const t = useTranslations('Discovery');
-  const confirmed = useRef(false);
-
-  const handleConfirm = () => {
-    if (confirmed.current) return;
-    confirmed.current = true;
-    onOpenChange(false);
-    void onConfirm();
-  };
-
-  useEffect(() => {
-    if (open) confirmed.current = false;
-  }, [open]);
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="DialogOverlay fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
-          <Dialog.Content
-            className="DialogContent pointer-events-auto flex w-[min(440px,calc(100vw-2rem))] flex-col gap-5 rounded-panel bg-background-dark p-6 shadow-xl"
-            onCloseAutoFocus={(event) => {
-              event.preventDefault();
-              returnFocus.current?.focus();
-            }}
-          >
-            <div className="flex flex-col gap-1">
-              <Dialog.Title className="font-figtree font-semibold text-foreground text-lg">
-                {t('blockDialogTitle', { name: profileName })}
-              </Dialog.Title>
-              <Dialog.Description className="text-muted text-sm">
-                {t('blockDialogDescription', { name: profileName })}
-              </Dialog.Description>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                {t('blockCancel')}
-              </Button>
-              <button
-                type="button"
-                onClick={handleConfirm}
-                className="flex select-none items-center justify-center rounded-control bg-red-700 px-4 py-2 font-figtree text-sm text-white transition-colors hover:bg-red-600 focus:outline-none focus-visible:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {t('blockConfirm')}
-              </button>
-            </div>
-          </Dialog.Content>
-        </div>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <ConfirmDialog
+      {...props}
+      title={t('blockDialogTitle', { name: profileName })}
+      description={t('blockDialogDescription', { name: profileName })}
+      cancelLabel={t('blockCancel')}
+      confirmLabel={t('blockConfirm')}
+    />
   );
 };

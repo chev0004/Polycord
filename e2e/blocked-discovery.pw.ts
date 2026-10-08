@@ -151,6 +151,10 @@ for (const layout of ['mobile', 'desktop'] as const) {
       await page
         .getByRole('button', { name: `Unblock ${target}`, exact: true })
         .click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Unblock', exact: true })
+        .click();
       await expect(
         page.getByText('You have no blocked accounts.'),
       ).toBeVisible();
