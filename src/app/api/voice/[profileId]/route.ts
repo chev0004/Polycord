@@ -3,18 +3,20 @@ import {
   getPublicProfileById,
   getVoiceIntroByUserId,
 } from '@/db';
-import { scopedRoute } from '@/db/client';
-import { getActiveUser, getCurrentUser } from '@/lib/auth';
+import { getActiveUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
+import { gatedRoute } from '@/lib/gatedRoute';
 
-export const GET = scopedRoute(
+export const GET = gatedRoute(
   async (
+    { user: currentUser, measure },
     _request: Request,
     { params }: { params: Promise<{ profileId: string }> },
   ) => {
     const { profileId } = await params;
-    const currentUser = await getCurrentUser();
-    let row = await getPublicProfileById(profileId, currentUser?.accountId);
+    let row = await measure('profile', () =>
+      getPublicProfileById(profileId, currentUser?.accountId),
+    );
 
     if (!row && currentUser) {
       const candidate = await getProfileById(profileId);
@@ -31,16 +33,18 @@ export const GET = scopedRoute(
       return new Response('Not found', { status: 404 });
     }
 
-    const ownerPremium = await isPremiumUser({
-      id: row.user.discordUserId,
-      name: row.user.displayName,
-    });
+    const { profile, user: owner } = row;
+    const ownerPremium = await measure('premium', () =>
+      isPremiumUser({ id: owner.discordUserId, name: owner.displayName }),
+    );
 
     if (!ownerPremium) {
       return new Response('Not found', { status: 404 });
     }
 
-    const intro = await getVoiceIntroByUserId(row.profile.userId);
+    const intro = await measure('voice', () =>
+      getVoiceIntroByUserId(profile.userId),
+    );
 
     if (!intro) {
       return new Response('Not found', { status: 404 });

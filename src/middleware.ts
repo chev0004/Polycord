@@ -8,6 +8,7 @@ import {
   readSessionFromCookieValue,
 } from './lib/auth-session';
 import { BAN_CHECK_PATH, findBan } from './lib/banGate';
+import { isGatedPath } from './lib/gatedPaths';
 import { createLoadTrace, type LoadMeasure } from './lib/loadTrace';
 import { locales } from './utils/locales';
 
@@ -36,7 +37,6 @@ const getProtectedRouteLocale = (pathname: string) => {
 const serviceRoutes = new Set([
   '/api/billing/webhook',
   '/api/health',
-  '/api/discovery/bootstrap',
   BAN_CHECK_PATH,
 ]);
 const nonPageRoute = /^\/(api|_next)(\/|$)|\./;
@@ -77,7 +77,10 @@ const denyBanned = (
 };
 
 async function routeMiddleware(request: NextRequest, measure: LoadMeasure) {
-  if (!serviceRoutes.has(request.nextUrl.pathname)) {
+  if (
+    !serviceRoutes.has(request.nextUrl.pathname) &&
+    !isGatedPath(request.nextUrl.pathname)
+  ) {
     try {
       const ban = await measure('ban', () =>
         findBan(
