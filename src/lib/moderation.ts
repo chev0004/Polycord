@@ -1,8 +1,8 @@
 import 'server-only';
 
+import { z } from 'zod';
 import {
   countPendingCases,
-  getProfileById,
   hasActivePremiumGrant,
   isSubscriptionActive,
   listModerationActions,
@@ -14,6 +14,7 @@ import {
   listStaffUserIds,
   listSuspiciousEvents,
   listSuspiciousGroups,
+  loadCaseRecords,
   type ModerationAction,
   type Report,
   searchModerationUserIds,
@@ -137,16 +138,18 @@ export const withModerationStates = async <T extends { id: string }>(
 };
 
 export const loadProfileCase = async (profileId: string) => {
-  const found = await getProfileById(profileId);
-  if (!found) return null;
+  if (!z.uuid().safeParse(profileId).success) return null;
 
-  const userId = found.user.id;
-  const [reports, log] = await Promise.all([
-    listReportsAgainstUsers([userId]),
-    listModerationActions([userId]),
-  ]);
+  const records = await loadCaseRecords(profileId);
+  const target = records.users.find(({ profile }) => profile?.id === profileId);
+  if (!target) return null;
 
-  return { userId, ...(await withUsers(reports, log, [userId])) };
+  return {
+    userId: target.user.id,
+    users: records.users.map(toModUser),
+    reports: records.reports.map(toModReport),
+    log: records.log.map(toModLogEntry),
+  };
 };
 
 export const loadModerationSnapshot = async (

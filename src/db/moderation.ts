@@ -11,6 +11,7 @@ import {
   like,
   ne,
   or,
+  type SQLWrapper,
   sql,
 } from 'drizzle-orm';
 import type { ModState } from '@/features/Admin/types';
@@ -226,38 +227,32 @@ export const listModerationActionsPage = async (window: ActivityWindow) =>
     .orderBy(desc(moderationActions.createdAt), desc(moderationActions.id))
     .limit(ACTIVITY_PAGE_SIZE + 1);
 
-export const listModerationUsers = async (userIds: string[]) => {
-  if (!userIds.length) return [];
+const warningCount = sql<number>`(select count(*)::int from ${moderationActions} where ${moderationActions.targetUserId} = ${users.id} and ${moderationActions.action} = 'warn')`;
 
-  const [rows, warnings] = await Promise.all([
+const findModerationUsers = async (userIds: string[] | SQLWrapper) => {
+  const [rows, targetLanguages] = await Promise.all([
     db
       .select({
         user: users,
         profile: profiles,
         staffRole: staffRoles.role,
         subscription: subscriptions,
+        warnings: warningCount,
       })
       .from(users)
       .leftJoin(profiles, eq(profiles.userId, users.id))
       .leftJoin(staffRoles, eq(staffRoles.userId, users.id))
       .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
       .where(inArray(users.id, userIds)),
-    db
-      .select({ userId: moderationActions.targetUserId, count: count() })
-      .from(moderationActions)
-      .where(
-        and(
-          inArray(moderationActions.targetUserId, userIds),
-          eq(moderationActions.action, 'warn'),
-        ),
-      )
-      .groupBy(moderationActions.targetUserId),
+    listTargetLanguagesByProfileIds(
+      db
+        .select({ id: profiles.id })
+        .from(profiles)
+        .where(inArray(profiles.userId, userIds)),
+    ),
   ]);
-  const targetLanguages = await listTargetLanguagesByProfileIds(
-    rows.flatMap(({ profile }) => (profile ? [profile.id] : [])),
-  );
 
-  return rows.map(({ user, profile, staffRole, subscription }) => ({
+  return rows.map(({ user, profile, staffRole, subscription, warnings }) => ({
     user,
     staffRole,
     subscription,
@@ -268,9 +263,32 @@ export const listModerationUsers = async (userIds: string[]) => {
         targetLanguages.get(profile.id),
       ),
     },
-    warnings:
-      warnings.find((warning) => warning.userId === user.id)?.count ?? 0,
+    warnings,
   }));
+};
+
+export const listModerationUsers = async (userIds: string[]) =>
+  userIds.length ? findModerationUsers(userIds) : [];
+
+export const loadCaseRecords = async (profileId: string) => {
+  const target = sql`(select ${profiles.userId} from ${profiles} where ${profiles.id} = ${profileId})`;
+  const related = sql`(select ${profiles.userId} from ${profiles} where ${profiles.id} = ${profileId} union select ${reports.reporterUserId} from ${reports} where ${reports.reportedUserId} in ${target} union select ${moderationActions.targetUserId} from ${moderationActions} where ${moderationActions.targetUserId} in ${target} union select ${moderationActions.adminUserId} from ${moderationActions} where ${moderationActions.targetUserId} in ${target})`;
+  const [caseReports, log, caseUsers] = await Promise.all([
+    db
+      .select()
+      .from(reports)
+      .where(inArray(reports.reportedUserId, target))
+      .orderBy(desc(reports.createdAt)),
+    db
+      .select()
+      .from(moderationActions)
+      .where(inArray(moderationActions.targetUserId, target))
+      .orderBy(desc(moderationActions.createdAt))
+      .limit(200),
+    findModerationUsers(related),
+  ]);
+
+  return { reports: caseReports, log, users: caseUsers };
 };
 
 export const listModerationStatesByProfileId = async (profileIds: string[]) => {
