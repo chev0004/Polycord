@@ -13,6 +13,8 @@ import {
   type ViewerAvailabilityContext,
 } from '@/db';
 import { withRenderPool } from '@/db/client';
+import type { StaffRole } from '@/features/Admin/types';
+import { getStaffRole } from '@/lib/admin';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
@@ -74,13 +76,16 @@ async function PublicProfileRoute({
   let savedProfileIds: string[] = [];
   let currentProfileId: string | undefined;
   let viewerContext: ViewerAvailabilityContext = {};
+  let staff: { meId: string; role: StaffRole } | undefined;
 
   if (user) {
     isLoggedIn = true;
-    const [viewerProfile, savedIds] = await Promise.all([
+    const [viewerProfile, savedIds, role] = await Promise.all([
       getProfileByUserId(user.accountId),
       listSavedProfileIds(user.accountId),
+      getStaffRole(user),
     ]);
+    if (role) staff = { meId: user.accountId, role };
     currentProfileId = viewerProfile?.profile.id;
     savedProfileIds = savedIds;
 
@@ -113,6 +118,7 @@ async function PublicProfileRoute({
       currentProfileId={currentProfileId}
       viewerTimezone={viewerContext.timezone}
       viewerAvailability={viewerContext.availability}
+      staff={staff}
     />
   );
 }

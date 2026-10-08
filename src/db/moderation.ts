@@ -328,7 +328,9 @@ export const listModerationStatesByProfileId = async (profileIds: string[]) => {
   );
 };
 
-export const searchModerationUserIds = async (query: string) => {
+export const ADMIN_SEARCH_PAGE_SIZE = 20;
+
+export const searchModerationUserIds = async (query: string, offset = 0) => {
   const term = `%${query.toLowerCase().replace(/[\\%_]/g, '\\$&')}%`;
   const rows = await db
     .select({ id: users.id })
@@ -340,10 +342,14 @@ export const searchModerationUserIds = async (query: string) => {
         like(sql`lower(${users.displayName})`, term),
       ),
     )
-    .orderBy(asc(users.displayName))
-    .limit(20);
+    .orderBy(asc(users.displayName), asc(users.id))
+    .limit(ADMIN_SEARCH_PAGE_SIZE + 1)
+    .offset(offset);
 
-  return rows.map(({ id }) => id);
+  return {
+    ids: rows.slice(0, ADMIN_SEARCH_PAGE_SIZE).map(({ id }) => id),
+    hasMore: rows.length > ADMIN_SEARCH_PAGE_SIZE,
+  };
 };
 
 export const hasStaffRole = async (userId: string) =>
