@@ -1,62 +1,83 @@
 import {
   getProfileById,
-  getPublicProfileById,
   getVoiceIntroByUserId,
+  listPlayableVoiceIntros,
 } from '@/db';
 import { getActiveUser } from '@/lib/auth';
+import type { CurrentUser } from '@/lib/auth-session';
+import { parseByteRange } from '@/lib/byteRange';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { gatedRoute } from '@/lib/gatedRoute';
+
+const loadOwnIntro = async (
+  profileId: string,
+  currentUser: CurrentUser & { accountId: string },
+) => {
+  const row = await getProfileById(profileId);
+
+  if (
+    row?.profile.userId !== currentUser.accountId ||
+    !row.profile.voiceIntroSeconds ||
+    !(await getActiveUser()) ||
+    !(await isPremiumUser({
+      id: row.user.discordUserId,
+      name: row.user.displayName,
+    }))
+  ) {
+    return null;
+  }
+
+  return getVoiceIntroByUserId(row.profile.userId);
+};
 
 export const GET = gatedRoute(
   async (
     { user: currentUser, measure },
-    _request: Request,
+    request: Request,
     { params }: { params: Promise<{ profileId: string }> },
   ) => {
     const { profileId } = await params;
-    let row = await measure('profile', () =>
-      getPublicProfileById(profileId, currentUser?.accountId),
+    const [shared] = await measure('voice', () =>
+      listPlayableVoiceIntros([profileId], currentUser?.accountId),
     );
-
-    if (!row && currentUser) {
-      const candidate = await getProfileById(profileId);
-
-      if (
-        candidate?.profile.userId === currentUser.accountId &&
-        (await getActiveUser())
-      ) {
-        row = candidate;
-      }
-    }
-
-    if (!row?.profile.voiceIntroSeconds) {
-      return new Response('Not found', { status: 404 });
-    }
-
-    const { profile, user: owner } = row;
-    const ownerPremium = await measure('premium', () =>
-      isPremiumUser({ id: owner.discordUserId, name: owner.displayName }),
-    );
-
-    if (!ownerPremium) {
-      return new Response('Not found', { status: 404 });
-    }
-
-    const intro = await measure('voice', () =>
-      getVoiceIntroByUserId(profile.userId),
-    );
+    const intro =
+      shared ??
+      (currentUser
+        ? await measure('own', () => loadOwnIntro(profileId, currentUser))
+        : null);
 
     if (!intro) {
       return new Response('Not found', { status: 404 });
     }
 
     const bytes = Buffer.from(intro.data, 'base64');
+    const headers = {
+      'Content-Type': intro.mimeType,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'private, no-store',
+    };
+    const range = parseByteRange(request.headers.get('range'), bytes.length);
 
-    return new Response(bytes, {
+    if (range === 'unsatisfiable') {
+      return new Response(null, {
+        status: 416,
+        headers: { ...headers, 'Content-Range': `bytes */${bytes.length}` },
+      });
+    }
+
+    if (!range) {
+      return new Response(bytes, {
+        headers: { ...headers, 'Content-Length': String(bytes.length) },
+      });
+    }
+
+    const slice = bytes.subarray(range.start, range.end + 1);
+    return new Response(slice, {
+      status: 206,
       headers: {
-        'Content-Type': intro.mimeType,
-        'Content-Length': String(bytes.byteLength),
-        'Cache-Control': 'private, no-store',
+        ...headers,
+        'Content-Length': String(slice.length),
+        'Content-Range': `bytes ${range.start}-${range.end}/${bytes.length}`,
       },
     });
   },
