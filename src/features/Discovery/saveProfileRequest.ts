@@ -1,3 +1,5 @@
+import { discoveryCache } from './discoveryCache';
+
 export const saveProfileRequest = async (
   profileId: string,
   nextSaved: boolean,
@@ -11,5 +13,6 @@ export const saveProfileRequest = async (
   if (!response.ok) {
     throw new Error('Saved profiles update failed');
   }
+  discoveryCache.setSaved(profileId, nextSaved);
   window.dispatchEvent(new Event('polycord:profiles-changed'));
 };
