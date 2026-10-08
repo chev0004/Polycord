@@ -86,8 +86,20 @@ test('a populated saved list supports every card action and return path', async 
 
     const blocked = page.locator('article').first();
     const blockedName = await blocked.locator('h3').innerText();
-    await blocked.getByRole('button', { name: 'Card menu' }).click();
+    const cardMenu = blocked.getByRole('button', { name: 'Card menu' });
+    await cardMenu.click();
     await page.getByRole('button', { name: 'Block user', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(cardMenu).toBeFocused();
+    await expect(page.getByText(blockedName, { exact: true })).toHaveCount(1);
+    await cardMenu.click();
+    await page.getByRole('button', { name: 'Block user', exact: true }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Block user', exact: true })
+      .click();
     await expect(page.getByText(blockedName, { exact: true })).toHaveCount(0);
     await page.reload();
     await expect(page.locator('article')).toHaveCount(1);
