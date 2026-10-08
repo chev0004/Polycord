@@ -169,7 +169,20 @@ export const MoreActions: Story = {
       await body.findByRole('button', { name: 'Report profile' }),
     ).toBeInTheDocument();
     await userEvent.click(body.getByRole('button', { name: 'Block user' }));
-    await expect(args.onBlock).toHaveBeenCalled();
+    await userEvent.click(
+      within(await body.findByRole('dialog')).getByRole('button', {
+        name: 'Cancel',
+      }),
+    );
+    await expect(args.onBlock).not.toHaveBeenCalled();
+    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    await userEvent.click(body.getByRole('button', { name: 'Block user' }));
+    await userEvent.click(
+      within(await body.findByRole('dialog')).getByRole('button', {
+        name: 'Block user',
+      }),
+    );
+    await expect(args.onBlock).toHaveBeenCalledTimes(1);
   },
 };
 
