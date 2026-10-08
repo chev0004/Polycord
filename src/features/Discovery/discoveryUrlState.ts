@@ -5,6 +5,7 @@ import {
   type DiscoverySortValue,
   SORT_OPTIONS,
 } from './discoverySort';
+import { MAX_SELECTED_TAGS } from './discoveryTags';
 
 export type DiscoveryUrlState = {
   filterValues: DiscoveryFilterValues;
@@ -80,7 +81,7 @@ export const parseDiscoveryState = (
     searchQuery: (params.get(SEARCH_PARAM) ?? '').slice(0, 200),
     selectedTags: params
       .getAll(TAGS_PARAM)
-      .slice(0, 8)
+      .slice(0, MAX_SELECTED_TAGS)
       .map((value) => value.slice(0, 50)),
     sortValue: isSortValue(sort) ? sort : DEFAULT_SORT,
     page: parsePage(params.get(PAGE_PARAM)),

@@ -985,6 +985,7 @@
     "searchLabel": "プロフィールを検索",
     "tagCloudLabel": "人気のタグ",
     "tagCloudClear": "{count}件選択中 · クリア",
+    "tagCloudLimit": "タグは最大{max}件まで選択できます",
     "sortLabel": "並び替え",
     "sortByLabel": "並び替え",
     "sortLastBumped": "バンプが新しい順",

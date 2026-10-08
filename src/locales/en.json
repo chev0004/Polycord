@@ -985,6 +985,7 @@
     "searchLabel": "Search profiles",
     "tagCloudLabel": "Popular tags",
     "tagCloudClear": "{count} selected · Clear",
+    "tagCloudLimit": "Maximum of {max} tags selected",
     "sortLabel": "Sort",
     "sortByLabel": "Sort by",
     "sortLastBumped": "Last bumped",

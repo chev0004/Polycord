@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { MdCheck, MdClose, MdExpandMore } from 'react-icons/md';
-import type { DiscoveryTagCount } from './discoveryTags';
+import { type DiscoveryTagCount, MAX_SELECTED_TAGS } from './discoveryTags';
 
 export type AppliedFilter = {
   key: string;
@@ -39,6 +39,7 @@ export const TagCloud = ({
   const cloudRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [layout, setLayout] = useState<CloudLayout | null>(null);
+  const limitReached = selected.length >= MAX_SELECTED_TAGS;
 
   const ordered = collapsible
     ? [
@@ -96,6 +97,11 @@ export const TagCloud = ({
             {t('tagCloudClear', { count: selected.length })}
           </button>
         ) : null}
+        {limitReached ? (
+          <output className="text-[13px] text-subtle">
+            {t('tagCloudLimit', { max: MAX_SELECTED_TAGS })}
+          </output>
+        ) : null}
         {layout ? (
           <button
             type="button"
@@ -146,6 +152,7 @@ export const TagCloud = ({
               key={tag}
               type="button"
               aria-pressed={active}
+              disabled={limitReached && !active}
               aria-hidden={hidden || undefined}
               tabIndex={hidden ? -1 : undefined}
               onClick={() => onToggle(tag)}
@@ -160,6 +167,8 @@ export const TagCloud = ({
                 folded
                   ? `transition-[opacity,transform,background-color,border-color] duration-500 ${hidden ? '-translate-y-2.5 scale-90 opacity-0' : ''}`
                   : 'transition-colors duration-150'
+              } ${
+                limitReached && !active ? 'cursor-not-allowed opacity-50' : ''
               } ${
                 collapsible
                   ? active

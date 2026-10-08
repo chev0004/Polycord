@@ -28,7 +28,7 @@ import {
 } from '@/components/Sheet';
 import type { DiscoveryFilterValues } from './discoveryFilters';
 import type { DiscoverySortValue } from './discoverySort';
-import type { DiscoveryTagCount } from './discoveryTags';
+import { type DiscoveryTagCount, MAX_SELECTED_TAGS } from './discoveryTags';
 import { sortOptionLabelKeys } from './SortMenu';
 
 export type FilterDraft = {
@@ -90,17 +90,20 @@ const TextControl = ({
 const ToggleChip = ({
   on,
   onClick,
+  disabled = false,
   children,
 }: {
   on: boolean;
   onClick: () => void;
+  disabled?: boolean;
   children: ReactNode;
 }) => (
   <button
     type="button"
     aria-pressed={on}
+    disabled={disabled}
     onClick={onClick}
-    className={`inline-flex h-[38px] items-center gap-1.5 rounded-full border px-[13px] text-[13px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] ${
+    className={`inline-flex h-[38px] items-center gap-1.5 rounded-full border px-[13px] text-[13px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 ${
       on
         ? 'border-primary-dark bg-primary-darker font-semibold text-primary-light'
         : 'border-line text-soft focus-visible:border-primary-dark'
@@ -249,12 +252,17 @@ export const FilterSheet = ({
   };
 
   const toggleTag = (tag: string) =>
-    setDraft((previous) => ({
-      ...previous,
-      selectedTags: previous.selectedTags.includes(tag)
-        ? previous.selectedTags.filter((entry) => entry !== tag)
-        : [...previous.selectedTags, tag],
-    }));
+    setDraft((previous) => {
+      const active = previous.selectedTags.includes(tag);
+      if (!active && previous.selectedTags.length >= MAX_SELECTED_TAGS)
+        return previous;
+      return {
+        ...previous,
+        selectedTags: active
+          ? previous.selectedTags.filter((entry) => entry !== tag)
+          : [...previous.selectedTags, tag],
+      };
+    });
 
   const summary = (filter: FilterConfig) => {
     const selected = selection(filter.id);
@@ -466,6 +474,10 @@ export const FilterSheet = ({
                   <ToggleChip
                     key={tag}
                     on={draft.selectedTags.includes(tag)}
+                    disabled={
+                      !draft.selectedTags.includes(tag) &&
+                      draft.selectedTags.length >= MAX_SELECTED_TAGS
+                    }
                     onClick={() => toggleTag(tag)}
                   >
                     {tag}
