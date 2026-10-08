@@ -169,15 +169,19 @@ export const loadModerationSnapshot = async (
   };
 };
 
-export const searchModeration = async (query: string) => {
-  const results = await searchModerationUserIds(query);
-  if (!results.length) return { results, users: [], reports: [], log: [] };
+export const searchModeration = async (query: string, offset = 0) => {
+  const { ids: results, hasMore } = await searchModerationUserIds(
+    query,
+    offset,
+  );
+  if (!results.length)
+    return { results, hasMore, users: [], reports: [], log: [] };
   const [reports, log] = await Promise.all([
     listReportsAgainstUsers(results),
     listModerationActions(results),
   ]);
 
-  return { results, ...(await withUsers(reports, log, results)) };
+  return { results, hasMore, ...(await withUsers(reports, log, results)) };
 };
 
 const toSuspiciousEvent = (row: {
