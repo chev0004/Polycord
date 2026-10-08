@@ -1,5 +1,7 @@
 import type { DiscoveryProfile } from './ProfileCard';
 
+export const MAX_SELECTED_TAGS = 8;
+
 export type DiscoveryTagCount = {
   tag: string;
   count: number;

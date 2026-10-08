@@ -45,7 +45,11 @@ import {
   type DiscoverySortValue,
   SORT_OPTIONS,
 } from './discoverySort';
-import { applyTagFilter, buildTagCounts } from './discoveryTags';
+import {
+  applyTagFilter,
+  buildTagCounts,
+  MAX_SELECTED_TAGS,
+} from './discoveryTags';
 import {
   buildDiscoveryQuery,
   MAX_STACK_PAGES,
@@ -696,6 +700,8 @@ export const DiscoveryPage = ({
   );
 
   const handleToggleTag = (tag: string) => {
+    if (!selectedTags.includes(tag) && selectedTags.length >= MAX_SELECTED_TAGS)
+      return;
     setSelectedTags((previous) =>
       previous.includes(tag)
         ? previous.filter((value) => value !== tag)
@@ -712,6 +718,8 @@ export const DiscoveryPage = ({
   };
 
   const handleAddTagFilter = (tag: string) => {
+    if (!selectedTags.includes(tag) && selectedTags.length >= MAX_SELECTED_TAGS)
+      return;
     setSelectedTags((previous) =>
       previous.includes(tag) ? previous : [...previous, tag],
     );
