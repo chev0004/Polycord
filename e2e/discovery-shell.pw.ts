@@ -136,6 +136,18 @@ for (const locale of ['en', 'ja'] as const)
             name: new RegExp(owners[1].display_name),
           }),
         ).toBeVisible();
+        await page.evaluate(() =>
+          Promise.all(
+            document
+              .getAnimations()
+              .filter(
+                (animation) =>
+                  animation.effect?.getTiming().iterations !==
+                  Number.POSITIVE_INFINITY,
+              )
+              .map((animation) => animation.finished.catch(() => {})),
+          ),
+        );
         const accessibility = await new AxeBuilder({ page }).analyze();
         expect(accessibility.violations).toEqual([]);
         await page.screenshot({
