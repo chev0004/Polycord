@@ -29,14 +29,11 @@ export const discoveryCache = {
           : data.savedProfileIds.filter((id) => id !== profileId),
       });
   },
-  removeProfile: (profileId: string) => {
-    for (const [url, data] of entries)
-      entries.set(url, {
-        ...data,
-        profiles: data.profiles.filter((profile) => profile.id !== profileId),
-      });
+  invalidate: () => {
+    entries.clear();
+    for (const [url, generation] of generations)
+      generations.set(url, generation + 1);
   },
-  invalidate: () => entries.clear(),
   clear: () => {
     entries.clear();
     viewer = null;

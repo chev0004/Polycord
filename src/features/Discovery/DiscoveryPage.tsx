@@ -261,6 +261,9 @@ export const DiscoveryPage = ({
   const [page, setPage] = useState(initialState.page);
   const [remoteData, setRemoteData] = useState(discoveryData);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refilling, setRefilling] = useState(false);
+  const refillRef = useRef<AbortController | null>(null);
+  const requestUrlRef = useRef('');
   const [refreshFailed, setRefreshFailed] = useState(feedError);
   const requestRef = useRef<AbortController | null>(null);
   const [draft, setDraft] = useState<ProfileDraft>({});
@@ -466,6 +469,7 @@ export const DiscoveryPage = ({
 
   const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
   const [loadedUrl, setLoadedUrl] = useState(requestUrl);
+  requestUrlRef.current = requestUrl;
 
   const refreshDiscovery = useCallback(
     async (trigger?: 'query' | 'refresh') => {
@@ -682,6 +686,7 @@ export const DiscoveryPage = ({
   ]);
 
   const showSkeleton = (isLoading || (remote && !remoteData)) && !refreshFailed;
+  const showRefillSkeleton = refilling && profileItems.length === 0;
   useEffect(() => {
     if (urlQuery !== null && mobile !== null) markControlsReady();
   }, [urlQuery, mobile]);
@@ -919,6 +924,46 @@ export const DiscoveryPage = ({
     }
   };
 
+  const canRefill = remote && Boolean(remoteData) && safePage < totalPages;
+
+  const refillAfterBlock = async () => {
+    if (!canRefill) return;
+    refillRef.current?.abort();
+    const controller = new AbortController();
+    refillRef.current = controller;
+    const url = requestUrl;
+    const generation = discoveryCache.begin(url);
+    try {
+      const response = await fetch(url, {
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      if (!response.ok) return;
+      const data: DiscoveryData = await response.json();
+      if (
+        controller.signal.aborted ||
+        requestUrlRef.current !== url ||
+        data.page !== page
+      )
+        return;
+      discoveryCache.set(url, data, generation);
+      setRemoteData(data);
+      setProfileItems((previous) => {
+        const shown = new Set(previous.map(({ id }) => id));
+        return [
+          ...previous,
+          ...withoutBlocked(data.profiles).filter(({ id }) => !shown.has(id)),
+        ];
+      });
+    } catch {
+    } finally {
+      if (refillRef.current === controller) {
+        refillRef.current = null;
+        setRefilling(false);
+      }
+    }
+  };
+
   const handleUndoBlock = async (
     profileId: string,
     profile: DiscoveryProfile,
@@ -933,7 +978,7 @@ export const DiscoveryPage = ({
 
         const next = [...previous];
         next.splice(Math.min(index, next.length), 0, profile);
-        return next;
+        return stacked ? next : next.slice(0, groupSizes[safePage - 1]);
       });
     } catch {
       addToast({
@@ -962,6 +1007,7 @@ export const DiscoveryPage = ({
     }
 
     const blocked = profileItems[index];
+    if (canRefill) setRefilling(true);
     if (!mobile) {
       setProfileItems((previous) =>
         previous.filter((profile) => profile.id !== profileId),
@@ -975,6 +1021,7 @@ export const DiscoveryPage = ({
           previous.filter((profile) => profile.id !== profileId),
         );
       }
+      void refillAfterBlock();
       addToast({
         title: t('blockSuccessTitle'),
         description: t('blockSuccessDescription'),
@@ -985,6 +1032,7 @@ export const DiscoveryPage = ({
         duration: BUMP_TOAST_DURATION,
       });
     } catch {
+      setRefilling(false);
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -1232,7 +1280,7 @@ export const DiscoveryPage = ({
               </div>
             </div>
 
-            {showSkeleton ? (
+            {showSkeleton || showRefillSkeleton ? (
               <ProfileGridSkeleton />
             ) : (
               <ProfileGrid
@@ -1269,7 +1317,7 @@ export const DiscoveryPage = ({
               />
             )}
 
-            {showSkeleton ? null : stacked ? (
+            {showSkeleton || showRefillSkeleton ? null : stacked ? (
               safePage < Math.min(totalPages, MAX_STACK_PAGES) ? (
                 <button
                   type="button"

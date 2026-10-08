@@ -48,11 +48,7 @@ export const blockProfileRequest = async (
     throw new Error('Block update failed');
   }
 
-  if (nextBlocked) {
-    blockedProfileIds.add(profileId);
-    discoveryCache.removeProfile(profileId);
-  } else {
-    blockedProfileIds.delete(profileId);
-    discoveryCache.invalidate();
-  }
+  if (nextBlocked) blockedProfileIds.add(profileId);
+  else blockedProfileIds.delete(profileId);
+  discoveryCache.invalidate();
 };
