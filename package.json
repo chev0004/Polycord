@@ -2,6 +2,7 @@
   "name": "polycord",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "test:e2e": "playwright test",
     "test:storybook": "playwright test -c playwright.storybook.config.ts",
