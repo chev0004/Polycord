@@ -7,10 +7,10 @@ test('account search returns bounded pages and loads more on request', async ({
 }) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const prefix = randomUUID().slice(0, 8);
+  await sql`delete from users where discord_user_id = 'e2e-admin'`;
   const [owner] = await sql`
     insert into users (discord_user_id, discord_username, display_name)
     values ('e2e-admin', 'e2e-admin', 'E2E Owner')
-    on conflict (discord_user_id) do update set display_name = excluded.display_name
     returning id, discord_user_id as "discordUserId"`;
   const bulk = await sql`
     insert into users (discord_user_id, discord_username, display_name)
@@ -90,7 +90,7 @@ test('account search returns bounded pages and loads more on request', async ({
     ).toBeVisible();
   } finally {
     await context.close();
-    await sql`delete from users where id in ${sql(bulk.map(({ id }) => id))}`;
+    await sql`delete from users where id in ${sql([owner, ...bulk].map(({ id }) => id))}`;
     await sql.end();
   }
 });
