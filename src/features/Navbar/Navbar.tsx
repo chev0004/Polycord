@@ -78,11 +78,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         <div className="flex items-center gap-4">
-          <LanguageSwitcher />
-
           {pendingCases === undefined ? null : (
             <AdminButton pendingCases={pendingCases} />
           )}
+
+          <LanguageSwitcher />
 
           {viewerLoading ? (
             <output
