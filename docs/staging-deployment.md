@@ -8,8 +8,9 @@ repository is needed.
 ## Activation
 
 1. Create a GitHub environment named `staging`, restricted to the `develop`
-   branch. Store `NETLIFY_AUTH_TOKEN` as an environment secret, not in the
-   repository or workflow file.
+   branch. Store `NETLIFY_AUTH_TOKEN` and `DATABASE_URL` as environment
+   secrets, not in the repository or workflow file. Netlify masks secret
+   variables, so `DATABASE_URL` must come from GitHub.
 2. Set the repository variable `NETLIFY_STAGING_DEPLOY_ENABLED` to `true` when
    ready to cut over. Until enabled, the deployment job is skipped.
 3. Stop builds on Netlify site `694f7324-d2b5-43b5-9de4-ae33e0b927ee` after
