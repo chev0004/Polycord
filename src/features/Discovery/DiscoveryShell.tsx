@@ -6,11 +6,14 @@ import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
 import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
 import { DiscoveryPage } from './DiscoveryPage';
+import { discoveryCache } from './discoveryCache';
 import type { DiscoveryViewer } from './discoveryViewer';
 import { commitPageNavigation, disableLoadTrace } from './loadTrace';
 
 export const DiscoveryShell = ({ locale }: { locale: string }) => {
-  const [viewer, setViewer] = useState<DiscoveryViewer | null>(null);
+  const [viewer, setViewer] = useState<DiscoveryViewer | null>(() =>
+    discoveryCache.viewer(),
+  );
   const onViewer = useCallback((data: DiscoveryViewer) => {
     if (data.staff?.role !== 'owner') disableLoadTrace();
     setViewer(data);
@@ -19,6 +22,10 @@ export const DiscoveryShell = ({ locale }: { locale: string }) => {
   useEffect(() => {
     commitPageNavigation(`/${locale}`);
   }, [locale]);
+
+  useEffect(() => {
+    if (viewer && viewer.staff?.role !== 'owner') disableLoadTrace();
+  }, [viewer]);
 
   return (
     <LanguageDisplayProvider value={viewer?.languageDisplay ?? 'long'}>

@@ -1,3 +1,5 @@
+import { discoveryCache } from './discoveryCache';
+
 export type ReportReason =
   | 'spam'
   | 'harassment'
@@ -46,6 +48,8 @@ export const blockProfileRequest = async (
     throw new Error('Block update failed');
   }
 
-  if (nextBlocked) blockedProfileIds.add(profileId);
-  else blockedProfileIds.delete(profileId);
+  if (nextBlocked) {
+    blockedProfileIds.add(profileId);
+    discoveryCache.removeProfile(profileId);
+  } else blockedProfileIds.delete(profileId);
 };

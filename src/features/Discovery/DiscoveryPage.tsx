@@ -29,6 +29,7 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
 import { copyText } from '@/lib/clipboard';
 import type { BumpProfileResponse } from './bumpProfileRequest';
+import { discoveryCache } from './discoveryCache';
 import {
   DISCOVERY_PAGE_SIZE,
   type DiscoveryData,
@@ -403,6 +404,14 @@ export const DiscoveryPage = ({
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
   const hasLoaded = useRef(Boolean(discoveryData));
+  const appliedUrl = useRef<string | null>(null);
+  const unmounting = useRef(false);
+  useEffect(
+    () => () => {
+      unmounting.current = true;
+    },
+    [],
+  );
   const receiveQuery = useCallback((query: string) => {
     if (lastWrittenQuery.current === query) {
       lastWrittenQuery.current = null;
@@ -444,6 +453,7 @@ export const DiscoveryPage = ({
       requestRef.current?.abort();
       const controller = new AbortController();
       requestRef.current = controller;
+      const generation = discoveryCache.begin(requestUrl);
       if (
         !DISCOVERY_SKELETON_ENABLED &&
         trigger &&
@@ -470,6 +480,8 @@ export const DiscoveryPage = ({
             requestUrl.replace('/api/discovery?', '/api/discovery/bootstrap?'),
             controller.signal,
           );
+          discoveryCache.setViewer(bootstrap.viewer);
+          discoveryCache.set(requestUrl, bootstrap.data, generation);
           if (controller.signal.aborted) return;
           onViewer?.(bootstrap.viewer);
           data = bootstrap.data;
@@ -480,9 +492,11 @@ export const DiscoveryPage = ({
             controller.signal,
             trigger,
           );
+          discoveryCache.set(requestUrl, data, generation);
           if (controller.signal.aborted) return;
         }
         hasLoaded.current = true;
+        appliedUrl.current = requestUrl;
         setRemoteData(data);
         setProfileItems(withoutBlocked(data.profiles));
         setPage(data.page);
@@ -548,7 +562,7 @@ export const DiscoveryPage = ({
     window.addEventListener('pageshow', restored);
     window.addEventListener('polycord:profiles-changed', profilesChanged);
     return () => {
-      requestRef.current?.abort();
+      if (!unmounting.current) requestRef.current?.abort();
       window.removeEventListener('focus', focus);
       window.removeEventListener('pageshow', restored);
       window.removeEventListener('polycord:profiles-changed', profilesChanged);
@@ -561,6 +575,18 @@ export const DiscoveryPage = ({
     searchQuery,
     debouncedSearch,
   ]);
+
+  useLayoutEffect(() => {
+    if (!remote || urlQuery === null || appliedUrl.current === requestUrl)
+      return;
+    const cached = discoveryCache.get(requestUrl);
+    if (!cached) return;
+    appliedUrl.current = requestUrl;
+    setRemoteData(cached);
+    setProfileItems(withoutBlocked(cached.profiles));
+    setPage(cached.page);
+    setLoadedUrl(requestUrl);
+  }, [remote, urlQuery, requestUrl]);
 
   const restoreScroll = useCallback(() => {
     if (
