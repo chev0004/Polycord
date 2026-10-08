@@ -76,7 +76,7 @@ export const Inbox = ({
   };
 
   const triggerContent = (
-    <>
+    <span className="relative flex">
       <MdOutlineInbox
         className="cursor-pointer select-none text-foreground text-xl transition-all duration-200 hover:text-soft"
         size={24}
@@ -86,17 +86,12 @@ export const Inbox = ({
           {unreadCount}
         </span>
       )}
-    </>
+    </span>
   );
 
   if (!isMounted) {
     return (
-      <button
-        type="button"
-        aria-hidden="true"
-        className="relative"
-        tabIndex={-1}
-      >
+      <button type="button" aria-hidden="true" tabIndex={-1}>
         {triggerContent}
       </button>
     );
@@ -109,7 +104,7 @@ export const Inbox = ({
       }}
     >
       <Popover.Trigger
-        className="-m-2 relative p-2 focus-visible:opacity-80"
+        className="-m-2 p-2 focus-visible:opacity-80"
         aria-label={t('notifications')}
       >
         {triggerContent}
