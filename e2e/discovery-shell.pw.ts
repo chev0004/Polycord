@@ -136,6 +136,7 @@ for (const locale of ['en', 'ja'] as const)
             name: new RegExp(owners[1].display_name),
           }),
         ).toBeVisible();
+        await page.mouse.move(0, 0);
         await page.evaluate(() =>
           Promise.all(
             document
