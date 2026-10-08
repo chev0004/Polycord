@@ -97,6 +97,7 @@ jobs:
       cancel-in-progress: false
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
