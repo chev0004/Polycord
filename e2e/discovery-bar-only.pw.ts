@@ -61,3 +61,17 @@ test('bar-only loading shows no skeleton or early controls', async ({
     await sql.end();
   }
 });
+
+test('a failed bootstrap shows the error and settles the bar', async ({
+  page,
+}) => {
+  const bar = page.locator('div.fixed.top-0.h-1');
+  await page.route('**/api/discovery/bootstrap?*', (route) => route.abort());
+  try {
+    await page.goto('/en', { waitUntil: 'commit' });
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(bar).toHaveClass(/opacity-0/);
+  } finally {
+    await page.unrouteAll({ behavior: 'wait' });
+  }
+});
