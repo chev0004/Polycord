@@ -345,10 +345,14 @@ test('failed language saves retain the route and allow retry', async ({
       .getByRole('link', { name: '日本語', exact: true })
       .click();
     await expect(page).toHaveURL('/ja?q=unchanged');
-    expect(
-      (await context.cookies()).find((cookie) => cookie.name === 'NEXT_LOCALE')
-        ?.value,
-    ).toBe('ja');
+    await expect
+      .poll(
+        async () =>
+          (await context.cookies()).find(
+            (cookie) => cookie.name === 'NEXT_LOCALE',
+          )?.value,
+      )
+      .toBe('ja');
   } finally {
     await sql`delete from users where discord_user_id=${account.id}`;
     await sql.end();
