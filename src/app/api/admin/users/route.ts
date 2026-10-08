@@ -20,5 +20,12 @@ export const GET = scopedRoute(async (request: Request) => {
     return NextResponse.json({ error: 'Missing query' }, { status: 400 });
   }
 
-  return NextResponse.json(await searchModeration(query));
+  const offset = Number(new URL(request.url).searchParams.get('offset') ?? 0);
+
+  return NextResponse.json(
+    await searchModeration(
+      query,
+      Number.isSafeInteger(offset) && offset > 0 ? Math.min(offset, 10000) : 0,
+    ),
+  );
 });

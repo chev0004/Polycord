@@ -432,47 +432,51 @@ export const DiscoveryPage = ({
   const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
   const [loadedUrl, setLoadedUrl] = useState(requestUrl);
 
-  const refreshDiscovery = useCallback(async () => {
-    if (!remote || urlQuery === null || mobile === null) return;
-    requestRef.current?.abort();
-    const controller = new AbortController();
-    requestRef.current = controller;
-    setIsRefreshing(true);
-    setRefreshFailed(false);
-    try {
-      let data: DiscoveryData;
-      if (fetchOnMount && !hasLoaded.current) {
-        const bootstrap = await traceDiscoveryRequest<{
-          viewer: DiscoveryViewer;
-          data: DiscoveryData;
-        }>(
-          'bootstrap',
-          requestUrl.replace('/api/discovery?', '/api/discovery/bootstrap?'),
-          controller.signal,
-        );
-        if (controller.signal.aborted) return;
-        onViewer?.(bootstrap.viewer);
-        data = bootstrap.data;
-      } else {
-        data = await traceDiscoveryRequest<DiscoveryData>(
-          'discovery',
-          requestUrl,
-          controller.signal,
-        );
-        if (controller.signal.aborted) return;
+  const refreshDiscovery = useCallback(
+    async (trigger?: 'query' | 'refresh') => {
+      if (!remote || urlQuery === null || mobile === null) return;
+      requestRef.current?.abort();
+      const controller = new AbortController();
+      requestRef.current = controller;
+      setIsRefreshing(true);
+      setRefreshFailed(false);
+      try {
+        let data: DiscoveryData;
+        if (fetchOnMount && !hasLoaded.current) {
+          const bootstrap = await traceDiscoveryRequest<{
+            viewer: DiscoveryViewer;
+            data: DiscoveryData;
+          }>(
+            'bootstrap',
+            requestUrl.replace('/api/discovery?', '/api/discovery/bootstrap?'),
+            controller.signal,
+          );
+          if (controller.signal.aborted) return;
+          onViewer?.(bootstrap.viewer);
+          data = bootstrap.data;
+        } else {
+          data = await traceDiscoveryRequest<DiscoveryData>(
+            'discovery',
+            requestUrl,
+            controller.signal,
+            trigger,
+          );
+          if (controller.signal.aborted) return;
+        }
+        hasLoaded.current = true;
+        setRemoteData(data);
+        setProfileItems(withoutBlocked(data.profiles));
+        setPage(data.page);
+        setLoadedUrl(requestUrl);
+      } catch {
+        if (!controller.signal.aborted) setRefreshFailed(true);
+      } finally {
+        if (!controller.signal.aborted) setIsRefreshing(false);
+        if (requestRef.current === controller) requestRef.current = null;
       }
-      hasLoaded.current = true;
-      setRemoteData(data);
-      setProfileItems(withoutBlocked(data.profiles));
-      setPage(data.page);
-      setLoadedUrl(requestUrl);
-    } catch {
-      if (!controller.signal.aborted) setRefreshFailed(true);
-    } finally {
-      if (!controller.signal.aborted) setIsRefreshing(false);
-      if (requestRef.current === controller) requestRef.current = null;
-    }
-  }, [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer]);
+    },
+    [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer],
+  );
 
   const countResults = useCallback(
     async (draft: FilterDraft, signal: AbortSignal) => {
@@ -508,8 +512,9 @@ export const DiscoveryPage = ({
     )
       return;
     const refresh = refreshDiscovery;
+    const profilesChanged = () => refresh('refresh');
     if (skipInitialRefresh.current) skipInitialRefresh.current = false;
-    else refresh();
+    else refresh('query');
     const focus = () => {
       if (!requestRef.current) void refresh();
     };
@@ -518,12 +523,12 @@ export const DiscoveryPage = ({
     };
     window.addEventListener('focus', focus);
     window.addEventListener('pageshow', restored);
-    window.addEventListener('polycord:profiles-changed', refresh);
+    window.addEventListener('polycord:profiles-changed', profilesChanged);
     return () => {
       requestRef.current?.abort();
       window.removeEventListener('focus', focus);
       window.removeEventListener('pageshow', restored);
-      window.removeEventListener('polycord:profiles-changed', refresh);
+      window.removeEventListener('polycord:profiles-changed', profilesChanged);
     };
   }, [
     refreshDiscovery,
@@ -839,7 +844,7 @@ export const DiscoveryPage = ({
   ) => {
     try {
       await blockProfileRequest(profileId, false);
-      refreshDiscovery();
+      refreshDiscovery('refresh');
       setProfileItems((previous) => {
         if (previous.some((item) => item.id === profileId)) {
           return previous;
@@ -889,7 +894,7 @@ export const DiscoveryPage = ({
           previous.filter((profile) => profile.id !== profileId),
         );
       }
-      refreshDiscovery();
+      refreshDiscovery('refresh');
       addToast({
         title: t('blockSuccessTitle'),
         description: t('blockSuccessDescription'),
@@ -948,7 +953,7 @@ export const DiscoveryPage = ({
     addToast,
     request: onBumpProfile,
     onBumped: async (result) => {
-      await refreshDiscovery();
+      await refreshDiscovery('refresh');
       if (!remote)
         setProfileItems((previous) =>
           previous.map((profile) =>
@@ -1079,7 +1084,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               className="mt-2 underline hover:text-foreground focus-visible:text-foreground"
-              onClick={refreshDiscovery}
+              onClick={() => refreshDiscovery('query')}
             >
               {t('retryFeed')}
             </button>

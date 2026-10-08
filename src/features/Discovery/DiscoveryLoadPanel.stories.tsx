@@ -181,3 +181,40 @@ export const SettingsNavigation: Story = {
     await expect(canvas.getByText('0.25 s')).toBeVisible();
   },
 };
+
+export const PaginationReload: Story = {
+  args: {
+    now: 9000,
+    trace: {
+      transport: 'https',
+      kind: 'client',
+      trigger: 'query',
+      route: '/en',
+      finished: 1400,
+      navigation: { redirect: 0, connection: 0, firstByte: 0, download: 0 },
+      phases: {
+        document: { status: 'done', start: 0, end: 0 },
+        controls: { status: 'done', start: 0, end: 1400 },
+        viewer: { status: 'pending' },
+        discovery: {
+          status: 'done',
+          start: 20,
+          end: 1100,
+          spans: { handler: 900 },
+        },
+        grid: { status: 'done', start: 1100, end: 1400 },
+        page: { status: 'done', start: 0, end: 1400 },
+      },
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getAllByText('1.40 s').length).toBeGreaterThan(0);
+    await expect(
+      canvas.getByText('Triggered by a results or query change'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByText(/Your account and settings/),
+    ).not.toBeInTheDocument();
+  },
+};
