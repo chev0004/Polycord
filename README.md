@@ -248,6 +248,14 @@ Browser privacy checks build and serve the production app against a disposable
 local database. Next.js development diagnostics can serialize database results
 into RSC debug data; do not expose the development server to public traffic.
 
+## Source Licensing
+
+Polycord's original source code and assets are proprietary. All rights are
+reserved by their copyright holders; this public repository does not grant
+permission to reuse or deploy a hosted copy. See [LICENSE](LICENSE).
+GitHub viewing and forking rights, applicable legal exceptions and third-party
+licenses remain in effect.
+
 ## Before Opening A PR
 
 Run the core local checks:
