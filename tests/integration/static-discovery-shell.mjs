@@ -159,6 +159,9 @@ try {
     await writeFile(`.next/server/app/${locale}.html`, documents[locale]);
   const options = { constants: { PUBLISH_DIR: join(directory, '.next') } };
   await plugin.onBuild(options);
+  await assert.rejects(readFile('.netlify/discovery-documents.json', 'utf8'));
+  process.env.NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED = 'true';
+  await plugin.onBuild(options);
   assert.equal(
     JSON.parse(await readFile('.netlify/discovery-documents.json', 'utf8')).ja,
     documents.ja,
