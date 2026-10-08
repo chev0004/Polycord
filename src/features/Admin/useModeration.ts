@@ -202,17 +202,23 @@ export const useModeration = (initial: ModSnapshot) => {
     [loadWindow],
   );
 
-  const search = useCallback(
-    async (query: string): Promise<string[]> => {
+  const searchPage = useCallback(
+    async (query: string, offset = 0) => {
       const response = await fetch(
-        `/api/admin/users?q=${encodeURIComponent(query)}`,
+        `/api/admin/users?q=${encodeURIComponent(query)}&offset=${offset}`,
       );
       if (!response.ok) throw new Error('Search failed');
-      const result: ModData & { results: string[] } = await response.json();
+      const result: ModData & { results: string[]; hasMore: boolean } =
+        await response.json();
       merge(result);
-      return result.results;
+      return { ids: result.results, hasMore: result.hasMore };
     },
     [merge],
+  );
+
+  const search = useCallback(
+    async (query: string) => (await searchPage(query)).ids,
+    [searchPage],
   );
 
   const usersById = useMemo(
@@ -264,6 +270,7 @@ export const useModeration = (initial: ModSnapshot) => {
     unblockIp: (id: string) => changeIpBlocks('DELETE', { id }),
     act,
     search,
+    searchPage,
     userLog,
     userReports,
     recentUserIds,
