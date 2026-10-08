@@ -60,6 +60,13 @@ const meta: Meta<typeof BlockedUsers> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const confirmUnblock = async () =>
+  userEvent.click(
+    within(await screen.findByRole('dialog')).getByRole('button', {
+      name: 'Unblock',
+    }),
+  );
+
 const search = async (canvas: ReturnType<typeof within>, value: string) => {
   const field = await canvas.findByRole('searchbox', {
     name: 'Search blocked accounts by name or username',
@@ -80,10 +87,33 @@ export const Unblock: Story = {
     await userEvent.click(
       await canvas.findByRole('button', { name: 'Unblock Kenji Ito' }),
     );
+    const dialog = within(await screen.findByRole('dialog'));
+    await expect(dialog.getByText('Unblock Kenji Ito?')).toBeInTheDocument();
+    await expect(
+      dialog.getByText(/profile can appear in your Discovery feed/),
+    ).toBeInTheDocument();
+    expect(args.unblock).not.toHaveBeenCalled();
+    await userEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await expect(
+      canvas.getByRole('button', { name: 'Unblock Kenji Ito' }),
+    ).toHaveFocus();
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Unblock Kenji Ito' }),
+    );
+    await screen.findByRole('dialog');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(args.unblock).not.toHaveBeenCalled();
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Unblock Kenji Ito' }),
+    );
+    await confirmUnblock();
     await waitFor(() =>
       expect(canvas.queryByText('Kenji Ito')).not.toBeInTheDocument(),
     );
     expect(canvas.getByText('Haruka Tanaka')).toBeInTheDocument();
+    expect(args.unblock).toHaveBeenCalledTimes(1);
     expect(args.unblock).toHaveBeenCalledWith('one');
     expect(args.onChange).toHaveBeenCalled();
   },
@@ -114,6 +144,7 @@ export const UnblockFailure: Story = {
     await userEvent.click(
       await canvas.findByRole('button', { name: 'Unblock Kenji Ito' }),
     );
+    await confirmUnblock();
     await expect(await canvas.findByRole('alert')).toHaveTextContent(
       "Couldn't unblock this account.",
     );
@@ -147,6 +178,7 @@ export const UnblockFiltered: Story = {
     await userEvent.click(
       await canvas.findByRole('button', { name: 'Unblock Kenji Ito' }),
     );
+    await confirmUnblock();
     await expect(
       await canvas.findByText('No blocked accounts match that search.'),
     ).toBeInTheDocument();
