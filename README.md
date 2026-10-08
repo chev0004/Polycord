@@ -100,9 +100,10 @@ same header to server-rendered responses on `polycord.chev.dev`. Leave
 the sitemap stays empty.
 
 `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` selects the Discovery loading experience.
-`true` shows the skeleton and the early usable controls. `false` or unset shows only
-the loading bar until the completed interface is ready. It is inlined at build time,
-so rebuild and redeploy after changing it.
+`true` serves the static Discovery shell with the skeleton and the early usable
+controls. `false` or unset server-renders the complete page, so the browser shows
+nothing until it is ready and navigation keeps the previous page under the loading
+bar. It is inlined at build time, so rebuild and redeploy after changing it.
 
 ## Operations
 
