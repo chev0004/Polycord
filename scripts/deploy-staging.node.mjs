@@ -28,6 +28,7 @@ beforeEach(async () => {
     GITHUB_ACTIONS: 'false',
     GITHUB_STEP_SUMMARY: '',
     NETLIFY_AUTH_TOKEN: 'synthetic-token',
+    DATABASE_URL: 'postgresql://synthetic/actions',
   };
   process.chdir(await mkdtemp(join(tmpdir(), 'polycord-deploy-')));
   await mkdir('.netlify/static/_next/static', { recursive: true });
@@ -79,7 +80,7 @@ function run(command, args, options) {
   if (args[0] === 'ls-remote') stdout = `${head}\trefs/heads/develop\n`;
   if (args[1] === 'env:list')
     stdout = JSON.stringify({
-      DATABASE_URL: 'postgresql://synthetic/fixture',
+      DATABASE_URL: '****************uire',
       AUTH_SECRET: 'synthetic-secret',
       NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED: 'false',
     });
@@ -171,6 +172,7 @@ test('manual deployment rebuilds from current provider variables and uploads wit
   await deployStaging(run, request);
   const build = calls.find(({ args }) => args?.[1] === 'build');
   assert.equal(build.env.AUTH_SECRET, 'synthetic-secret');
+  assert.equal(build.env.DATABASE_URL, 'postgresql://synthetic/actions');
   assert.equal(build.env.NETLIFY_SITE_ID, siteId);
   assert.ok(build.args.includes('--offline'));
   const upload = calls.find(({ args }) => args?.[1] === 'deploy');
