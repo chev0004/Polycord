@@ -47,6 +47,7 @@ type ProfileGridProps = {
   onBlock?: (profileId: string) => void | Promise<void>;
   onShare?: (profileId: string) => void;
   onModerate?: (profileId: string, trigger: HTMLElement | null) => void;
+  onModerateIntent?: (profileId: string) => void;
   addToast?: (toast: Omit<ToastData, 'id'>) => void;
 };
 
@@ -97,6 +98,7 @@ export const ProfileGrid = ({
   onBlock,
   onShare,
   onModerate,
+  onModerateIntent,
   addToast: externalAddToast,
 }: ProfileGridProps) => {
   const t = useTranslations('Discovery');
@@ -248,6 +250,7 @@ export const ProfileGrid = ({
         onBlock={isOwnProfile || !onBlock ? undefined : handleBlock}
         onShare={onShare}
         onModerate={isOwnProfile ? undefined : onModerate}
+        onModerateIntent={isOwnProfile ? undefined : onModerateIntent}
       />
     );
   };

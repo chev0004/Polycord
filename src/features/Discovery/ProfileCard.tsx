@@ -116,6 +116,7 @@ type ProfileCardProps = {
   onBlock?: (profileId: string) => void | Promise<void>;
   onShare?: (profileId: string) => void;
   onModerate?: (profileId: string, trigger: HTMLElement | null) => void;
+  onModerateIntent?: (profileId: string) => void;
   onToggleSave?: (profileId: string) => void;
 };
 
@@ -160,6 +161,7 @@ export const ProfileCard = ({
   onBlock,
   onShare,
   onModerate,
+  onModerateIntent,
   onToggleSave,
 }: ProfileCardProps) => {
   const t = useTranslations('Discovery');
@@ -299,6 +301,10 @@ export const ProfileCard = ({
     }
   };
 
+  const moderateIntent = onModerateIntent
+    ? () => onModerateIntent(profile.id)
+    : undefined;
+
   const menuItems: ActionSheetItem[] = [
     onViewProfile && {
       key: 'view',
@@ -339,6 +345,7 @@ export const ProfileCard = ({
           icon: MdOutlineShield,
           label: t('moderateProfile'),
           onSelect: () => onModerate(profile.id, menuTrigger.current),
+          onPointerDown: () => onModerateIntent?.(profile.id),
         }
       : undefined,
   ].filter((item) => item !== undefined);
@@ -459,6 +466,7 @@ export const ProfileCard = ({
                 <>
                   <button
                     type="button"
+                    onPointerDown={moderateIntent}
                     onClick={() => setIsMenuOpen(true)}
                     className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50"
                     aria-label={t('cardMenu')}
@@ -490,6 +498,11 @@ export const ProfileCard = ({
                     <button
                       ref={menuTrigger}
                       type="button"
+                      onPointerDown={moderateIntent}
+                      onKeyDown={(event) => {
+                        if (['Enter', ' ', 'ArrowDown'].includes(event.key))
+                          moderateIntent?.();
+                      }}
                       suppressHydrationWarning
                       className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground focus-visible:bg-black/50"
                       aria-label={t('cardMenu')}
@@ -508,7 +521,14 @@ export const ProfileCard = ({
                       <div className="flex flex-col">
                         {menuItems.map(
                           (
-                            { key, icon: Icon, label, danger, onSelect },
+                            {
+                              key,
+                              icon: Icon,
+                              label,
+                              danger,
+                              onSelect,
+                              onPointerDown,
+                            },
                             index,
                           ) => (
                             <Fragment key={key}>
@@ -518,6 +538,7 @@ export const ProfileCard = ({
                               ) : null}
                               <button
                                 type="button"
+                                onPointerDown={onPointerDown}
                                 onClick={() => {
                                   onSelect();
                                   setIsMenuOpen(false);

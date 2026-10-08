@@ -247,6 +247,7 @@ type SheetRowProps = {
   pressed?: boolean;
   children?: ReactNode;
   onClick: () => void;
+  onPointerDown?: () => void;
 };
 
 export const SheetRow = ({
@@ -261,10 +262,12 @@ export const SheetRow = ({
   pressed,
   children,
   onClick,
+  onPointerDown,
 }: SheetRowProps) => (
   <button
     type="button"
     onClick={onClick}
+    onPointerDown={onPointerDown}
     disabled={disabled}
     aria-pressed={pressed}
     className={`relative flex min-h-14 w-full items-center gap-3.5 px-4 py-2.5 text-left text-[15px] transition-colors duration-150 before:absolute before:top-0 before:right-0 before:h-px before:bg-line first:before:hidden hover:bg-overlay focus-visible:bg-overlay active:bg-overlay disabled:opacity-50 ${
@@ -317,6 +320,7 @@ export type ActionSheetItem = {
   disabled?: boolean;
   selected?: boolean;
   onSelect: () => void;
+  onPointerDown?: () => void;
 };
 
 type ActionSheetProps = {
