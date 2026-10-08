@@ -24,29 +24,41 @@ test('a ninth discovery tag is disabled and never reaches the url', async ({
         .map((tag) => `tag=${tag}`)
         .join('&')}`,
     );
-    const option = (tag: string) =>
+    const selectedOption = (tag: string) =>
       page.getByRole('button', { name: new RegExp(`^${tag} [(][0-9]+[)]$`) });
-    await expect(option(tags[8])).toBeDisabled();
-    await expect(option(tags[0])).toBeEnabled();
+    const unselected = page
+      .getByRole('button', { name: /[(][0-9]+[)]$/, pressed: false })
+      .first();
+    await expect(unselected).toBeDisabled();
+    const [, ninth, count] =
+      (await unselected.innerText()).trim().match(/^(.*?)\s*[(]([0-9]+)[)]$/) ??
+      [];
+    const option = (name: string) =>
+      page.getByRole('button', { name: `${name} (${count})`, exact: true });
+
+    await expect(option(ninth)).toBeDisabled();
+    await expect(selectedOption(tags[0])).toBeEnabled();
     await expect(page.getByText('Maximum of 8 tags selected')).toBeVisible();
 
     const before = page.url();
     const history = await page.evaluate(() => window.history.length);
-    await option(tags[8]).click({ force: true });
-    await option(tags[8])
+    await option(ninth).click({ force: true });
+    await option(ninth)
       .focus()
       .catch(() => {});
     await page.keyboard.press('Enter');
     await page.waitForTimeout(500);
     expect(page.url()).toBe(before);
     expect(await page.evaluate(() => window.history.length)).toBe(history);
-    await expect(option(tags[8])).toHaveAttribute('aria-pressed', 'false');
+    await expect(option(ninth)).toHaveAttribute('aria-pressed', 'false');
 
-    await option(tags[0]).click();
-    await expect(option(tags[8])).toBeEnabled();
-    await option(tags[8]).click();
-    await expect(option(tags[8])).toHaveAttribute('aria-pressed', 'true');
-    await expect(page).toHaveURL(new RegExp(`tag=${tags[8]}`));
+    await selectedOption(tags[0]).click();
+    await expect(option(ninth)).toBeEnabled();
+    await option(ninth).click();
+    await expect(option(ninth)).toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .poll(() => new URL(page.url()).searchParams.getAll('tag'))
+      .toContain(ninth);
   } finally {
     await sql`delete from users where id in ${sql(ids)}`;
     await sql.end();
