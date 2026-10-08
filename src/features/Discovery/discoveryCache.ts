@@ -36,6 +36,7 @@ export const discoveryCache = {
         profiles: data.profiles.filter((profile) => profile.id !== profileId),
       });
   },
+  invalidate: () => entries.clear(),
   clear: () => {
     entries.clear();
     viewer = null;
