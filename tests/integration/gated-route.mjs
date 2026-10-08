@@ -49,6 +49,7 @@ const { AUTH_BAN_COOKIE, createBanCookieValue } = await import(
 const { GET: voice } = await import(
   '../../src/app/api/voice/[profileId]/route'
 );
+const { GET: voices } = await import('../../src/app/api/voice/route');
 const { GET: adminCase } = await import('../../src/app/api/admin/case/route');
 const { GET: bootstrap } = await import(
   '../../src/app/api/discovery/bootstrap/route'
@@ -68,6 +69,7 @@ const routes = [
     '/api/voice/profile',
     (r) => voice(r, { params: Promise.resolve({ profileId: 'profile' }) }),
   ],
+  ['/api/voice?ids=profile', voices],
   ['/api/admin/case?profileId=profile', adminCase],
   ['/api/discovery/bootstrap', bootstrap],
 ];
@@ -135,6 +137,7 @@ for (const file of walk(apiRoot)) {
     `${path} skips the middleware ban gate without the shared wrapper`,
   );
 }
+assert.ok(skipped.includes('/api/voice'));
 assert.ok(skipped.includes('/api/voice/segment'));
 assert.ok(skipped.includes('/api/admin/case'));
 assert.ok(skipped.includes('/api/discovery/bootstrap'));
