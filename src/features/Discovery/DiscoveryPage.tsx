@@ -892,18 +892,11 @@ export const DiscoveryPage = ({
       refreshDiscovery();
       addToast({
         title: t('blockSuccessTitle'),
-        description: (
-          <span className="flex items-center gap-2">
-            {t('blockSuccessDescription')}
-            <button
-              type="button"
-              onClick={() => handleUndoBlock(profileId, blocked, index)}
-              className="font-semibold text-primary underline-offset-2 hover:underline"
-            >
-              {t('blockUndo')}
-            </button>
-          </span>
-        ),
+        description: t('blockSuccessDescription'),
+        action: {
+          label: t('blockUndo'),
+          onClick: () => handleUndoBlock(profileId, blocked, index),
+        },
         duration: BUMP_TOAST_DURATION,
       });
     } catch {
