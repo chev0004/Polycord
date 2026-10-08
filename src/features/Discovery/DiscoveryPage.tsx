@@ -136,7 +136,6 @@ type DiscoveryPageProps = {
   staff?: { meId: string; role: StaffRole };
   onBumpProfile?: () => Promise<BumpProfileResponse>;
   onViewer?: (viewer: DiscoveryViewer) => void;
-  onLoaded?: () => void;
 };
 
 const BUMP_TOAST_DURATION = 4000;
@@ -211,7 +210,6 @@ export const DiscoveryPage = ({
   staff,
   onBumpProfile,
   onViewer,
-  onLoaded,
 }: DiscoveryPageProps) => {
   const router = useRouteProgressRouter();
   const { navigate } = useRouteProgress();
@@ -997,10 +995,6 @@ export const DiscoveryPage = ({
     requestUrl,
     refreshFailed,
   ]);
-
-  useLayoutEffect(() => {
-    if (!showSkeleton) onLoaded?.();
-  }, [showSkeleton, onLoaded]);
 
   const initialSettle = useRef<(() => void) | null>(null);
   useEffect(() => {

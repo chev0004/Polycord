@@ -5,6 +5,7 @@ const { build } = require('esbuild');
 
 module.exports = {
   async onBuild({ constants }) {
+    if (process.env.NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED !== 'true') return;
     const manifest = JSON.parse(
       await readFile(
         join(constants.PUBLISH_DIR, 'prerender-manifest.json'),

@@ -12,7 +12,6 @@ import {
   useTransition,
 } from 'react';
 import { type CardTheme, isValidHex } from '@/features/Discovery/cardTheme';
-import { recordDestination } from '@/features/Discovery/discoveryHold';
 import {
   beginInteractionLoad,
   beginPageNavigation,
@@ -138,23 +137,6 @@ export const RouteProgressProvider = ({
 
   useEffect(() => clearTimers, [clearTimers]);
 
-  useEffect(() => {
-    const click = (event: MouseEvent) => {
-      const link =
-        event.button === 0 && !event.metaKey && !event.ctrlKey
-          ? (event.target as Element).closest('a[href]')
-          : null;
-      recordDestination(link instanceof HTMLAnchorElement ? link.href : null);
-    };
-    const popstate = () => recordDestination(null);
-    document.addEventListener('click', click, true);
-    window.addEventListener('popstate', popstate);
-    return () => {
-      document.removeEventListener('click', click, true);
-      window.removeEventListener('popstate', popstate);
-    };
-  }, []);
-
   const value = useMemo(() => ({ start, navigate }), [start, navigate]);
 
   return (
@@ -206,7 +188,6 @@ export const useRouteProgressRouter = () => {
         cancelPageNavigation();
         return;
       }
-      recordDestination(href);
       if (shouldStartProgress(href)) {
         beginPageNavigation(href);
         navigate(() => router.push(href));
@@ -228,7 +209,6 @@ export const useRouteProgressRouter = () => {
         cancelPageNavigation();
         return;
       }
-      recordDestination(href);
       if (shouldStartProgress(href)) {
         beginPageNavigation(href);
         navigate(() => router.replace(href));

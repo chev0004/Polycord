@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { expect, type Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import postgres from 'postgres';
 
 test.skip(
@@ -27,40 +27,33 @@ test.afterAll(async () => {
   await sql.end();
 });
 
-const gateBootstrap = async (page: Page) => {
-  const gate = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  await page.route('**/api/discovery/bootstrap?*', async (route) => {
-    await gate;
-    await route.continue().catch(() => {});
-  });
-};
-
 test.afterEach(async ({ page }) => {
   release();
   releaseFilter();
   await page.unrouteAll({ behavior: 'wait' });
 });
 
-test('a fresh load paints nothing until discovery is ready', async ({
+test('the first response already holds the finished discovery page', async ({
   page,
+  request,
 }) => {
-  const bar = page.locator('div.fixed.top-0.h-1');
-  await gateBootstrap(page);
-  await page.goto(`/en?tag=${prefix}`, { waitUntil: 'commit' });
-  await expect(bar).toHaveClass(/opacity-100/);
-  await expect(page.locator('main .skeleton-shimmer')).toHaveCount(0);
-  await expect(page.locator('article')).toHaveCount(0);
-  await expect(page.getByRole('textbox')).toHaveCount(0);
-  await expect(page.locator('footer')).toBeHidden();
-  await expect(page.getByRole('navigation')).toBeHidden();
-  release();
+  const html = await (await request.get(`/en?tag=${prefix}`)).text();
+  expect(html).toContain(`${prefix} Bar 01`);
+  expect(html).not.toContain('skeleton-shimmer');
+  const bootstraps: string[] = [];
+  page.on('request', (req) => {
+    if (req.url().includes('/api/discovery')) bootstraps.push(req.url());
+  });
+  await page.goto(`/en?tag=${prefix}`);
   await expect(page.locator('article')).toHaveCount(4);
   await expect(page.getByRole('textbox').first()).toBeVisible();
-  await expect(page.locator('footer')).toBeVisible();
-  await expect(bar).toHaveClass(/opacity-0/);
+  expect(bootstraps).toEqual([]);
+});
 
+test('filters keep the results and use the progress bar', async ({ page }) => {
+  const bar = page.locator('div.fixed.top-0.h-1');
+  await page.goto(`/en?tag=${prefix}`);
+  await expect(page.locator('article')).toHaveCount(4);
   const filterGate = new Promise<void>((resolve) => {
     releaseFilter = resolve;
   });
@@ -80,15 +73,26 @@ test('a fresh load paints nothing until discovery is ready', async ({
 test('navigating into discovery keeps the previous page until it is ready', async ({
   page,
 }) => {
+  const bar = page.locator('div.fixed.top-0.h-1');
   await page.goto('/en/legal');
   const legalHeading = page.getByRole('heading', { level: 1 });
   await expect(legalHeading).toBeVisible();
   const heading = await legalHeading.innerText();
-  await gateBootstrap(page);
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route(
+    (url) => url.pathname === '/en' && url.searchParams.has('_rsc'),
+    async (route) => {
+      await gate;
+      await route.continue().catch(() => {});
+    },
+  );
   await page
     .getByRole('contentinfo')
     .getByRole('link', { name: 'Discovery' })
     .click();
+  await expect(bar).toHaveClass(/opacity-100/);
   await page.waitForTimeout(1000);
   await expect(page).toHaveURL(/\/en\/legal$/);
   await expect(page.getByRole('heading', { name: heading })).toBeVisible();
@@ -97,4 +101,5 @@ test('navigating into discovery keeps the previous page until it is ready', asyn
   await expect(page).toHaveURL(/\/en$/);
   await expect(page.locator('article').first()).toBeVisible();
   await expect(page.locator('footer')).toBeVisible();
+  await expect(bar).toHaveClass(/opacity-0/);
 });
