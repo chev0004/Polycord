@@ -7,6 +7,7 @@ import {
   Fragment,
   type ReactNode,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -19,6 +20,7 @@ import {
   MdFlag,
   MdLink,
   MdMoreHoriz,
+  MdOutlineShield,
   MdWorkspacePremium,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
@@ -74,6 +76,7 @@ type ProfileDetailProps = {
   onToggleSave?: () => void;
   onReport?: () => void;
   onBlock?: () => void;
+  onModerate?: (trigger: HTMLElement | null) => void;
   onEdit?: () => void;
   onSignIn?: () => void;
   onTagClick: (tag: string) => void;
@@ -307,6 +310,7 @@ export const ProfileDetail = ({
   onToggleSave,
   onReport,
   onBlock,
+  onModerate,
   onEdit,
   onSignIn,
   onTagClick,
@@ -323,6 +327,7 @@ export const ProfileDetail = ({
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const theme = profile.cardTheme ?? getFreeCardTheme(2);
   const tinted = Boolean(profile.premium && theme.tint);
   const canCopy = isLoggedIn || profile.allowAnonymousCopy !== false;
@@ -379,6 +384,12 @@ export const ProfileDetail = ({
       danger: true,
       onSelect: onBlock,
     },
+    onModerate && {
+      key: 'moderate',
+      icon: MdOutlineShield,
+      label: tDiscovery('moderateProfile'),
+      onSelect: () => onModerate(menuTriggerRef.current),
+    },
   ].filter((item) => item !== undefined);
 
   const bumpPill = (className: string) =>
@@ -394,6 +405,7 @@ export const ProfileDetail = ({
 
   const menuTrigger = (
     <button
+      ref={menuTriggerRef}
       type="button"
       onClick={mobile ? () => setMenuOpen(true) : undefined}
       aria-label={t('moreActions')}
