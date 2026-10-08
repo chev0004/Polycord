@@ -35,8 +35,7 @@ export const AccountPicker = ({
     'idle',
   );
   const { searchPage, usersById } = store;
-  const currentQuery = useRef('');
-  currentQuery.current = query.trim();
+  const searchGeneration = useRef(0);
   const selected = value ? usersById.get(value) : undefined;
   const candidates = matches.flatMap((id) => {
     const user = usersById.get(id);
@@ -48,6 +47,7 @@ export const AccountPicker = ({
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt re-runs the search on retry
   useEffect(() => {
     const trimmed = query.trim();
+    searchGeneration.current += 1;
     setHasMore(false);
     setMoreStatus('idle');
     if (!trimmed || value) {
@@ -76,11 +76,11 @@ export const AccountPicker = ({
   }, [query, value, searchPage, attempt]);
 
   const loadMore = () => {
-    const requested = currentQuery.current;
+    const generation = searchGeneration.current;
     setMoreStatus('loading');
-    searchPage(requested, matches.length)
+    searchPage(query.trim(), matches.length)
       .then(({ ids, hasMore: more }) => {
-        if (currentQuery.current !== requested) return;
+        if (searchGeneration.current !== generation) return;
         setMatches((previous) => [
           ...previous,
           ...ids.filter((id) => !previous.includes(id)),
@@ -89,7 +89,7 @@ export const AccountPicker = ({
         setMoreStatus('idle');
       })
       .catch(
-        () => currentQuery.current === requested && setMoreStatus('error'),
+        () => searchGeneration.current === generation && setMoreStatus('error'),
       );
   };
 
