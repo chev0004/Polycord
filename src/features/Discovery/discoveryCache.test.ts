@@ -29,4 +29,14 @@ describe('discoveryCache', () => {
     expect(discoveryCache.get('/a')?.total).toBe(1);
     expect(discoveryCache.get('/b')?.total).toBe(2);
   });
+
+  test('drops cached pages and ignores requests started before invalidation', () => {
+    const cached = discoveryCache.begin('/a');
+    discoveryCache.set('/a', snapshot(1), cached);
+    const inFlight = discoveryCache.begin('/b');
+    discoveryCache.invalidate();
+    discoveryCache.set('/b', snapshot(2), inFlight);
+    expect(discoveryCache.get('/a')).toBeUndefined();
+    expect(discoveryCache.get('/b')).toBeUndefined();
+  });
 });
