@@ -51,5 +51,8 @@ export const blockProfileRequest = async (
   if (nextBlocked) {
     blockedProfileIds.add(profileId);
     discoveryCache.removeProfile(profileId);
-  } else blockedProfileIds.delete(profileId);
+  } else {
+    blockedProfileIds.delete(profileId);
+    discoveryCache.invalidate();
+  }
 };
