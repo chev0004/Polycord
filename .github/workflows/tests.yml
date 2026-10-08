@@ -35,6 +35,9 @@ jobs:
       - run: bun run playwright install --with-deps chromium
         timeout-minutes: 8
       - run: bun run test:e2e
+      - run: bun run test:e2e e2e/discovery-bar-only.pw.ts
+        env:
+          NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED: 'false'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

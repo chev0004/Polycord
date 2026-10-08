@@ -13,6 +13,10 @@ const config: StorybookConfig = {
     '@chromatic-com/storybook',
     '@storybook/addon-interactions',
   ],
+  env: (config) => ({
+    ...config,
+    NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED: 'true',
+  }),
   framework: {
     name: '@storybook/nextjs',
     options: {},

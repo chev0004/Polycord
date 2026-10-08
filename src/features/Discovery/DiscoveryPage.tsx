@@ -79,6 +79,7 @@ import {
 } from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl } from './shareProfile';
+import { DISCOVERY_SKELETON_ENABLED } from './skeletonSetting';
 import { type AppliedFilter, TagCloud } from './TagCloud';
 import { useProfileBump } from './useProfileBump';
 
@@ -88,7 +89,7 @@ const ProfileGrid = dynamic(
     return import('./ProfileGrid').then((module) => module.ProfileGrid);
   },
   {
-    loading: ProfileGridSkeleton,
+    loading: DISCOVERY_SKELETON_ENABLED ? ProfileGridSkeleton : () => null,
   },
 );
 const MobileTakeAction = dynamic(() =>
@@ -231,6 +232,7 @@ export const DiscoveryPage = ({
     [viewerHasAvailability],
   );
   const settleRequest = useRef<(() => void) | null>(null);
+  const barSettle = useRef<(() => void) | null>(null);
   const [awaitingResults, setAwaitingResults] = useState(false);
   const [initialState] = useState(() =>
     parseDiscoveryState(new URLSearchParams()),
@@ -438,6 +440,19 @@ export const DiscoveryPage = ({
       requestRef.current?.abort();
       const controller = new AbortController();
       requestRef.current = controller;
+      if (
+        !DISCOVERY_SKELETON_ENABLED &&
+        trigger &&
+        hasLoaded.current &&
+        !settleRequest.current &&
+        !barSettle.current
+      )
+        navigate(
+          () =>
+            new Promise<void>((resolve) => {
+              barSettle.current = resolve;
+            }),
+        );
       setIsRefreshing(true);
       setRefreshFailed(false);
       try {
@@ -472,10 +487,14 @@ export const DiscoveryPage = ({
         if (!controller.signal.aborted) setRefreshFailed(true);
       } finally {
         if (!controller.signal.aborted) setIsRefreshing(false);
-        if (requestRef.current === controller) requestRef.current = null;
+        if (requestRef.current === controller) {
+          requestRef.current = null;
+          barSettle.current?.();
+          barSettle.current = null;
+        }
       }
     },
-    [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer],
+    [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer, navigate],
   );
 
   const countResults = useCallback(
@@ -613,7 +632,7 @@ export const DiscoveryPage = ({
     urlQuery,
   ]);
 
-  const showSkeleton = isLoading || (remote && !remoteData && !refreshFailed);
+  const showSkeleton = (isLoading || (remote && !remoteData)) && !refreshFailed;
   useEffect(() => {
     if (urlQuery !== null && mobile !== null) markControlsReady();
   }, [urlQuery, mobile]);
@@ -944,7 +963,31 @@ export const DiscoveryPage = ({
     refreshFailed,
   ]);
 
-  useEffect(() => () => settleRequest.current?.(), []);
+  const initialSettle = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (DISCOVERY_SKELETON_ENABLED || !showSkeleton || initialSettle.current)
+      return;
+    navigate(
+      () =>
+        new Promise<void>((resolve) => {
+          initialSettle.current = resolve;
+        }),
+    );
+  }, [showSkeleton, navigate]);
+  useEffect(() => {
+    if (showSkeleton) return;
+    initialSettle.current?.();
+    initialSettle.current = null;
+  }, [showSkeleton]);
+
+  useEffect(
+    () => () => {
+      settleRequest.current?.();
+      initialSettle.current?.();
+      barSettle.current?.();
+    },
+    [],
+  );
 
   useProfileBump({
     profileId: currentProfileId,
@@ -969,6 +1012,14 @@ export const DiscoveryPage = ({
         );
     },
   });
+
+  if (!DISCOVERY_SKELETON_ENABLED && showSkeleton)
+    return (
+      <>
+        <UrlObserver onChange={receiveQuery} />
+        <output className="sr-only">{t('resultsSearching')}</output>
+      </>
+    );
 
   return (
     <>
@@ -1098,7 +1149,8 @@ export const DiscoveryPage = ({
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
               >
-                {showSkeleton || (isRefreshing && !awaitingResults)
+                {DISCOVERY_SKELETON_ENABLED &&
+                (showSkeleton || (isRefreshing && !awaitingResults))
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}
               </span>
