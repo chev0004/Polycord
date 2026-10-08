@@ -79,6 +79,7 @@ import {
 } from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl } from './shareProfile';
+import { DISCOVERY_SKELETON_ENABLED } from './skeletonSetting';
 import { type AppliedFilter, TagCloud } from './TagCloud';
 import { useProfileBump } from './useProfileBump';
 
@@ -88,7 +89,7 @@ const ProfileGrid = dynamic(
     return import('./ProfileGrid').then((module) => module.ProfileGrid);
   },
   {
-    loading: ProfileGridSkeleton,
+    loading: DISCOVERY_SKELETON_ENABLED ? ProfileGridSkeleton : () => null,
   },
 );
 const MobileTakeAction = dynamic(() =>
@@ -231,6 +232,7 @@ export const DiscoveryPage = ({
     [viewerHasAvailability],
   );
   const settleRequest = useRef<(() => void) | null>(null);
+  const barSettle = useRef<(() => void) | null>(null);
   const [awaitingResults, setAwaitingResults] = useState(false);
   const [initialState] = useState(() =>
     parseDiscoveryState(new URLSearchParams()),
@@ -432,47 +434,67 @@ export const DiscoveryPage = ({
   const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
   const [loadedUrl, setLoadedUrl] = useState(requestUrl);
 
-  const refreshDiscovery = useCallback(async () => {
-    if (!remote || urlQuery === null || mobile === null) return;
-    requestRef.current?.abort();
-    const controller = new AbortController();
-    requestRef.current = controller;
-    setIsRefreshing(true);
-    setRefreshFailed(false);
-    try {
-      let data: DiscoveryData;
-      if (fetchOnMount && !hasLoaded.current) {
-        const bootstrap = await traceDiscoveryRequest<{
-          viewer: DiscoveryViewer;
-          data: DiscoveryData;
-        }>(
-          'bootstrap',
-          requestUrl.replace('/api/discovery?', '/api/discovery/bootstrap?'),
-          controller.signal,
+  const refreshDiscovery = useCallback(
+    async (interactive = false) => {
+      if (!remote || urlQuery === null || mobile === null) return;
+      requestRef.current?.abort();
+      const controller = new AbortController();
+      requestRef.current = controller;
+      if (
+        !DISCOVERY_SKELETON_ENABLED &&
+        interactive &&
+        hasLoaded.current &&
+        !settleRequest.current &&
+        !barSettle.current
+      )
+        navigate(
+          () =>
+            new Promise<void>((resolve) => {
+              barSettle.current = resolve;
+            }),
         );
-        if (controller.signal.aborted) return;
-        onViewer?.(bootstrap.viewer);
-        data = bootstrap.data;
-      } else {
-        data = await traceDiscoveryRequest<DiscoveryData>(
-          'discovery',
-          requestUrl,
-          controller.signal,
-        );
-        if (controller.signal.aborted) return;
+      setIsRefreshing(true);
+      setRefreshFailed(false);
+      try {
+        let data: DiscoveryData;
+        if (fetchOnMount && !hasLoaded.current) {
+          const bootstrap = await traceDiscoveryRequest<{
+            viewer: DiscoveryViewer;
+            data: DiscoveryData;
+          }>(
+            'bootstrap',
+            requestUrl.replace('/api/discovery?', '/api/discovery/bootstrap?'),
+            controller.signal,
+          );
+          if (controller.signal.aborted) return;
+          onViewer?.(bootstrap.viewer);
+          data = bootstrap.data;
+        } else {
+          data = await traceDiscoveryRequest<DiscoveryData>(
+            'discovery',
+            requestUrl,
+            controller.signal,
+          );
+          if (controller.signal.aborted) return;
+        }
+        hasLoaded.current = true;
+        setRemoteData(data);
+        setProfileItems(withoutBlocked(data.profiles));
+        setPage(data.page);
+        setLoadedUrl(requestUrl);
+      } catch {
+        if (!controller.signal.aborted) setRefreshFailed(true);
+      } finally {
+        if (!controller.signal.aborted) setIsRefreshing(false);
+        if (requestRef.current === controller) {
+          requestRef.current = null;
+          barSettle.current?.();
+          barSettle.current = null;
+        }
       }
-      hasLoaded.current = true;
-      setRemoteData(data);
-      setProfileItems(withoutBlocked(data.profiles));
-      setPage(data.page);
-      setLoadedUrl(requestUrl);
-    } catch {
-      if (!controller.signal.aborted) setRefreshFailed(true);
-    } finally {
-      if (!controller.signal.aborted) setIsRefreshing(false);
-      if (requestRef.current === controller) requestRef.current = null;
-    }
-  }, [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer]);
+    },
+    [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer, navigate],
+  );
 
   const countResults = useCallback(
     async (draft: FilterDraft, signal: AbortSignal) => {
@@ -508,8 +530,9 @@ export const DiscoveryPage = ({
     )
       return;
     const refresh = refreshDiscovery;
+    const profilesChanged = () => refresh(true);
     if (skipInitialRefresh.current) skipInitialRefresh.current = false;
-    else refresh();
+    else refresh(true);
     const focus = () => {
       if (!requestRef.current) void refresh();
     };
@@ -518,12 +541,12 @@ export const DiscoveryPage = ({
     };
     window.addEventListener('focus', focus);
     window.addEventListener('pageshow', restored);
-    window.addEventListener('polycord:profiles-changed', refresh);
+    window.addEventListener('polycord:profiles-changed', profilesChanged);
     return () => {
       requestRef.current?.abort();
       window.removeEventListener('focus', focus);
       window.removeEventListener('pageshow', restored);
-      window.removeEventListener('polycord:profiles-changed', refresh);
+      window.removeEventListener('polycord:profiles-changed', profilesChanged);
     };
   }, [
     refreshDiscovery,
@@ -946,7 +969,31 @@ export const DiscoveryPage = ({
     refreshFailed,
   ]);
 
-  useEffect(() => () => settleRequest.current?.(), []);
+  const initialSettle = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (DISCOVERY_SKELETON_ENABLED || !showSkeleton || initialSettle.current)
+      return;
+    navigate(
+      () =>
+        new Promise<void>((resolve) => {
+          initialSettle.current = resolve;
+        }),
+    );
+  }, [showSkeleton, navigate]);
+  useEffect(() => {
+    if (showSkeleton) return;
+    initialSettle.current?.();
+    initialSettle.current = null;
+  }, [showSkeleton]);
+
+  useEffect(
+    () => () => {
+      settleRequest.current?.();
+      initialSettle.current?.();
+      barSettle.current?.();
+    },
+    [],
+  );
 
   useProfileBump({
     profileId: currentProfileId,
@@ -971,6 +1018,14 @@ export const DiscoveryPage = ({
         );
     },
   });
+
+  if (!DISCOVERY_SKELETON_ENABLED && showSkeleton)
+    return (
+      <>
+        <UrlObserver onChange={receiveQuery} />
+        <output className="sr-only">{t('resultsSearching')}</output>
+      </>
+    );
 
   return (
     <>
@@ -1086,7 +1141,7 @@ export const DiscoveryPage = ({
             <button
               type="button"
               className="mt-2 underline hover:text-foreground focus-visible:text-foreground"
-              onClick={refreshDiscovery}
+              onClick={() => refreshDiscovery(true)}
             >
               {t('retryFeed')}
             </button>
@@ -1100,7 +1155,8 @@ export const DiscoveryPage = ({
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
               >
-                {showSkeleton || (isRefreshing && !awaitingResults)
+                {DISCOVERY_SKELETON_ENABLED &&
+                (showSkeleton || (isRefreshing && !awaitingResults))
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}
               </span>
