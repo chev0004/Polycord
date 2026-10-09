@@ -1156,7 +1156,8 @@
     "legalHeading": "Legal",
     "languageHeading": "Language",
     "copyright": "© {year} Polycord. All rights reserved.",
-    "notAffiliated": "Polycord is not affiliated with Discord Inc."
+    "notAffiliated": "Polycord is not affiliated with Discord Inc.",
+    "joinDiscord": "Join Discord Server"
   },
   "Legal": {
     "eyebrow": "Legal",
