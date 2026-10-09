@@ -11,8 +11,6 @@ export const WARNING_CATEGORIES = [
 
 export type WarningCategory = (typeof WARNING_CATEGORIES)[number];
 
-export const NOTICE_CATEGORIES: readonly WarningCategory[] = ['harassment'];
-
 export type Notification = {
   id: string;
   kind: NotificationKind;
@@ -29,17 +27,9 @@ export type Notification = {
 
 export type Notifications = Notification[];
 
-export const hasNotice = ({
-  kind,
-  warningCategory,
-}: Pick<Notification, 'kind' | 'warningCategory'>) =>
-  kind === 'warning' &&
-  warningCategory !== undefined &&
-  NOTICE_CATEGORIES.includes(warningCategory);
+export const hasNotice = ({ kind }: Pick<Notification, 'kind'>) =>
+  kind === 'warning';
 
 export const isNoticePending = (
-  notification: Pick<
-    Notification,
-    'kind' | 'warningCategory' | 'acknowledgedAt'
-  >,
+  notification: Pick<Notification, 'kind' | 'acknowledgedAt'>,
 ) => hasNotice(notification) && notification.acknowledgedAt === undefined;

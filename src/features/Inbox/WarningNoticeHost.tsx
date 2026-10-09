@@ -28,6 +28,8 @@ export const WarningNoticeHost = ({
       <WarningNotice
         key={shown?.id}
         open={enabled && shown !== undefined}
+        category={shown?.warningCategory}
+        message={shown?.message}
         acknowledged={shown?.acknowledgedAt !== undefined}
         busy={inbox.pending}
         onAcknowledge={() => {

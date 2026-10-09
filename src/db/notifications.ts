@@ -13,7 +13,6 @@ import {
   sql,
 } from 'drizzle-orm';
 import { sendPushForNotification } from '@/lib/push/server';
-import { NOTICE_CATEGORIES } from '@/types';
 import { db } from './client';
 import {
   type NewNotificationRecord,
@@ -24,7 +23,7 @@ import {
 } from './schema';
 import { getUserSettingsByUserId } from './settings';
 
-const noticePending = sql`(${notifications.kind} = 'warning' and ${notifications.warningCategory} is not null and ${notifications.warningCategory} in ${NOTICE_CATEGORIES} and ${notifications.acknowledgedAt} is null)`;
+const noticePending = sql`(${notifications.kind} = 'warning' and ${notifications.acknowledgedAt} is null)`;
 
 export const listNotificationsForUser = async (userId: string) =>
   db
