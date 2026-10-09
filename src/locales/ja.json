@@ -1156,7 +1156,8 @@
     "legalHeading": "法的情報",
     "languageHeading": "言語",
     "copyright": "© {year} Polycord. All rights reserved.",
-    "notAffiliated": "PolycordはDiscord Inc.とは提携・関連していません。"
+    "notAffiliated": "PolycordはDiscord Inc.とは提携・関連していません。",
+    "joinDiscord": "Discordサーバーに参加"
   },
   "Legal": {
     "eyebrow": "法的情報",
