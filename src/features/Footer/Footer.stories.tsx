@@ -26,6 +26,14 @@ type Story = StoryObj<typeof Footer>;
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    await expect(
+      canvas.getByText('Find language exchange partners on Discord.'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByText(
+        "Polycord is for finding language partners. Anything Discord's Terms of Service does not allow has no place here.",
+      ),
+    ).toBeInTheDocument();
     await expect(canvas.queryByRole('link', { name: /join discord/i })).toBe(
       null,
     );
