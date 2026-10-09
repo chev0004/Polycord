@@ -46,6 +46,7 @@ import {
   ReportStack,
   RestrictionChips,
   StaffChip,
+  useEntryNote,
   useLanguageLabels,
   useLogLabel,
   useModFormat,
@@ -783,6 +784,7 @@ const LogTab = ({
   const t = useTranslations('Admin');
   const { absolute, relative } = useModFormat();
   const label = useLogLabel();
+  const entryNote = useEntryNote();
   const rows = pages.rows ?? [];
   const { action = '', staffId = '' } = pages.filters;
 
@@ -860,7 +862,7 @@ const LogTab = ({
               {absolute(entry.createdAt)}
             </time>
             <span className="min-w-0 break-words font-light text-muted">
-              {entry.note ?? <span className="text-subtle">-</span>}
+              {entryNote(entry) ?? <span className="text-subtle">-</span>}
             </span>
           </div>
         ))
