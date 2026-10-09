@@ -332,7 +332,7 @@
     "closePanel": "Close panel",
     "warnDesc": "Sends them a warning message you write.",
     "warnTitle": "Warn {name}",
-    "warnBody": "Pick a preset or write your own. They will read this exact message in their inbox.",
+    "warnBody": "Pick a preset or write your own.",
     "warnReason": "Message",
     "warnCustom": "Custom message",
     "warnPresetSpam": "Spam or advertising",
@@ -341,12 +341,6 @@
     "warnPresetInappropriate": "Inappropriate content",
     "warnPresetImpersonation": "Impersonation",
     "warnPresetPrivacy": "Privacy",
-    "warnTextSpam": "Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.",
-    "warnTextHarassment": "Please stop insulting, harassing, or repeatedly contacting members who do not want contact. Respect their boundaries.",
-    "warnTextHate": "Hate speech, discriminatory abuse, and threats are not allowed. Remove this content and keep interactions respectful.",
-    "warnTextInappropriate": "Please remove sexual or other NSFW content from your profile. Keep your profile appropriate for the community.",
-    "warnTextImpersonation": "Please remove misleading identity claims or content that impersonates someone else. Present yourself honestly.",
-    "warnTextPrivacy": "Please remove personal information shared without consent. Do not pressure members to share private details.",
     "warnPlaceholder": "Write the message they will receive",
     "warnPreview": "What {name} will see",
     "warnPreviewEmpty": "Pick a preset or write a message to preview it.",
@@ -1183,6 +1177,14 @@
     "dockSavedProfiles": "Saved profiles",
     "dockBump": "Bump profile",
     "dockBumpCooldown": "Bump in {time}"
+  },
+  "WarningPresets": {
+    "spam": "After a review of a report, we found that you posted spam or unsolicited advertising. This is covered in the <guidelines>Community Guidelines</guidelines> and makes it harder for people to find real language partners.\n\nPlease keep your profile and your messages relevant to finding language partners, and stop posting promotions.",
+    "harassment": "After a review of a report, we found that you insulted, harassed, or repeatedly contacted members who did not want to be contacted. This is covered in the <guidelines>Community Guidelines</guidelines> and makes Polycord feel unsafe for the people who use it.\n\nPeople come here from many countries and at every level of fluency. Please be patient, respect others' boundaries, and stop contacting anyone who has made it clear they want that.",
+    "hate": "After a review of a report, we found that you shared hate speech, discriminatory abuse, or threats. This is covered in the <guidelines>Community Guidelines</guidelines> and makes Polycord feel unsafe for the people who use it.\n\nPlease remove this content and keep every interaction respectful.",
+    "inappropriate": "After a review of a report, we found sexual or other NSFW content on your profile. This is covered in the <guidelines>Community Guidelines</guidelines> and does not fit a community built for learning languages together.\n\nPlease remove this content and keep your profile appropriate for everyone.",
+    "impersonation": "After a review of a report, we found misleading identity claims or content that impersonates someone else. This is covered in the <guidelines>Community Guidelines</guidelines> and makes it hard for members to trust who they are talking to.\n\nPlease remove this content and present yourself honestly.",
+    "privacy": "After a review of a report, we found personal information shared without consent, or members being pressured to share private details. This is covered in the <guidelines>Community Guidelines</guidelines> and puts the people on Polycord at risk.\n\nPlease remove this information and respect everyone's privacy."
   },
   "WarningNotice": {
     "eyebrow": "Note from moderation",
