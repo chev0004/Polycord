@@ -183,7 +183,7 @@ export const Empty: Story = {
 
 export const FreeModerationWarning: Story = {
   args: {
-    notifications: [{ id: 'warning', kind: 'warning' }],
+    notifications: [{ id: 'warning', kind: 'warning', message: 'Be kind.' }],
     persist: false,
   },
   play: async ({ canvasElement }) => {
@@ -193,50 +193,11 @@ export const FreeModerationWarning: Story = {
       }),
     );
     const portal = within(document.body);
-    await expect(
-      portal.getByText(
-        'You received a warning from the moderation team. Please review our community guidelines.',
-      ),
-    ).toBeInTheDocument();
-    await expect(
-      portal.getByRole('link', { name: 'Review community guidelines' }),
-    ).toHaveAttribute('href', '/en/legal/guidelines');
+    await expect(portal.getByText('Note from moderation')).toBeInTheDocument();
+    await expect(portal.getByText('Read warning')).toBeInTheDocument();
+    await expect(portal.queryByText('Be kind.')).not.toBeInTheDocument();
     await expect(
       portal.queryByText('See who it was with Supporter'),
-    ).not.toBeInTheDocument();
-    await userEvent.click(portal.getByRole('button', { name: 'Mark as read' }));
-    await expect(
-      portal.getByRole('button', { name: 'Mark as unread' }),
-    ).toBeInTheDocument();
-  },
-};
-
-export const ModerationWarningMessage: Story = {
-  args: {
-    notifications: [
-      {
-        id: 'warning',
-        kind: 'warning',
-        message:
-          'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
-      },
-    ],
-    persist: false,
-  },
-  play: async ({ canvasElement }) => {
-    await userEvent.click(
-      await within(canvasElement).findByRole('button', {
-        name: 'Notifications',
-      }),
-    );
-    const portal = within(document.body);
-    await expect(
-      portal.getByText(
-        'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
-      ),
-    ).toBeInTheDocument();
-    await expect(
-      portal.queryByText(/You received a warning from the moderation team/),
     ).not.toBeInTheDocument();
   },
 };
@@ -515,7 +476,7 @@ export const IncomingToastsSupporter: Story = {
       'xhev copied your username',
       'Mina Park shared your profile',
       'Sophie Laurent viewed your profile',
-      'You received a warning from the moderation team. Please review our community guidelines.',
+      'Note from moderation',
     ]) {
       await expect(screen.getByText(message)).toBeInTheDocument();
     }

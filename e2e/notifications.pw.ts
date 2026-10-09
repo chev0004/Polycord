@@ -17,7 +17,7 @@ const fixture = async (context: BrowserContext) => {
            (now(),${actor.id}, true, 'ja', 'en', 'beginner', 'An isolated inbox actor profile.')
     returning id, user_id`;
   await sql`insert into user_settings (user_id, profile_view_alert) values (${owner.id}, true)`;
-  await sql`insert into notifications (user_id, kind) values (${owner.id}, 'warning')`;
+  await sql`insert into notifications (user_id, kind, acknowledged_at) values (${owner.id}, 'warning', now())`;
   const payload = Buffer.from(
     JSON.stringify({
       user: {
@@ -109,7 +109,7 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
     );
     await expect(page.getByText('A user copied your username')).toBeVisible();
     await expect(
-      page.getByRole('link', { name: 'Review community guidelines' }),
+      page.getByRole('button', { name: /Note from moderation/ }),
     ).toBeVisible();
     await page.setViewportSize({ width: 320, height: 844 });
     await page.screenshot({
@@ -119,11 +119,9 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
     await page.goto('/ja/saved');
     await page.getByRole('button', { name: /^受信ボックス/ }).click();
     await expect(page).toHaveURL('/ja/inbox');
-    await page.getByRole('button', { name: /モデレーション/ }).click();
+    await page.getByRole('button', { name: /運営からのお知らせ/ }).click();
     await expect(
-      page
-        .getByRole('dialog')
-        .getByRole('button', { name: 'コミュニティガイドラインを確認' }),
+      page.getByRole('alertdialog').getByRole('button', { name: '閉じる' }),
     ).toBeVisible();
     await page.screenshot({
       path: testInfo.outputPath('free-warning-japanese.png'),
@@ -211,7 +209,7 @@ test('loading, failed reads and failed writes preserve recoverable inbox state',
     failingMethod = '';
     await page.getByRole('button', { name: 'Retry', exact: true }).click();
     await expect(
-      page.getByRole('link', { name: 'Review community guidelines' }),
+      page.getByRole('button', { name: /Note from moderation/ }),
     ).toBeVisible();
     for (const [method, action] of [
       ['PATCH', 'Mark as read'],
@@ -230,7 +228,7 @@ test('loading, failed reads and failed writes preserve recoverable inbox state',
         page.getByRole('button', { name: 'Mark as read', exact: true }),
       ).toBeEnabled();
       await expect(
-        page.getByRole('link', { name: 'Review community guidelines' }),
+        page.getByRole('button', { name: /Note from moderation/ }),
       ).toBeVisible();
     }
     await page.screenshot({

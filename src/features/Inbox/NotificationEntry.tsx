@@ -34,9 +34,6 @@ export const getNotificationMessage = (
 ) => {
   if (hasNotice(notification)) return t('noteFromModeration');
 
-  if (notification.kind === 'warning')
-    return notification.message ?? t('moderationWarning');
-
   if (notification.kind === 'share') {
     if (!premium) return t('anonymousShareAlert');
     return notification.actorName
@@ -133,14 +130,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
             <p className="break-words font-medium text-[15px] leading-[1.3] [text-wrap:pretty]">
               {message}
             </p>
-            {notification.kind === 'warning' ? (
-              <Link
-                href={`/${locale}/legal/guidelines`}
-                className={linkClassName}
-              >
-                {t('reviewGuidelines')}
-              </Link>
-            ) : premium && notification.actorProfileId ? (
+            {premium && notification.actorProfileId ? (
               <Link
                 href={`/${locale}/u/${notification.actorProfileId}`}
                 className={linkClassName}

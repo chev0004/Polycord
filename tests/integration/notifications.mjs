@@ -270,6 +270,15 @@ try {
     undefined,
   );
   await DELETE(request('DELETE', { all: true }));
+  body = await (await GET()).json();
+  assert.deepEqual(
+    body.notifications.map((row) => row.kind),
+    ['warning', 'warning', 'warning'],
+  );
+  for (const row of body.notifications) {
+    await PATCH(request('PATCH', { id: row.id, acknowledge: true }));
+  }
+  await DELETE(request('DELETE', { all: true }));
   assert.deepEqual((await (await GET()).json()).notifications, []);
   currentUser = null;
   assert.equal((await GET()).status, 401);

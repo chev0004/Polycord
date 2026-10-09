@@ -10,7 +10,6 @@ import {
   MdOutlineMarkEmailRead,
   MdOutlineMarkEmailUnread,
   MdOutlinePersonOutline,
-  MdOutlineShield,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -59,19 +58,13 @@ export const InboxPage = ({
   };
 
   const link = active
-    ? active.kind === 'warning'
+    ? inbox.premium && active.actorProfileId
       ? {
-          icon: MdOutlineShield,
-          label: t('reviewGuidelines'),
-          href: `/${locale}/legal/guidelines`,
+          icon: MdOutlinePersonOutline,
+          label: t('viewProfile'),
+          href: `/${locale}/u/${active.actorProfileId}`,
         }
-      : inbox.premium && active.actorProfileId
-        ? {
-            icon: MdOutlinePersonOutline,
-            label: t('viewProfile'),
-            href: `/${locale}/u/${active.actorProfileId}`,
-          }
-        : null
+      : null
     : null;
 
   const actions: ActionSheetItem[] = active

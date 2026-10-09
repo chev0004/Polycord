@@ -31,7 +31,10 @@ const signIn = (context: BrowserContext, account: Account) =>
     { name: 'polycord_session', value: sessionFor(account), url: ORIGIN },
   ]);
 
-const warnedMember = async () => {
+const warnedMember = async (
+  message = 'Harassment',
+  category: string | null = 'harassment',
+) => {
   const [member] = await sql<
     Account[]
   >`insert into users (discord_user_id, discord_username, display_name)
@@ -39,7 +42,7 @@ const warnedMember = async () => {
     returning id, discord_user_id as "discordUserId"`;
   const [notice] =
     await sql`insert into notifications (user_id, kind, message, warning_category)
-      values (${member.id}, 'warning', 'Harassment', 'harassment') returning id`;
+      values (${member.id}, 'warning', ${message}, ${category}) returning id`;
   return { member, noticeId: notice.id as string };
 };
 
@@ -107,6 +110,36 @@ for (const [name, viewport] of [
       await page.reload();
       await expect(page.getByRole('main')).toBeVisible();
       await expect(dialog(page)).toHaveCount(0);
+    } finally {
+      await sql`delete from users where id = ${member.id}`;
+    }
+  });
+}
+
+for (const [name, category, title] of [
+  ['an impersonation preset', 'impersonation', 'Impersonation Offense Warning'],
+  ['a custom message', null, 'Warning'],
+] as const) {
+  test(`${name} opens the notice with the moderator's message`, async ({
+    page,
+    context,
+  }) => {
+    const message = `Moderator wrote this for ${name}.`;
+    const { member, noticeId } = await warnedMember(message, category);
+    try {
+      await signIn(context, member);
+      await page.goto('/en');
+
+      await expect(dialog(page)).toBeVisible();
+      await expect(page.getByRole('heading', { name: title })).toBeVisible();
+      await expect(dialog(page)).toContainText(message);
+
+      await acknowledgement(page).click();
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await expect(dialog(page)).toBeHidden();
+      const [row] =
+        await sql`select acknowledged_at from notifications where id = ${noticeId}`;
+      expect(row.acknowledged_at).not.toBeNull();
     } finally {
       await sql`delete from users where id = ${member.id}`;
     }
@@ -239,7 +272,7 @@ test('a warning that arrives while signed in opens the notice and stores its cat
     await expect(dialog(page)).toBeVisible();
 
     await staff.request.post('/api/admin/moderation', {
-      data: { userId: member.id, action: 'warn', note: 'Spam' },
+      data: { userId: member.id, action: 'warn', note: 'Custom words' },
     });
     const [custom] =
       await sql`select count(*)::int as count from notifications where user_id = ${member.id} and warning_category is null`;

@@ -130,7 +130,7 @@ export const BatchedBannersQueue: Story = {
     for (const message of [
       'xhev copied your username',
       'Mina Park shared your profile',
-      'You received a warning from the moderation team. Please review our community guidelines.',
+      'Note from moderation',
     ]) {
       const banner = await screen.findByRole('alert', undefined, {
         timeout: 4000,

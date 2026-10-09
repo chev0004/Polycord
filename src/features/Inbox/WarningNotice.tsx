@@ -6,15 +6,20 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import type { WarningCategory } from '@/types';
 
 export const WarningNotice = ({
   open,
+  category,
+  message,
   acknowledged,
   busy = false,
   onAcknowledge,
   onClose,
 }: {
   open: boolean;
+  category?: WarningCategory;
+  message?: string;
   acknowledged: boolean;
   busy?: boolean;
   onAcknowledge: () => void;
@@ -65,12 +70,13 @@ export const WarningNotice = ({
                   {t('eyebrow')}
                 </div>
                 <Dialog.Title className="mt-1.5 font-bold text-2xl text-foreground leading-[1.15] tracking-[-0.01em] max-md:text-[30px]">
-                  {t('harassmentTitle')}
+                  {t(`titles.${category ?? 'custom'}`)}
                 </Dialog.Title>
               </header>
               <div className="flex flex-col gap-4 text-[#e5e7eb] text-sm leading-[1.6] max-md:text-[15px]">
+                <p className="whitespace-pre-line break-words">{message}</p>
                 <p>
-                  {t.rich('harassmentParagraphOne', {
+                  {t.rich('guidelines', {
                     guidelines: (chunks) => (
                       <Link
                         href={`/${locale}/legal/guidelines`}
@@ -81,7 +87,6 @@ export const WarningNotice = ({
                     ),
                   })}
                 </p>
-                <p>{t('harassmentParagraphTwo')}</p>
               </div>
             </div>
             <div className="flex shrink-0 flex-col gap-3.5 px-7 pt-2 pb-7 max-md:border-[rgba(107,114,128,0.25)] max-md:border-t max-md:bg-background-main max-md:px-5 max-md:pt-3 max-md:pb-[calc(env(safe-area-inset-bottom)+12px)]">
