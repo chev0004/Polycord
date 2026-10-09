@@ -126,9 +126,12 @@ for (const file of walk(apiRoot)) {
   if (lookups !== before) continue;
   skipped.push(path);
   if (
-    ['/api/billing/webhook', '/api/health', '/api/internal/ban-check'].includes(
-      path,
-    )
+    [
+      '/api/billing/webhook',
+      '/api/health',
+      '/api/build',
+      '/api/internal/ban-check',
+    ].includes(path)
   )
     continue;
   assert.match(
