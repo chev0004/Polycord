@@ -1247,6 +1247,7 @@ export const HistoryList = ({
   const t = useTranslations('Admin');
   const { relative, absolute } = useModFormat();
   const label = useLogLabel();
+  const entryNote = useEntryNote();
 
   if (!entries.length) {
     return (
@@ -1285,9 +1286,9 @@ export const HistoryList = ({
                 })}
               </span>
             </p>
-            {entry.note ? (
+            {entryNote(entry) ? (
               <p className="mt-[3px] font-light text-[12.5px] text-muted">
-                {entry.note}
+                {entryNote(entry)}
               </p>
             ) : null}
           </div>
