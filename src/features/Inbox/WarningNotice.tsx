@@ -3,7 +3,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import type { WarningCategory } from '@/types';
@@ -26,6 +26,7 @@ export const WarningNotice = ({
   onClose: () => void;
 }) => {
   const t = useTranslations('WarningNotice');
+  const presets = useTranslations('WarningPresets');
   const locale = useLocale();
   const content = useRef<HTMLDivElement>(null);
   const [checked, setChecked] = useState(false);
@@ -36,6 +37,15 @@ export const WarningNotice = ({
   }, [open]);
 
   const dismiss = () => (acknowledged ? onClose() : setNudge(true));
+
+  const guidelines = (chunks: ReactNode) => (
+    <Link
+      href={`/${locale}/legal/guidelines`}
+      className="text-primary-lighter underline decoration-[rgba(229,238,247,0.5)] underline-offset-2 hover:text-foreground hover:decoration-foreground"
+    >
+      {chunks}
+    </Link>
+  );
 
   return (
     <Dialog.Root open={open}>
@@ -74,19 +84,16 @@ export const WarningNotice = ({
                 </Dialog.Title>
               </header>
               <div className="flex flex-col gap-4 text-[#e5e7eb] text-sm leading-[1.6] max-md:text-[15px]">
-                <p className="whitespace-pre-line break-words">{message}</p>
-                <p>
-                  {t.rich('guidelines', {
-                    guidelines: (chunks) => (
-                      <Link
-                        href={`/${locale}/legal/guidelines`}
-                        className="text-primary-lighter underline decoration-[rgba(229,238,247,0.5)] underline-offset-2 hover:text-foreground hover:decoration-foreground"
-                      >
-                        {chunks}
-                      </Link>
-                    ),
-                  })}
-                </p>
+                {message === undefined && category ? (
+                  <p className="whitespace-pre-line break-words">
+                    {presets.rich(category, { guidelines })}
+                  </p>
+                ) : (
+                  <>
+                    <p className="whitespace-pre-line break-words">{message}</p>
+                    <p>{t.rich('guidelines', { guidelines })}</p>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex shrink-0 flex-col gap-3.5 px-7 pt-2 pb-7 max-md:border-[rgba(107,114,128,0.25)] max-md:border-t max-md:bg-background-main max-md:px-5 max-md:pt-3 max-md:pb-[calc(env(safe-area-inset-bottom)+12px)]">

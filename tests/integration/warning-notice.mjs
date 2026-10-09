@@ -68,7 +68,6 @@ try {
   const spam = await createNotification({
     userId: member.id,
     kind: 'warning',
-    message: 'Spam',
     warningCategory: 'spam',
   });
   asUser(member);
@@ -80,7 +79,11 @@ try {
   let rows = await stored();
   assert.equal(rows[notice.id].warningCategory, 'harassment');
   assert.equal(rows[notice.id].acknowledgedAt, undefined);
+  assert.equal(rows[notice.id].message, 'Harassment');
   assert.equal(rows[custom.id].warningCategory, undefined);
+  assert.equal(rows[custom.id].message, 'A custom message');
+  assert.equal(rows[spam.id].warningCategory, 'spam');
+  assert.equal(rows[spam.id].message, undefined);
 
   assert.equal(
     (await PATCH(request('PATCH', { id: notice.id, read: true }))).status,

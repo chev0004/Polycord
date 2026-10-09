@@ -142,13 +142,44 @@ export const CustomMessage: Story = {
   },
 };
 
+export const Preset: Story = {
+  args: { message: undefined },
+  play: async () => {
+    await expect(
+      await screen.findByRole('heading', {
+        name: 'Harassment Offense Warning',
+      }),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByText(
+        /^After a review of a report, we found that you insulted/,
+      ),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByText(/People come here from many countries/),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getAllByRole('link', { name: 'Community Guidelines' }),
+    ).toHaveLength(1);
+    await expect(
+      screen.getByRole('link', { name: 'Community Guidelines' }),
+    ).toHaveAttribute('href', '/en/legal/guidelines');
+  },
+};
+
 export const Japanese: Story = {
   globals: { locale: 'ja' },
-  args: { message: '連絡を望まないメンバーへの連絡をやめてください。' },
+  args: { message: undefined },
   play: async () => {
     await expect(
       await screen.findByRole('heading', { name: '嫌がらせ行為に関する警告' }),
     ).toBeInTheDocument();
+    await expect(
+      screen.getByText(/^報告を確認した結果、連絡を望まないメンバー/),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getAllByRole('link', { name: 'コミュニティガイドライン' }),
+    ).toHaveLength(1);
     await expect(
       screen.getByRole('link', { name: 'コミュニティガイドライン' }),
     ).toHaveAttribute('href', '/ja/legal/guidelines');

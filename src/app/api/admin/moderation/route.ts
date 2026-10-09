@@ -55,7 +55,9 @@ export const POST = scopedRoute(async (request: Request) => {
     );
   }
 
-  const { userId, reportId, action, days, note, category } = payload.data;
+  const { userId, reportId, action, days } = payload.data;
+  const category = action === 'warn' ? payload.data.category : undefined;
+  const note = category ? undefined : payload.data.note;
   const ownerOnly = (OWNER_ACTIONS as readonly string[]).includes(action);
 
   if (ownerOnly && role !== 'owner') {
@@ -139,6 +141,7 @@ export const POST = scopedRoute(async (request: Request) => {
     reportId: reportIds[0],
     action,
     note,
+    warningCategory: category,
     days: action === 'suspend' ? days : undefined,
   });
   const [updated] = await listModerationUsers([target.user.id]);

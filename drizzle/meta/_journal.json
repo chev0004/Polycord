@@ -246,6 +246,13 @@
       "when": 1791505649982,
       "tag": "0034_warning_notice_all",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791508834458,
+      "tag": "0035_moderation_action_warning_category",
+      "breakpoints": true
     }
   ]
 }

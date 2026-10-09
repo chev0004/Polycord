@@ -72,6 +72,7 @@ import {
   SuspendEnds,
   UserChips,
   useActionConfirmation,
+  useEntryNote,
   useLanguageLabels,
   useLogLabel,
   useModFormat,
@@ -550,6 +551,7 @@ const LogScreen = ({
   const t = useTranslations('Admin');
   const { time } = useModFormat();
   const label = useLogLabel();
+  const entryNote = useEntryNote();
   const [sheet, setSheet] = useState<'action' | 'staff' | null>(null);
   const rows = pages.rows ?? [];
   const { action = '', staffId: staff = '' } = pages.filters;
@@ -618,9 +620,9 @@ const LogScreen = ({
                     {staffName(entry.userId)} ·{' '}
                     {t('byStaff', { name: staffName(entry.staffId) })}
                   </span>
-                  {entry.note ? (
+                  {entryNote(entry) ? (
                     <span className="mt-1.5 block font-light text-[13.5px] text-soft leading-[1.4]">
-                      {entry.note}
+                      {entryNote(entry)}
                     </span>
                   ) : null}
                 </span>
@@ -1503,9 +1505,7 @@ export const ActionSheets = ({
             <button
               type="button"
               disabled={!warn.valid || actions.busy !== null}
-              onClick={() =>
-                run('warn', undefined, warn.message, warn.category)
-              }
+              onClick={() => run('warn', undefined, warn.note, warn.category)}
               className={mobileButton('primary')}
             >
               {actions.busy ? <Spinner className="h-4 w-4" /> : null}

@@ -169,6 +169,7 @@ export const logModerationAction = async (values: {
   reportId?: string | null;
   action: ModerationActionKind;
   note?: string | null;
+  warningCategory?: string | null;
   days?: number;
   grant?: { amount: number; unit: GrantUnit };
   expiresAt?: Date;
@@ -181,6 +182,7 @@ export const logModerationAction = async (values: {
       reportId: values.reportId ?? null,
       action: values.action,
       note: values.note?.trim() ? values.note.trim() : null,
+      warningCategory: values.warningCategory ?? null,
       days: values.days ?? null,
       grantAmount: values.grant?.amount ?? null,
       grantUnit: values.grant?.unit ?? null,

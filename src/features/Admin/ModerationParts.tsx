@@ -38,6 +38,7 @@ import { Avatar } from '@/components/Avatar';
 import { NumberStepper } from '@/components/Form';
 import { getLanguageName, proficiencyOptions } from '@/constants/languages';
 import { signInHref } from '@/features/Navigation/signIn';
+import { withoutGuidelinesTag } from '@/lib/warningPresets';
 import type { WarningCategory } from '@/types';
 import { protectionOf } from './permissions';
 import type {
@@ -682,8 +683,20 @@ export const WARN_PRESETS = [
 
 type WarnChoice = (typeof WARN_PRESETS)[number] | 'custom';
 
+export const usePresetText = () => {
+  const t = useTranslations('WarningPresets');
+  return (category: WarningCategory) =>
+    withoutGuidelinesTag(t.raw(category) as string);
+};
+
+export const useEntryNote = () => {
+  const presetText = usePresetText();
+  return ({ note, category }: ModLogEntry) =>
+    note ?? (category ? presetText(category) : undefined);
+};
+
 export const useWarnMessage = (open: boolean) => {
-  const t = useTranslations('Admin');
+  const presetText = usePresetText();
   const [choice, setChoice] = useState<WarnChoice | null>(null);
   const [text, setText] = useState('');
 
@@ -694,10 +707,12 @@ export const useWarnMessage = (open: boolean) => {
   }, [open]);
 
   const message = text.trim();
-  const category =
-    choice !== null && choice !== 'custom' && message === t(`warnText${choice}`)
+  const preset =
+    choice !== null && choice !== 'custom'
       ? (choice.toLowerCase() as WarningCategory)
       : undefined;
+  const category =
+    preset && message === presetText(preset) ? preset : undefined;
 
   return {
     choice,
@@ -705,10 +720,12 @@ export const useWarnMessage = (open: boolean) => {
     setText,
     message,
     category,
+    note: category ? '' : message,
     valid: message.length > 0,
     pick: (next: WarnChoice) => {
       setChoice(next);
-      if (next !== 'custom') setText(t(`warnText${next}`));
+      if (next !== 'custom')
+        setText(presetText(next.toLowerCase() as WarningCategory));
     },
   };
 };
@@ -807,7 +824,7 @@ export const WarnDialog = ({
         <button
           type="button"
           disabled={!warn.valid}
-          onClick={() => onConfirm(warn.message, warn.category)}
+          onClick={() => onConfirm(warn.note, warn.category)}
           className={modButton('primary')}
         >
           {t('warnSend')}
@@ -1230,6 +1247,7 @@ export const HistoryList = ({
   const t = useTranslations('Admin');
   const { relative, absolute } = useModFormat();
   const label = useLogLabel();
+  const entryNote = useEntryNote();
 
   if (!entries.length) {
     return (
@@ -1268,9 +1286,9 @@ export const HistoryList = ({
                 })}
               </span>
             </p>
-            {entry.note ? (
+            {entryNote(entry) ? (
               <p className="mt-[3px] font-light text-[12.5px] text-muted">
-                {entry.note}
+                {entryNote(entry)}
               </p>
             ) : null}
           </div>

@@ -32,7 +32,7 @@ const signIn = (context: BrowserContext, account: Account) =>
   ]);
 
 const warnedMember = async (
-  message = 'Harassment',
+  message: string | null = 'Harassment',
   category: string | null = 'harassment',
 ) => {
   const [member] = await sql<
@@ -140,6 +140,44 @@ for (const [name, category, title] of [
       const [row] =
         await sql`select acknowledged_at from notifications where id = ${noticeId}`;
       expect(row.acknowledged_at).not.toBeNull();
+    } finally {
+      await sql`delete from users where id = ${member.id}`;
+    }
+  });
+}
+
+for (const [path, title, text, guidelines] of [
+  [
+    '/en',
+    'Harassment Offense Warning',
+    /^After a review of a report, we found that you insulted/,
+    'Community Guidelines',
+  ],
+  [
+    '/ja',
+    '嫌がらせ行為に関する警告',
+    /^報告を確認した結果、連絡を望まないメンバー/,
+    'コミュニティガイドライン',
+  ],
+] as const) {
+  test(`a preset warning stored without a message reads in ${path.slice(1)}`, async ({
+    page,
+    context,
+  }) => {
+    const { member } = await warnedMember(null, 'harassment');
+    try {
+      await signIn(context, member);
+      await page.goto(path);
+
+      await expect(dialog(page)).toBeVisible();
+      await expect(page.getByRole('heading', { name: title })).toBeVisible();
+      await expect(dialog(page).getByText(text)).toBeVisible();
+      await expect(
+        dialog(page).getByRole('link', { name: guidelines }),
+      ).toHaveCount(1);
+      await expect(
+        dialog(page).getByRole('link', { name: guidelines }),
+      ).toHaveAttribute('href', `${path}/legal/guidelines`);
     } finally {
       await sql`delete from users where id = ${member.id}`;
     }
@@ -259,14 +297,16 @@ test('a warning that arrives while signed in opens the notice and stores its cat
       data: {
         userId: member.id,
         action: 'warn',
-        note: 'Harassment',
         category: 'harassment',
       },
     });
     expect(warned.status()).toBe(200);
     const [stored] =
-      await sql`select warning_category from notifications where user_id = ${member.id}`;
-    expect(stored.warning_category).toBe('harassment');
+      await sql`select message, warning_category from notifications where user_id = ${member.id}`;
+    expect(stored).toEqual({ message: null, warning_category: 'harassment' });
+    const [logged] =
+      await sql`select note, warning_category from moderation_actions where admin_user_id = ${admin.id}`;
+    expect(logged).toEqual({ note: null, warning_category: 'harassment' });
 
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
     await expect(dialog(page)).toBeVisible();
@@ -275,8 +315,8 @@ test('a warning that arrives while signed in opens the notice and stores its cat
       data: { userId: member.id, action: 'warn', note: 'Custom words' },
     });
     const [custom] =
-      await sql`select count(*)::int as count from notifications where user_id = ${member.id} and warning_category is null`;
-    expect(custom.count).toBe(1);
+      await sql`select message from notifications where user_id = ${member.id} and warning_category is null`;
+    expect(custom.message).toBe('Custom words');
     await sql`delete from moderation_actions where admin_user_id = ${admin.id}`;
   } finally {
     await staff.close();
