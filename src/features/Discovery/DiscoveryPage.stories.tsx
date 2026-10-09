@@ -17,22 +17,25 @@ import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { DiscoveryPage } from './DiscoveryPage';
 import { createSampleProfiles } from './profileFixtures';
 import { blockedProfileIds } from './safetyRequests';
+import { DiscoverySkeletonContext } from './skeletonContext';
 import 'src/app/globals.css';
 
 const meta: Meta<typeof DiscoveryPage> = {
   title: 'Discovery/DiscoveryPage',
   component: DiscoveryPage,
   decorators: [
-    (Story, { args }) => (
-      <RouteProgressProvider>
-        <AppShell
-          locale="en"
-          isLoggedIn={args.isLoggedIn}
-          userAvatarUrl={MOCK_USER_AVATAR_URL}
-        >
-          <Story />
-        </AppShell>
-      </RouteProgressProvider>
+    (Story, { args, parameters }) => (
+      <DiscoverySkeletonContext.Provider value={parameters.skeleton ?? true}>
+        <RouteProgressProvider>
+          <AppShell
+            locale="en"
+            isLoggedIn={args.isLoggedIn}
+            userAvatarUrl={MOCK_USER_AVATAR_URL}
+          >
+            <Story />
+          </AppShell>
+        </RouteProgressProvider>
+      </DiscoverySkeletonContext.Provider>
     ),
   ],
   args: {
@@ -616,6 +619,19 @@ export const Loading: Story = {
 
     await expect(canvas.getByText(/Searching/)).toBeInTheDocument();
     await expect(canvas.getByLabelText('Loading profiles')).toBeInTheDocument();
+  },
+};
+
+export const LoadingWithoutSkeleton: Story = {
+  args: {
+    isLoading: true,
+  },
+  parameters: { skeleton: false },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText(/Searching/)).toBeInTheDocument();
+    await expect(canvas.queryByLabelText('Loading profiles')).toBeNull();
   },
 };
 
