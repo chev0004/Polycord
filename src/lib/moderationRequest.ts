@@ -20,7 +20,7 @@ export const moderationSchema = z
   })
   .refine((value) => value.userId || value.reportId)
   .refine((value) => value.action !== 'suspend' || value.days !== undefined)
-  .refine((value) => value.action !== 'warn' || value.note, {
+  .refine((value) => value.action !== 'warn' || value.note || value.category, {
     message: 'Write a warning message before sending',
     path: ['note'],
   });
