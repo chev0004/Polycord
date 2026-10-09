@@ -1,0 +1,2 @@
+ALTER TABLE "user_settings" ADD COLUMN "load_tracing" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_settings" ADD COLUMN "discovery_skeleton" boolean DEFAULT false NOT NULL;

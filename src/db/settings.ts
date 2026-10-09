@@ -23,6 +23,8 @@ export type UserSettingsValues = Pick<
   | 'profileViewAlert'
   | 'hideProfileVisits'
   | 'productAnalytics'
+  | 'loadTracing'
+  | 'discoverySkeleton'
 >;
 
 export type ProfilePrivacyValues = Pick<

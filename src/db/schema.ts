@@ -302,6 +302,8 @@ export const userSettings = pgTable(
     profileViewAlert: boolean('profile_view_alert').default(false).notNull(),
     hideProfileVisits: boolean('hide_profile_visits').default(false).notNull(),
     productAnalytics: boolean('product_analytics').default(true).notNull(),
+    loadTracing: boolean('load_tracing').default(false).notNull(),
+    discoverySkeleton: boolean('discovery_skeleton').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),

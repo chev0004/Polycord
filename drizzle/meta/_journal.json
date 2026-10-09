@@ -253,6 +253,13 @@
       "when": 1791508834458,
       "tag": "0035_moderation_action_warning_category",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1791570612840,
+      "tag": "0036_owner_dev_settings",
+      "breakpoints": true
     }
   ]
 }
