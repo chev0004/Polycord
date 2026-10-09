@@ -51,6 +51,11 @@
     "copied": "Trace copied",
     "copyFailed": "Copy unavailable"
   },
+  "Deployment": {
+    "title": "A new version is available",
+    "description": "Reload when you are ready to get the latest version of Polycord.",
+    "reload": "Reload"
+  },
   "Draft": {
     "signInAgain": "Your session has expired. Sign in again to return to this editor.",
     "savedLocally": "Unsaved edits are kept for this account in this browser tab. Save to apply them, or Discard to remove them.",
