@@ -71,6 +71,7 @@ export type ModLogEntry = {
   userId?: string;
   staffId?: string;
   note?: string;
+  category?: WarningCategory;
   days?: number;
   grant?: { amount: number; unit: GrantUnit };
   expiresAt?: string;

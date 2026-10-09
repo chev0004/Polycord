@@ -465,6 +465,7 @@ export const moderationActions = pgTable(
     }),
     action: moderationActionEnum('action').notNull(),
     note: text('note'),
+    warningCategory: varchar('warning_category', { length: 32 }),
     days: integer('days'),
     grantAmount: integer('grant_amount'),
     grantUnit: grantUnitEnum('grant_unit'),

@@ -29,6 +29,7 @@ import type {
   ModUser,
   StaffRole,
 } from '@/features/Admin/types';
+import type { WarningCategory } from '@/types';
 import { type ActivityWindow, pageOf } from './activityWindow';
 import { isOwnerDiscordId, ownerDiscordIds } from './admin';
 import { isPremiumDiscordId } from './entitlements';
@@ -93,6 +94,7 @@ export const toModLogEntry = (entry: ModerationAction): ModLogEntry => ({
   userId: entry.targetUserId ?? undefined,
   staffId: entry.adminUserId ?? undefined,
   note: entry.note ?? undefined,
+  category: (entry.warningCategory as WarningCategory | null) ?? undefined,
   days: entry.days ?? undefined,
   grant:
     entry.grantAmount && entry.grantUnit
