@@ -99,6 +99,10 @@ same header to server-rendered responses on `polycord.chev.dev`. Leave
 `POLYCORD_PUBLIC_URL` unset on staging so `robots.txt` disallows all crawling and
 the sitemap stays empty.
 
+`NEXT_PUBLIC_DISCORD_INVITE_URL` is the permanent invite behind the footer Join
+Discord Server button; the button is hidden while it is unset. It is inlined at
+build time, so rebuild after changing it.
+
 `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` selects the Discovery loading experience.
 `true` serves the static Discovery shell with the skeleton and the early usable
 controls. `false` or unset server-renders the complete page, so the browser shows
