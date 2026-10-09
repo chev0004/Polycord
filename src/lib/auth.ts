@@ -23,6 +23,11 @@ import {
   SESSION_DURATION_SECONDS,
   STATE_DURATION_SECONDS,
 } from './auth-session';
+import {
+  DEV_COOKIE,
+  type DevToggles,
+  serializeDevToggles,
+} from './devSettings';
 
 type DiscordUser = {
   id: string;
@@ -95,6 +100,16 @@ export const setSessionCookie = async (
     AUTH_SESSION_COOKIE,
     value,
     getCookieOptions(SESSION_DURATION_SECONDS),
+  );
+};
+
+export const setDevCookie = (response: NextResponse, toggles: DevToggles) => {
+  const value = serializeDevToggles(toggles);
+
+  response.cookies.set(
+    DEV_COOKIE,
+    value,
+    getCookieOptions(value ? SESSION_DURATION_SECONDS : 0),
   );
 };
 
