@@ -18,6 +18,9 @@ const meta = {
   },
   args: {
     open: true,
+    category: 'harassment',
+    message:
+      'Please stop insulting, harassing, or repeatedly contacting members who do not want contact. Respect their boundaries.',
     acknowledged: false,
     onAcknowledge: fn(),
     onClose: fn(),
@@ -52,6 +55,9 @@ export const BeforeAcknowledgement: Story = {
     await expect(screen.getByText('Note from moderation')).toBeInTheDocument();
     await expect(
       screen.getByRole('heading', { name: 'Harassment Offense Warning' }),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByText(/^Please stop insulting, harassing/),
     ).toBeInTheDocument();
     await expect(
       screen.getByRole('link', { name: 'Community Guidelines' }),
@@ -100,8 +106,45 @@ export const AfterAcknowledgement: Story = {
   },
 };
 
+export const Impersonation: Story = {
+  args: {
+    category: 'impersonation',
+    message:
+      'Please remove misleading identity claims or content that impersonates someone else. Present yourself honestly.',
+  },
+  play: async () => {
+    await expect(
+      await screen.findByRole('heading', {
+        name: 'Impersonation Offense Warning',
+      }),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByText(/^Please remove misleading identity claims/),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByRole('button', { name: 'Continue' }),
+    ).toBeDisabled();
+  },
+};
+
+export const CustomMessage: Story = {
+  args: {
+    category: undefined,
+    message: 'Your profile picture breaks the rules.\nPlease change it.',
+  },
+  play: async () => {
+    await expect(
+      await screen.findByRole('heading', { name: 'Warning' }),
+    ).toBeInTheDocument();
+    await expect(
+      screen.getByText(/^Your profile picture breaks the rules\./),
+    ).toBeInTheDocument();
+  },
+};
+
 export const Japanese: Story = {
   globals: { locale: 'ja' },
+  args: { message: '連絡を望まないメンバーへの連絡をやめてください。' },
   play: async () => {
     await expect(
       await screen.findByRole('heading', { name: '嫌がらせ行為に関する警告' }),

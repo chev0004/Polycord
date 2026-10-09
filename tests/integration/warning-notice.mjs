@@ -1,6 +1,7 @@
 import { mock } from 'bun:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 const url = new URL(process.env.TEST_DATABASE_URL);
 assert.ok(['localhost', '127.0.0.1'].includes(url.hostname));
@@ -20,7 +21,7 @@ const { createNotification } = await import('../../src/db/notifications');
 const { GET, PATCH, DELETE } = await import(
   '../../src/app/api/notifications/route'
 );
-const { eq, inArray } = await import('drizzle-orm');
+const { inArray, sql } = await import('drizzle-orm');
 
 const people = await db
   .insert(users)
@@ -72,7 +73,10 @@ try {
   });
   asUser(member);
 
-  assert.equal((await (await GET()).json()).notifications[0].id, notice.id);
+  assert.deepEqual(
+    (await (await GET()).json()).notifications.map((row) => row.id),
+    [spam.id, custom.id, notice.id],
+  );
   let rows = await stored();
   assert.equal(rows[notice.id].warningCategory, 'harassment');
   assert.equal(rows[notice.id].acknowledgedAt, undefined);
@@ -87,14 +91,17 @@ try {
   await PATCH(request('PATCH', { all: true }));
   rows = await stored();
   assert.equal(rows[notice.id].read, false);
-  assert.equal(rows[custom.id].read, true);
-  assert.equal(rows[spam.id].read, true);
+  assert.equal(rows[custom.id].read, false);
+  assert.equal(rows[spam.id].read, false);
 
   await DELETE(request('DELETE', { id: notice.id }));
   assert.ok((await stored())[notice.id]);
   await DELETE(request('DELETE', { all: true }));
   rows = await stored();
-  assert.deepEqual(Object.keys(rows), [notice.id]);
+  assert.deepEqual(
+    Object.keys(rows).sort(),
+    [notice.id, custom.id, spam.id].sort(),
+  );
 
   asUser(other);
   assert.equal(
@@ -105,11 +112,14 @@ try {
   asUser(member);
   assert.equal((await stored())[notice.id].acknowledgedAt, undefined);
 
-  assert.equal(
-    (await PATCH(request('PATCH', { id: custom.id, acknowledge: true })))
-      .status,
-    404,
-  );
+  for (const pending of [custom, spam]) {
+    assert.equal(
+      (await PATCH(request('PATCH', { id: pending.id, acknowledge: true })))
+        .status,
+      200,
+    );
+    assert.ok((await stored())[pending.id].acknowledgedAt);
+  }
 
   const acknowledged = await PATCH(
     request('PATCH', { id: notice.id, acknowledge: true }),
@@ -128,6 +138,23 @@ try {
 
   await PATCH(request('PATCH', { id: notice.id, read: false }));
   assert.equal((await stored())[notice.id].read, false);
+
+  const legacy = await createNotification({
+    userId: member.id,
+    kind: 'warning',
+    message: 'Stored before the category existed',
+  });
+  assert.equal((await stored())[legacy.id].acknowledgedAt, undefined);
+  await db.execute(
+    sql.raw(
+      readFileSync('drizzle/0034_warning_notice_all.sql', 'utf8').replaceAll(
+        '--> statement-breakpoint',
+        '',
+      ),
+    ),
+  );
+  assert.ok((await stored())[legacy.id].acknowledgedAt);
+  assert.equal((await stored())[spam.id].warningCategory, 'spam');
 
   await DELETE(request('DELETE', { all: true }));
   assert.deepEqual(await stored(), {});

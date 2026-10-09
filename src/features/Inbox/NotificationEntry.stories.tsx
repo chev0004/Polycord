@@ -153,9 +153,6 @@ const noticeStory = (acknowledgedAt?: string): Story => {
         canvas.getByText('Note from moderation'),
       ).toBeInTheDocument();
       await expect(canvas.getByText('Read warning')).toBeInTheDocument();
-      await expect(
-        canvas.queryByText('Review community guidelines'),
-      ).toBeNull();
       const actions = canvas.queryByTitle('Delete');
       if (acknowledgedAt) await expect(actions).not.toBeNull();
       else await expect(actions as HTMLElement).not.toBeVisible();

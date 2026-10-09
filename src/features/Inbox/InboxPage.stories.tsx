@@ -30,6 +30,8 @@ const notifications: Notifications = [
   {
     id: '4',
     kind: 'warning',
+    message: 'Be kind.',
+    acknowledgedAt: new Date(Date.now() - 25 * 3600000).toISOString(),
     createdAt: new Date(Date.now() - 26 * 3600000).toISOString(),
   },
 ];
