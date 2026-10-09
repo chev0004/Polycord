@@ -339,9 +339,12 @@ test('admins moderate a report while members cannot reach admin tools', async ({
         ).map((row) => [row.message, row.warning_category]),
       )
       .toEqual([[null, 'spam']]);
-    expect(
-      await sql`select note, warning_category from moderation_actions where target_user_id = ${reported.id} and action = 'warn'`,
-    ).toEqual([{ note: null, warning_category: 'spam' }]);
+    await expect
+      .poll(
+        async () =>
+          await sql`select note, warning_category from moderation_actions where target_user_id = ${reported.id} and action = 'warn'`,
+      )
+      .toEqual([{ note: null, warning_category: 'spam' }]);
     await expect
       .poll(async () =>
         (
