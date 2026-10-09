@@ -335,12 +335,13 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     await expect
       .poll(async () =>
         (
-          await sql`select message from notifications where user_id = ${reported.id} and kind = 'warning'`
-        ).map((row) => row.message),
+          await sql`select message, warning_category from notifications where user_id = ${reported.id} and kind = 'warning'`
+        ).map((row) => [row.message, row.warning_category]),
       )
-      .toEqual([
-        'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
-      ]);
+      .toEqual([[null, 'spam']]);
+    expect(
+      await sql`select note, warning_category from moderation_actions where target_user_id = ${reported.id} and action = 'warn'`,
+    ).toEqual([{ note: null, warning_category: 'spam' }]);
     await expect
       .poll(async () =>
         (

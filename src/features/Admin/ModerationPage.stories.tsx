@@ -149,6 +149,7 @@ const mockModerationApi = () => {
         userId: 'ryan',
         staffId: 'kenji',
         note: body.note,
+        category: body.category,
         createdAt: new Date().toISOString(),
       };
       recorded.unshift(entry);
@@ -536,8 +537,8 @@ export const WarnComposer: Story = {
     );
     const message = dialog.getByRole('textbox', { name: 'Message' });
     await waitFor(() =>
-      expect(message).toHaveValue(
-        'Please stop posting spam or unsolicited advertising. Keep your profile and interactions relevant to finding language partners.',
+      expect((message as HTMLTextAreaElement).value).toMatch(
+        /^After a review of a report, we found that you posted spam/,
       ),
     );
     fireEvent.change(message, { target: { value: '   ' } });
@@ -571,6 +572,65 @@ export const WarnComposer: Story = {
     await expect(
       await canvas.findByText('Please stop posting ads.'),
     ).toBeInTheDocument();
+  },
+};
+
+export const WarnPreset: Story = {
+  beforeEach: mockModerationApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
+    const dialog = within(await screen.findByRole('dialog'));
+    fireEvent.click(
+      dialog.getByRole('button', { name: 'Spam or advertising' }),
+    );
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('button', { name: 'Send warning' }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(dialog.getByRole('button', { name: 'Send warning' }));
+    await waitFor(() =>
+      expect(moderationFetch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'warn',
+          userId: 'ryan',
+          category: 'spam',
+        }),
+      ),
+    );
+    await expect(moderationFetch.mock.calls[0][0].note).toBeUndefined();
+    fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));
+    await expect(
+      await canvas.findByText(
+        /^After a review of a report, we found that you posted spam/,
+      ),
+    ).toBeInTheDocument();
+  },
+};
+
+export const WarnEditedPreset: Story = {
+  beforeEach: mockModerationApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
+    const dialog = within(await screen.findByRole('dialog'));
+    fireEvent.click(
+      dialog.getByRole('button', { name: 'Spam or advertising' }),
+    );
+    const message = dialog.getByRole('textbox', { name: 'Message' });
+    await waitFor(() => expect(message).not.toHaveValue(''));
+    fireEvent.change(message, { target: { value: 'Edited by a moderator.' } });
+    fireEvent.click(dialog.getByRole('button', { name: 'Send warning' }));
+    await waitFor(() =>
+      expect(moderationFetch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'warn',
+          note: 'Edited by a moderator.',
+        }),
+      ),
+    );
+    await expect(moderationFetch.mock.calls[0][0].category).toBeUndefined();
   },
 };
 

@@ -10,6 +10,11 @@ test('a warning needs a non-blank message', () => {
   expect(parse({ action: 'warn', note: ' \n\t ' }).success).toBe(false);
 });
 
+test('a preset warning needs no message', () => {
+  expect(parse({ action: 'warn', category: 'spam' }).success).toBe(true);
+  expect(parse({ action: 'warn', category: 'nonsense' }).success).toBe(false);
+});
+
 test('a warning message is trimmed and capped at 500 characters', () => {
   expect(
     parse({ action: 'warn', note: `  ${'a'.repeat(500)}  ` }),
