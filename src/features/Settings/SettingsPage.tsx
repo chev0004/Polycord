@@ -6,7 +6,7 @@ import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaDiscord } from 'react-icons/fa';
-import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { MdChevronLeft, MdChevronRight, MdRefresh } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import {
@@ -48,6 +48,7 @@ export type SettingsPageProps = {
   onSubmit?: (data: SettingsFormValues) => Promise<void> | void;
   onUpdateDiscordConnection: () => void;
   onManageSubscription: () => Promise<void> | void;
+  owner?: boolean;
   premium?: boolean;
   premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
   premiumGrantedUntil?: string;
@@ -62,14 +63,16 @@ type SectionId =
   | 'supporter'
   | 'appearance'
   | 'privacy'
-  | 'notifications';
+  | 'notifications'
+  | 'dev';
 
-const sections: { id: SectionId; labelKey: string }[] = [
+const sections: { id: SectionId; labelKey: string; owner?: boolean }[] = [
   { id: 'account', labelKey: 'accountTitle' },
   { id: 'supporter', labelKey: 'premiumTitle' },
   { id: 'appearance', labelKey: 'appearanceTitle' },
   { id: 'privacy', labelKey: 'privacyTitle' },
   { id: 'notifications', labelKey: 'notificationsTitle' },
+  { id: 'dev', labelKey: 'devTitle', owner: true },
 ];
 
 const SectionCard = ({
@@ -93,6 +96,12 @@ const SectionCard = ({
     </div>
     <div className="flex flex-col gap-[18px]">{children}</div>
   </section>
+);
+
+const DevGroup = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="-mb-1 mt-2 px-1 font-semibold text-[12px] text-muted uppercase tracking-[0.06em] first-of-type:mt-0">
+    {children}
+  </h3>
 );
 
 const SettingRow = ({
@@ -121,6 +130,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onSubmit: onSubmitProp,
   onUpdateDiscordConnection,
   onManageSubscription,
+  owner = false,
   premium = false,
   premiumSource,
   premiumGrantedUntil,
@@ -152,6 +162,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   >('idle');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const mobile = useIsMobile();
+  const visibleSections = useMemo(
+    () => sections.filter((section) => !section.owner || owner),
+    [owner],
+  );
+  const [devApplied] = useState({
+    loadTracing: defaultValues.loadTracing,
+    discoverySkeleton: defaultValues.discoverySkeleton,
+  });
+  const [devSaved, setDevSaved] = useState(devApplied);
+  const devReload =
+    owner &&
+    (devSaved.loadTracing !== devApplied.loadTracing ||
+      devSaved.discoverySkeleton !== devApplied.discoverySkeleton);
 
   const handleManageSubscription = async () => {
     setBillingStatus('loading');
@@ -222,10 +245,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   useEffect(() => {
     const rawHash = window.location.hash.slice(1);
     const hash = rawHash === 'premium' ? 'supporter' : rawHash;
-    if (sections.some((section) => section.id === hash)) {
+    if (visibleSections.some((section) => section.id === hash)) {
       setActiveSection(hash as SectionId);
     }
-  }, []);
+  }, [visibleSections]);
 
   const jumpToSection = (id: SectionId) => {
     setActiveSection(id);
@@ -241,6 +264,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     try {
       await onSubmitProp?.(data);
 
+      setDevSaved({
+        loadTracing: data.loadTracing,
+        discoverySkeleton: data.discoverySkeleton,
+      });
       reset(data);
       draft.clear();
       return true;
@@ -328,6 +355,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         onSave={onSubmit}
         sessionExpired={sessionExpired}
         ready={draft.ready}
+        owner={owner}
+        devReload={devReload}
         premium={premium}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
@@ -403,7 +432,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
             </div>
             <div className="flex flex-row flex-wrap gap-1 lg:flex-col">
-              {sections.map((section) => {
+              {visibleSections.map((section) => {
                 const isActive = activeSection === section.id;
                 return (
                   <button
@@ -1020,6 +1049,69 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   </div>
                 )}
               </div>
+            </SectionCard>
+          )}
+
+          {activeSection === 'dev' && owner && (
+            <SectionCard
+              title={t('devTitle')}
+              description={t('devDescription')}
+            >
+              {devReload ? (
+                <output className="flex flex-wrap items-center gap-3 rounded-xl bg-primary-darker px-4 py-3 text-primary-light sm:flex-nowrap">
+                  <MdRefresh size={20} aria-hidden className="shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-[15px] text-foreground">
+                      {t('devReloadTitle')}
+                    </p>
+                    <p className="mt-0.5 text-[12px] text-soft">
+                      {t('devReloadDescription')}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="h-10 w-full sm:w-auto"
+                  >
+                    {t('devReloadButton')}
+                  </Button>
+                </output>
+              ) : null}
+
+              <DevGroup>{t('devDiagnosticsTitle')}</DevGroup>
+              <SettingRow
+                label={t('loadTracingLabel')}
+                description={t('loadTracingDescription')}
+              >
+                <Controller
+                  name="loadTracing"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                      aria-label={t('loadTracingLabel')}
+                    />
+                  )}
+                />
+              </SettingRow>
+
+              <DevGroup>{t('devRenderingTitle')}</DevGroup>
+              <SettingRow
+                label={t('discoverySkeletonLabel')}
+                description={t('discoverySkeletonDescription')}
+              >
+                <Controller
+                  name="discoverySkeleton"
+                  control={control}
+                  render={({ field }) => (
+                    <Toggle
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                      aria-label={t('discoverySkeletonLabel')}
+                    />
+                  )}
+                />
+              </SettingRow>
             </SectionCard>
           )}
 

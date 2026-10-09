@@ -22,11 +22,14 @@ type SettingsRouteClientProps = {
     | 'profileViewAlert'
     | 'hideProfileVisits'
     | 'productAnalytics'
+    | 'loadTracing'
+    | 'discoverySkeleton'
     | 'pushNotifications'
     | 'timeFormat'
     | 'languageDisplay'
   >;
   locale: string;
+  owner?: boolean;
   premium?: boolean;
   premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
   premiumGrantedUntil?: string;
@@ -73,6 +76,7 @@ export const SettingsRouteClient = ({
   initialPrivacySettings,
   initialSettings,
   locale,
+  owner = false,
   premium = false,
   premiumSource,
   premiumGrantedUntil,
@@ -91,6 +95,10 @@ export const SettingsRouteClient = ({
     profileViewAlert: initialSettings?.profileViewAlert ?? false,
     hideProfileVisits: initialSettings?.hideProfileVisits ?? false,
     productAnalytics: initialSettings?.productAnalytics ?? true,
+    ...(owner && {
+      loadTracing: initialSettings?.loadTracing ?? false,
+      discoverySkeleton: initialSettings?.discoverySkeleton ?? false,
+    }),
     applicationLanguage: isLocale(locale) ? locale : 'en',
     timeFormat: initialSettings?.timeFormat ?? '24hr',
     languageDisplay: initialSettings?.languageDisplay ?? 'long',
@@ -101,6 +109,7 @@ export const SettingsRouteClient = ({
     <SettingsPage
       key={userId}
       userId={userId}
+      owner={owner}
       blockedUsers={<BlockedUsers onChange={() => router.refresh()} />}
       defaultValues={defaultSettings}
       userAvatarUrl={userAvatarUrl}

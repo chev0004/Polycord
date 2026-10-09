@@ -70,6 +70,121 @@ export const Default: Story = {
   args: {},
 };
 
+const ownerArgs = {
+  owner: true,
+  defaultValues: {
+    ...defaultSettings,
+    loadTracing: false,
+    discoverySkeleton: false,
+  },
+};
+
+export const DevTabHiddenFromMembers: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole('button', { name: 'Privacy' }),
+    ).toBeInTheDocument();
+    await expect(canvas.queryByRole('button', { name: 'Dev' })).toBeNull();
+  },
+};
+
+export const OwnerDevTab: Story = {
+  args: ownerArgs,
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: 'Dev' }));
+    await expect(
+      await canvas.findByRole('heading', { name: 'Dev' }),
+    ).toBeInTheDocument();
+    await expect(canvas.getByText('Diagnostics')).toBeInTheDocument();
+    await expect(canvas.getByText('Rendering')).toBeInTheDocument();
+    const tracing = canvas.getByRole('switch', { name: 'Load tracing' });
+    await expect(tracing).not.toBeChecked();
+    await expect(
+      canvas.getByRole('switch', { name: 'Discovery skeleton loading' }),
+    ).not.toBeChecked();
+    await expect(canvas.queryByText('Reload to apply')).toBeNull();
+    fireEvent.click(tracing);
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Settings' }),
+    );
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          loadTracing: true,
+          discoverySkeleton: false,
+        }),
+      ),
+    );
+    await expect(
+      await canvas.findByText('Reload to apply'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Reload' }),
+    ).toBeInTheDocument();
+    fireEvent.click(tracing);
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Settings' }),
+    );
+    await waitFor(() =>
+      expect(canvas.queryByText('Reload to apply')).toBeNull(),
+    );
+  },
+};
+
+export const OwnerDevMobile: Story = {
+  args: ownerArgs,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText('Owner')).toBeInTheDocument();
+    fireEvent.click(await canvas.findByRole('button', { name: /^Dev/ }));
+    await expect(
+      await canvas.findByRole('heading', { name: 'Dev', level: 1 }),
+    ).toBeInTheDocument();
+    await expect(canvas.queryByText('Reload to apply')).toBeNull();
+    fireEvent.click(
+      canvas.getByRole('switch', { name: 'Discovery skeleton loading' }),
+    );
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ discoverySkeleton: true }),
+      ),
+    );
+    await expect(
+      await canvas.findByText('Reload to apply'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const DevTabHiddenFromMembersMobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      await canvas.findByRole('button', { name: /^Privacy/ }),
+    ).toBeInTheDocument();
+    await expect(canvas.queryByRole('button', { name: /^Dev/ })).toBeNull();
+    await expect(canvas.queryByText('Owner')).toBeNull();
+  },
+};
+
+export const OwnerDevJapanese: Story = {
+  ...OwnerDevTab,
+  globals: { locale: 'ja' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: '開発' }));
+    await expect(
+      await canvas.findByRole('switch', { name: '読み込みトレース' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('switch', { name: 'ディスカバリーのスケルトン表示' }),
+    ).toBeInTheDocument();
+  },
+};
+
 export const RestoredDraft: Story = {
   args: { userId: 'settings-draft-story' },
   loaders: [
