@@ -6,6 +6,7 @@ mock.module('@/db/client', () => ({ scopedRoute: (handler) => handler }));
 let settings;
 let redirectTo;
 const writes = [];
+const devCookies = [];
 mock.module('@/db', () => ({
   getUserByDiscordId: async () => ({ id: 'account-1' }),
   recordIpObservation: async () => {},
@@ -20,6 +21,7 @@ mock.module('@/lib/auth', () => ({
   normalizeDiscordUser: (user) => user,
   readOAuthStateCookie: async () => ({ nonce: 'state-1', redirectTo }),
   setBanCookie: async () => {},
+  setDevCookie: (_response, toggles) => devCookies.push(toggles),
   setSessionCookie: async () => {},
 }));
 mock.module('@/lib/analytics/track.server', () => ({
@@ -73,5 +75,14 @@ expect((await signIn()).headers.get('location')).toBe(
   expect(response.headers.get('location')).toBe('http://localhost/ja');
   expect(writes).toEqual([['account-1', { applicationLanguage: 'ja' }]]);
 }
+
+settings = { applicationLanguage: 'en', loadTracing: true };
+redirectTo = '/en';
+devCookies.length = 0;
+await signIn();
+expect(devCookies).toHaveLength(0);
+process.env.POLYCORD_ADMIN_USER_IDS = 'discord-1';
+await signIn();
+expect(devCookies).toEqual([{ loadTracing: true, discoverySkeleton: false }]);
 
 console.log('locale sign-in cases passed');

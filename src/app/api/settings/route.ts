@@ -6,7 +6,8 @@ import {
 } from '@/db';
 import { scopedRoute } from '@/db/client';
 import { settingsSchema } from '@/features/Settings/schema';
-import { getActiveUser } from '@/lib/auth';
+import { isOwner } from '@/lib/admin';
+import { getActiveUser, setDevCookie } from '@/lib/auth';
 import type { locales } from '@/utils/locales';
 
 const savedResponse = (locale: (typeof locales)[number]) => {
@@ -58,6 +59,14 @@ export const POST = scopedRoute(async (request: Request) => {
   }
 
   const values = payload.data;
+  const owner = isOwner(currentUser);
+
+  if (
+    !owner &&
+    (values.loadTracing !== undefined || values.discoverySkeleton !== undefined)
+  ) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   await updateUserEmail(currentUser.accountId, values.email);
   await updateProfilePrivacyForUser(currentUser.accountId, {
@@ -73,7 +82,16 @@ export const POST = scopedRoute(async (request: Request) => {
     profileViewAlert: values.profileViewAlert,
     hideProfileVisits: values.hideProfileVisits,
     productAnalytics: values.productAnalytics,
+    loadTracing: values.loadTracing,
+    discoverySkeleton: values.discoverySkeleton,
   });
 
-  return savedResponse(values.applicationLanguage);
+  const response = savedResponse(values.applicationLanguage);
+  if (owner) {
+    setDevCookie(response, {
+      loadTracing: values.loadTracing ?? false,
+      discoverySkeleton: values.discoverySkeleton ?? false,
+    });
+  }
+  return response;
 });
