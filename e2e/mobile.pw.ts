@@ -663,7 +663,7 @@ test('dock inbox opens the full-screen inbox on phones', async ({
     await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, 'Inbox phone') returning id`;
   await sql`insert into notifications (user_id, kind, created_at)
     select ${owner.id}, 'copy', now() - n * interval '1 hour' from generate_series(1,7) n`;
-  await sql`insert into notifications (user_id, kind) values (${owner.id}, 'warning')`;
+  await sql`insert into notifications (user_id, kind, acknowledged_at) values (${owner.id}, 'warning', now())`;
   const payload = Buffer.from(
     JSON.stringify({
       user: { id, accountId: owner.id, name: 'Inbox phone' },
@@ -708,16 +708,12 @@ test('dock inbox opens the full-screen inbox on phones', async ({
 
     const dock = page.getByRole('navigation', { name: 'Main' });
     const inbox = dock.getByRole('button', { name: /^Inbox/ });
-    await page.getByRole('button', { name: /You received a warning/ }).click();
-    const sheet = page.getByRole('dialog');
-    await expect(
-      sheet.getByRole('button', { name: 'Review community guidelines' }),
-    ).toBeVisible();
-    await sheet.getByRole('button', { name: 'Delete', exact: true }).click();
-    await expect(
-      page.getByRole('button', { name: /You received a warning/ }),
-    ).toHaveCount(0);
-    await expect(inbox).toHaveAccessibleName('Inbox, 7 unread');
+    await page.getByRole('button', { name: /Note from moderation/ }).click();
+    const notice = page.getByRole('alertdialog');
+    await expect(notice.getByRole('checkbox')).toHaveCount(0);
+    await notice.getByRole('button', { name: 'Close' }).click();
+    await expect(notice).toBeHidden();
+    await expect(inbox).toHaveAccessibleName('Inbox, 8 unread');
 
     await page.getByRole('button', { name: 'Mark all as read' }).click();
     await expect(inbox).toHaveAccessibleName('Inbox');
