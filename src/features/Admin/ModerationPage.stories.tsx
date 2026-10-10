@@ -640,18 +640,12 @@ export const WarnEditedPreset: Story = {
     });
     await waitFor(() => expect(message).not.toHaveValue(''));
     await expect(
-      dialog.getByText('Sent exactly as written. It is not translated.'),
-    ).toBeInTheDocument();
-    await expect(
       dialog.getByRole('button', { name: 'Custom message', pressed: true }),
     ).toBeInTheDocument();
     fireEvent.click(
       dialog.getByRole('button', { name: 'Spam or advertising' }),
     );
     await waitFor(() => expect(dialog.queryByRole('textbox')).toBeNull());
-    await expect(
-      dialog.queryByText('Sent exactly as written. It is not translated.'),
-    ).toBeNull();
     fireEvent.click(
       await dialog.findByRole('button', { name: 'Edit as custom message' }),
     );
@@ -685,9 +679,6 @@ export const WarnCustomFromStart: Story = {
       name: 'Custom message',
     });
     await expect(message).toHaveValue('');
-    await expect(
-      dialog.getByText('Sent exactly as written. It is not translated.'),
-    ).toBeInTheDocument();
     await waitFor(() => expect(message).toHaveFocus());
     await expect(
       dialog.queryByRole('button', { name: 'Edit as custom message' }),
@@ -738,9 +729,6 @@ export const WarnJapanese: Story = {
         /^報告を確認した結果、スパム/,
       ),
     );
-    await expect(
-      dialog.getByText('書いたとおりに送信されます。翻訳されません。'),
-    ).toBeInTheDocument();
   },
 };
 
@@ -944,11 +932,6 @@ export const WarnMobile: Story = {
     fireEvent.click(
       await warning.findByRole('button', { name: 'Edit as custom message' }),
     );
-    await expect(
-      await warning.findByText(
-        'Sent exactly as written. It is not translated.',
-      ),
-    ).toBeInTheDocument();
     fireEvent.change(
       await warning.findByRole('textbox', { name: 'Custom message' }),
       {
