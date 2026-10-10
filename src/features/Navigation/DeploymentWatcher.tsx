@@ -26,13 +26,31 @@ export const DeploymentWatcher = ({
   const t = useTranslations('Deployment');
   const pathname = usePathname();
   const { toasts, addToast, dismissToast } = useToastStack();
-  const waiting = useRef<string | null>(null);
+  const waiting = useRef<(() => void) | null>(null);
 
   const reload = useCallback(
     (serverBuildId: string) => {
       if (claimBuildReload(serverBuildId)) onReload();
     },
     [onReload],
+  );
+
+  const requestReload = useCallback(
+    (run: () => void) => {
+      if (!hasUnsavedChanges()) {
+        run();
+        return;
+      }
+      if (waiting.current) return;
+      waiting.current = run;
+      addToast({
+        title: t('title'),
+        description: t('description'),
+        action: { label: t('reload'), onClick: run },
+        duration: TOAST_DURATION_MS,
+      });
+    },
+    [addToast, t],
   );
 
   const check = useCallback(async () => {
@@ -43,22 +61,11 @@ export const DeploymentWatcher = ({
       const { buildId: serverBuildId } = await response.json();
       if (typeof serverBuildId !== 'string' || serverBuildId === buildId)
         return;
-      if (!hasUnsavedChanges()) {
-        reload(serverBuildId);
-        return;
-      }
-      if (waiting.current) return;
-      waiting.current = serverBuildId;
-      addToast({
-        title: t('title'),
-        description: t('description'),
-        action: { label: t('reload'), onClick: () => reload(serverBuildId) },
-        duration: TOAST_DURATION_MS,
-      });
+      requestReload(() => reload(serverBuildId));
     } catch {
       return;
     }
-  }, [buildId, reload, addToast, t]);
+  }, [buildId, reload, requestReload]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: a navigation is a reason to check again
   useEffect(() => {
@@ -82,14 +89,17 @@ export const DeploymentWatcher = ({
   useEffect(
     () =>
       onUnsavedChanges(() => {
-        if (waiting.current && !hasUnsavedChanges()) reload(waiting.current);
+        if (waiting.current && !hasUnsavedChanges()) waiting.current();
       }),
-    [reload],
+    [],
   );
 
   useEffect(() => {
     const recover = (reason: unknown) => {
-      if (isChunkLoadFailure(reason) && claimChunkReload()) onReload();
+      if (!isChunkLoadFailure(reason)) return;
+      requestReload(() => {
+        if (claimChunkReload()) onReload();
+      });
     };
     const onError = (event: ErrorEvent) =>
       recover(event.error ?? event.message);
@@ -100,7 +110,7 @@ export const DeploymentWatcher = ({
       window.removeEventListener('error', onError);
       window.removeEventListener('unhandledrejection', onRejection);
     };
-  }, [onReload]);
+  }, [onReload, requestReload]);
 
   return <ToastStack toasts={toasts} onDismiss={dismissToast} />;
 };
