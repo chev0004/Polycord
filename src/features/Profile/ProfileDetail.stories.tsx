@@ -112,6 +112,12 @@ export const CopyFallback: Story = {
 };
 
 export const UsernameCopyFeedback: Story = {
+  args: {
+    profile: {
+      ...profile,
+      avatarUrl: 'https://cdn.discordapp.com/avatars/1/yuki.png',
+    },
+  },
   render: (args) => {
     const actions = useProfileActions('en', true, () => {});
     return (
@@ -142,9 +148,13 @@ export const UsernameCopyFeedback: Story = {
     if (window.innerWidth < 768) {
       await expect(body.queryByText('Copied!')).not.toBeInTheDocument();
     } else {
-      await expect(
-        await body.findByText('yuki_lang copied to clipboard'),
-      ).toBeInTheDocument();
+      const toast = (
+        await body.findByText('yuki_lang copied to clipboard')
+      ).closest('li');
+      await expect(toast?.querySelector('img')).toHaveAttribute(
+        'src',
+        'https://cdn.discordapp.com/avatars/1/yuki.png',
+      );
     }
   },
 };
