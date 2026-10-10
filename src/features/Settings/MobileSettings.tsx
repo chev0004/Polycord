@@ -18,6 +18,7 @@ import {
   MdOutlineSchedule,
   MdOutlineWorkspacePremium,
   MdSync,
+  MdTerminal,
   MdTextFields,
   MdTranslate,
 } from 'react-icons/md';
@@ -94,13 +95,14 @@ export const SettingsPushPage = ({
   </div>
 );
 
-type MobilePage = 'privacy' | 'blocked' | 'notifications' | 'supporter';
+type MobilePage = 'privacy' | 'blocked' | 'notifications' | 'supporter' | 'dev';
 
 const mobilePages: string[] = [
   'privacy',
   'blocked',
   'notifications',
   'supporter',
+  'dev',
 ];
 
 type ChoiceField = 'applicationLanguage' | 'timeFormat' | 'languageDisplay';
@@ -114,13 +116,17 @@ type ToggleField =
   | 'hideProfileVisits'
   | 'productAnalytics'
   | 'profileInteractionAlert'
-  | 'profileViewAlert';
+  | 'profileViewAlert'
+  | 'loadTracing'
+  | 'discoverySkeleton';
 
 type MobileSettingsProps = {
   form: UseFormReturn<SettingsFormValues>;
   onSave: (data: SettingsFormValues) => Promise<boolean>;
   sessionExpired: boolean;
   ready: boolean;
+  owner: boolean;
+  devReload: boolean;
   premium: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
@@ -151,6 +157,8 @@ export const MobileSettings = ({
   onSave,
   sessionExpired,
   ready,
+  owner,
+  devReload,
   premium,
   userAvatarUrl,
   userDisplayName,
@@ -347,6 +355,10 @@ export const MobileSettings = ({
     premium && values.profileViewAlert,
   ].filter(Boolean).length;
 
+  const devOn = [values.loadTracing, values.discoverySkeleton].filter(
+    Boolean,
+  ).length;
+
   const closeDeleteSheet = () => {
     if (deleteStatus === 'loading') return;
     setSheet(null);
@@ -491,6 +503,52 @@ export const MobileSettings = ({
                 )}
               </output>
             ) : null}
+          </SettingsPushPage>
+        ) : mobilePage === 'dev' && owner ? (
+          <SettingsPushPage
+            title={t('devTitle')}
+            backLabel={t('settingsTitle')}
+            animate={animatePage}
+            onBack={closePage}
+          >
+            <p className="px-1 text-[13px] text-subtle leading-snug">
+              {t('devInstantDescription')}
+            </p>
+            {devReload ? (
+              <output className="flex items-center gap-3 rounded-2xl bg-primary-darker px-4 py-3.5">
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <strong className="font-semibold text-[15px]">
+                    {t('devReloadTitle')}
+                  </strong>
+                  <span className="text-[13px] text-soft leading-snug">
+                    {t('devReloadDescription')}
+                  </span>
+                </div>
+                <Button
+                  weight="semibold"
+                  onClick={() => window.location.reload()}
+                  className="h-10 rounded-full px-4 text-sm"
+                >
+                  {t('devReloadButton')}
+                </Button>
+              </output>
+            ) : null}
+            <SheetLabel>{t('devDiagnosticsTitle')}</SheetLabel>
+            <SettingsGroup>
+              {toggleRow(
+                'loadTracing',
+                t('loadTracingLabel'),
+                t('loadTracingDescription'),
+              )}
+            </SettingsGroup>
+            <SheetLabel>{t('devRenderingTitle')}</SheetLabel>
+            <SettingsGroup>
+              {toggleRow(
+                'discoverySkeleton',
+                t('discoverySkeletonLabel'),
+                t('discoverySkeletonDescription'),
+              )}
+            </SettingsGroup>
           </SettingsPushPage>
         ) : mobilePage === 'supporter' ? (
           <SettingsPushPage
@@ -659,6 +717,26 @@ export const MobileSettings = ({
                 onClick={() => openPage('notifications')}
               />
             </SettingsGroup>
+
+            {owner ? (
+              <>
+                <SheetLabel>{t('devOwnerTitle')}</SheetLabel>
+                <SettingsGroup>
+                  <SheetRow
+                    icon={MdTerminal}
+                    label={t('devTitle')}
+                    value={
+                      devOn
+                        ? t('notificationsOn', { count: devOn })
+                        : t('devOff')
+                    }
+                    valueActive={devOn > 0}
+                    chevron
+                    onClick={() => openPage('dev')}
+                  />
+                </SettingsGroup>
+              </>
+            ) : null}
 
             <div className="mt-6">
               <SettingsGroup>

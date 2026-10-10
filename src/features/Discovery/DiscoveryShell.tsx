@@ -9,6 +9,7 @@ import { DiscoveryPage } from './DiscoveryPage';
 import { discoveryCache } from './discoveryCache';
 import type { DiscoveryViewer } from './discoveryViewer';
 import { commitPageNavigation, disableLoadTrace } from './loadTrace';
+import { DiscoverySkeletonContext } from './skeletonContext';
 
 export const DiscoveryShell = ({ locale }: { locale: string }) => {
   const [viewer, setViewer] = useState<DiscoveryViewer | null>(() =>
@@ -28,27 +29,29 @@ export const DiscoveryShell = ({ locale }: { locale: string }) => {
   }, [viewer]);
 
   return (
-    <LanguageDisplayProvider value={viewer?.languageDisplay ?? 'long'}>
-      <TimeFormatProvider value={viewer?.timeFormat ?? '24hr'}>
-        <RouteProgressProvider theme={viewer?.cardTheme}>
-          <AppShell
-            locale={locale}
-            isLoggedIn={viewer?.isLoggedIn ?? false}
-            viewerLoading={viewer === null}
-            userAvatarUrl={viewer?.userAvatarUrl}
-            pendingCases={viewer?.pendingCases}
-          >
-            <DiscoveryPage
-              {...viewer}
+    <DiscoverySkeletonContext.Provider value={viewer?.skeleton ?? true}>
+      <LanguageDisplayProvider value={viewer?.languageDisplay ?? 'long'}>
+        <TimeFormatProvider value={viewer?.timeFormat ?? '24hr'}>
+          <RouteProgressProvider theme={viewer?.cardTheme}>
+            <AppShell
               locale={locale}
               isLoggedIn={viewer?.isLoggedIn ?? false}
-              fetchOnMount
-              onViewer={onViewer}
-              isLoading={viewer === null}
-            />
-          </AppShell>
-        </RouteProgressProvider>
-      </TimeFormatProvider>
-    </LanguageDisplayProvider>
+              viewerLoading={viewer === null}
+              userAvatarUrl={viewer?.userAvatarUrl}
+              pendingCases={viewer?.pendingCases}
+            >
+              <DiscoveryPage
+                {...viewer}
+                locale={locale}
+                isLoggedIn={viewer?.isLoggedIn ?? false}
+                fetchOnMount
+                onViewer={onViewer}
+                isLoading={viewer === null}
+              />
+            </AppShell>
+          </RouteProgressProvider>
+        </TimeFormatProvider>
+      </LanguageDisplayProvider>
+    </DiscoverySkeletonContext.Provider>
   );
 };

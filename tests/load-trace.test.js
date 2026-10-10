@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 
-test('load tracing is owner-only, staging-only and scoped to each request', () => {
+test('load tracing is owner-only, toggle-gated and scoped to each request', () => {
   expect(
     execFileSync(
       process.execPath,

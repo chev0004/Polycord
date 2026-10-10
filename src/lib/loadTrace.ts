@@ -1,11 +1,7 @@
 import 'server-only';
 import { RequestCookies } from 'next/dist/compiled/@edge-runtime/cookies';
 
-import {
-  AUTH_SESSION_COOKIE,
-  readSessionFromCookieValue,
-} from './auth-session';
-import { isOwnerDiscordId } from './ownerIds';
+import { hasOwnerDevToggle } from './devSettings';
 
 export type LoadMeasure = <T>(
   name: string,
@@ -13,17 +9,9 @@ export type LoadMeasure = <T>(
 ) => Promise<T>;
 
 export const createLoadTrace = async (request: Request) => {
-  if (
-    process.env.POLYCORD_ENVIRONMENT !== 'staging' ||
-    process.env.POLYCORD_LOAD_TRACE_ENABLED !== 'true' ||
-    process.env.POLYCORD_PUBLIC_URL
-  )
+  const cookies = new RequestCookies(request.headers);
+  if (!(await hasOwnerDevToggle((name) => cookies.get(name)?.value, 'trace')))
     return null;
-  const cookie = new RequestCookies(request.headers).get(
-    AUTH_SESSION_COOKIE,
-  )?.value;
-  const session = cookie ? await readSessionFromCookieValue(cookie) : null;
-  if (!session || !isOwnerDiscordId(session.id)) return null;
   const started = performance.now();
   const spans: Record<string, number> = {};
   const measure: LoadMeasure = async (name, run) => {

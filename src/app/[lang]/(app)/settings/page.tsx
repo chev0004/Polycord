@@ -5,6 +5,7 @@ import {
   getPrivacySettingsByDiscordUserId,
   getUserSettingsByDiscordUserId,
 } from '@/db';
+import { isOwner } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { tracePage } from '@/lib/pageLoadTrace';
@@ -28,6 +29,7 @@ async function SettingsRoute({
     getPremiumAccountByDiscordUserId(user.id),
     isPremiumUser(user),
   ]);
+  const owner = isOwner(user);
   const subscription = account?.subscription;
   const premiumSource = account
     ? getPremiumSource(account.user, subscription ?? null)
@@ -46,6 +48,10 @@ async function SettingsRoute({
                 profileViewAlert: settings.profileViewAlert,
                 hideProfileVisits: settings.hideProfileVisits,
                 productAnalytics: settings.productAnalytics,
+                loadTracing: owner ? settings.loadTracing : undefined,
+                discoverySkeleton: owner
+                  ? settings.discoverySkeleton
+                  : undefined,
                 pushNotifications: settings.pushNotifications,
                 timeFormat: settings.timeFormat,
                 languageDisplay: settings.languageDisplay,
@@ -53,6 +59,7 @@ async function SettingsRoute({
             : undefined
         }
         locale={lang}
+        owner={owner}
         premium={premium}
         premiumSource={premiumSource}
         premiumGrantedUntil={

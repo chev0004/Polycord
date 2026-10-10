@@ -20,25 +20,26 @@ const otherCookie = await createSessionCookieValue(
   { id: 'moderator', name: 'Moderator' },
   'synthetic-moderator',
 );
-const request = (cookie) =>
+const cookieHeader = (cookie, dev = 'trace') =>
+  [cookie && `polycord_session=${cookie}`, dev && `polycord_dev=${dev}`]
+    .filter(Boolean)
+    .join('; ');
+const request = (cookie, dev) =>
   new Request('https://polycord.test/en', {
     headers: {
       accept: 'text/html',
-      ...(cookie ? { cookie: `polycord_session=${cookie}` } : {}),
+      cookie: cookieHeader(cookie, dev),
       'x-polycord-load-trace': 'true',
     },
   });
-process.env.POLYCORD_ENVIRONMENT = 'staging';
-delete process.env.POLYCORD_LOAD_TRACE_ENABLED;
-assert.equal(await createLoadTrace(request(ownerCookie)), null);
-process.env.POLYCORD_LOAD_TRACE_ENABLED = 'true';
-process.env.POLYCORD_ENVIRONMENT = 'production';
-assert.equal(await createLoadTrace(request(ownerCookie)), null);
-process.env.POLYCORD_ENVIRONMENT = 'local';
-assert.equal(await createLoadTrace(request(ownerCookie)), null);
-process.env.POLYCORD_ENVIRONMENT = 'staging';
-process.env.POLYCORD_PUBLIC_URL = 'https://production.test';
-assert.equal(await createLoadTrace(request(ownerCookie)), null);
+for (const dev of [null, '', 'skeleton'])
+  assert.equal(await createLoadTrace(request(ownerCookie, dev)), null);
+for (const environment of ['production', 'local', 'staging']) {
+  process.env.POLYCORD_ENVIRONMENT = environment;
+  process.env.POLYCORD_PUBLIC_URL = 'https://production.test';
+  assert.ok(await createLoadTrace(request(ownerCookie)));
+  assert.ok(await createLoadTrace(request(ownerCookie, 'skeleton,trace')));
+}
 delete process.env.POLYCORD_PUBLIC_URL;
 for (const cookie of [undefined, 'forged', otherCookie])
   assert.equal(await createLoadTrace(request(cookie)), null);
@@ -94,18 +95,17 @@ assert.equal(
   otherResponse.headers.get('cache-control'),
   'public, max-age=0, must-revalidate',
 );
-process.env.POLYCORD_ENVIRONMENT = 'production';
 assert.ok(
   !(
     await (
-      await serveDiscoveryDocument(request(ownerCookie), context, {
+      await serveDiscoveryDocument(request(ownerCookie, null), context, {
         en: document,
       })
     ).text()
   ).includes('polycord-load-trace'),
 );
 const { NextResponse } = await import('next/server');
-let pageHeaders = new Headers({ cookie: `polycord_session=${ownerCookie}` });
+let pageHeaders = new Headers({ cookie: cookieHeader(ownerCookie) });
 mock.module('next/headers', () => ({ headers: async () => pageHeaders }));
 mock.module('next/navigation', () => ({ usePathname: () => '/en/settings' }));
 mock.module('../../src/db/client', () => ({
@@ -118,7 +118,6 @@ const { tracePage, createPageLoadTrace } = await import(
 );
 const props = { params: Promise.resolve({ lang: 'en' }) };
 const tracedPage = tracePage('settings', async () => 'Ready settings');
-process.env.POLYCORD_ENVIRONMENT = 'staging';
 const renderedPage = await tracedPage(props);
 assert.equal(renderedPage.props.children[0], 'Ready settings');
 assert.equal(renderedPage.props.children[1].props.route, '/en/settings');
@@ -129,16 +128,14 @@ assert.equal(
   true,
 );
 for (const cookie of [undefined, 'forged', otherCookie]) {
-  pageHeaders = new Headers(
-    cookie ? { cookie: `polycord_session=${cookie}` } : {},
-  );
+  pageHeaders = new Headers({ cookie: cookieHeader(cookie) });
   assert.equal(await createPageLoadTrace(), null);
-  assert.equal(await tracedPage(props), 'Ready settings');
+  const untraced = await tracedPage(props);
+  assert.equal(untraced.props.children[0], 'Ready settings');
+  assert.equal(untraced.props.children[1], null);
 }
-pageHeaders = new Headers({ cookie: `polycord_session=${ownerCookie}` });
-process.env.POLYCORD_ENVIRONMENT = 'production';
-assert.equal(await tracedPage(props), 'Ready settings');
-process.env.POLYCORD_ENVIRONMENT = 'staging';
+pageHeaders = new Headers({ cookie: cookieHeader(ownerCookie, null) });
+assert.equal((await tracedPage(props)).props.children[1], null);
 const { createElement } = await import('react');
 const { renderToStaticMarkup } = await import('react-dom/server');
 const bootstrapJson = JSON.stringify({
@@ -200,7 +197,6 @@ const { GET: bootstrap } = await import(
   '../../src/app/api/discovery/bootstrap/route'
 );
 const { GET: discovery } = await import('../../src/app/api/discovery/route');
-process.env.POLYCORD_ENVIRONMENT = 'staging';
 for (const handler of [bootstrap, discovery]) {
   const response = await handler(request(ownerCookie));
   assert.equal(response.status, 200);
@@ -212,11 +208,26 @@ for (const handler of [bootstrap, discovery]) {
       null,
     );
   }
-  process.env.POLYCORD_ENVIRONMENT = 'production';
   assert.equal(
-    (await handler(request(ownerCookie))).headers.get('Server-Timing'),
+    (await handler(request(ownerCookie, null))).headers.get('Server-Timing'),
     null,
   );
-  process.env.POLYCORD_ENVIRONMENT = 'staging';
 }
+const { hasOwnerDevToggle } = await import('../../src/lib/devSettings');
+const toggled = (cookie, dev, toggle) =>
+  hasOwnerDevToggle(
+    (name) =>
+      Object.fromEntries(
+        cookieHeader(cookie, dev)
+          .split('; ')
+          .filter(Boolean)
+          .map((pair) => pair.split(/=(.*)/s).slice(0, 2)),
+      )[name],
+    toggle,
+  );
+assert.equal(await toggled(ownerCookie, 'skeleton', 'skeleton'), true);
+assert.equal(await toggled(ownerCookie, 'trace', 'skeleton'), false);
+assert.equal(await toggled(ownerCookie, null, 'skeleton'), false);
+for (const cookie of [undefined, 'forged', otherCookie])
+  assert.equal(await toggled(cookie, 'skeleton,trace', 'skeleton'), false);
 console.log('load trace access passed');

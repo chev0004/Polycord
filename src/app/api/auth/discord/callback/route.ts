@@ -17,8 +17,10 @@ import {
   normalizeDiscordUser,
   readOAuthStateCookie,
   setBanCookie,
+  setDevCookie,
   setSessionCookie,
 } from '@/lib/auth';
+import { isOwnerDiscordId } from '@/lib/ownerIds';
 import { enforceRateLimit, isRateLimited, requestIp } from '@/lib/rateLimit';
 import { isLocale, localizePath } from '@/utils/localePaths';
 
@@ -190,6 +192,12 @@ export const GET = scopedRoute(async (request: NextRequest) => {
       303,
     );
     await setSessionCookie(response, currentUser, user.id);
+    if (isOwnerDiscordId(currentUser.id)) {
+      setDevCookie(response, {
+        loadTracing: settings?.loadTracing ?? false,
+        discoverySkeleton: settings?.discoverySkeleton ?? false,
+      });
+    }
     response.cookies.set('NEXT_LOCALE', locale, {
       path: '/',
       sameSite: 'lax',

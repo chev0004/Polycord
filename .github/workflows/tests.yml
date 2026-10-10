@@ -122,7 +122,7 @@ jobs:
             skeleton: 'true'
           - args: --shard=2/2
             skeleton: 'true'
-          - args: e2e/discovery-bar-only.pw.ts
+          - args: e2e/discovery-bar-only.pw.ts e2e/dev-settings.pw.ts
             skeleton: 'false'
     services:
       postgres:

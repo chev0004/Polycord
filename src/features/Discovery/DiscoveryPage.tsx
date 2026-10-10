@@ -86,9 +86,12 @@ import {
 } from './safetyRequests';
 import { saveProfileRequest } from './saveProfileRequest';
 import { buildPublicProfileUrl } from './shareProfile';
-import { DISCOVERY_SKELETON_ENABLED } from './skeletonSetting';
+import { useDiscoverySkeleton } from './skeletonContext';
 import { type AppliedFilter, TagCloud } from './TagCloud';
 import { useProfileBump } from './useProfileBump';
+
+const ProfileGridLoading = () =>
+  useDiscoverySkeleton() ? <ProfileGridSkeleton /> : null;
 
 const ProfileGrid = dynamic(
   () => {
@@ -96,7 +99,7 @@ const ProfileGrid = dynamic(
     return import('./ProfileGrid').then((module) => module.ProfileGrid);
   },
   {
-    loading: DISCOVERY_SKELETON_ENABLED ? ProfileGridSkeleton : () => null,
+    loading: ProfileGridLoading,
   },
 );
 const preloadModeration = () => {
@@ -225,6 +228,7 @@ export const DiscoveryPage = ({
   const [queryAuthError, setQueryAuthError] = useState<string>();
   const remote = fetchOnMount || Boolean(discoveryData);
   const t = useTranslations('Discovery');
+  const skeleton = useDiscoverySkeleton();
   const mobile = useIsMobile();
   const viewerHasAvailability = Boolean(viewerAvailability);
   const viewerContext = useMemo(
@@ -479,7 +483,7 @@ export const DiscoveryPage = ({
       requestRef.current = controller;
       const generation = discoveryCache.begin(requestUrl);
       if (
-        !DISCOVERY_SKELETON_ENABLED &&
+        !skeleton &&
         trigger &&
         hasLoaded.current &&
         !settleRequest.current &&
@@ -536,7 +540,16 @@ export const DiscoveryPage = ({
         }
       }
     },
-    [remote, urlQuery, mobile, requestUrl, fetchOnMount, onViewer, navigate],
+    [
+      remote,
+      urlQuery,
+      mobile,
+      requestUrl,
+      fetchOnMount,
+      onViewer,
+      navigate,
+      skeleton,
+    ],
   );
 
   const countResults = useCallback(
@@ -1074,15 +1087,14 @@ export const DiscoveryPage = ({
 
   const initialSettle = useRef<(() => void) | null>(null);
   useEffect(() => {
-    if (DISCOVERY_SKELETON_ENABLED || !showSkeleton || initialSettle.current)
-      return;
+    if (skeleton || !showSkeleton || initialSettle.current) return;
     navigate(
       () =>
         new Promise<void>((resolve) => {
           initialSettle.current = resolve;
         }),
     );
-  }, [showSkeleton, navigate]);
+  }, [showSkeleton, navigate, skeleton]);
   useEffect(() => {
     if (showSkeleton) return;
     initialSettle.current?.();
@@ -1122,7 +1134,7 @@ export const DiscoveryPage = ({
     },
   });
 
-  if (!DISCOVERY_SKELETON_ENABLED && showSkeleton)
+  if (!skeleton && showSkeleton)
     return (
       <>
         <UrlObserver onChange={receiveQuery} />
@@ -1258,7 +1270,7 @@ export const DiscoveryPage = ({
                 aria-live="polite"
                 className="font-semibold text-[15px] text-primary"
               >
-                {DISCOVERY_SKELETON_ENABLED &&
+                {skeleton &&
                 (showSkeleton || (isRefreshing && !awaitingResults))
                   ? t('resultsSearching')
                   : t('resultsCount', { count: totalResults })}

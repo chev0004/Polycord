@@ -1,8 +1,6 @@
 # Owner page load trace
 
-Enable `POLYCORD_ENVIRONMENT=staging` and `POLYCORD_LOAD_TRACE_ENABLED=true` on the staging deployment. Leave `POLYCORD_PUBLIC_URL` unset. Production/public deployments remain disabled. Use an owner session from `POLYCORD_ADMIN_USER_IDS`.
-
-For Netlify, apply these values to the serving staging site's production context and both function/edge scopes. The app's staging flag is distinct from Netlify's context name.
+Turn on **Load tracing** in the Dev tab of Settings. The tab is only shown to owners from `POLYCORD_ADMIN_USER_IDS`. The toggle is saved with the owner's settings, works in production and staging, and takes effect on the next page load. Other users never get a trace.
 
 The shared locale layout shows the panel throughout the app. The guarded Discovery document and server app layout supply an owner-only bootstrap; owner responses are private and uncached. Direct entry counts from browser navigation, including the earlier blank wait. Links and the shared router start a new trace before the destination appears. Browser back/forward and refresh also restart timing. A document restored from the browser's back/forward cache counts from its restore event. Hash links, same-page filters, external links and links opened in another tab do not restart the current page trace.
 
@@ -14,4 +12,6 @@ The panel records document/redirect/connection/first-byte timing, controls, view
 
 Server spans arrive with each response. Time outside the reported gate/handler includes unexposed platform work, network/transfer and client processing and cannot be labeled purely Netlify or Supabase. Completion excludes remaining image downloads, animations and background work. Client transitions show routing time instead of reusing the first document's DNS, redirect or first-paint numbers. The native Discovery bootstrap is specific to the hosted Netlify adapter; the server app bootstrap also works locally. UI proof uses built Storybook states and isolated server/client lifecycle tests.
 
-Disable the flag and redeploy to remove the diagnostic. No ban transport, database setting or deadline changes are required.
+Turn the toggle off and reload to remove the diagnostic. No ban transport, deployment or deadline changes are required.
+
+The toggle is mirrored into a `polycord_dev` cookie when settings are saved and when an owner signs in, so the edge gate and the middleware can read it without a database lookup. The cookie only counts for a valid owner session.

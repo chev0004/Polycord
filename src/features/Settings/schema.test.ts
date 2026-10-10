@@ -22,6 +22,19 @@ describe('settingsSchema', () => {
     expect(settingsSchema.safeParse(validSettings).success).toBe(true);
   });
 
+  it('accepts the owner dev toggles and leaves them optional', () => {
+    const result = settingsSchema.safeParse({
+      ...validSettings,
+      loadTracing: true,
+      discoverySkeleton: false,
+    });
+    expect(result.success).toBe(true);
+    expect(settingsSchema.safeParse(validSettings).success).toBe(true);
+    expect(
+      settingsSchema.safeParse({ ...validSettings, loadTracing: 'on' }).success,
+    ).toBe(false);
+  });
+
   it('rejects an invalid email with the localized message key', () => {
     const result = settingsSchema.safeParse({
       ...validSettings,
