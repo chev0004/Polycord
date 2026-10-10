@@ -124,6 +124,25 @@ test('an owner switches Discovery to the skeleton shell for themselves only', as
   expect(await html()).not.toContain('skeleton-shimmer');
 });
 
+test('an owner turns the skeleton off in a skeleton build', async ({
+  context,
+}) => {
+  test.skip(!skeletonBuild, 'only a skeleton build needs the owner override');
+  const accountId = await signIn(context, 'e2e-admin');
+  await sql`delete from user_settings where user_id = ${accountId}`;
+  const skeleton = async () =>
+    (await (await context.request.get('/api/discovery/bootstrap')).json())
+      .viewer.skeleton;
+  expect(await skeleton()).toBeUndefined();
+  for (const discoverySkeleton of [false, true]) {
+    const saved = await context.request.post('/api/settings', {
+      data: { ...settings, discoverySkeleton },
+    });
+    expect(saved.status()).toBe(200);
+    expect(await skeleton()).toBe(discoverySkeleton);
+  }
+});
+
 test('members never see or write the dev toggles', async ({
   page,
   context,
