@@ -14,6 +14,7 @@ export type DiscoveryViewer = {
   viewerAvailability?: AvailabilityPattern;
   userAvatarUrl?: string;
   staff?: { meId: string; role: StaffRole };
+  skeleton?: boolean;
   pendingCases?: number;
   cardTheme?: CardTheme;
   languageDisplay?: 'long' | 'short';

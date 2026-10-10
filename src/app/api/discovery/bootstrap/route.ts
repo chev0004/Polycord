@@ -65,6 +65,7 @@ export const GET = gatedRoute(async ({ user, measure }, request: Request) => {
           languageDisplay: settings?.languageDisplay,
           timeFormat: settings?.timeFormat,
           staff: role ? { meId: user.accountId, role } : undefined,
+          skeleton: role === 'owner' ? settings?.discoverySkeleton : undefined,
           pendingCases,
           bumpReadyAt: profile?.profile.isPublic
             ? getBumpCooldown(

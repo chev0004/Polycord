@@ -29,7 +29,7 @@ export const DiscoveryShell = ({ locale }: { locale: string }) => {
   }, [viewer]);
 
   return (
-    <DiscoverySkeletonContext.Provider value>
+    <DiscoverySkeletonContext.Provider value={viewer?.skeleton ?? true}>
       <LanguageDisplayProvider value={viewer?.languageDisplay ?? 'long'}>
         <TimeFormatProvider value={viewer?.timeFormat ?? '24hr'}>
           <RouteProgressProvider theme={viewer?.cardTheme}>
