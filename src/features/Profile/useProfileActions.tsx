@@ -108,7 +108,7 @@ export const useProfileActions = (
   };
 
   const copyUsername = async (
-    { id, discordUsername }: DiscoveryProfile,
+    { id, discordUsername, avatarUrl }: DiscoveryProfile,
     own: boolean,
   ) => {
     if (!discordUsername) return false;
@@ -123,6 +123,7 @@ export const useProfileActions = (
         description: t('copiedToClipboard', {
           username: discordUsername,
         }),
+        iconUrl: avatarUrl,
         duration: 4000,
       });
     }
