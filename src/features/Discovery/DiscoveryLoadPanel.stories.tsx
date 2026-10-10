@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fireEvent, within } from '@storybook/test';
+import { expect, fireEvent, waitFor, within } from '@storybook/test';
 import { DiscoveryLoadPanelView } from './DiscoveryLoadPanel';
+import { PANEL_POSITION_KEY } from './useDraggablePanel';
 
 const meta: Meta<typeof DiscoveryLoadPanelView> = {
   title: 'Discovery/DiscoveryLoadPanel',
   component: DiscoveryLoadPanelView,
+  beforeEach: () => localStorage.removeItem(PANEL_POSITION_KEY),
   args: {
     now: 12000,
     trace: {
@@ -216,5 +218,116 @@ export const PaginationReload: Story = {
     await expect(
       canvas.queryByText(/Your account and settings/),
     ).not.toBeInTheDocument();
+  },
+};
+
+const drag = (
+  summary: HTMLElement,
+  from: [number, number],
+  to: [number, number],
+) => {
+  fireEvent.pointerDown(summary, {
+    button: 0,
+    clientX: from[0],
+    clientY: from[1],
+  });
+  for (const type of ['pointermove', 'pointerup'])
+    window.dispatchEvent(
+      new PointerEvent(type, { clientX: to[0], clientY: to[1], bubbles: true }),
+    );
+};
+
+export const OpensBottomRight: Story = {
+  play: async ({ canvasElement }) => {
+    const panel = within(canvasElement).getByRole('complementary');
+    const rect = panel.getBoundingClientRect();
+    await expect(rect.right).toBeCloseTo(window.innerWidth - 12, 0);
+    await expect(rect.bottom).toBeCloseTo(window.innerHeight - 12, 0);
+  },
+};
+
+export const DragToMove: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const panel = canvas.getByRole('complementary');
+    const summary = canvas.getByText('Page load trace');
+    const start = panel.getBoundingClientRect();
+    drag(
+      summary,
+      [start.left + 20, start.top + 10],
+      [start.left - 80, start.top - 60],
+    );
+    await waitFor(() => {
+      const rect = panel.getBoundingClientRect();
+      expect(rect.left).toBeCloseTo(start.left - 100, 0);
+      expect(rect.top).toBeCloseTo(start.top - 70, 0);
+    });
+    await expect(panel.querySelector('details')).toHaveAttribute('open');
+    await expect(
+      JSON.parse(localStorage.getItem(PANEL_POSITION_KEY) ?? 'null'),
+    ).toEqual({ x: start.left - 100, y: start.top - 70 });
+    fireEvent.click(summary);
+    await expect(panel.querySelector('details')).toHaveAttribute('open');
+    fireEvent.click(summary);
+    await expect(panel.querySelector('details')).not.toHaveAttribute('open');
+  },
+};
+
+export const StaysInViewport: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const panel = canvas.getByRole('complementary');
+    const summary = canvas.getByText('Page load trace');
+    const start = panel.getBoundingClientRect();
+    drag(summary, [start.left + 20, start.top + 10], [-900, -900]);
+    await waitFor(() => {
+      const rect = panel.getBoundingClientRect();
+      expect(rect.left).toBe(0);
+      expect(rect.top).toBe(0);
+    });
+    const placed = panel.getBoundingClientRect();
+    drag(summary, [placed.left + 20, placed.top + 10], [99999, 99999]);
+    await waitFor(() => {
+      const rect = panel.getBoundingClientRect();
+      expect(rect.right).toBeCloseTo(window.innerWidth, 0);
+      expect(rect.bottom).toBeCloseTo(window.innerHeight, 0);
+    });
+  },
+};
+
+export const RestoresSavedPosition: Story = {
+  beforeEach: () =>
+    localStorage.setItem(PANEL_POSITION_KEY, JSON.stringify({ x: 40, y: 60 })),
+  play: async ({ canvasElement }) => {
+    const rect = within(canvasElement)
+      .getByRole('complementary')
+      .getBoundingClientRect();
+    await expect(rect.left).toBe(40);
+    await expect(rect.top).toBe(60);
+  },
+};
+
+export const KeepsSavedPositionOnScreen: Story = {
+  beforeEach: () =>
+    localStorage.setItem(
+      PANEL_POSITION_KEY,
+      JSON.stringify({ x: 99999, y: 99999 }),
+    ),
+  play: async ({ canvasElement }) => {
+    const rect = within(canvasElement)
+      .getByRole('complementary')
+      .getBoundingClientRect();
+    await expect(rect.right).toBeCloseTo(window.innerWidth, 0);
+    await expect(rect.bottom).toBeCloseTo(window.innerHeight, 0);
+  },
+};
+
+export const IgnoresBrokenSavedPosition: Story = {
+  beforeEach: () => localStorage.setItem(PANEL_POSITION_KEY, '{broken'),
+  play: async ({ canvasElement }) => {
+    const rect = within(canvasElement)
+      .getByRole('complementary')
+      .getBoundingClientRect();
+    await expect(rect.right).toBeCloseTo(window.innerWidth - 12, 0);
   },
 };

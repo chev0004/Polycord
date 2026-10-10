@@ -8,6 +8,7 @@ import {
   refreshNavigationTiming,
   useDiscoveryLoadTrace,
 } from './loadTrace';
+import { useDraggablePanel } from './useDraggablePanel';
 
 const discoveryPhases: LoadPhase[] = [
   'document',
@@ -47,6 +48,7 @@ export const DiscoveryLoadPanelView = ({
   const t = useTranslations('LoadTrace');
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
+  const drag = useDraggablePanel();
   const discovery =
     (!trace.route || /^\/(en|ja)\/?$/.test(trace.route)) &&
     !(
@@ -81,11 +83,16 @@ export const DiscoveryLoadPanelView = ({
   };
   return (
     <aside
+      ref={drag.panel}
       aria-label={t('title')}
-      className="fixed right-3 bottom-3 z-[70] max-h-[50vh] w-[calc(100vw-24px)] max-w-md overflow-auto rounded-xl border border-background-lighter bg-background-darker p-4 font-figtree text-foreground text-sm shadow-xl"
+      style={drag.style}
+      className={`fixed z-[70] max-h-[50vh] w-[calc(100vw-24px)] max-w-md overflow-auto rounded-xl border border-background-lighter bg-background-darker p-4 font-figtree text-foreground text-sm shadow-xl ${drag.placed ? '' : 'right-3 bottom-3'}`}
     >
       <details open>
-        <summary className="cursor-pointer font-semibold">
+        <summary
+          {...drag.handle}
+          className="cursor-grab touch-none select-none font-semibold active:cursor-grabbing"
+        >
           {t('title')}{' '}
           <span className="ml-2 font-mono text-primary">
             {seconds(elapsed)}
