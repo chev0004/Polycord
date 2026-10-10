@@ -78,8 +78,8 @@ import {
   useModFormat,
   useSuspendDays,
   useWarnMessage,
+  WarnMessage,
   WarnPresets,
-  WarnPreview,
 } from './ModerationParts';
 import { GrantFields, useGrant } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
@@ -1519,13 +1519,7 @@ export const ActionSheets = ({
             {t('warnBody')}
           </p>
           <WarnPresets choice={warn.choice} onPick={warn.pick} mobile />
-          <Note
-            value={warn.text}
-            onChange={warn.setText}
-            label={t('warnReason')}
-            placeholder={t('warnPlaceholder')}
-          />
-          <WarnPreview user={user} message={warn.message} mobile />
+          <WarnMessage warn={warn} mobile />
           {actions.failed ? (
             <ActionError
               mobile

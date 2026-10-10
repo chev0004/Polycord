@@ -532,15 +532,31 @@ export const WarnComposer: Story = {
     await expect(
       dialog.getAllByRole('button', { pressed: false }),
     ).toHaveLength(7);
+    await expect(
+      dialog.getByText('Pick a preset or write a custom message.'),
+    ).toBeInTheDocument();
     fireEvent.click(
       dialog.getByRole('button', { name: 'Spam or advertising' }),
     );
-    const message = dialog.getByRole('textbox', { name: 'Message' });
+    await expect(
+      await dialog.findByText(
+        /^After a review of a report, we found that you posted spam/,
+      ),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(dialog.queryByRole('textbox')).toBeNull());
+    await expect(dialog.queryByText('What Ryan Mercer will see')).toBeNull();
+    fireEvent.click(
+      await dialog.findByRole('button', { name: 'Edit as custom message' }),
+    );
+    const message = await dialog.findByRole('textbox', {
+      name: 'Custom message',
+    });
     await waitFor(() =>
       expect((message as HTMLTextAreaElement).value).toMatch(
         /^After a review of a report, we found that you posted spam/,
       ),
     );
+    await waitFor(() => expect(message).toHaveFocus());
     fireEvent.change(message, { target: { value: '   ' } });
     await waitFor(() =>
       expect(
@@ -550,9 +566,6 @@ export const WarnComposer: Story = {
     fireEvent.change(message, {
       target: { value: '  Please stop posting ads.  ' },
     });
-    await expect(
-      await dialog.findByText('Please stop posting ads.', { selector: 'p' }),
-    ).toBeInTheDocument();
     await waitFor(() =>
       expect(
         dialog.getByRole('button', { name: 'Send warning' }),
@@ -569,9 +582,9 @@ export const WarnComposer: Story = {
       ),
     );
     fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));
-    await expect(
-      await canvas.findByText('Please stop posting ads.'),
-    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(canvas.getByText('Please stop posting ads.')).toBeInTheDocument(),
+    );
   },
 };
 
@@ -589,6 +602,7 @@ export const WarnPreset: Story = {
         dialog.getByRole('button', { name: 'Send warning' }),
       ).toBeEnabled(),
     );
+    await waitFor(() => expect(dialog.queryByRole('textbox')).toBeNull());
     fireEvent.click(dialog.getByRole('button', { name: 'Send warning' }));
     await waitFor(() =>
       expect(moderationFetch).toHaveBeenCalledWith(
@@ -618,9 +632,35 @@ export const WarnEditedPreset: Story = {
     fireEvent.click(
       dialog.getByRole('button', { name: 'Spam or advertising' }),
     );
-    const message = dialog.getByRole('textbox', { name: 'Message' });
+    fireEvent.click(
+      await dialog.findByRole('button', { name: 'Edit as custom message' }),
+    );
+    const message = await dialog.findByRole('textbox', {
+      name: 'Custom message',
+    });
     await waitFor(() => expect(message).not.toHaveValue(''));
-    fireEvent.change(message, { target: { value: 'Edited by a moderator.' } });
+    await expect(
+      dialog.getByText('Sent exactly as written. It is not translated.'),
+    ).toBeInTheDocument();
+    await expect(
+      dialog.getByRole('button', { name: 'Custom message', pressed: true }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      dialog.getByRole('button', { name: 'Spam or advertising' }),
+    );
+    await waitFor(() => expect(dialog.queryByRole('textbox')).toBeNull());
+    await expect(
+      dialog.queryByText('Sent exactly as written. It is not translated.'),
+    ).toBeNull();
+    fireEvent.click(
+      await dialog.findByRole('button', { name: 'Edit as custom message' }),
+    );
+    fireEvent.change(
+      await dialog.findByRole('textbox', { name: 'Custom message' }),
+      {
+        target: { value: 'Edited by a moderator.' },
+      },
+    );
     fireEvent.click(dialog.getByRole('button', { name: 'Send warning' }));
     await waitFor(() =>
       expect(moderationFetch).toHaveBeenCalledWith(
@@ -631,6 +671,76 @@ export const WarnEditedPreset: Story = {
       ),
     );
     await expect(moderationFetch.mock.calls[0][0].category).toBeUndefined();
+  },
+};
+
+export const WarnCustomFromStart: Story = {
+  beforeEach: mockModerationApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
+    const dialog = within(await screen.findByRole('dialog'));
+    fireEvent.click(dialog.getByRole('button', { name: 'Custom message' }));
+    const message = await dialog.findByRole('textbox', {
+      name: 'Custom message',
+    });
+    await expect(message).toHaveValue('');
+    await expect(
+      dialog.getByText('Sent exactly as written. It is not translated.'),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(message).toHaveFocus());
+    await expect(
+      dialog.queryByRole('button', { name: 'Edit as custom message' }),
+    ).toBeNull();
+    await expect(
+      dialog.getByRole('button', { name: 'Send warning' }),
+    ).toBeDisabled();
+    fireEvent.change(message, { target: { value: 'Written from scratch.' } });
+    fireEvent.click(dialog.getByRole('button', { name: 'Custom message' }));
+    await expect(message).toHaveValue('Written from scratch.');
+    fireEvent.click(dialog.getByRole('button', { name: 'Send warning' }));
+    await waitFor(() =>
+      expect(moderationFetch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'warn',
+          note: 'Written from scratch.',
+        }),
+      ),
+    );
+    await expect(moderationFetch.mock.calls[0][0].category).toBeUndefined();
+  },
+};
+
+export const WarnJapanese: Story = {
+  beforeEach: mockModerationApi,
+  globals: { locale: 'ja' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: /^警告/ }));
+    const dialog = within(await screen.findByRole('dialog'));
+    await expect(
+      dialog.getByText(
+        'プリセットを選ぶか、カスタムメッセージを入力してください。',
+      ),
+    ).toBeInTheDocument();
+    fireEvent.click(dialog.getByRole('button', { name: 'スパム・宣伝' }));
+    await waitFor(() => expect(dialog.queryByRole('textbox')).toBeNull());
+    fireEvent.click(
+      await dialog.findByRole('button', {
+        name: 'カスタムメッセージとして編集',
+      }),
+    );
+    const message = await dialog.findByRole('textbox', {
+      name: 'カスタムメッセージ',
+    });
+    await waitFor(() =>
+      expect((message as HTMLTextAreaElement).value).toMatch(
+        /^報告を確認した結果、スパム/,
+      ),
+    );
+    await expect(
+      dialog.getByText('書いたとおりに送信されます。翻訳されません。'),
+    ).toBeInTheDocument();
   },
 };
 
@@ -791,9 +901,12 @@ export const WarnCancelled: Story = {
     fireEvent.keyDown(document.body, { key: 'w' });
     const dialog = within(await screen.findByRole('dialog'));
     fireEvent.click(dialog.getByRole('button', { name: 'Custom message' }));
-    fireEvent.change(dialog.getByRole('textbox', { name: 'Message' }), {
-      target: { value: 'Draft that is never sent' },
-    });
+    fireEvent.change(
+      await dialog.findByRole('textbox', { name: 'Custom message' }),
+      {
+        target: { value: 'Draft that is never sent' },
+      },
+    );
     fireEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
     await waitFor(() =>
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
@@ -827,9 +940,21 @@ export const WarnMobile: Story = {
         .querySelector('svg'),
     ).toBeNull();
     fireEvent.click(warning.getByRole('button', { name: 'Harassment' }));
-    fireEvent.change(warning.getByRole('textbox', { name: 'Message' }), {
-      target: { value: 'Stop contacting members who said no.' },
-    });
+    await waitFor(() => expect(warning.queryByRole('textbox')).toBeNull());
+    fireEvent.click(
+      await warning.findByRole('button', { name: 'Edit as custom message' }),
+    );
+    await expect(
+      await warning.findByText(
+        'Sent exactly as written. It is not translated.',
+      ),
+    ).toBeInTheDocument();
+    fireEvent.change(
+      await warning.findByRole('textbox', { name: 'Custom message' }),
+      {
+        target: { value: 'Stop contacting members who said no.' },
+      },
+    );
     fireEvent.click(warning.getByRole('button', { name: 'Send warning' }));
     await waitFor(() =>
       expect(moderationFetch).toHaveBeenCalledWith(

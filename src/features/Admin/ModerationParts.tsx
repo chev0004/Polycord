@@ -23,6 +23,7 @@ import {
   MdCampaign,
   MdCheck,
   MdContentCopy,
+  MdEdit,
   MdErrorOutline,
   MdGavel,
   MdLockOpen,
@@ -706,26 +707,30 @@ export const useWarnMessage = (open: boolean) => {
     setText('');
   }, [open]);
 
-  const message = text.trim();
   const preset =
     choice !== null && choice !== 'custom'
       ? (choice.toLowerCase() as WarningCategory)
       : undefined;
-  const category =
-    preset && message === presetText(preset) ? preset : undefined;
+  const mode = preset ? 'preset' : choice === 'custom' ? 'custom' : 'none';
+  const message = text.trim();
 
   return {
+    mode,
     choice,
     text,
     setText,
-    message,
-    category,
-    note: category ? '' : message,
-    valid: message.length > 0,
+    presetText: preset ? presetText(preset) : '',
+    category: preset,
+    note: preset ? '' : message,
+    valid: preset !== undefined || message.length > 0,
     pick: (next: WarnChoice) => {
+      if (next === 'custom' && choice === 'custom') return;
       setChoice(next);
-      if (next !== 'custom')
-        setText(presetText(next.toLowerCase() as WarningCategory));
+      if (next === 'custom') setText('');
+    },
+    edit: () => {
+      setText(preset ? presetText(preset) : '');
+      setChoice('custom');
     },
   };
 };
@@ -761,26 +766,74 @@ export const WarnPresets = ({
   );
 };
 
-export const WarnPreview = ({
-  user,
-  message,
+export const WarnMessage = ({
+  warn,
   mobile = false,
 }: {
-  user: ModUser;
-  message: string;
+  warn: ReturnType<typeof useWarnMessage>;
   mobile?: boolean;
 }) => {
   const t = useTranslations('Admin');
+  const input = useRef<HTMLTextAreaElement>(null);
+  const custom = warn.mode === 'custom';
+  const size = mobile ? 'text-[15px]' : 'text-[13.5px]';
+
+  useEffect(() => {
+    if (custom) input.current?.focus();
+  }, [custom]);
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className={mobile ? 'text-[13px] text-muted' : fieldLabel}>
-        {t('warnPreview', { name: user.displayName })}
-      </span>
-      <p
-        className={`whitespace-pre-wrap break-words rounded-[14px] bg-background-darker px-3.5 py-3 leading-normal ${mobile ? 'text-[15px]' : 'text-[13.5px]'} ${message ? 'text-foreground' : 'text-subtle italic'}`}
-      >
-        {message || t('warnPreviewEmpty')}
-      </p>
+    <div
+      className={`relative flex flex-col rounded-xl border bg-background-darker transition-colors ${mobile ? 'gap-3 px-4 py-3.5' : 'gap-2.5 px-3.5 py-3'} ${custom ? 'border-primary-dark focus-within:border-primary' : 'border-white/[0.07]'}`}
+    >
+      {warn.mode === 'none' ? (
+        <p className={`py-1.5 text-subtle leading-normal ${size}`}>
+          {t('warnEmpty')}
+        </p>
+      ) : null}
+      {warn.mode === 'preset' ? (
+        <>
+          <button
+            type="button"
+            aria-label={t('warnEdit')}
+            onClick={warn.edit}
+            className={`absolute grid place-items-center rounded-lg border border-transparent text-muted transition-colors hover:border-primary-dark hover:bg-primary-darker hover:text-primary-light focus-visible:border-primary-dark focus-visible:bg-primary-darker focus-visible:text-primary-light focus-visible:outline-none ${mobile ? 'top-1 right-1 h-11 w-11' : 'top-1.5 right-1.5 h-8 w-8'}`}
+          >
+            <MdEdit size={mobile ? 20 : 18} />
+          </button>
+          <p
+            className={`whitespace-pre-wrap break-words text-foreground leading-normal ${size} ${mobile ? 'pr-10' : 'pr-[30px]'}`}
+          >
+            {warn.presetText}
+          </p>
+        </>
+      ) : null}
+      {custom ? (
+        <>
+          <div className="flex flex-col gap-0.5">
+            <span
+              className={`font-semibold text-primary-light ${mobile ? 'text-sm' : 'text-[13px]'}`}
+            >
+              {t('warnCustom')}
+            </span>
+            <span className="text-subtle text-xs">{t('warnCustomNote')}</span>
+          </div>
+          <textarea
+            ref={input}
+            maxLength={500}
+            value={warn.text}
+            placeholder={t('warnPlaceholder')}
+            aria-label={t('warnCustom')}
+            onChange={(event) => warn.setText(event.target.value)}
+            className={`block w-full resize-none border-0 bg-transparent text-foreground leading-normal outline-none placeholder:text-subtle ${size} ${mobile ? 'min-h-36' : 'min-h-32'}`}
+          />
+          <span
+            className={`-mt-1 self-end text-[11px] ${warn.text.length >= 500 ? 'text-red-500' : 'text-subtle'}`}
+          >
+            {warn.text.length}/500
+          </span>
+        </>
+      ) : null}
     </div>
   );
 };
@@ -806,17 +859,7 @@ export const WarnDialog = ({
       description={t('warnBody')}
     >
       <WarnPresets choice={warn.choice} onPick={warn.pick} />
-      <div className="flex flex-col gap-1.5">
-        <span className={fieldLabel}>{t('warnReason')}</span>
-        <NoteField
-          value={warn.text}
-          onChange={warn.setText}
-          tall
-          label={t('warnReason')}
-          placeholder={t('warnPlaceholder')}
-        />
-      </div>
-      <WarnPreview user={user} message={warn.message} />
+      <WarnMessage warn={warn} />
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className={modButton()}>
           {t('cancel')}
