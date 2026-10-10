@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import {
   type DefaultValues,
   type FieldValues,
@@ -9,6 +9,7 @@ import {
   useWatch,
 } from 'react-hook-form';
 import type { z } from 'zod';
+import { setUnsavedChanges } from '@/lib/unsavedChanges';
 
 export const useFormDraft = <T extends FieldValues>(
   key: string | undefined,
@@ -23,6 +24,13 @@ export const useFormDraft = <T extends FieldValues>(
   const [restored, setRestored] = useState(false);
   const [stored, setStored] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
+  const formId = useId();
+  const { isDirty } = form.formState;
+
+  useEffect(() => {
+    setUnsavedChanges(formId, isDirty);
+    return () => setUnsavedChanges(formId, false);
+  }, [formId, isDirty]);
 
   useEffect(() => {
     if (!key) return;

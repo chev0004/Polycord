@@ -4,6 +4,10 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./next-intl.config.ts');
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_ID:
+      process.env.COMMIT_REF ?? process.env.GITHUB_SHA ?? 'local',
+  },
   experimental: { globalNotFound: true },
   async headers() {
     return [
