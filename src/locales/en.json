@@ -343,6 +343,7 @@
     "warnPlaceholder": "Write the message they will receive",
     "warnEmpty": "Pick a preset or write a custom message.",
     "warnEdit": "Edit as custom message",
+    "warnCustomNote": "Sent exactly as written. It is not translated.",
     "warnSend": "Send warning",
     "unhideDesc": "Shows their card in discovery again.",
     "hideDesc": "Removes their card from discovery.",
