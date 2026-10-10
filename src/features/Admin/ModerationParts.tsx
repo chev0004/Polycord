@@ -810,14 +810,11 @@ export const WarnMessage = ({
       ) : null}
       {custom ? (
         <>
-          <div className="flex flex-col gap-0.5">
-            <span
-              className={`font-semibold text-primary-light ${mobile ? 'text-sm' : 'text-[13px]'}`}
-            >
-              {t('warnCustom')}
-            </span>
-            <span className="text-subtle text-xs">{t('warnCustomNote')}</span>
-          </div>
+          <span
+            className={`font-semibold text-primary-light ${mobile ? 'text-sm' : 'text-[13px]'}`}
+          >
+            {t('warnCustom')}
+          </span>
           <textarea
             ref={input}
             maxLength={500}
