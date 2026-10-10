@@ -48,7 +48,7 @@ const blockFromDiscovery = async (page: Page, name: string) => {
   );
   await page.getByRole('button', { name: 'Block user', exact: true }).click();
   await page
-    .getByRole('dialog')
+    .getByRole('dialog', { name: /^Block .+\?$/ })
     .getByRole('button', { name: 'Block user', exact: true })
     .click();
   expect((await blocked).status()).toBe(200);

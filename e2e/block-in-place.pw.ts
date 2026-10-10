@@ -81,7 +81,7 @@ for (const layout of ['desktop', 'mobile'] as const) {
           .getByRole('button', { name: 'Block user', exact: true })
           .click();
         await page
-          .getByRole('dialog')
+          .getByRole('dialog', { name: /^Block .+\?$/ })
           .getByRole('button', { name: 'Block user', exact: true })
           .click();
       };
