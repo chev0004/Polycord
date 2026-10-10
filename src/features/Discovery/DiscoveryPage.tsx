@@ -1070,11 +1070,10 @@ export const DiscoveryPage = ({
   };
 
   useLayoutEffect(() => {
-    if (!awaitingResults || isRefreshing) return;
-    if (remote && loadedUrl !== requestUrl && !refreshFailed) return;
+    if (!awaitingResults) return;
+    if (remote && loadedUrl !== requestUrl && (isRefreshing || !refreshFailed))
+      return;
     window.scrollTo(0, 0);
-    settleRequest.current?.();
-    settleRequest.current = null;
     setAwaitingResults(false);
   }, [
     awaitingResults,
@@ -1084,6 +1083,12 @@ export const DiscoveryPage = ({
     requestUrl,
     refreshFailed,
   ]);
+
+  useEffect(() => {
+    if (awaitingResults || isRefreshing) return;
+    settleRequest.current?.();
+    settleRequest.current = null;
+  }, [awaitingResults, isRefreshing]);
 
   const initialSettle = useRef<(() => void) | null>(null);
   useEffect(() => {
