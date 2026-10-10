@@ -37,6 +37,7 @@ export const Avatar = ({ avatarUrl, size, alt = '' }: AvatarProps) => {
           style={style}
           width={pixelSize}
           height={pixelSize}
+          unoptimized
           draggable={false}
           onDragStart={(e) => e.preventDefault()}
         />
