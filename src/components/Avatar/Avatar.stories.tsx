@@ -34,6 +34,14 @@ export const WithImage: Story = {
     size: 'md',
     alt: 'Discord avatar',
   },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByAltText('Discord avatar')).toHaveAttribute(
+      'src',
+      args.avatarUrl,
+    );
+  },
 };
 
 export const Sizes: Story = {
