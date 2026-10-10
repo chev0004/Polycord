@@ -439,7 +439,21 @@ test('phone filter changes use the progress bar and load more keeps the position
     const more = page.getByRole('button', { name: 'Show more partners' });
     await centerInView(more);
     const loadedCards = await page.locator('article').count();
-    const beforeMore = await page.evaluate(() => window.scrollY);
+    await page.mouse.move(0, 0);
+    const readingCard = await page.evaluateHandle(
+      () =>
+        [...document.querySelectorAll('article')].find(
+          (card) => card.getBoundingClientRect().bottom > 100,
+        ) as Element,
+    );
+    const readingPosition = () =>
+      readingCard.evaluate(async (card) => {
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        );
+        return Math.round(card.getBoundingClientRect().top);
+      });
+    const beforeMore = await readingPosition();
     release = await gateDiscovery(page);
     await more.click();
     await page.waitForTimeout(500);
@@ -448,7 +462,7 @@ test('phone filter changes use the progress bar and load more keeps the position
     await release();
     await expect(page.locator('article')).toHaveCount(10);
     expect(await page.locator('article').count()).toBeGreaterThan(loadedCards);
-    expect(await page.evaluate(() => window.scrollY)).toBe(beforeMore);
+    await expect.poll(readingPosition).toBe(beforeMore);
   } finally {
     await fixture.cleanup();
     await sql.end();
