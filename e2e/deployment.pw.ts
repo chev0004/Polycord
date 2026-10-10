@@ -19,6 +19,17 @@ const countLoads = (page: Page) => {
 const checkAgain = (page: Page) =>
   page.evaluate(() => window.dispatchEvent(new Event('focus')));
 
+const failChunk = (page: Page) =>
+  page.evaluate(() =>
+    window.dispatchEvent(
+      new ErrorEvent('error', {
+        error: Object.assign(new Error('Loading chunk 9 failed.'), {
+          name: 'ChunkLoadError',
+        }),
+      }),
+    ),
+  );
+
 const signIn = async (context: BrowserContext) => {
   const id = randomUUID().replaceAll('-', '');
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
@@ -79,19 +90,9 @@ test('a page on the current build is left alone', async ({ page }) => {
 test('a failed lazy chunk recovers with a single reload', async ({ page }) => {
   const loads = countLoads(page);
   await page.goto('/en/legal');
-  const fail = () =>
-    page.evaluate(() =>
-      window.dispatchEvent(
-        new ErrorEvent('error', {
-          error: Object.assign(new Error('Loading chunk 9 failed.'), {
-            name: 'ChunkLoadError',
-          }),
-        }),
-      ),
-    );
-  await fail();
+  await failChunk(page);
   await expect.poll(() => loads.count).toBe(2);
-  await fail();
+  await failChunk(page);
   await page.waitForTimeout(1500);
   expect(loads.count).toBe(2);
 });
@@ -105,6 +106,25 @@ test('unsaved edits are never reloaded silently', async ({ page, context }) => {
   await newBuild(page);
   const loads = countLoads(page);
   await checkAgain(page);
+  await expect(page.getByText('A new version is available')).toBeVisible();
+  await page.waitForTimeout(1000);
+  expect(loads.count).toBe(0);
+  await expect(email).toHaveValue('changed@example.com');
+  await page.getByRole('button', { name: 'Discard' }).click();
+  await expect.poll(() => loads.count).toBe(1);
+});
+
+test('a failed chunk never reloads unsaved edits silently', async ({
+  page,
+  context,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await signIn(context);
+  await page.goto('/en/settings');
+  const email = page.getByLabel('Email Address');
+  await email.fill('changed@example.com');
+  const loads = countLoads(page);
+  await failChunk(page);
   await expect(page.getByText('A new version is available')).toBeVisible();
   await page.waitForTimeout(1000);
   expect(loads.count).toBe(0);
