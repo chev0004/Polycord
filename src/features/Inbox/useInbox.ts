@@ -72,15 +72,21 @@ export const useInbox = ({
   const [loading, setLoading] = useState(persist);
   const [error, setError] = useState<'loadError' | 'writeError' | null>(null);
   const [pending, setPending] = useState(false);
+  const [readUpdates, setReadUpdates] = useState<Record<string, boolean>>({});
+  const readWrites = useRef(new Map<string, Promise<void>>());
   const request = useRef<AbortController | null>(null);
   const saving = useRef(false);
-  const pushPending = useRef(false);
+  const refreshPending = useRef(false);
   const [signature, setSignature] = useState(() =>
     notificationsSignature(initialNotifications, premium),
   );
 
   const refresh = useCallback(async () => {
-    if (!persist || saving.current || request.current) return;
+    if (!persist || request.current) return;
+    if (saving.current || readWrites.current.size > 0) {
+      refreshPending.current = true;
+      return;
+    }
     const controller = new AbortController();
     request.current = controller;
     try {
@@ -114,10 +120,6 @@ export const useInbox = ({
     const interval = window.setInterval(refreshVisible, 30000);
     const refreshPushed = (event: MessageEvent) => {
       if (event.data?.type !== 'push') return;
-      if (saving.current) {
-        pushPending.current = true;
-        return;
-      }
       request.current?.abort();
       request.current = null;
       void refresh();
@@ -147,6 +149,13 @@ export const useInbox = ({
     }
   }
 
+  const visibleNotifications = notifications.map((n) =>
+    readUpdates[n.id] === undefined ? n : { ...n, read: readUpdates[n.id] },
+  );
+  const canMarkAllRead = visibleNotifications.some(
+    (n) => !n.read && !isNoticePending(n),
+  );
+
   const mutate = async (
     write: () => Promise<void>,
     update: (previous: InboxNotification[]) => InboxNotification[],
@@ -158,6 +167,7 @@ export const useInbox = ({
     setPending(true);
     setError(null);
     try {
+      await Promise.all(readWrites.current.values());
       if (persist) {
         await write();
         window.dispatchEvent(
@@ -170,18 +180,65 @@ export const useInbox = ({
     } finally {
       saving.current = false;
       setPending(false);
-      if (pushPending.current) {
-        pushPending.current = false;
+      if (refreshPending.current) {
+        refreshPending.current = false;
         void refresh();
       }
     }
   };
 
+  const updateRead = (
+    ids: string[],
+    read: boolean,
+    write: () => Promise<void>,
+  ) => {
+    if (saving.current || ids.length === 0) return;
+    request.current?.abort();
+    request.current = null;
+    setError(null);
+    setReadUpdates((previous) => ({
+      ...previous,
+      ...Object.fromEntries(ids.map((id) => [id, read])),
+    }));
+    const targets = new Set(ids);
+    const operation: Promise<void> = Promise.all(
+      ids.map((id) => readWrites.current.get(id)),
+    ).then(async () => {
+      try {
+        if (persist) await write();
+        setNotifications((previous) =>
+          previous.map((n) => (targets.has(n.id) ? { ...n, read } : n)),
+        );
+      } catch {
+        setError('writeError');
+      } finally {
+        const settledIds = ids.filter(
+          (id) => readWrites.current.get(id) === operation,
+        );
+        for (const id of settledIds) readWrites.current.delete(id);
+        setReadUpdates((previous) => {
+          const next = { ...previous };
+          for (const id of settledIds) delete next[id];
+          return next;
+        });
+        if (readWrites.current.size === 0) {
+          if (persist)
+            window.dispatchEvent(
+              new CustomEvent(CHANGED_EVENT, { detail: source }),
+            );
+          if (refreshPending.current) {
+            refreshPending.current = false;
+            void refresh();
+          }
+        }
+      }
+    });
+    for (const id of ids) readWrites.current.set(id, operation);
+    return operation;
+  };
+
   const setRead = (id: string, read: boolean) =>
-    mutate(
-      () => setNotificationReadRequest(id, read),
-      (previous) => previous.map((n) => (n.id === id ? { ...n, read } : n)),
-    );
+    updateRead([id], read, () => setNotificationReadRequest(id, read));
 
   const remove = (id: string) =>
     mutate(
@@ -200,10 +257,14 @@ export const useInbox = ({
         ),
     );
 
-  const markAllRead = () =>
-    mutate(markAllNotificationsReadRequest, (previous) =>
-      previous.map((n) => (isNoticePending(n) ? n : { ...n, read: true })),
+  const markAllRead = () => {
+    if (!canMarkAllRead) return;
+    return updateRead(
+      notifications.filter((n) => !isNoticePending(n)).map((n) => n.id),
+      true,
+      markAllNotificationsReadRequest,
     );
+  };
 
   const clearAll = () =>
     mutate(clearNotificationsRequest, (previous) =>
@@ -216,13 +277,14 @@ export const useInbox = ({
   };
 
   return {
-    notifications,
-    unreadCount: notifications.filter((n) => !n.read).length,
-    pendingNotice: notifications.find(isNoticePending),
+    notifications: visibleNotifications,
+    unreadCount: visibleNotifications.filter((n) => !n.read).length,
+    pendingNotice: visibleNotifications.find(isNoticePending),
     premium: persist ? serverPremium : premium,
     loading,
     error,
     pending,
+    canMarkAllRead,
     refresh,
     retry,
     setRead,
