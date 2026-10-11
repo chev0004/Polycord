@@ -472,6 +472,13 @@ export const DiscoveryPage = ({
   });
 
   const requestUrl = `/api/discovery?${query}&locale=${locale}${stacked && page > 1 ? '&stack=1' : ''}`;
+  const nextPageUrl = `/api/discovery?${buildDiscoveryQuery({
+    filterValues,
+    searchQuery: debouncedSearch,
+    selectedTags,
+    sortValue,
+    page: page + 1,
+  })}&locale=${locale}${stacked ? '&stack=1' : ''}`;
   const [loadedUrl, setLoadedUrl] = useState(requestUrl);
   requestUrlRef.current = requestUrl;
 
@@ -514,12 +521,17 @@ export const DiscoveryPage = ({
           onViewer?.(bootstrap.viewer);
           data = bootstrap.data;
         } else {
-          data = await traceDiscoveryRequest<DiscoveryData>(
-            'discovery',
-            requestUrl,
-            controller.signal,
-            trigger,
-          );
+          const prefetched = await discoveryCache
+            .pending(requestUrl)
+            ?.catch(() => null);
+          data =
+            prefetched ??
+            (await traceDiscoveryRequest<DiscoveryData>(
+              'discovery',
+              requestUrl,
+              controller.signal,
+              trigger,
+            ));
           discoveryCache.set(requestUrl, data, generation);
           if (controller.signal.aborted) return;
         }
@@ -588,7 +600,8 @@ export const DiscoveryPage = ({
     const refresh = refreshDiscovery;
     const profilesChanged = () => refresh('refresh');
     if (skipInitialRefresh.current) skipInitialRefresh.current = false;
-    else refresh('query');
+    else if (!discoveryCache.prefetched(requestUrlRef.current))
+      refresh('query');
     const focus = () => {
       if (!requestRef.current) void refresh();
     };
@@ -624,6 +637,33 @@ export const DiscoveryPage = ({
     setPage(cached.page);
     setLoadedUrl(requestUrl);
   }, [remote, urlQuery, requestUrl]);
+
+  const lastPage = stacked ? Math.min(totalPages, MAX_STACK_PAGES) : totalPages;
+  const canPrefetch =
+    remote &&
+    mobile !== null &&
+    Boolean(remoteData) &&
+    loadedUrl === requestUrl &&
+    !isRefreshing &&
+    !refreshFailed &&
+    safePage < lastPage;
+
+  useEffect(() => {
+    if (!canPrefetch) return;
+    const prefetchNearBottom = () => {
+      if (
+        window.scrollY + 2 * window.innerHeight >=
+        document.documentElement.scrollHeight
+      )
+        discoveryCache.prefetch(nextPageUrl);
+    };
+    const initial = setTimeout(prefetchNearBottom, 500);
+    window.addEventListener('scroll', prefetchNearBottom, { passive: true });
+    return () => {
+      clearTimeout(initial);
+      window.removeEventListener('scroll', prefetchNearBottom);
+    };
+  }, [canPrefetch, nextPageUrl]);
 
   const restoreScroll = useCallback(() => {
     if (
