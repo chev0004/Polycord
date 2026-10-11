@@ -162,7 +162,9 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
       animations: 'disabled',
     });
     await page.keyboard.press('Escape');
-    await page.goBack();
+    const sheet = page.getByRole('dialog', { name: 'Inbox' });
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await expect(sheet).toBeHidden();
     await expect(page.getByText('1 partner', { exact: true })).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Dismiss onboarding prompt' }),
