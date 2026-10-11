@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import {
   MdChevronRight,
+  MdClose,
   MdDeleteOutline,
   MdGppMaybe,
   MdOutlineMarkEmailRead,
@@ -13,7 +14,11 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { ActionSheet, type ActionSheetItem } from '@/components/Sheet';
+import {
+  ActionSheet,
+  type ActionSheetItem,
+  SheetIconButton,
+} from '@/components/Sheet';
 import { finishPageLoad, startLoadTrace } from '@/features/Discovery/loadTrace';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { hasNotice, type Notifications } from '@/types';
@@ -33,9 +38,7 @@ export const InboxPage = ({
   premium?: boolean;
   persist?: boolean;
 }) => {
-  const t = useTranslations('Inbox');
   const locale = useLocale();
-  const router = useRouteProgressRouter();
   const inbox = useInbox({
     notifications: initialNotifications,
     premium,
@@ -45,6 +48,21 @@ export const InboxPage = ({
     if (!inbox.loading && startLoadTrace()?.route === `/${locale}/inbox`)
       finishPageLoad(Boolean(inbox.error));
   }, [inbox.loading, inbox.error, locale]);
+
+  return <InboxContent inbox={inbox} />;
+};
+
+export const InboxContent = ({
+  inbox,
+  onClose,
+}: {
+  inbox: ReturnType<typeof useInbox>;
+  onClose?: () => void;
+}) => {
+  const t = useTranslations('Inbox');
+  const sheet = useTranslations('Sheet');
+  const locale = useLocale();
+  const router = useRouteProgressRouter();
   const openNotice = useOpenNotice();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -99,8 +117,12 @@ export const InboxPage = ({
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col font-figtree">
-      <div className="flex min-h-[52px] items-center justify-between gap-3 pt-1 pr-3 pb-2 pl-4">
-        <h1 className="font-bold text-[28px] leading-tight tracking-[-0.01em]">
+      <div
+        className={`flex min-h-[52px] items-center justify-between pt-1 pr-3 pb-2 pl-4 ${onClose ? 'gap-1' : 'gap-3'}`}
+      >
+        <h1
+          className={`flex-1 font-bold leading-tight tracking-[-0.01em] ${onClose ? 'text-lg' : 'text-[28px]'}`}
+        >
           {t('title')}
         </h1>
         <button
@@ -111,6 +133,11 @@ export const InboxPage = ({
         >
           {t('markAllRead')}
         </button>
+        {onClose ? (
+          <SheetIconButton label={sheet('close')} onClick={onClose}>
+            <MdClose size={24} />
+          </SheetIconButton>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-3 px-4 pb-8">
@@ -204,6 +231,7 @@ export const InboxPage = ({
         {!inbox.loading && !inbox.premium ? (
           <Link
             href={`/${locale}/settings#supporter`}
+            onClick={onClose}
             className={`${rowClassName} overflow-hidden rounded-3xl bg-background-dark`}
           >
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">

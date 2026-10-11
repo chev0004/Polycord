@@ -681,19 +681,17 @@ test('dock inbox opens the full-screen inbox on phones', async ({
       path: '/',
     },
   ]);
+  const inbox = page
+    .getByRole('navigation', { name: 'Main', includeHidden: true })
+    .getByRole('button', { name: /^Inbox/, includeHidden: true });
   try {
     for (const width of [320, 375, 390]) {
       await page.setViewportSize({ width, height: 812 });
       await page.goto('/en');
-      const dock = page.getByRole('navigation', { name: 'Main' });
-      const inbox = dock.getByRole('button', { name: /^Inbox/ });
       await expect(inbox).toHaveAccessibleName('Inbox, 8 unread');
       await inbox.click();
-      await expect(page).toHaveURL('/en/inbox');
-      await expect(inbox).toHaveAttribute('aria-current', 'page');
-      await expect(
-        page.getByRole('heading', { name: 'Inbox', exact: true }),
-      ).toBeVisible();
+      await expect(page).toHaveURL('/en');
+      await expect(page.getByRole('dialog', { name: 'Inbox' })).toBeVisible();
       await expect(
         page.getByRole('button', { name: /A user copied your username/ }),
       ).toHaveCount(7);
@@ -706,18 +704,17 @@ test('dock inbox opens the full-screen inbox on phones', async ({
       });
     }
 
-    const dock = page.getByRole('navigation', { name: 'Main' });
-    const inbox = dock.getByRole('button', { name: /^Inbox/ });
     await page.getByRole('button', { name: /Note from moderation/ }).click();
     const notice = page.getByRole('alertdialog');
     await expect(notice.getByRole('checkbox')).toHaveCount(0);
     await notice.getByRole('button', { name: 'Close' }).click();
     await expect(notice).toBeHidden();
-    await expect(inbox).toHaveAccessibleName('Inbox, 8 unread');
+    await expect(inbox).toHaveAttribute('aria-label', 'Inbox, 8 unread');
 
     await page.getByRole('button', { name: 'Mark all as read' }).click();
-    await expect(inbox).toHaveAccessibleName('Inbox');
+    await expect(inbox).toHaveAttribute('aria-label', 'Inbox');
     await page.reload();
+    await inbox.click();
     await expect(page.getByText('Unread', { exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Clear all', exact: true }).click();
     await expect(

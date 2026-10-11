@@ -99,8 +99,8 @@ for (const layout of ['mobile', 'desktop'] as const) {
       const dock = page.getByRole('navigation', { name: 'Main' });
       const leaveDiscovery = async () => {
         if (layout === 'mobile') {
-          await dock.getByRole('button', { name: 'Inbox' }).click();
-          await expect(page).toHaveURL('/en/inbox');
+          await dock.getByRole('button', { name: 'Settings' }).click();
+          await expect(page).toHaveURL('/en/settings');
           return;
         }
         await page
