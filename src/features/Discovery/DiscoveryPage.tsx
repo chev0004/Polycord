@@ -657,10 +657,8 @@ export const DiscoveryPage = ({
       )
         discoveryCache.prefetch(nextPageUrl);
     };
-    const initial = setTimeout(prefetchNearBottom, 500);
     window.addEventListener('scroll', prefetchNearBottom, { passive: true });
     return () => {
-      clearTimeout(initial);
       window.removeEventListener('scroll', prefetchNearBottom);
     };
   }, [canPrefetch, nextPageUrl]);

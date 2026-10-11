@@ -90,6 +90,24 @@ for (const layout of ['desktop', 'mobile'] as const) {
   });
 }
 
+test('a tall viewport does not prefetch before scrolling', async ({ page }) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const accounts: string[] = [];
+  try {
+    accounts.push(...(await seed(sql, prefix)));
+    await page.setViewportSize({ width: 1280, height: 1080 });
+    const pageTwo = watchPageTwo(page);
+    await page.goto(`/en?tag=${prefix}`);
+    await expect(page.locator('article')).toHaveCount(9);
+    await page.waitForTimeout(1500);
+    expect(pageTwo).toHaveLength(0);
+  } finally {
+    await sql`delete from users where id in ${sql(accounts)}`;
+    await sql.end();
+  }
+});
+
 test('a sort change prefetches its own next page', async ({ page }) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const prefix = randomUUID().slice(0, 8);
