@@ -437,6 +437,7 @@ test('phone filter changes use the progress bar and load more keeps the position
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
     const more = page.getByRole('button', { name: 'Show more partners' });
+    release = await gateDiscovery(page);
     await centerInView(more);
     const loadedCards = await page.locator('article').count();
     await page.mouse.move(0, 0);
@@ -454,7 +455,6 @@ test('phone filter changes use the progress bar and load more keeps the position
         return Math.round(card.getBoundingClientRect().top);
       });
     const beforeMore = await readingPosition();
-    release = await gateDiscovery(page);
     await more.click();
     await page.waitForTimeout(500);
     await expect(bar).toHaveClass(/opacity-0/);
