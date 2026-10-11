@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { discoveryCache } from './discoveryCache';
 import type { DiscoveryData } from './discoveryData';
 
@@ -38,5 +38,74 @@ describe('discoveryCache', () => {
     discoveryCache.set('/b', snapshot(2), inFlight);
     expect(discoveryCache.get('/a')).toBeUndefined();
     expect(discoveryCache.get('/b')).toBeUndefined();
+  });
+
+  describe('prefetch', () => {
+    const realFetch = globalThis.fetch;
+    let calls: string[];
+
+    const mockFetch = (respond: () => Response) => {
+      globalThis.fetch = ((url: string) => {
+        calls.push(url);
+        return Promise.resolve(respond());
+      }) as typeof fetch;
+    };
+    const ok = (total: number) => () => Response.json(snapshot(total));
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+    beforeEach(() => {
+      calls = [];
+    });
+    afterEach(() => {
+      globalThis.fetch = realFetch;
+    });
+
+    test('stores the page and marks it prefetched', async () => {
+      mockFetch(ok(3));
+      discoveryCache.prefetch('/p2');
+      await settle();
+      expect(discoveryCache.get('/p2')?.total).toBe(3);
+      expect(discoveryCache.prefetched('/p2')).toBe(true);
+    });
+
+    test('shares one request between repeated prefetches and a waiting reader', async () => {
+      mockFetch(ok(3));
+      discoveryCache.prefetch('/p2');
+      discoveryCache.prefetch('/p2');
+      const data = await discoveryCache.pending('/p2');
+      expect(data?.total).toBe(3);
+      await settle();
+      discoveryCache.prefetch('/p2');
+      expect(calls).toEqual(['/p2']);
+    });
+
+    test('drops a page that was invalidated in flight', async () => {
+      mockFetch(ok(3));
+      discoveryCache.prefetch('/p2');
+      discoveryCache.invalidate();
+      await settle();
+      expect(discoveryCache.get('/p2')).toBeUndefined();
+      expect(discoveryCache.prefetched('/p2')).toBe(false);
+    });
+
+    test('ignores a failed request and allows a retry', async () => {
+      mockFetch(() => new Response(null, { status: 503 }));
+      discoveryCache.prefetch('/p2');
+      await settle();
+      expect(discoveryCache.get('/p2')).toBeUndefined();
+      expect(discoveryCache.pending('/p2')).toBeUndefined();
+      mockFetch(ok(3));
+      discoveryCache.prefetch('/p2');
+      await settle();
+      expect(discoveryCache.get('/p2')?.total).toBe(3);
+    });
+
+    test('a normal fetch result is no longer treated as prefetched', async () => {
+      mockFetch(ok(3));
+      discoveryCache.prefetch('/p2');
+      await settle();
+      discoveryCache.set('/p2', snapshot(4), discoveryCache.begin('/p2'));
+      expect(discoveryCache.prefetched('/p2')).toBe(false);
+    });
   });
 });
