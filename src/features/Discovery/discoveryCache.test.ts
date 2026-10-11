@@ -88,6 +88,21 @@ describe('discoveryCache', () => {
       expect(discoveryCache.prefetched('/p2')).toBe(false);
     });
 
+    test('discards stored and in-flight prefetches when criteria change', async () => {
+      mockFetch(ok(3));
+      discoveryCache.setCriteria('a');
+      discoveryCache.prefetch('/p2');
+      await settle();
+      discoveryCache.prefetch('/p3');
+      discoveryCache.setCriteria('a');
+      discoveryCache.setCriteria('b');
+      await settle();
+      expect(discoveryCache.get('/p2')).toBeUndefined();
+      expect(discoveryCache.prefetched('/p2')).toBe(false);
+      expect(discoveryCache.get('/p3')).toBeUndefined();
+      expect(discoveryCache.pending('/p3')).toBeUndefined();
+    });
+
     test('ignores a failed request and allows a retry', async () => {
       mockFetch(() => new Response(null, { status: 503 }));
       discoveryCache.prefetch('/p2');

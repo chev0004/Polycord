@@ -638,6 +638,18 @@ export const DiscoveryPage = ({
     setLoadedUrl(requestUrl);
   }, [remote, urlQuery, requestUrl]);
 
+  const criteriaKey = buildDiscoveryQuery({
+    filterValues,
+    searchQuery: debouncedSearch,
+    selectedTags,
+    sortValue,
+    page: 1,
+  });
+
+  useEffect(() => {
+    discoveryCache.setCriteria(criteriaKey);
+  }, [criteriaKey]);
+
   const lastPage = stacked ? Math.min(totalPages, MAX_STACK_PAGES) : totalPages;
   const canPrefetch =
     remote &&

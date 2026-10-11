@@ -6,6 +6,7 @@ const generations = new Map<string, number>();
 const pending = new Map<string, Promise<DiscoveryData>>();
 const prefetchedAt = new Map<string, number>();
 const PREFETCH_FRESH_MS = 60_000;
+let criteria: string | null = null;
 let viewer: DiscoveryViewer | null = null;
 
 export const discoveryCache = {
@@ -46,6 +47,15 @@ export const discoveryCache = {
         if (pending.get(url) === request) pending.delete(url);
       });
   },
+  setCriteria: (next: string) => {
+    if (next === criteria) return;
+    criteria = next;
+    for (const url of prefetchedAt.keys()) entries.delete(url);
+    prefetchedAt.clear();
+    for (const url of pending.keys())
+      generations.set(url, (generations.get(url) ?? 0) + 1);
+    pending.clear();
+  },
   setViewer: (next: DiscoveryViewer) => {
     if (viewer && viewer.viewerUserId !== next.viewerUserId) {
       entries.clear();
@@ -73,6 +83,7 @@ export const discoveryCache = {
     entries.clear();
     pending.clear();
     prefetchedAt.clear();
+    criteria = null;
     viewer = null;
   },
 };

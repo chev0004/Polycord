@@ -133,3 +133,40 @@ test('a sort change prefetches its own next page', async ({ page }) => {
     await sql.end();
   }
 });
+
+test('returning to a sort refetches its next page', async ({ page }) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const accounts: string[] = [];
+  try {
+    accounts.push(...(await seed(sql, prefix)));
+    await page.setViewportSize({ width: 1280, height: 600 });
+    const pageTwo = watchPageTwo(page);
+    await page.goto(`/en?tag=${prefix}`);
+    await expect(page.locator('article')).toHaveCount(9);
+    await scrollToBottom(page);
+    await expect.poll(() => pageTwo.length).toBe(1);
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.getByRole('button', { name: 'Sort', exact: true }).click();
+    await page.getByRole('button', { name: 'Oldest bumped' }).click();
+    await expect(page.locator('article h3').first()).toContainText('Card 29');
+    await page.getByRole('button', { name: 'Sort', exact: true }).click();
+    await page.getByRole('button', { name: 'Last bumped' }).click();
+    await expect(page.locator('article h3').first()).toContainText('Card 00');
+
+    await page.route('**/api/discovery?*', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, SLOW_MS));
+      await route.continue().catch(() => {});
+    });
+    await page.getByRole('button', { name: 'Next page' }).click();
+    await expect(page.locator('article h3').first()).toContainText('Card 09', {
+      timeout: SLOW_MS * 2,
+    });
+    expect(pageTwo.length).toBeGreaterThanOrEqual(2);
+  } finally {
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+    await sql`delete from users where id in ${sql(accounts)}`;
+    await sql.end();
+  }
+});
