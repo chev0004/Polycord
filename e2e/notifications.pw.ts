@@ -116,6 +116,13 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
       path: testInfo.outputPath('free-warning-mobile.png'),
       animations: 'disabled',
     });
+    await page.goto('/en/settings');
+    await page.getByRole('button', { name: /^Inbox/ }).click();
+    await page
+      .getByRole('link', { name: /See who it was with Supporter/ })
+      .click();
+    await expect(page).toHaveURL('/en/settings#supporter');
+    await expect(page.getByRole('dialog', { name: 'Inbox' })).toBeHidden();
     await page.goto('/ja/saved');
     await page.getByRole('button', { name: /^受信ボックス/ }).click();
     await expect(page).toHaveURL('/ja/saved');

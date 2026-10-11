@@ -231,6 +231,7 @@ export const InboxContent = ({
         {!inbox.loading && !inbox.premium ? (
           <Link
             href={`/${locale}/settings#supporter`}
+            onClick={onClose}
             className={`${rowClassName} overflow-hidden rounded-3xl bg-background-dark`}
           >
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
