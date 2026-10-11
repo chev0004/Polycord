@@ -118,7 +118,10 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
     });
     await page.goto('/ja/saved');
     await page.getByRole('button', { name: /^受信ボックス/ }).click();
-    await expect(page).toHaveURL('/ja/inbox');
+    await expect(page).toHaveURL('/ja/saved');
+    await expect(
+      page.getByRole('dialog', { name: '受信ボックス' }),
+    ).toBeVisible();
     await page.getByRole('button', { name: /運営からのお知らせ/ }).click();
     await expect(
       page.getByRole('alertdialog').getByRole('button', { name: '閉じる' }),
