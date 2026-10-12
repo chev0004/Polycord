@@ -48,7 +48,7 @@ export const Disabled: Story = {
     await expect(weekdays).toBeDisabled();
     await expect(canvas.getByLabelText('From')).toBeDisabled();
     await expect(
-      canvas.getByRole('button', { name: 'Any time' }),
+      canvas.getByRole('checkbox', { name: 'Any time' }),
     ).toBeDisabled();
     await expect(
       canvas.getByText(
@@ -162,13 +162,13 @@ export const AnyTime: Story = {
     const canvas = within(canvasElement);
 
     const from = canvas.getByLabelText('From') as HTMLInputElement;
-    const anyTime = canvas.getByRole('button', { name: 'Any time' });
+    const anyTime = canvas.getByRole('checkbox', { name: 'Any time' });
     await expect(from).toBeDisabled();
-    await expect(anyTime).toHaveAttribute('aria-pressed', 'true');
+    await expect(anyTime).toBeChecked();
 
     await userEvent.click(anyTime);
 
     await waitFor(() => expect(from).toBeEnabled());
-    await expect(anyTime).toHaveAttribute('aria-pressed', 'false');
+    await expect(anyTime).not.toBeChecked();
   },
 };

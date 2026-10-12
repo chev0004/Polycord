@@ -2,8 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
-import { MdCheckCircle, MdRadioButtonUnchecked } from 'react-icons/md';
-import { FormGroup, Label, Toggle } from '@/components/Form';
+import { Checkbox, FormGroup, Label, Toggle } from '@/components/Form';
 import type {
   AvailabilityDays,
   AvailabilityPattern,
@@ -127,23 +126,11 @@ export const AvailabilityEditor = ({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => patch({ anyTime: !pattern.anyTime })}
-          aria-pressed={Boolean(pattern.anyTime)}
-          className={`inline-flex w-fit items-center gap-[5px] text-[12px] transition-colors focus:outline-none focus-visible:text-soft ${
-            pattern.anyTime
-              ? 'text-primary-light'
-              : 'text-subtle enabled:hover:text-soft'
-          }`}
-        >
-          {pattern.anyTime ? (
-            <MdCheckCircle size={14} />
-          ) : (
-            <MdRadioButtonUnchecked size={14} />
-          )}
-          {t('availabilityAnyTime')}
-        </button>
+        <Checkbox
+          checked={Boolean(pattern.anyTime)}
+          onCheckedChange={(checked) => patch({ anyTime: checked === true })}
+          label={t('availabilityAnyTime')}
+        />
 
         <p className="text-[12px] text-subtle">{t('availabilityHint')}</p>
       </fieldset>
