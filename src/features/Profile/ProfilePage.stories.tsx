@@ -285,6 +285,29 @@ export const DeleteProfileCancel: Story = {
   },
 };
 
+export const MobileDeleteProfileCancel: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    initialValues: sampleProfile,
+    onDeleteProfile: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const options = await within(canvasElement).findByRole('button', {
+      name: 'Profile options',
+    });
+    await userEvent.click(options);
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Delete profile' }),
+    );
+    await userEvent.click(
+      within(
+        await screen.findByRole('dialog', { name: 'Delete profile' }),
+      ).getByRole('button', { name: 'Cancel' }),
+    );
+    await waitFor(() => expect(options).toHaveFocus());
+  },
+};
+
 export const DeleteProfileConfirm: Story = {
   args: {
     initialValues: sampleProfile,
