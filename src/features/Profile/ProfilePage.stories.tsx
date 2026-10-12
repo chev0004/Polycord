@@ -605,11 +605,15 @@ export const TimezoneRequiredForFreeTime: Story = {
     await expect(toggle).toBeDisabled();
     await selectTimezone(timezone, 'Tokyo', /Asia\/Tokyo$/);
     await waitFor(() => expect(toggle).toBeEnabled());
-    await expect(canvas.getByLabelText('From')).toBeEnabled();
+    await expect(
+      canvas.getByRole('textbox', { name: 'From hour' }),
+    ).toBeEnabled();
     setFieldValue(timezone, '');
     await waitFor(() => expect(toggle).toBeDisabled());
     await expect(timezone).toHaveValue('');
-    await expect(canvas.getByLabelText('From')).toBeDisabled();
+    await expect(
+      canvas.getByRole('textbox', { name: 'From hour' }),
+    ).toBeDisabled();
   },
 };
 
@@ -1255,7 +1259,9 @@ export const MobileFreeTimeSurvivesSheetClose: Story = {
     await expect(
       sheet.getByRole('button', { name: 'Weekdays' }),
     ).toHaveAttribute('aria-pressed', 'true');
-    await expect(sheet.getByLabelText('From')).toHaveValue('06:00');
+    await expect(sheet.getByRole('button', { name: 'From' })).toHaveTextContent(
+      '06:00',
+    );
   },
 };
 

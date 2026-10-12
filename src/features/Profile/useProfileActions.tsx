@@ -44,7 +44,11 @@ export const useProfileActions = (
     setReportTarget(profile);
   };
 
-  const submitReport = async (reason: ReportReason, details: string) => {
+  const submitReport = async (
+    reason: ReportReason,
+    details: string,
+    alsoBlock: boolean,
+  ) => {
     if (!reportTarget) return;
     try {
       await reportProfileRequest(reportTarget.id, reason, details || undefined);
@@ -53,6 +57,7 @@ export const useProfileActions = (
         description: t('reportSuccessDescription'),
         duration: 4000,
       });
+      if (alsoBlock) void block(reportTarget.id);
     } catch (error) {
       const limited =
         error instanceof ReportProfileError && error.status === 429;
