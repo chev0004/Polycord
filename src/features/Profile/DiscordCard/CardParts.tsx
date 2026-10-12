@@ -171,6 +171,9 @@ export const TagChips = ({
     const more = chips.pop() as HTMLElement;
     const fit = () => {
       let shown = chips.length;
+      const shrink = (value: string) => {
+        for (const chip of chips) chip.style.flexShrink = value;
+      };
       const show = () => {
         chips.forEach((chip, index) => {
           chip.hidden = index >= shown;
@@ -178,11 +181,13 @@ export const TagChips = ({
         more.hidden = shown === chips.length;
         more.textContent = `+${chips.length - shown}`;
       };
+      shrink('0');
       show();
-      while (shown > 0 && row.scrollWidth > row.clientWidth) {
+      while (shown > 1 && row.scrollWidth > row.clientWidth) {
         shown -= 1;
         show();
       }
+      shrink('');
     };
     fit();
     document.fonts?.ready.then(fit);

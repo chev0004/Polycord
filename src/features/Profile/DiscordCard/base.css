@@ -74,8 +74,14 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--color-primary-light);
-  display: grid;
-  place-items: center;
+  line-height: 29px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.dc-chip:last-child {
   flex: none;
 }
 .dc-chip[hidden] {
@@ -94,6 +100,7 @@
   height: 26px;
   padding: 0 10px;
   font-size: 13px;
+  line-height: 23px;
 }
 .dc-tag {
   height: 30px;
