@@ -302,7 +302,7 @@ export const BlockedAccountsDrillIn: Story = {
     ).closest('section') as HTMLElement;
     await expect(await canvas.findByText('Haruka Tanaka')).toBeInTheDocument();
     await expect(
-      canvas.getByRole('searchbox', {
+      canvas.getByRole('textbox', {
         name: 'Search blocked accounts by name or username',
       }),
     ).toBeInTheDocument();

@@ -20,12 +20,12 @@ import {
   MdOutlineInbox,
   MdPersonSearch,
   MdPolicy,
-  MdSearch,
   MdStorage,
   MdTaskAlt,
   MdTune,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { SearchField } from '@/components/Form';
 import {
   ActivityDayBar,
   ActivityPager,
@@ -569,21 +569,15 @@ const UsersTab = ({
     <div className={workspace}>
       <section className={pane} aria-label={t('tabUsers')}>
         <div className="border-line border-b p-3">
-          <label className="relative block h-[42px]">
-            <MdSearch
-              size={20}
-              aria-hidden
-              className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 text-subtle"
-            />
-            <input
-              type="search"
-              value={users.query}
-              onChange={(event) => users.setQuery(event.target.value)}
-              placeholder={t('searchPlaceholder')}
-              aria-label={t('searchLabel')}
-              className="h-[42px] w-full rounded-full border border-white/[0.07] bg-background-darker pr-4 pl-[42px] text-foreground text-sm outline-none transition-colors placeholder:text-subtle hover:border-white/[0.14] focus:border-white/[0.14]"
-            />
-          </label>
+          <SearchField
+            className="h-[42px] border-white/[0.07] pr-1.5 pl-3.5 transition-colors focus-within:border-white/[0.14] hover:border-white/[0.14]"
+            inputClassName="text-sm"
+            value={users.query}
+            onClear={() => users.setQuery('')}
+            onChange={(event) => users.setQuery(event.target.value)}
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchLabel')}
+          />
         </div>
         <div className={paneScroll}>
           {users.searching ? (

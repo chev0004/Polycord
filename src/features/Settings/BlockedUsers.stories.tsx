@@ -68,7 +68,7 @@ const confirmUnblock = async () =>
   );
 
 const search = async (canvas: ReturnType<typeof within>, value: string) => {
-  const field = await canvas.findByRole('searchbox', {
+  const field = await canvas.findByRole('textbox', {
     name: 'Search blocked accounts by name or username',
   });
   Object.getOwnPropertyDescriptor(

@@ -273,7 +273,6 @@
     "searchPlaceholder": "ユーザー名、表示名、Discord ID",
     "searchPlaceholderShort": "ユーザー名、名前、Discord ID",
     "searchLabel": "ユーザーを検索",
-    "clearSearch": "検索をクリア",
     "recentlyActioned": "最近対応したユーザー",
     "resultsCount": "{count}件の結果",
     "noUsersTitle": "ユーザーが見つかりません",

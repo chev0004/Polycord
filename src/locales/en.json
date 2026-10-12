@@ -273,7 +273,6 @@
     "searchPlaceholder": "Username, display name or Discord ID",
     "searchPlaceholderShort": "Username, name or Discord ID",
     "searchLabel": "Search users",
-    "clearSearch": "Clear search",
     "recentlyActioned": "Recently actioned",
     "resultsCount": "{count, plural, one {# result} other {# results}}",
     "noUsersTitle": "No users found",
