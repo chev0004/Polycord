@@ -1,6 +1,7 @@
 import 'server-only';
 
 import {
+  type AnyColumn,
   and,
   asc,
   count,
@@ -14,7 +15,7 @@ import {
   type SQLWrapper,
   sql,
 } from 'drizzle-orm';
-import type { ModState } from '@/features/Admin/types';
+import type { ActivityKind, ModState } from '@/features/Admin/types';
 import { ACTIVITY_PAGE_SIZE, type ActivityWindow } from '@/lib/activityWindow';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import { afterCursor, cursorAt, withinWindow } from './activityWindow';
@@ -32,6 +33,7 @@ import {
   reports,
   staffRoles,
   subscriptions,
+  suspiciousActivity,
   users,
 } from './schema';
 
@@ -414,3 +416,39 @@ export const isUserRestricted = (user: {
   suspendedUntil: Date | null;
   bannedAt: Date | null;
 }) => user.bannedAt !== null || isSuspended(user);
+
+const dayOf = (createdAt: AnyColumn, timeZone: string) =>
+  sql<string>`to_char(${createdAt} at time zone ${timeZone}, 'YYYY-MM-DD')`;
+
+export const countActivityByDay = async (
+  kind: ActivityKind,
+  window: ActivityWindow,
+  timeZone: string,
+) => {
+  const createdAt = {
+    log: moderationActions.createdAt,
+    actioned: moderationActions.createdAt,
+    reports: reports.createdAt,
+    suspicious: suspiciousActivity.createdAt,
+  }[kind];
+  const total = {
+    log: sql<number>`count(*)::int`,
+    actioned: sql<number>`count(distinct ${moderationActions.targetUserId})::int`,
+    reports: sql<number>`count(*)::int`,
+    suspicious: sql<number>`count(*)::int`,
+  }[kind];
+  const table = {
+    log: moderationActions,
+    actioned: moderationActions,
+    reports,
+    suspicious: suspiciousActivity,
+  }[kind];
+
+  const rows = await db
+    .select({ day: dayOf(createdAt, timeZone), total })
+    .from(table)
+    .where(withinWindow(createdAt, window))
+    .groupBy(sql`1`);
+
+  return Object.fromEntries(rows.map(({ day, total: count }) => [day, count]));
+};

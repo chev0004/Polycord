@@ -2,6 +2,7 @@ import 'server-only';
 
 import { z } from 'zod';
 import {
+  countActivityByDay,
   countPendingCases,
   hasActivePremiumGrant,
   isSubscriptionActive,
@@ -30,7 +31,11 @@ import type {
   StaffRole,
 } from '@/features/Admin/types';
 import type { WarningCategory } from '@/types';
-import { type ActivityWindow, pageOf } from './activityWindow';
+import {
+  type ActivityDaysQuery,
+  type ActivityWindow,
+  pageOf,
+} from './activityWindow';
 import { isOwnerDiscordId, ownerDiscordIds } from './admin';
 import { isPremiumDiscordId } from './entitlements';
 
@@ -237,3 +242,12 @@ export const loadSuspiciousEvents = async (
   );
   return { events: events.map(toSuspiciousEvent), hasMore };
 };
+
+export const loadActivityDays = async ({
+  kind,
+  from,
+  to,
+  timeZone,
+}: ActivityDaysQuery) => ({
+  days: await countActivityByDay(kind, { from, to }, timeZone),
+});

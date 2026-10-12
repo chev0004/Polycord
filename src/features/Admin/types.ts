@@ -22,11 +22,20 @@ export const LOG_ACTIONS = [
   'ip_unblock',
 ] as const;
 
+export const ACTIVITY_KINDS = [
+  'log',
+  'suspicious',
+  'reports',
+  'actioned',
+] as const;
+
 export const OWNER_ACTIONS = ['ban', 'unban'] as const;
 
 export type ModAction = (typeof MODERATION_ACTIONS)[number];
 
 export type LogAction = (typeof LOG_ACTIONS)[number];
+
+export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
 export type StaffRole = 'owner' | 'moderator';
 

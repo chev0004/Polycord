@@ -1,9 +1,15 @@
 import { z } from 'zod';
-import { LOG_ACTIONS, type LogAction } from '@/features/Admin/types';
+import {
+  ACTIVITY_KINDS,
+  type ActivityKind,
+  LOG_ACTIONS,
+  type LogAction,
+} from '@/features/Admin/types';
 
 export const ACTIVITY_PAGE_SIZE = 25;
 
 const MAX_WINDOW_MS = 26 * 3600000;
+const MAX_MONTH_MS = 32 * 24 * 3600000;
 const cursorPattern =
   /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z)\|([0-9a-f-]{36})$/;
 
@@ -63,5 +69,52 @@ export const pageOf = <T extends { id: string; cursorAt: string }>(
       rows.length > ACTIVITY_PAGE_SIZE && last
         ? `${last.cursorAt}|${last.id}`
         : undefined,
+  };
+};
+
+const isTimeZone = (value: string) => {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const daysSchema = z.object({
+  kind: z.enum(ACTIVITY_KINDS),
+  from: z.string().datetime(),
+  to: z.string().datetime(),
+  timeZone: z.string().max(64).refine(isTimeZone),
+});
+
+export type ActivityDaysQuery = {
+  kind: ActivityKind;
+  from: Date;
+  to: Date;
+  timeZone: string;
+};
+
+export const parseActivityDays = (
+  params: URLSearchParams,
+): ActivityDaysQuery | null => {
+  const parsed = daysSchema.safeParse({
+    kind: params.get('kind') ?? undefined,
+    from: params.get('from') ?? undefined,
+    to: params.get('to') ?? undefined,
+    timeZone: params.get('timeZone') ?? undefined,
+  });
+  if (!parsed.success) return null;
+
+  const from = new Date(parsed.data.from);
+  const to = new Date(parsed.data.to);
+  const span = to.getTime() - from.getTime();
+  if (span <= 0 || span > MAX_MONTH_MS) return null;
+
+  return {
+    kind: parsed.data.kind,
+    from,
+    to,
+    timeZone: parsed.data.timeZone,
   };
 };
