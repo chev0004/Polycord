@@ -1246,6 +1246,16 @@
   "Metadata": {
     "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
   },
+  "TimeField": {
+    "hour": "{label} hour",
+    "minute": "{label} minute",
+    "period": "{label} AM or PM",
+    "hourColumn": "Hour",
+    "minuteColumn": "Min",
+    "periodColumn": "AM/PM",
+    "cancel": "Cancel",
+    "done": "Done"
+  },
   "Sheet": {
     "search": "Search",
     "noResults": "No results found",
