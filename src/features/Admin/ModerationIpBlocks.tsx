@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { MdClose } from 'react-icons/md';
+import { Checkbox } from '@/components/Form';
 import { AccountPicker } from './AccountPicker';
 import {
   ActionError,
@@ -146,28 +147,27 @@ export const IpBlocksPanel = ({
                 {t('observedIps')}
               </p>
               {observed.map((entry) => (
-                <label
+                <Checkbox
                   key={entry.ip}
-                  className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 hover:bg-background-main"
-                >
-                  <input
-                    type="checkbox"
-                    checked={picked.includes(entry.ip)}
-                    onChange={(event) =>
-                      setPicked(
-                        event.target.checked
-                          ? [...picked, entry.ip]
-                          : picked.filter((ip) => ip !== entry.ip),
-                      )
-                    }
-                  />
-                  <span className="flex-1 font-mono text-[13px] text-foreground">
-                    {entry.ip}
-                  </span>
-                  <span className="text-[11.5px] text-subtle">
-                    {date(entry.lastSeenAt)}
-                  </span>
-                </label>
+                  checked={picked.includes(entry.ip)}
+                  onCheckedChange={(checked) =>
+                    setPicked(
+                      checked === true
+                        ? [...picked, entry.ip]
+                        : picked.filter((ip) => ip !== entry.ip),
+                    )
+                  }
+                  label={
+                    <span className="flex items-center justify-between gap-2.5">
+                      <span className="font-mono text-[13px] text-foreground">
+                        {entry.ip}
+                      </span>
+                      <span className="text-[11.5px] text-subtle">
+                        {date(entry.lastSeenAt)}
+                      </span>
+                    </span>
+                  }
+                />
               ))}
             </div>
           ) : (
