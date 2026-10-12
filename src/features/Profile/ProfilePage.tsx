@@ -834,6 +834,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           statusMessage={statusMessage}
           draftNotice={draftNotice}
           menuItems={menuItems}
+          optionsTrigger={optionsTrigger}
           cardStylePicker={cardStylePicker}
           voiceEditor={voiceEditor}
           availabilityEditor={availabilityEditor}
