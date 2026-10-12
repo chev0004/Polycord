@@ -1,6 +1,13 @@
 import { useTranslations } from 'next-intl';
 import { MdWifi } from 'react-icons/md';
-import { BRAND_CAPS, CardAvatar, Cycle, FitText, Icon } from '../CardParts';
+import {
+  BRAND_CAPS,
+  CardAvatar,
+  Cycle,
+  FitText,
+  Icon,
+  TagsText,
+} from '../CardParts';
 import type { DiscordCardLayoutProps } from '../types';
 import '../metal.css';
 
@@ -67,7 +74,7 @@ export const MetalCard = ({ data, active }: DiscordCardLayoutProps) => {
       {data.tags.length ? (
         <div className="dc-mc-in">
           <span className="dc-mc-k">{t('interests')}</span>
-          <span className="dc-v dc-mc-em">{data.tagsText}</span>
+          <TagsText tags={data.tags} className="dc-v dc-mc-em" />
         </div>
       ) : null}
       <CardAvatar data={data} style={{ left: 817, top: 208 }} />

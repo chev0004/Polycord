@@ -1060,6 +1060,8 @@
     "reportDetailsPlaceholder": "Add any context that will help us review this report.",
     "reportSubmit": "Submit report",
     "reportCancel": "Cancel",
+    "reportAlsoBlock": "Also block this account",
+    "reportAlsoBlockDescription": "You will no longer see their profile.",
     "reportLoginTitle": "Log in to report profiles",
     "reportLoginDescription": "Sign in with Discord to flag profiles for moderation.",
     "reportSuccessTitle": "Report submitted",
@@ -1263,6 +1265,16 @@
     "apply": "Apply",
     "busiestDay": "busiest day",
     "none": "None"
+  },
+  "TimeField": {
+    "hour": "{label} hour",
+    "minute": "{label} minute",
+    "period": "{label} AM or PM",
+    "hourColumn": "Hour",
+    "minuteColumn": "Min",
+    "periodColumn": "AM/PM",
+    "cancel": "Cancel",
+    "done": "Done"
   },
   "Sheet": {
     "search": "Search",

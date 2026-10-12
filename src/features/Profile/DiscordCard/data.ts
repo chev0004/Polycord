@@ -124,7 +124,6 @@ export const buildDiscordCardData = ({
     .filter((row) => row.language)
     .map((row) => buildTarget(row, locale, labels)),
   tags,
-  tagsText: `${tags.slice(0, 3).join(' · ')}${tags.length > 3 ? ` +${tags.length - 3}` : ''}`,
   availability: availability
     ? buildAvailability(availability, labels)
     : undefined,

@@ -960,6 +960,7 @@ export const DiscoveryPage = ({
   const handleSubmitReport = async (
     reason: ReportReason,
     details: string,
+    alsoBlock: boolean,
   ): Promise<void> => {
     if (!reportTarget) {
       return;
@@ -972,6 +973,7 @@ export const DiscoveryPage = ({
         description: t('reportSuccessDescription'),
         duration: BUMP_TOAST_DURATION,
       });
+      if (alsoBlock) void handleBlockProfile(reportTarget.id);
     } catch (error) {
       const limited =
         error instanceof ReportProfileError && error.status === 429;

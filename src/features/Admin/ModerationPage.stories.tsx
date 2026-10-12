@@ -176,6 +176,43 @@ const mockModerationApi = () => {
   };
 };
 
+const mockIpBlocksApi = () => {
+  const original = globalThis.fetch;
+  const ryan = moderationSnapshot.users.find(
+    (user) => user.id === 'ryan',
+  ) as ModUser;
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) => {
+      const url = String(args[0]);
+      if (url.startsWith('/api/admin/ip-bans'))
+        return new Response(
+          JSON.stringify({
+            bans: [],
+            observed: [
+              { ip: '203.0.113.7', lastSeenAt: '2026-10-09T12:00:00.000Z' },
+              { ip: '198.51.100.20', lastSeenAt: '2026-10-08T08:30:00.000Z' },
+            ],
+          }),
+        );
+      if (url.startsWith('/api/admin/users'))
+        return new Response(
+          JSON.stringify({
+            results: ['ryan'],
+            hasMore: false,
+            users: [ryan],
+            reports: [],
+            log: [],
+          }),
+        );
+      return original(...args);
+    },
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+  };
+};
+
 const meta: Meta<typeof ModerationPage> = {
   title: 'Features/Admin/ModerationPage',
   component: ModerationPage,
@@ -400,6 +437,28 @@ export const ManageStaff: Story = {
     await expect(
       screen.getByRole('button', { name: 'Add moderator' }),
     ).toBeInTheDocument();
+  },
+};
+
+export const IpBlockSelection: Story = {
+  beforeEach: mockIpBlocksApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('button', { name: 'IP blocks' }));
+    const search = await screen.findByRole('combobox');
+    fireEvent.change(search, { target: { value: 'ryan' } });
+    fireEvent.click(await screen.findByRole('option', { name: /Ryan Mercer/ }));
+    const address = await screen.findByRole('checkbox', {
+      name: /203\.0\.113\.7/,
+    });
+    await expect(address).not.toBeChecked();
+    fireEvent.click(address);
+    await waitFor(() => expect(address).toBeChecked());
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Block 1 IP address' }),
+      ).toBeEnabled(),
+    );
   },
 };
 

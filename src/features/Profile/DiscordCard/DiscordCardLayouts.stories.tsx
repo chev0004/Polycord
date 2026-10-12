@@ -409,6 +409,234 @@ export const LongLanguageNames: Story = {
   },
 };
 
+const tagRows = (canvasElement: HTMLElement) =>
+  [...canvasElement.querySelectorAll<HTMLElement>('.dc-chips, .dc-tt')].map(
+    (row) => {
+      const chips = [...row.children] as HTMLElement[];
+      const more = chips.pop() as HTMLElement;
+      return {
+        row,
+        more,
+        shown: chips.filter((chip) => !chip.hidden).length,
+        total: chips.length,
+      };
+    },
+  );
+
+const expectTagsToFit = async (canvasElement: HTMLElement) => {
+  await canvasElement.ownerDocument.fonts.ready;
+  await waitFor(() => {
+    for (const root of canvasElement.querySelectorAll<HTMLElement>('.dc-root'))
+      expect(root.style.transform).not.toBe('scale(0)');
+    const rows = tagRows(canvasElement);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const { row, more, shown, total } of rows) {
+      const bounds = row.getBoundingClientRect();
+      for (const chip of [...row.children] as HTMLElement[]) {
+        if (chip.hidden) continue;
+        const box = chip.getBoundingClientRect();
+        expect(box.left).toBeGreaterThanOrEqual(bounds.left - 1);
+        expect(box.right).toBeLessThanOrEqual(bounds.right + 1);
+      }
+      expect(more.hidden).toBe(shown === total);
+      if (shown < total) expect(more.textContent).toBe(`+${total - shown}`);
+    }
+  });
+};
+
+export const LongTags: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(20)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    await expect(
+      tagRows(canvasElement).some(({ shown, total }) => shown < total),
+    ).toBe(true);
+  },
+};
+
+export const OrbitLongTags: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(20)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const card = canvasElement.querySelector(
+      '[data-layout="orbit"] .dc-ob',
+    ) as HTMLElement;
+    const row = card.querySelector('.dc-chips') as HTMLElement;
+    const widestChip = Math.max(
+      ...[...card.querySelectorAll<HTMLElement>('.dc-ob-c')].map(
+        (chip) => chip.offsetWidth,
+      ),
+    );
+    const orbitLeft = 744 - 150 - widestChip / 2;
+
+    await expect(
+      (row.parentElement as HTMLElement).offsetLeft +
+        row.offsetLeft +
+        row.offsetWidth,
+    ).toBeLessThanOrEqual(orbitLeft);
+  },
+};
+
+export const TagsYieldToDetails: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const layout = (id: string) =>
+      canvasElement.querySelector(`[data-layout="${id}"]`) as HTMLElement;
+
+    for (const selector of [
+      '[data-layout="split"] .dc-g-nm',
+      '[data-layout="character-select"] .dc-cs-id b',
+    ]) {
+      const name = canvasElement.querySelector(selector) as HTMLElement;
+      await expect(name.scrollWidth).toBeLessThanOrEqual(name.clientWidth);
+    }
+    for (const [id, card, footer] of [
+      ['photo', '.dc-ph', '.dc-ph-f'],
+      ['now-playing', '.dc-np', '.dc-np-ft'],
+    ]) {
+      const root = layout(id);
+      await expect(
+        (root.querySelector(footer) as HTMLElement).getBoundingClientRect()
+          .bottom,
+      ).toBeLessThanOrEqual(
+        (root.querySelector(card) as HTMLElement).getBoundingClientRect()
+          .bottom,
+      );
+    }
+    const availability = layout('now-playing').querySelector(
+      '.dc-np-ft > span',
+    ) as HTMLElement;
+    await expect(availability.offsetHeight).toBeLessThanOrEqual(24);
+
+    const diagonal = layout('diagonal');
+    const row = diagonal.querySelector('.dc-chips') as HTMLElement;
+    const avatar = diagonal.querySelector('.dc-av') as HTMLElement;
+    await expect(
+      (row.parentElement as HTMLElement).offsetLeft + row.offsetLeft,
+    ).toBeGreaterThanOrEqual(avatar.offsetLeft + avatar.offsetWidth / 2 + 8);
+  },
+};
+
+export const InterestsTextRows: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(20)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const rows = [...canvasElement.querySelectorAll<HTMLElement>('.dc-tt')];
+
+    await expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      await expect(row.lastElementChild).toHaveTextContent(/^\+[1-3]$/);
+    }
+  },
+};
+
+export const FewShortTagsOnTextRows: Story = {
+  args: { data: build({ tags: ['Art', 'Film'] }) },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const rows = tagRows(canvasElement).filter(({ row }) =>
+      row.classList.contains('dc-tt'),
+    );
+
+    await expect(rows).toHaveLength(2);
+    for (const { more, shown } of rows) {
+      await expect(shown).toBe(2);
+      await expect(more.hidden).toBe(true);
+    }
+  },
+};
+
+export const SplitLongName: Story = {
+  args: {
+    data: build({
+      name: 'W'.repeat(32),
+      tags: ['Anime', 'Cooking', 'Music', 'Travel'],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    await canvasElement.ownerDocument.fonts.ready;
+    const row = canvasElement.querySelector(
+      '[data-layout="split"] .dc-chips',
+    ) as HTMLElement;
+    const visible = [...row.children].filter(
+      (chip) => !(chip as HTMLElement).hidden,
+    ) as HTMLElement[];
+
+    await waitFor(() => expect(row.clientWidth).toBeGreaterThan(0));
+    await expect(visible.length).toBeGreaterThan(0);
+    const last = visible[visible.length - 1].getBoundingClientRect();
+    await expect(last.right).toBeLessThanOrEqual(
+      row.getBoundingClientRect().right + 1,
+    );
+  },
+};
+
+export const OverlongTags: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    for (const { row, more, shown } of tagRows(canvasElement).filter(
+      ({ row }) => row.classList.contains('dc-chips'),
+    )) {
+      const chip = row.firstElementChild as HTMLElement;
+      await expect(shown).toBe(1);
+      await expect(more.textContent).toBe('+2');
+      await expect(chip.scrollWidth).toBeGreaterThan(chip.clientWidth);
+      await expect(getComputedStyle(chip).textOverflow).toBe('ellipsis');
+    }
+    const diagonalChip = canvasElement.querySelector(
+      '[data-layout="diagonal"] .dc-chip',
+    ) as HTMLElement;
+    await expect(getComputedStyle(diagonalChip).backgroundColor).not.toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+  },
+};
+
+export const ManyShortTags: Story = {
+  args: {
+    data: build({ tags: ['Art', 'Film', 'Golf', 'Jazz', 'Chess', 'Yoga'] }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    await expect(tagRows(canvasElement).some(({ shown }) => shown > 3)).toBe(
+      true,
+    );
+  },
+};
+
+export const LongNativeScript: Story = {
+  args: {
+    data: build({
+      primaryLanguage: 'ab',
+      targetLanguages: [{ language: 'ak', level: Proficiency.INTERMEDIATE }],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    await canvasElement.ownerDocument.fonts.ready;
+    const script = canvasElement.querySelector(
+      '[data-layout="bleed"] .dc-bl-ja',
+    ) as HTMLElement;
+    const fontSize = Number.parseFloat(getComputedStyle(script).fontSize);
+
+    await waitFor(() =>
+      expect(script.offsetHeight).toBeLessThanOrEqual(fontSize * 1.5),
+    );
+    await expect(script.offsetWidth).toBeLessThanOrEqual(600);
+  },
+};
+
 const activeTarget = (card: Element | null) =>
   card?.querySelector('.dc-cy > .dc-on')?.textContent ?? '';
 

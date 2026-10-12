@@ -137,8 +137,15 @@
 }
 .dc-np-ft {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
+}
+.dc-np-ft > span {
+  flex: none;
+  white-space: nowrap;
+}
+.dc-np-ft > span + .dc-chips {
+  justify-content: safe flex-end;
 }
 .dc-np-top {
   display: flex;

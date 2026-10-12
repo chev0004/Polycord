@@ -8,6 +8,7 @@ const CENTER_X = 744;
 const CENTER_Y = 160;
 const RADIUS = 150;
 const RINGS = [200, 300, 420];
+const TAGS_MAX_WIDTH = CENTER_X - RADIUS - 80;
 const SPIN_DURATION = 1000;
 
 const easeInOutCubic = (progress: number) =>
@@ -101,7 +102,11 @@ export const OrbitCard = ({ data, active }: DiscordCardLayoutProps) => {
           {data.country ? ` · ${data.country}` : null}
           {data.time ? ` · ${data.time}` : null}
         </div>
-        <TagChips tags={data.tags} small style={{ marginTop: 12 }} />
+        <TagChips
+          tags={data.tags}
+          small
+          style={{ marginTop: 12, maxWidth: TAGS_MAX_WIDTH }}
+        />
       </div>
       <div className="dc-ob-ls">
         <div className="dc-ob-r">

@@ -33,7 +33,11 @@ export const SplitCard = ({ data, active }: DiscordCardLayoutProps) => {
             <div className="dc-g-nm">{data.name}</div>
             <div className="dc-g-un">{data.handle}</div>
           </div>
-          <TagChips tags={data.tags} small style={{ marginLeft: 'auto' }} />
+          <TagChips
+            tags={data.tags}
+            small
+            style={{ flex: '1 1 0', justifyContent: 'safe flex-end' }}
+          />
         </div>
         <div className="dc-g-big">
           <span className="dc-k">{t('learning')}</span>

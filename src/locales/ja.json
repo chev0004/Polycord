@@ -1060,6 +1060,8 @@
     "reportDetailsPlaceholder": "確認に役立つ情報があればご記入ください。",
     "reportSubmit": "報告を送信",
     "reportCancel": "キャンセル",
+    "reportAlsoBlock": "このアカウントもブロックする",
+    "reportAlsoBlockDescription": "相手のプロフィールが表示されなくなります。",
     "reportLoginTitle": "ログインして報告",
     "reportLoginDescription": "Discordでログインすると、プロフィールをモデレーションに報告できます。",
     "reportSuccessTitle": "報告を送信しました",
@@ -1263,6 +1265,16 @@
     "apply": "適用",
     "busiestDay": "最も多い日",
     "none": "なし"
+  },
+  "TimeField": {
+    "hour": "{label}の時",
+    "minute": "{label}の分",
+    "period": "{label}の午前または午後",
+    "hourColumn": "時",
+    "minuteColumn": "分",
+    "periodColumn": "午前/午後",
+    "cancel": "キャンセル",
+    "done": "完了"
   },
   "Sheet": {
     "search": "検索",

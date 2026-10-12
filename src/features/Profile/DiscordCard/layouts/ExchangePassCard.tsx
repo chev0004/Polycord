@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { MdFlight } from 'react-icons/md';
-import { BrandName, CardAvatar, Cycle, Icon } from '../CardParts';
+import { BrandName, CardAvatar, Cycle, Icon, TagsText } from '../CardParts';
 import type { DiscordCardLayoutProps } from '../types';
 import '../exchangePass.css';
 
@@ -65,7 +65,7 @@ export const ExchangePassCard = ({ data, active }: DiscordCardLayoutProps) => {
           <div className="dc-d-f" style={{ marginTop: 16 }}>
             <div style={{ gridColumn: '1/-1' }}>
               <span className="dc-k">{t('interests')}</span>
-              <span className="dc-d-v">{data.tagsText}</span>
+              <TagsText tags={data.tags} className="dc-d-v" />
             </div>
           </div>
         ) : null}
