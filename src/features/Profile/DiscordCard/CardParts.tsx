@@ -160,16 +160,45 @@ export const TagChips = ({
   tags: string[];
   small?: boolean;
   style?: CSSProperties;
-}) =>
-  tags.length ? (
-    <div className={`dc-chips ${small ? 'dc-sm' : ''}`} style={style}>
-      {tags.slice(0, 3).map((tag) => (
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the chips are rebuilt whenever the tags change
+  useLayoutEffect(() => {
+    const row = ref.current;
+    if (!row) return;
+    const chips = [...row.children] as HTMLElement[];
+    const more = chips.pop() as HTMLElement;
+    const fit = () => {
+      let shown = chips.length;
+      const show = () => {
+        chips.forEach((chip, index) => {
+          chip.hidden = index >= shown;
+        });
+        more.hidden = shown === chips.length;
+        more.textContent = `+${chips.length - shown}`;
+      };
+      show();
+      while (shown > 0 && row.scrollWidth > row.clientWidth) {
+        shown -= 1;
+        show();
+      }
+    };
+    fit();
+    document.fonts?.ready.then(fit);
+    const observer = new ResizeObserver(fit);
+    observer.observe(row);
+    return () => observer.disconnect();
+  }, [tags]);
+
+  return tags.length ? (
+    <div ref={ref} className={`dc-chips ${small ? 'dc-sm' : ''}`} style={style}>
+      {tags.map((tag) => (
         <span key={tag} className="dc-chip">
           {tag}
         </span>
       ))}
-      {tags.length > 3 ? (
-        <span className="dc-chip">+{tags.length - 3}</span>
-      ) : null}
+      <span className="dc-chip" hidden />
     </div>
   ) : null;
+};
