@@ -7,6 +7,7 @@ import {
   waitFor,
   within,
 } from '@storybook/test';
+import { MobileNavigation } from '@/features/Navigation/MobileNavigation';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { Inbox } from './Inbox';
 import { InboxPage } from './InboxPage';
@@ -292,5 +293,33 @@ export const MobileReadsAndDelete: Story = {
     await expect(
       canvas.getByRole('button', { name: /Note from moderation/ }),
     ).toBeInTheDocument();
+  },
+};
+
+export const DockBadgeFollowsPendingRead: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: () => (
+    <>
+      <InboxPage />
+      <MobileNavigation locale="en" onNavigate={() => {}} />
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await screen.findByRole('button', { name: 'Inbox, 3 unread' });
+    await userEvent.click(
+      await canvas.findByRole('button', { name: /Mina copied your username/ }),
+    );
+    await waitForWrites(1);
+    await screen.findByRole('button', {
+      name: 'Inbox, 2 unread',
+      hidden: true,
+    });
+    writes[0].finish();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Inbox, 2 unread', hidden: true }),
+      ).toBeInTheDocument(),
+    );
   },
 };
