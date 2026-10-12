@@ -4,8 +4,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { MdCheck } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import { Checkbox } from '@/components/Form';
 import type { WarningCategory } from '@/types';
 
 export const WarningNotice = ({
@@ -99,21 +99,16 @@ export const WarningNotice = ({
             <div className="flex shrink-0 flex-col gap-3.5 px-7 pt-2 pb-7 max-md:border-[rgba(107,114,128,0.25)] max-md:border-t max-md:bg-background-main max-md:px-5 max-md:pt-3 max-md:pb-[calc(env(safe-area-inset-bottom)+12px)]">
               <div className="flex flex-col gap-0.5">
                 {acknowledged ? null : (
-                  <label className="relative flex min-h-11 cursor-pointer select-none items-center gap-3 text-[15px] text-foreground leading-[1.4]">
-                    <input
-                      type="checkbox"
+                  <div className="rounded-list bg-background-darker p-1">
+                    <Checkbox
                       checked={checked}
-                      onChange={(event) => setChecked(event.target.checked)}
-                      className="peer absolute h-0 w-0 opacity-0"
+                      onCheckedChange={(value) => setChecked(value === true)}
+                      label={t('acknowledge')}
                     />
-                    <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-md border border-line-strong bg-background-darker text-transparent transition-colors duration-150 peer-checked:border-primary peer-checked:bg-primary peer-checked:text-black peer-focus-visible:outline-2 peer-focus-visible:outline-primary peer-focus-visible:outline-offset-2">
-                      <MdCheck size={18} aria-hidden />
-                    </span>
-                    {t('acknowledge')}
-                  </label>
+                  </div>
                 )}
                 <p
-                  className={`text-muted text-xs leading-normal ${acknowledged ? '' : 'pl-[34px]'}`}
+                  className={`text-muted text-xs leading-normal ${acknowledged ? '' : 'pl-12 max-md:pl-14'}`}
                 >
                   {t('fine')}
                 </p>
