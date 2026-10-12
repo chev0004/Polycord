@@ -646,7 +646,7 @@ export const LongNativeScript: Story = {
     await expect(script.offsetWidth).toBeGreaterThan(600);
     await expect(script.offsetWidth).toBeLessThanOrEqual(640);
     await expect(script.offsetTop + script.offsetHeight).toBeLessThanOrEqual(
-      label.offsetTop + 12,
+      label.offsetTop,
     );
   },
 };
@@ -665,7 +665,7 @@ export const WrappedNativeScript: Story = {
     await expect(size()).toBeGreaterThan(80);
     await expect(script.offsetWidth).toBeLessThanOrEqual(640);
     await expect(script.offsetTop + script.offsetHeight).toBeLessThanOrEqual(
-      label.offsetTop + 12,
+      label.offsetTop + 8,
     );
   },
 };
