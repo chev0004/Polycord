@@ -279,6 +279,42 @@ export const TypingMovesToMinutes: Story = {
   },
 };
 
+export const ArrowKeysStepTypedValue: Story = {
+  args: { initialValue: { days: 'any', from: '18:30', to: '22:00' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const minute = canvas.getByRole('textbox', { name: 'From minute' });
+    fireEvent.change(minute, { target: { value: '45' } });
+    fireEvent.keyDown(minute, { key: 'ArrowUp' });
+
+    await waitFor(() => expect(minute).toHaveValue('46'));
+    fireEvent.focusOut(minute);
+    await waitFor(() => expect(minute).toHaveValue('46'));
+  },
+};
+
+export const MobileWheelTapThenDone: Story = {
+  args: {
+    initialValue: { days: 'any', from: '18:30', to: '22:00' },
+    format: '12hr',
+  },
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    const field = canvas.getByRole('button', { name: 'From' });
+    await userEvent.click(field);
+
+    const sheet = within(await body.findByRole('dialog'));
+    await userEvent.click(sheet.getByRole('button', { name: '7' }));
+    await userEvent.click(sheet.getByRole('button', { name: 'Done' }));
+
+    await waitFor(() => expect(field).toHaveTextContent('7:30 PM'));
+  },
+};
+
 export const MobileWheel: Story = {
   args: {
     initialValue: { days: 'any', from: '18:00', to: '22:00' },
