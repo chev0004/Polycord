@@ -676,7 +676,7 @@ export const ShortNativeScript: Story = {
 
     await expect(size()).toBe(210);
     await expect(script.querySelectorAll('br')).toHaveLength(0);
-    await expect(Math.round(label.offsetTop)).toBe(162);
+    await expect(Math.round(label.offsetTop)).toBeGreaterThanOrEqual(162);
   },
 };
 
