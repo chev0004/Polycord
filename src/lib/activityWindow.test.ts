@@ -36,6 +36,34 @@ describe('parseActivityWindow', () => {
     expect(window?.staffId).toBe(id);
   });
 
+  test('accepts a report reason and status filter', () => {
+    const window = parseActivityWindow(
+      params({
+        from: '2026-10-05T00:00:00.000Z',
+        to: '2026-10-06T00:00:00.000Z',
+        reason: 'spam',
+        status: 'resolved',
+      }),
+    );
+    expect(window?.reason).toBe('spam');
+    expect(window?.status).toBe('resolved');
+  });
+
+  test.each([
+    ['reason', 'rude'],
+    ['status', 'reviewed'],
+  ])('rejects an unknown %s', (key, value) => {
+    expect(
+      parseActivityWindow(
+        params({
+          from: '2026-10-05T00:00:00.000Z',
+          to: '2026-10-06T00:00:00.000Z',
+          [key]: value,
+        }),
+      ),
+    ).toBeNull();
+  });
+
   test('accepts a 25 hour daylight saving day', () => {
     expect(
       parseActivityWindow(

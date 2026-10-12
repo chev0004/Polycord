@@ -4,6 +4,10 @@ import {
   type ActivityKind,
   LOG_ACTIONS,
   type LogAction,
+  REPORT_REASONS,
+  REPORT_VIEWS,
+  type ReportReason,
+  type ReportView,
 } from '@/features/Admin/types';
 
 export const ACTIVITY_PAGE_SIZE = 25;
@@ -21,6 +25,8 @@ export type ActivityWindow = {
   cursor?: ActivityCursor;
   action?: LogAction;
   staffId?: string;
+  reason?: ReportReason;
+  status?: ReportView;
 };
 
 const schema = z.object({
@@ -29,6 +35,8 @@ const schema = z.object({
   cursor: z.string().regex(cursorPattern).optional(),
   action: z.enum(LOG_ACTIONS).optional(),
   staffId: z.string().uuid().optional(),
+  reason: z.enum(REPORT_REASONS).optional(),
+  status: z.enum(REPORT_VIEWS).optional(),
 });
 
 export const parseActivityWindow = (
@@ -40,6 +48,8 @@ export const parseActivityWindow = (
     cursor: params.get('cursor') ?? undefined,
     action: params.get('action') ?? undefined,
     staffId: params.get('staffId') ?? undefined,
+    reason: params.get('reason') ?? undefined,
+    status: params.get('status') ?? undefined,
   });
   if (!parsed.success) return null;
 
@@ -55,6 +65,8 @@ export const parseActivityWindow = (
     cursor: match ? { at: match[1], id: match[2] } : undefined,
     action: parsed.data.action,
     staffId: parsed.data.staffId,
+    reason: parsed.data.reason,
+    status: parsed.data.status,
   };
 };
 

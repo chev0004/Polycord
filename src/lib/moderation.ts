@@ -6,12 +6,14 @@ import {
   countPendingCases,
   hasActivePremiumGrant,
   isSubscriptionActive,
+  listActionedPage,
   listModerationActions,
   listModerationActionsPage,
   listModerationReports,
   listModerationStatesByProfileId,
   listModerationUsers,
   listReportsAgainstUsers,
+  listReportsPage,
   listStaffUserIds,
   listSuspiciousEvents,
   listSuspiciousGroups,
@@ -21,6 +23,7 @@ import {
   searchModerationUserIds,
 } from '@/db';
 import type {
+  ModActioned,
   ModData,
   ModLogEntry,
   ModReport,
@@ -211,6 +214,36 @@ const toSuspiciousEvent = (row: {
 export const loadActivityLogPage = async (window: ActivityWindow) => {
   const { page, nextCursor } = pageOf(await listModerationActionsPage(window));
   return { nextCursor, ...(await withUsers([], page, [])) };
+};
+
+export const loadReportsPage = async (window: ActivityWindow) => {
+  const { page, nextCursor } = pageOf(await listReportsPage(window));
+  return { nextCursor, ...(await withUsers(page, [], [])) };
+};
+
+export const loadActionedPage = async (window: ActivityWindow) => {
+  const { page, nextCursor } = pageOf(await listActionedPage(window));
+  const rows: ModActioned[] = page.flatMap((row) =>
+    row.userId
+      ? {
+          id: row.id,
+          userId: row.userId,
+          action: row.action,
+          count: row.total,
+          createdAt: row.createdAt.toISOString(),
+        }
+      : [],
+  );
+  const userIds = rows.map(({ userId }) => userId);
+  const [reports, log] = await Promise.all([
+    listReportsAgainstUsers(userIds),
+    listModerationActions(userIds),
+  ]);
+  return {
+    nextCursor,
+    actioned: rows,
+    ...(await withUsers(reports, log, userIds)),
+  };
 };
 
 export const loadSuspiciousPage = async (window: ActivityWindow) => {
