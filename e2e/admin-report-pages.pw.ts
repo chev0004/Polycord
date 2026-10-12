@@ -131,13 +131,13 @@ test.describe('admin report and actioned pages', () => {
     );
     expect(reports.status()).toBe(200);
     const body = await reports.json();
-    expect(body.reports).toHaveLength(25);
+    expect(body.page).toHaveLength(25);
     expect(body.nextCursor).toBeTruthy();
 
     const filtered = await context.request.get(
       `/api/admin/reports?${query({ status: 'pending', reason: 'harassment' })}`,
     );
-    expect((await filtered.json()).reports).toHaveLength(10);
+    expect((await filtered.json()).page).toHaveLength(10);
 
     const actioned = await context.request.get(
       `/api/admin/actioned?${query()}`,
@@ -172,7 +172,7 @@ test.describe('admin report and actioned pages', () => {
     const sizes: number[] = [];
     page.on('response', async (response) => {
       if (response.url().includes('/api/admin/reports'))
-        sizes.push((await response.json()).reports.length);
+        sizes.push((await response.json()).page.length);
     });
     await page.goto('/en/admin');
     const queue = page.getByRole('region', { name: 'Reports', exact: true });

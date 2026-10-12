@@ -77,7 +77,9 @@ const mockListsApi =
                 (report.status === 'pending') &&
               (!reason || report.reason === reason),
           );
-          return new Response(JSON.stringify({ users: [], reports, log: [] }));
+          return new Response(
+            JSON.stringify({ users: [], reports, log: [], page: reports }),
+          );
         }
         if (url.pathname === '/api/admin/actioned') {
           const action = params.get('action');
@@ -221,6 +223,8 @@ const mockModerationApi = () => {
           users: [{ ...ryan, warnings: ryan.warnings + 1 }],
           reports: [],
           log: [entry],
+          pendingCases:
+            moderationSnapshot.pendingCases - (body.reportIds?.length ? 1 : 0),
         }),
       );
     },

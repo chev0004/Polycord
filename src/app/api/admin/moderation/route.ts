@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import {
+  countPendingCases,
   createNotification,
   getReportById,
   listModerationUsers,
@@ -150,5 +151,6 @@ export const POST = scopedRoute(async (request: Request) => {
     users: [toModUser(updated)],
     reports: resolved.map(toModReport),
     log: [toModLogEntry(entry)],
+    pendingCases: await countPendingCases(),
   });
 });
