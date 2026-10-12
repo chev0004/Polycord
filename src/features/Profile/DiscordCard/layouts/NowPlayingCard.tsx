@@ -64,7 +64,7 @@ export const NowPlayingCard = ({ data, active }: DiscordCardLayoutProps) => {
           </div>
           <div className="dc-np-ft">
             {data.availability ? <span>{data.availability.text}</span> : null}
-            <TagChips tags={data.tags} small />
+            <TagChips tags={data.tags} small style={{ flex: '1 1 0' }} />
           </div>
         </div>
       </div>
