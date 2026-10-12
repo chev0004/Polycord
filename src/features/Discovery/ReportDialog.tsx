@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { Button } from '@/components/Button';
+import { Radio, RadioGroup } from '@/components/Form';
 import type { ReportReason } from './safetyRequests';
 
 const REPORT_REASONS: ReportReason[] = [
@@ -97,35 +98,27 @@ export const ReportDialog = ({
               </Dialog.Close>
             </div>
 
-            <fieldset className="flex flex-col gap-2">
-              <legend className="mb-2 font-semibold text-[11px] text-subtle uppercase tracking-wide">
+            <div className="flex flex-col gap-2">
+              <span
+                id="report-reason-legend"
+                className="font-semibold text-[11px] text-subtle uppercase tracking-wide"
+              >
                 {t('reportReasonLegend')}
-              </legend>
-              {REPORT_REASONS.map((value) => {
-                const isSelected = reason === value;
-
-                return (
-                  <label
+              </span>
+              <RadioGroup
+                value={reason ?? ''}
+                onValueChange={(value) => setReason(value as ReportReason)}
+                aria-labelledby="report-reason-legend"
+              >
+                {REPORT_REASONS.map((value) => (
+                  <Radio
                     key={value}
-                    className={`flex cursor-pointer items-center gap-3 rounded-field border px-3 py-2.5 text-sm transition-colors ${
-                      isSelected
-                        ? 'border-primary bg-primary-darker text-foreground'
-                        : 'border-gray-500/30 text-soft hover:border-gray-500/60 hover:bg-background-darker has-[:focus-visible]:border-gray-500/60 has-[:focus-visible]:bg-background-darker'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="report-reason"
-                      value={value}
-                      checked={isSelected}
-                      onChange={() => setReason(value)}
-                      className="h-4 w-4 flex-shrink-0 appearance-none rounded-full border-2 border-gray-500/50 bg-transparent transition-colors checked:border-primary checked:bg-primary checked:shadow-[inset_0_0_0_2px_var(--color-background-dark)]"
-                    />
-                    {t(reasonLabelKeys[value])}
-                  </label>
-                );
-              })}
-            </fieldset>
+                    value={value}
+                    label={t(reasonLabelKeys[value])}
+                  />
+                ))}
+              </RadioGroup>
+            </div>
 
             <label className="flex flex-col gap-2">
               <span className="font-semibold text-[11px] text-subtle uppercase tracking-wide">
