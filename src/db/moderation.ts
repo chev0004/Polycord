@@ -9,6 +9,7 @@ import {
   eq,
   getTableColumns,
   inArray,
+  isNotNull,
   like,
   ne,
   or,
@@ -230,6 +231,67 @@ export const listModerationActionsPage = async (window: ActivityWindow) =>
     )
     .orderBy(desc(moderationActions.createdAt), desc(moderationActions.id))
     .limit(ACTIVITY_PAGE_SIZE + 1);
+
+export const listReportsPage = async (window: ActivityWindow) =>
+  db
+    .select({
+      ...getTableColumns(reports),
+      cursorAt: cursorAt(reports.createdAt),
+    })
+    .from(reports)
+    .where(
+      and(
+        withinWindow(reports.createdAt, window),
+        window.reason ? eq(reports.reason, window.reason) : undefined,
+        window.status === 'pending' ? eq(reports.status, 'pending') : undefined,
+        window.status === 'resolved'
+          ? ne(reports.status, 'pending')
+          : undefined,
+        afterCursor(reports.createdAt, reports.id, window.cursor),
+      ),
+    )
+    .orderBy(desc(reports.createdAt), desc(reports.id))
+    .limit(ACTIVITY_PAGE_SIZE + 1);
+
+export const listActionedPage = async (window: ActivityWindow) => {
+  const ranked = db
+    .select({
+      id: moderationActions.id,
+      action: moderationActions.action,
+      userId: moderationActions.targetUserId,
+      createdAt: moderationActions.createdAt,
+      cursorAt: cursorAt(moderationActions.createdAt).as('cursor_at'),
+      total:
+        sql<number>`count(*) over (partition by ${moderationActions.targetUserId})`
+          .mapWith(Number)
+          .as('total'),
+      position:
+        sql<number>`row_number() over (partition by ${moderationActions.targetUserId} order by ${moderationActions.createdAt} desc, ${moderationActions.id} desc)`
+          .mapWith(Number)
+          .as('position'),
+    })
+    .from(moderationActions)
+    .where(
+      and(
+        withinWindow(moderationActions.createdAt, window),
+        isNotNull(moderationActions.targetUserId),
+        window.action ? eq(moderationActions.action, window.action) : undefined,
+      ),
+    )
+    .as('ranked');
+
+  return db
+    .select()
+    .from(ranked)
+    .where(
+      and(
+        eq(ranked.position, 1),
+        afterCursor(ranked.createdAt, ranked.id, window.cursor),
+      ),
+    )
+    .orderBy(desc(ranked.createdAt), desc(ranked.id))
+    .limit(ACTIVITY_PAGE_SIZE + 1);
+};
 
 const warningCount = sql<number>`(select count(*)::int from ${moderationActions} where ${moderationActions.targetUserId} = ${users.id} and ${moderationActions.action} = 'warn')`;
 
