@@ -522,6 +522,31 @@ export const TagsYieldToDetails: Story = {
   },
 };
 
+export const SplitLongName: Story = {
+  args: {
+    data: build({
+      name: 'W'.repeat(32),
+      tags: ['Anime', 'Cooking', 'Music', 'Travel'],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    await canvasElement.ownerDocument.fonts.ready;
+    const row = canvasElement.querySelector(
+      '[data-layout="split"] .dc-chips',
+    ) as HTMLElement;
+    const visible = [...row.children].filter(
+      (chip) => !(chip as HTMLElement).hidden,
+    ) as HTMLElement[];
+
+    await waitFor(() => expect(row.clientWidth).toBeGreaterThan(0));
+    await expect(visible.length).toBeGreaterThan(0);
+    const last = visible[visible.length - 1].getBoundingClientRect();
+    await expect(last.right).toBeLessThanOrEqual(
+      row.getBoundingClientRect().right + 1,
+    );
+  },
+};
+
 export const OverlongTags: Story = {
   args: {
     data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
