@@ -513,6 +513,27 @@ export const ManyShortTags: Story = {
   },
 };
 
+export const LongNativeScript: Story = {
+  args: {
+    data: build({
+      primaryLanguage: 'ab',
+      targetLanguages: [{ language: 'ak', level: Proficiency.INTERMEDIATE }],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    await canvasElement.ownerDocument.fonts.ready;
+    const script = canvasElement.querySelector(
+      '[data-layout="bleed"] .dc-bl-ja',
+    ) as HTMLElement;
+    const fontSize = Number.parseFloat(getComputedStyle(script).fontSize);
+
+    await waitFor(() =>
+      expect(script.offsetHeight).toBeLessThanOrEqual(fontSize * 1.5),
+    );
+    await expect(script.offsetWidth).toBeLessThanOrEqual(600);
+  },
+};
+
 const activeTarget = (card: Element | null) =>
   card?.querySelector('.dc-cy > .dc-on')?.textContent ?? '';
 

@@ -44,6 +44,7 @@ export const Inbox = ({
     loading,
     error,
     pending,
+    canMarkAllRead,
     refresh,
     retry,
     setRead,
@@ -125,7 +126,7 @@ export const Inbox = ({
               <button
                 type="button"
                 onClick={markAllRead}
-                disabled={pending || unreadCount === 0}
+                disabled={pending || !canMarkAllRead}
                 className={`${headerButtonClassName} border-primary bg-primary text-[#111] enabled:hover:border-primary-light enabled:hover:bg-primary-light`}
               >
                 {t('markAllRead')}

@@ -12,7 +12,9 @@ export const BleedCard = ({ data, active }: DiscordCardLayoutProps) => {
       <BrandName
         style={{ position: 'absolute', right: 36, bottom: 12, fontSize: 12 }}
       />
-      <div className="dc-bl-ja">{data.native.script}</div>
+      <FitText as="div" className="dc-bl-ja" max={600}>
+        {data.native.script}
+      </FitText>
       <span className="dc-k dc-bl-nl">
         {t('nativeWith', { language: data.native.name })}
       </span>

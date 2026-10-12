@@ -128,7 +128,7 @@ export const InboxContent = ({
         <button
           type="button"
           onClick={() => void inbox.markAllRead()}
-          disabled={inbox.pending || inbox.unreadCount === 0}
+          disabled={inbox.pending || !inbox.canMarkAllRead}
           className="h-11 flex-shrink-0 px-2 font-semibold text-primary text-sm hover:text-primary-light focus-visible:text-primary-light disabled:text-subtle"
         >
           {t('markAllRead')}
