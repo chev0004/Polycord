@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fireEvent, waitFor, within } from '@storybook/test';
+import { expect, fireEvent, userEvent, waitFor, within } from '@storybook/test';
 import { DiscoveryLoadPanelView } from './DiscoveryLoadPanel';
 import { PANEL_POSITION_KEY } from './useDraggablePanel';
 
@@ -44,9 +44,11 @@ export const Loading: Story = {
     await expect(canvas.getByText('12.00 s')).toBeInTheDocument();
     await expect(canvas.getByText('Not started')).toBeInTheDocument();
     fireEvent.click(canvas.getByText('Page load trace'));
-    await expect(
-      canvas.getByRole('complementary').querySelector('details'),
-    ).not.toHaveAttribute('open');
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: /Page load trace/ }),
+      ).toHaveAttribute('aria-expanded', 'false'),
+    );
   },
 };
 
@@ -251,6 +253,7 @@ export const DragToMove: Story = {
     const canvas = within(canvasElement);
     const panel = canvas.getByRole('complementary');
     const summary = canvas.getByText('Page load trace');
+    const toggle = canvas.getByRole('button', { name: /Page load trace/ });
     const start = panel.getBoundingClientRect();
     drag(
       summary,
@@ -262,14 +265,16 @@ export const DragToMove: Story = {
       expect(rect.left).toBeCloseTo(start.left - 100, 0);
       expect(rect.top).toBeCloseTo(start.top - 70, 0);
     });
-    await expect(panel.querySelector('details')).toHaveAttribute('open');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(
       JSON.parse(localStorage.getItem(PANEL_POSITION_KEY) ?? 'null'),
     ).toEqual({ x: start.left - 100, y: start.top - 70 });
     fireEvent.click(summary);
-    await expect(panel.querySelector('details')).toHaveAttribute('open');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     fireEvent.click(summary);
-    await expect(panel.querySelector('details')).not.toHaveAttribute('open');
+    await waitFor(() =>
+      expect(toggle).toHaveAttribute('aria-expanded', 'false'),
+    );
   },
 };
 
@@ -329,5 +334,54 @@ export const IgnoresBrokenSavedPosition: Story = {
       .getByRole('complementary')
       .getBoundingClientRect();
     await expect(rect.right).toBeCloseTo(window.innerWidth - 12, 0);
+  },
+};
+
+export const NoNativeDisclosure: Story = {
+  args: {
+    trace: {
+      transport: 'https',
+      finished: 9000,
+      navigation: {
+        redirect: 0,
+        connection: 100,
+        firstByte: 3000,
+        download: 30,
+      },
+      phases: {
+        document: { status: 'done', start: 0, end: 3030 },
+        controls: { status: 'done', start: 0, end: 3800 },
+        viewer: { status: 'done', start: 3800, end: 8000 },
+        discovery: { status: 'done', start: 3800, end: 6000 },
+        grid: { status: 'done', start: 6000, end: 9000 },
+      },
+      resources: [
+        {
+          name: '/api/viewer',
+          start: 100,
+          end: 900,
+          redirect: 0,
+          firstByte: 400,
+          spans: {},
+        },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas
+        .getByRole('complementary')
+        .querySelector('details, summary, progress'),
+    ).toBeNull();
+    const resources = canvas.getByRole('button', {
+      name: /^Network requests/,
+    });
+    await expect(resources).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(resources);
+    await expect(resources).toHaveAttribute('aria-expanded', 'true');
+    await waitFor(() => expect(canvas.getByText('/api/viewer')).toBeVisible());
+    await userEvent.keyboard('{Enter}');
+    await expect(resources).toHaveAttribute('aria-expanded', 'false');
   },
 };
