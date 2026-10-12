@@ -23,6 +23,9 @@
   font-size: 44px;
   box-shadow: 0 0 0 8px var(--color-background-dark);
 }
+.dc-dg .dc-chip {
+  background: var(--color-background-dark);
+}
 .dc-dg-tl {
   position: absolute;
   left: 40px;
@@ -64,6 +67,7 @@
   position: absolute;
   right: 40px;
   top: 36px;
+  max-width: 342px;
   text-align: right;
   font-size: 15px;
   line-height: 1.5;

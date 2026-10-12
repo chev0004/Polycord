@@ -37,7 +37,7 @@ export const DiagonalCard = ({ data, active }: DiscordCardLayoutProps) => {
         <TagChips
           tags={data.tags}
           small
-          style={{ justifyContent: 'flex-end', marginTop: 10 }}
+          style={{ justifyContent: 'safe flex-end', marginTop: 10 }}
         />
       </div>
       {target ? (

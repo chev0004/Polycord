@@ -74,13 +74,39 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--color-primary-light);
-  display: grid;
-  place-items: center;
+  line-height: 29px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.dc-chip:last-child {
+  flex: none;
+}
+.dc-chip[hidden] {
+  display: none;
+}
+.dc-tt {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.dc-tt > span:not(:first-child)::before {
+  content: " · ";
+}
+.dc-tt > span:last-child::before {
+  content: " ";
+}
+.dc-tt > span[hidden] {
+  display: none;
 }
 .dc-chips {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  max-width: 100%;
+  overflow: hidden;
 }
 .dc-chips.dc-sm {
   gap: 6px;
@@ -89,6 +115,7 @@
   height: 26px;
   padding: 0 10px;
   font-size: 13px;
+  line-height: 23px;
 }
 .dc-tag {
   height: 30px;

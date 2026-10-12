@@ -78,6 +78,7 @@
   color: var(--color-text-secondary);
 }
 .dc-cs-in {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -194,6 +195,7 @@
   gap: 12px;
 }
 .dc-cs-id {
+  flex-shrink: 0;
   min-width: 0;
   max-width: 210px;
 }

@@ -152,6 +152,45 @@ export const LocationRow = ({
     </div>
   ) : null;
 
+const useFitRow = <T extends HTMLElement>(tags: string[], minShown: number) => {
+  const ref = useRef<T>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the items are rebuilt whenever the tags change
+  useLayoutEffect(() => {
+    const row = ref.current;
+    if (!row) return;
+    const items = [...row.children] as HTMLElement[];
+    const more = items.pop() as HTMLElement;
+    const fit = () => {
+      let shown = items.length;
+      const shrink = (value: string) => {
+        for (const item of items) item.style.flexShrink = value;
+      };
+      const show = () => {
+        items.forEach((item, index) => {
+          item.hidden = index >= shown;
+        });
+        more.hidden = shown === items.length;
+        more.textContent = `+${items.length - shown}`;
+      };
+      shrink('0');
+      show();
+      while (shown > minShown && row.scrollWidth > row.clientWidth) {
+        shown -= 1;
+        show();
+      }
+      shrink('');
+    };
+    fit();
+    document.fonts?.ready.then(fit);
+    const observer = new ResizeObserver(fit);
+    observer.observe(row);
+    return () => observer.disconnect();
+  }, [tags]);
+
+  return ref;
+};
+
 export const TagChips = ({
   tags,
   small = false,
@@ -160,16 +199,36 @@ export const TagChips = ({
   tags: string[];
   small?: boolean;
   style?: CSSProperties;
-}) =>
-  tags.length ? (
-    <div className={`dc-chips ${small ? 'dc-sm' : ''}`} style={style}>
-      {tags.slice(0, 3).map((tag) => (
+}) => {
+  const ref = useFitRow<HTMLDivElement>(tags, 1);
+
+  return tags.length ? (
+    <div ref={ref} className={`dc-chips ${small ? 'dc-sm' : ''}`} style={style}>
+      {tags.map((tag) => (
         <span key={tag} className="dc-chip">
           {tag}
         </span>
       ))}
-      {tags.length > 3 ? (
-        <span className="dc-chip">+{tags.length - 3}</span>
-      ) : null}
+      <span className="dc-chip" hidden />
     </div>
   ) : null;
+};
+
+export const TagsText = ({
+  tags,
+  className,
+}: {
+  tags: string[];
+  className: string;
+}) => {
+  const ref = useFitRow<HTMLSpanElement>(tags, 0);
+
+  return (
+    <span ref={ref} className={`dc-tt ${className}`}>
+      {tags.map((tag) => (
+        <span key={tag}>{tag}</span>
+      ))}
+      <span hidden />
+    </span>
+  );
+};

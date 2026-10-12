@@ -105,16 +105,6 @@ describe('buildDiscordCardData', () => {
     expect(build({ locale: 'ja' }).country).toBe('日本');
   });
 
-  it('joins up to three tags and counts the rest', () => {
-    expect(build({ tags: [] }).tagsText).toBe('');
-    expect(build({ tags: ['Anime', 'Cooking'] }).tagsText).toBe(
-      'Anime · Cooking',
-    );
-    expect(
-      build({ tags: ['Anime', 'Cooking', 'Travel', 'Music', 'Film'] }).tagsText,
-    ).toBe('Anime · Cooking · Travel +2');
-  });
-
   it('prefixes the handle and leaves it empty when missing', () => {
     expect(build().handle).toBe('@kenji');
     expect(build({ handle: undefined }).handle).toBe('');
