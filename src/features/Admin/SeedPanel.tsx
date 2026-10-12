@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MdStorage } from 'react-icons/md';
 import { NumberStepper } from '@/components/Form';
+import { Progress } from '@/components/Progress';
 import { SEED_PRESETS } from '@/lib/seed/limits';
 import {
   ActionError,
@@ -175,12 +176,7 @@ export const SeedPanel = ({
               total: number.format(total),
             })}
           </span>
-          <progress
-            max={total}
-            value={done}
-            aria-label={t('seedTitle')}
-            className="h-2 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-background-darker [&::-webkit-progress-value]:bg-primary"
-          />
+          <Progress max={total} value={done} aria-label={t('seedTitle')} />
         </output>
       ) : null}
 
