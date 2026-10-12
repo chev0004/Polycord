@@ -9,12 +9,13 @@
 .dc-bl-ja {
   position: absolute;
   left: -10px;
-  top: -40px;
+  top: -0.19em;
   font-family: var(--font-Zen);
   font-weight: 900;
   font-size: 210px;
   line-height: 1;
   letter-spacing: -0.04em;
+  white-space: nowrap;
   color: var(--color-primary);
 }
 .dc-bl-nl {
