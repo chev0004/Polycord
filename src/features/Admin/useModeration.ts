@@ -91,6 +91,7 @@ const DAY_COUNTS_TTL_MS = 60000;
 export const useModeration = (initial: ModSnapshot) => {
   const [data, setData] = useState<ModData>(initial);
   const [staff, setStaff] = useState(initial.staff);
+  const [pendingCases, setPendingCases] = useState(initial.pendingCases);
   const [revision, setRevision] = useState(0);
 
   const merge = useCallback(
@@ -112,13 +113,15 @@ export const useModeration = (initial: ModSnapshot) => {
   );
 
   const act = useCallback(
-    async (request: ModRequest) =>
-      commit(
-        await send('/api/admin/moderation', 'POST', {
-          ...request,
-          note: request.note.trim() || undefined,
-        }),
-      ),
+    async (request: ModRequest) => {
+      const result: ModData & { pendingCases: number } = await send(
+        '/api/admin/moderation',
+        'POST',
+        { ...request, note: request.note.trim() || undefined },
+      );
+      commit(result);
+      setPendingCases(result.pendingCases);
+    },
     [commit],
   );
 
@@ -199,13 +202,11 @@ export const useModeration = (initial: ModSnapshot) => {
       cursor?: string,
       filters: ActivityFilters = {},
     ): Promise<ActivityPage<ModReport>> => {
-      const result = await loadWindow<ModData & { nextCursor?: string }>(
-        '/api/admin/reports',
-        range,
-        pageQuery(cursor, filters),
-      );
+      const result = await loadWindow<
+        ModData & { page: ModReport[]; nextCursor?: string }
+      >('/api/admin/reports', range, pageQuery(cursor, filters));
       merge(result);
-      return { rows: result.reports, nextCursor: result.nextCursor };
+      return { rows: result.page, nextCursor: result.nextCursor };
     },
     [loadWindow, merge],
   );
@@ -310,17 +311,6 @@ export const useModeration = (initial: ModSnapshot) => {
     [data.reports],
   );
 
-  const pendingGroups = useMemo(
-    () => groupReports(data.reports, 'pending'),
-    [data.reports],
-  );
-
-  const initialGroups = useRef(
-    groupReports(initial.reports, 'pending').length,
-  ).current;
-  const pendingCases =
-    initial.pendingCases + pendingGroups.length - initialGroups;
-
   const userLog = (userId: string): ModLogEntry[] =>
     data.log.filter((entry) => entry.userId === userId);
 
@@ -333,7 +323,6 @@ export const useModeration = (initial: ModSnapshot) => {
     revision,
     usersById,
     reportsById,
-    pendingGroups,
     pendingCases,
     meId: initial.meId,
     meRole: initial.meRole,

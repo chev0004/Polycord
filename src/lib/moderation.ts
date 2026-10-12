@@ -9,7 +9,6 @@ import {
   listActionedPage,
   listModerationActions,
   listModerationActionsPage,
-  listModerationReports,
   listModerationStatesByProfileId,
   listModerationUsers,
   listReportsAgainstUsers,
@@ -166,15 +165,13 @@ export const loadModerationSnapshot = async (
   meId: string,
   meRole: StaffRole,
 ): Promise<ModSnapshot> => {
-  const [reports, log, staff, pendingCases] = await Promise.all([
-    listModerationReports(),
-    listModerationActions(),
+  const [staff, pendingCases] = await Promise.all([
     listStaffUserIds(ownerDiscordIds()),
     countPendingCases(),
   ]);
 
   return {
-    ...(await withUsers(reports, log, staff)),
+    ...(await withUsers([], [], staff)),
     staff,
     meRole,
     pendingCases,
@@ -218,7 +215,16 @@ export const loadActivityLogPage = async (window: ActivityWindow) => {
 
 export const loadReportsPage = async (window: ActivityWindow) => {
   const { page, nextCursor } = pageOf(await listReportsPage(window));
-  return { nextCursor, ...(await withUsers(page, [], [])) };
+  const userIds = [...new Set(page.map((report) => report.reportedUserId))];
+  const [reports, log] = await Promise.all([
+    listReportsAgainstUsers(userIds),
+    listModerationActions(userIds),
+  ]);
+  return {
+    nextCursor,
+    page: page.map(toModReport),
+    ...(await withUsers(reports, log, userIds)),
+  };
 };
 
 export const loadActionedPage = async (window: ActivityWindow) => {

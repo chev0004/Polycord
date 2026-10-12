@@ -26,11 +26,32 @@ const {
   setUserSuspendedUntil,
   setProfileHiddenByModeration,
   isUserRestricted,
-  listModerationReports,
+  listReportsPage,
   countPendingCases,
 } = await import('../../src/db/moderation');
+const { pageOf } = await import('../../src/lib/activityWindow');
 const { deleteAccountByUserId } = await import('../../src/db/account');
 const { eq } = await import('drizzle-orm');
+const listAllReports = async (filters = {}) => {
+  const reports = [];
+  let cursor;
+  do {
+    const { page, nextCursor } = pageOf(
+      await listReportsPage({
+        from: new Date(Date.now() - 3600000),
+        to: new Date(Date.now() + 3600000),
+        cursor,
+        ...filters,
+      }),
+    );
+    reports.push(...page);
+    cursor = nextCursor && {
+      at: nextCursor.split('|')[0],
+      id: nextCursor.split('|')[1],
+    };
+  } while (cursor);
+  return reports;
+};
 const identity = {
   id: randomUUID().slice(0, 32),
   name: `Moderation ${randomUUID()}`,
@@ -98,9 +119,8 @@ try {
     .returning();
   const createdIds = new Set(created.map((report) => report.id));
   assert.equal(
-    (await listModerationReports()).filter((report) =>
-      createdIds.has(report.id),
-    ).length,
+    (await listAllReports()).filter((report) => createdIds.has(report.id))
+      .length,
     105,
   );
   assert.equal(await countPendingCases(), casesBefore + 1);
@@ -108,7 +128,7 @@ try {
     .update(reports)
     .set({ status: 'dismissed' })
     .where(eq(reports.id, created[104].id));
-  const listed = await listModerationReports();
+  const listed = await listAllReports();
   assert.equal(
     listed.find((report) => report.id === created[0].id)?.status,
     'pending',
@@ -117,6 +137,9 @@ try {
     listed.find((report) => report.id === created[104].id)?.status,
     'dismissed',
   );
+  const resolved = await listAllReports({ status: 'resolved' });
+  assert.ok(resolved.some((report) => report.id === created[104].id));
+  assert.ok(!resolved.some((report) => report.id === created[0].id));
   assert.equal(await countPendingCases(), casesBefore + 1);
   console.log('moderation lifecycle passed');
 } finally {

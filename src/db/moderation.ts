@@ -38,25 +38,6 @@ import {
   users,
 } from './schema';
 
-export const listModerationReports = async () => {
-  const [pending, resolved] = await Promise.all([
-    db
-      .select()
-      .from(reports)
-      .where(eq(reports.status, 'pending'))
-      .orderBy(desc(reports.createdAt))
-      .limit(1000),
-    db
-      .select()
-      .from(reports)
-      .where(ne(reports.status, 'pending'))
-      .orderBy(desc(reports.createdAt))
-      .limit(200),
-  ]);
-
-  return [...pending, ...resolved];
-};
-
 export const listReportsAgainstUsers = async (userIds: string[]) =>
   userIds.length
     ? db
