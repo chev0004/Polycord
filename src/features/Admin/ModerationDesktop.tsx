@@ -791,7 +791,11 @@ const LogTab = ({
   return (
     <section className={tablePane} aria-label={t('tabLog')}>
       <div className="border-line border-b px-3.5 py-3">
-        <ActivityDayBar pages={pages} />
+        <ActivityDayBar
+          pages={pages}
+          kind="log"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className="flex flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
         <FilterSelect
@@ -993,9 +997,12 @@ const SuspiciousTab = ({
 
   return (
     <section className={tablePane} aria-label={t('tabSuspicious')}>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-line border-b px-5 py-3.5">
-        <p className="text-[12.5px] text-subtle">{t('suspiciousIntro')}</p>
-        <ActivityDayBar pages={pages} />
+      <div className="border-line border-b px-3.5 py-3">
+        <ActivityDayBar
+          pages={pages}
+          kind="suspicious"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className={`${headRow} ${suspiciousColumns}`}>
         <span>{t('colEvent')}</span>

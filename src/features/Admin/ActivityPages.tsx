@@ -1,10 +1,16 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { DatePicker } from '@/components/DatePicker';
 import { ActionError, Spinner, useModFormat } from './ModerationParts';
-import type { ActivityFilters, ActivityPage, ActivityRange } from './types';
+import type {
+  ActivityFilters,
+  ActivityKind,
+  ActivityPage,
+  ActivityRange,
+} from './types';
 
 const addDays = (day: Date, days: number) =>
   new Date(day.getFullYear(), day.getMonth(), day.getDate() + days);
@@ -13,11 +19,6 @@ const today = () => addDays(new Date(), 0);
 
 const toInputValue = (day: Date) =>
   `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
-
-const fromInputValue = (value: string) => {
-  const [year, month, date] = value.split('-').map(Number);
-  return new Date(year, month - 1, date);
-};
 
 export const useActivityPages = <T,>(
   load: (
@@ -93,9 +94,24 @@ export type ActivityPages<T = unknown> = ReturnType<typeof useActivityPages<T>>;
 const stepButton =
   'flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-background-main hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent';
 
-export const ActivityDayBar = ({ pages }: { pages: ActivityPages }) => {
+export const ActivityDayBar = ({
+  pages,
+  kind,
+  loadDays,
+}: {
+  pages: ActivityPages;
+  kind: ActivityKind;
+  loadDays: (
+    kind: ActivityKind,
+    month: Date,
+  ) => Promise<Record<string, number>>;
+}) => {
   const t = useTranslations('Admin');
   const { date } = useModFormat();
+  const load = useCallback(
+    (month: Date) => loadDays(kind, month),
+    [loadDays, kind],
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -107,19 +123,19 @@ export const ActivityDayBar = ({ pages }: { pages: ActivityPages }) => {
       >
         <MdChevronLeft size={20} />
       </button>
-      <label className="flex items-center">
-        <span className="sr-only">{t('selectDate')}</span>
-        <input
-          type="date"
-          value={toInputValue(pages.day)}
-          max={toInputValue(today())}
-          onChange={(event) =>
-            event.target.value &&
-            pages.chooseDay(fromInputValue(event.target.value))
-          }
-          className="h-8 rounded-full border border-white/[0.07] bg-background-darker px-3 text-foreground text-sm outline-none [color-scheme:dark] focus:border-white/[0.14]"
-        />
-      </label>
+      <DatePicker
+        value={pages.day}
+        onChange={pages.chooseDay}
+        today={today()}
+        label={t('selectDate')}
+        activity={{
+          load,
+          tone: kind === 'suspicious' ? 'danger' : 'primary',
+          unit: (count) => t(`calendarUnit_${kind}`, { count }),
+          monthLabel: t(`calendarMonth_${kind}`),
+          legend: (count) => t('calendarLegend', { count }),
+        }}
+      />
       <button
         type="button"
         onClick={() => pages.shiftDay(1)}

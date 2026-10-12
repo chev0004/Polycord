@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import type {
   ActivityFilters,
+  ActivityKind,
   ActivityPage,
   ActivityRange,
   IpBlock,
@@ -78,6 +79,8 @@ const send = async (url: string, method: string, body: object) => {
   }
   return response.json();
 };
+
+const DAY_COUNTS_TTL_MS = 60000;
 
 export const useModeration = (initial: ModSnapshot) => {
   const [data, setData] = useState<ModData>(initial);
@@ -201,6 +204,38 @@ export const useModeration = (initial: ModSnapshot) => {
     [loadWindow, merge],
   );
 
+  const dayCounts = useRef(
+    new Map<string, { at: number; days: Promise<Record<string, number>> }>(),
+  );
+
+  const loadActivityDays = useCallback(
+    (kind: ActivityKind, month: Date) => {
+      const key = `${kind}:${month.getFullYear()}-${month.getMonth()}`;
+      const cached = dayCounts.current.get(key);
+      if (cached && Date.now() - cached.at < DAY_COUNTS_TTL_MS)
+        return cached.days;
+      const days = loadWindow<{ days: Record<string, number> }>(
+        '/api/admin/activity-days',
+        {
+          from: month.toISOString(),
+          to: new Date(
+            month.getFullYear(),
+            month.getMonth() + 1,
+            1,
+          ).toISOString(),
+        },
+        {
+          kind,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      ).then((result) => result.days);
+      dayCounts.current.set(key, { at: Date.now(), days });
+      days.catch(() => dayCounts.current.delete(key));
+      return days;
+    },
+    [loadWindow],
+  );
+
   const loadSuspiciousEvents = useCallback(
     (userId: string, range: ActivityRange, offset: number) =>
       loadWindow<{ events: ModSuspiciousEvent[]; hasMore: boolean }>(
@@ -276,6 +311,7 @@ export const useModeration = (initial: ModSnapshot) => {
     loadActivityLog,
     loadSuspicious,
     loadSuspiciousEvents,
+    loadActivityDays,
     blockIps: (body: { ips: string[]; userId?: string; reason?: string }) =>
       changeIpBlocks('POST', body),
     unblockIp: (id: string) => changeIpBlocks('DELETE', { id }),

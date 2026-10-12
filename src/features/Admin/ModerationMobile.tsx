@@ -565,7 +565,11 @@ const LogScreen = ({
         sub={t('actionsCount', { count: rows.length })}
       />
       <div className="px-4 pb-3">
-        <ActivityDayBar pages={pages} />
+        <ActivityDayBar
+          pages={pages}
+          kind="log"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
         <button
@@ -797,9 +801,13 @@ const FlagsScreen = ({
 
   return (
     <>
-      <Header heading={t('tabSuspicious')} sub={t('suspiciousIntro')} />
+      <Header heading={t('tabSuspicious')} />
       <div className="px-4 pb-3">
-        <ActivityDayBar pages={pages} />
+        <ActivityDayBar
+          pages={pages}
+          kind="suspicious"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className="px-3">
         {!pages.rows ? (
