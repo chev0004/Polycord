@@ -1,7 +1,19 @@
 import { useTranslations } from 'next-intl';
-import { BrandName, CardAvatar, Cycle, FitText, TagChips } from '../CardParts';
+import {
+  BrandName,
+  CardAvatar,
+  Cycle,
+  FitLines,
+  FitText,
+  TagChips,
+} from '../CardParts';
 import type { DiscordCardLayoutProps } from '../types';
 import '../bleed.css';
+
+const nameVars = (bottom: number) => ({
+  '--dc-bl-name-bottom': `${bottom}px`,
+  '--dc-bl-learn': `${Math.max(136, 306 - bottom)}px`,
+});
 
 export const BleedCard = ({ data, active }: DiscordCardLayoutProps) => {
   const t = useTranslations('DiscordCard');
@@ -12,9 +24,9 @@ export const BleedCard = ({ data, active }: DiscordCardLayoutProps) => {
       <BrandName
         style={{ position: 'absolute', right: 36, bottom: 12, fontSize: 12 }}
       />
-      <FitText as="div" className="dc-bl-ja" max={600}>
+      <FitLines className="dc-bl-ja" max={640} bottom={170} vars={nameVars}>
         {data.native.script}
-      </FitText>
+      </FitLines>
       <span className="dc-k dc-bl-nl">
         {t('nativeWith', { language: data.native.name })}
       </span>

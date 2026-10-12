@@ -1,8 +1,10 @@
 import {
   type CSSProperties,
+  Fragment,
   type ReactNode,
   useLayoutEffect,
   useRef,
+  useState,
 } from 'react';
 import type { IconType } from 'react-icons';
 import { MdLocationOn, MdSchedule } from 'react-icons/md';
@@ -113,6 +115,78 @@ export const FitText = ({
     <Tag ref={ref as never} className={className}>
       {children}
     </Tag>
+  );
+};
+
+const TOP_OFFSET = 0.19;
+
+export const FitLines = ({
+  max,
+  bottom,
+  vars,
+  className,
+  children,
+}: {
+  max: number;
+  bottom: number;
+  vars: (bottom: number) => Record<string, string>;
+  className?: string;
+  children: string;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [lines, setLines] = useState([children]);
+
+  useLayoutEffect(() => {
+    const element = ref.current;
+    const parent = element?.parentElement;
+    if (!element || !parent || !children) return;
+    const fit = () => {
+      const probe = element.cloneNode() as HTMLElement;
+      probe.removeAttribute('style');
+      probe.style.visibility = 'hidden';
+      probe.style.width = 'max-content';
+      parent.append(probe);
+      const base = Number.parseFloat(getComputedStyle(probe).fontSize);
+      const width = (text: string) => {
+        probe.textContent = text;
+        return probe.offsetWidth;
+      };
+      const words = children.split(' ');
+      const split = words
+        .slice(1)
+        .map((_, index) => [
+          words.slice(0, index + 1).join(' '),
+          words.slice(index + 1).join(' '),
+        ])
+        .map((pair) => ({ pair, width: Math.max(...pair.map(width)) }))
+        .sort((a, b) => a.width - b.width)[0];
+      const single = Math.min(base, (max * base) / width(children));
+      const double = split
+        ? Math.min(base, (max * base) / split.width, bottom / (2 - TOP_OFFSET))
+        : 0;
+      probe.remove();
+      const wrapped = double > single;
+      const size = wrapped ? double : single;
+      element.style.fontSize = `${size}px`;
+      for (const [name, value] of Object.entries(
+        vars(((wrapped ? 2 : 1) - TOP_OFFSET) * size),
+      ))
+        parent.style.setProperty(name, value);
+      setLines(wrapped && split ? split.pair : [children]);
+    };
+    fit();
+    document.fonts?.ready.then(fit);
+  }, [max, bottom, vars, children]);
+
+  return (
+    <div ref={ref} className={className}>
+      {lines.map((line, index) => (
+        <Fragment key={line}>
+          {index > 0 ? <br /> : null}
+          {line}
+        </Fragment>
+      ))}
+    </div>
   );
 };
 
