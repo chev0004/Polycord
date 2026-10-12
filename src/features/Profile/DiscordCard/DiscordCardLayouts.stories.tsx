@@ -479,6 +479,49 @@ export const OrbitLongTags: Story = {
   },
 };
 
+export const TagsYieldToDetails: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const layout = (id: string) =>
+      canvasElement.querySelector(`[data-layout="${id}"]`) as HTMLElement;
+
+    for (const selector of [
+      '[data-layout="split"] .dc-g-nm',
+      '[data-layout="character-select"] .dc-cs-id b',
+    ]) {
+      const name = canvasElement.querySelector(selector) as HTMLElement;
+      await expect(name.scrollWidth).toBeLessThanOrEqual(name.clientWidth);
+    }
+    for (const [id, card, footer] of [
+      ['photo', '.dc-ph', '.dc-ph-f'],
+      ['now-playing', '.dc-np', '.dc-np-ft'],
+    ]) {
+      const root = layout(id);
+      await expect(
+        (root.querySelector(footer) as HTMLElement).getBoundingClientRect()
+          .bottom,
+      ).toBeLessThanOrEqual(
+        (root.querySelector(card) as HTMLElement).getBoundingClientRect()
+          .bottom,
+      );
+    }
+    const availability = layout('now-playing').querySelector(
+      '.dc-np-ft > span',
+    ) as HTMLElement;
+    await expect(availability.offsetHeight).toBeLessThanOrEqual(24);
+
+    const diagonal = layout('diagonal');
+    const row = diagonal.querySelector('.dc-chips') as HTMLElement;
+    const avatar = diagonal.querySelector('.dc-av') as HTMLElement;
+    await expect(
+      (row.parentElement as HTMLElement).offsetLeft + row.offsetLeft,
+    ).toBeGreaterThanOrEqual(avatar.offsetLeft + avatar.offsetWidth / 2 + 8);
+  },
+};
+
 export const OverlongTags: Story = {
   args: {
     data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
