@@ -119,6 +119,8 @@ export const FitText = ({
 };
 
 const TOP_OFFSET = 0.19;
+const DESCENT_ALLOWANCE = 0.08;
+const DESCENT_GAP = 6;
 
 export const FitLines = ({
   max,
@@ -167,12 +169,23 @@ export const FitLines = ({
       probe.remove();
       const wrapped = double > single;
       const size = wrapped ? double : single;
+      const lines = wrapped && split ? split.pair : [children];
+      const { fontWeight, fontFamily } = getComputedStyle(element);
+      const context = document.createElement('canvas').getContext('2d');
+      if (context) context.font = `${fontWeight} ${size}px ${fontFamily}`;
+      const overhang =
+        (context?.measureText(lines.at(-1) ?? '').actualBoundingBoxDescent ??
+          0) -
+        DESCENT_ALLOWANCE * size;
       element.style.fontSize = `${size}px`;
       for (const [name, value] of Object.entries(
-        vars(((wrapped ? 2 : 1) - TOP_OFFSET) * size),
+        vars(
+          (lines.length - TOP_OFFSET) * size +
+            (overhang > 0 ? overhang + DESCENT_GAP : 0),
+        ),
       ))
         parent.style.setProperty(name, value);
-      setLines(wrapped && split ? split.pair : [children]);
+      setLines(lines);
     };
     fit();
     document.fonts?.ready.then(fit);
