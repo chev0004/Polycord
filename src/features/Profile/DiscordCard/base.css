@@ -76,11 +76,16 @@
   color: var(--color-primary-light);
   display: grid;
   place-items: center;
+  flex: none;
+}
+.dc-chip[hidden] {
+  display: none;
 }
 .dc-chips {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  max-width: 100%;
+  overflow: hidden;
 }
 .dc-chips.dc-sm {
   gap: 6px;

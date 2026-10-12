@@ -409,6 +409,84 @@ export const LongLanguageNames: Story = {
   },
 };
 
+const tagRows = (canvasElement: HTMLElement) =>
+  [...canvasElement.querySelectorAll<HTMLElement>('.dc-chips')].map((row) => {
+    const chips = [...row.children] as HTMLElement[];
+    const more = chips.pop() as HTMLElement;
+    return {
+      row,
+      more,
+      shown: chips.filter((chip) => !chip.hidden).length,
+      total: chips.length,
+    };
+  });
+
+const expectTagsToFit = async (canvasElement: HTMLElement) => {
+  await canvasElement.ownerDocument.fonts.ready;
+  await waitFor(() => {
+    for (const root of canvasElement.querySelectorAll<HTMLElement>('.dc-root'))
+      expect(root.style.transform).not.toBe('scale(0)');
+    const rows = tagRows(canvasElement);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const { row, more, shown, total } of rows) {
+      const bounds = row.getBoundingClientRect();
+      for (const chip of [...row.children] as HTMLElement[]) {
+        if (chip.hidden) continue;
+        const box = chip.getBoundingClientRect();
+        expect(box.left).toBeGreaterThanOrEqual(bounds.left - 1);
+        expect(box.right).toBeLessThanOrEqual(bounds.right + 1);
+      }
+      expect(more.hidden).toBe(shown === total);
+      if (shown < total) expect(more.textContent).toBe(`+${total - shown}`);
+    }
+  });
+};
+
+export const LongTags: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(20)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    await expect(
+      tagRows(canvasElement).some(({ shown, total }) => shown < total),
+    ).toBe(true);
+  },
+};
+
+export const ManyShortTags: Story = {
+  args: {
+    data: build({ tags: ['Art', 'Film', 'Golf', 'Jazz', 'Chess', 'Yoga'] }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    await expect(tagRows(canvasElement).some(({ shown }) => shown > 3)).toBe(
+      true,
+    );
+  },
+};
+
+export const LongNativeScript: Story = {
+  args: {
+    data: build({
+      primaryLanguage: 'ab',
+      targetLanguages: [{ language: 'ak', level: Proficiency.INTERMEDIATE }],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    await canvasElement.ownerDocument.fonts.ready;
+    const script = canvasElement.querySelector(
+      '[data-layout="bleed"] .dc-bl-ja',
+    ) as HTMLElement;
+    const fontSize = Number.parseFloat(getComputedStyle(script).fontSize);
+
+    await waitFor(() =>
+      expect(script.offsetHeight).toBeLessThanOrEqual(fontSize * 1.5),
+    );
+    await expect(script.offsetWidth).toBeLessThanOrEqual(600);
+  },
+};
+
 const activeTarget = (card: Element | null) =>
   card?.querySelector('.dc-cy > .dc-on')?.textContent ?? '';
 

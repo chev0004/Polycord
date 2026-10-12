@@ -78,6 +78,7 @@
   color: var(--color-text-secondary);
 }
 .dc-cs-in {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

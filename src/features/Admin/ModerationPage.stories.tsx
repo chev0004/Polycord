@@ -403,10 +403,12 @@ export const IpBlockSelection: Story = {
     });
     await expect(address).not.toBeChecked();
     fireEvent.click(address);
-    await expect(address).toBeChecked();
-    await expect(
-      screen.getByRole('button', { name: 'Block 1 IP address' }),
-    ).toBeEnabled();
+    await waitFor(() => expect(address).toBeChecked());
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Block 1 IP address' }),
+      ).toBeEnabled(),
+    );
   },
 };
 
