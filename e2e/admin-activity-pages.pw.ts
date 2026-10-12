@@ -89,8 +89,15 @@ test.describe('admin activity pages', () => {
     await expect(rows).toHaveCount(25);
     await expect(page.getByText(/^yesterday-/)).toHaveCount(0);
     await expect(page.getByText('Page 1')).toBeVisible();
-    await expect(page.getByLabel('Select a date')).toHaveValue(
-      new Date().toISOString().slice(0, 10),
+    await expect(
+      page.getByRole('button', { name: 'Select a date' }),
+    ).toHaveText(
+      new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'UTC',
+      }),
     );
     await expect(page.getByRole('button', { name: 'Next day' })).toBeDisabled();
     await expect(
@@ -115,7 +122,9 @@ test.describe('admin activity pages', () => {
     await expect(page.getByText(/^today-/)).toHaveCount(0);
     await expect(page.getByText('Page 1')).toBeVisible();
 
-    await page.getByLabel('Select a date').fill('2001-01-01');
+    await page.getByRole('button', { name: 'Select a date' }).click();
+    await page.getByRole('button', { name: 'Previous month' }).click();
+    await page.getByRole('button', { name: '15', exact: true }).click();
     await expect(page.getByText('No activity on this day')).toBeVisible();
 
     await page
@@ -128,6 +137,99 @@ test.describe('admin activity pages', () => {
     expect(
       urls.every((url) => url.includes('from=') && url.includes('to=')),
     ).toBe(true);
+    await context.close();
+  });
+
+  test('the calendar rings count each day in the staff time zone', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    await signIn(context, owner);
+    const page = await context.newPage();
+    const counts: string[] = [];
+    page.on('response', async (response) => {
+      if (response.url().includes('/api/admin/activity-days'))
+        counts.push(response.url());
+    });
+
+    await page.goto('/en/admin');
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await page.getByRole('button', { name: 'Select a date' }).click();
+    const label = (offset: number) =>
+      new Date(Date.now() - offset * 86400000).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      });
+    await expect(
+      page.getByRole('button', { name: `${label(0)}, 33 actions` }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: `${label(1)}, 3 actions` }),
+    ).toBeVisible();
+    await expect(page.getByText('actions this month')).toBeVisible();
+    expect(counts).toHaveLength(1);
+    expect(counts[0]).toContain('kind=log');
+    expect(counts[0]).toContain('timeZone=UTC');
+    await context.close();
+  });
+
+  test('the activity days endpoint is bounded and staff only', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+    });
+    const month = new Date();
+    const query = (extra: Record<string, string>) =>
+      new URLSearchParams({
+        kind: 'log',
+        from: new Date(
+          Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1),
+        ).toISOString(),
+        to: new Date(
+          Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1),
+        ).toISOString(),
+        timeZone: 'UTC',
+        ...extra,
+      });
+    const today = new Date().toISOString().slice(0, 10);
+
+    expect(
+      (
+        await context.request.get(`/api/admin/activity-days?${query({})}`)
+      ).status(),
+    ).toBe(404);
+
+    await signIn(context, owner);
+    const log = await context.request.get(
+      `/api/admin/activity-days?${query({})}`,
+    );
+    expect(log.status()).toBe(200);
+    expect((await log.json()).days[today]).toBe(33);
+
+    const actioned = await context.request.get(
+      `/api/admin/activity-days?${query({ kind: 'actioned' })}`,
+    );
+    expect((await actioned.json()).days[today]).toBe(1);
+
+    const invalid: Record<string, string>[] = [
+      { kind: 'everything' },
+      { timeZone: 'Mars/Olympus' },
+      { to: '2099-01-01T00:00:00.000Z' },
+    ];
+    for (const bad of invalid) {
+      expect(
+        (
+          await context.request.get(`/api/admin/activity-days?${query(bad)}`)
+        ).status(),
+      ).toBe(400);
+    }
     await context.close();
   });
 

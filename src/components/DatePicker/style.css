@@ -1,0 +1,26 @@
+.ActivityRing {
+  --ring-thickness: 3.5px;
+  isolation: isolate;
+}
+
+.ActivityRing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 9999px;
+  background: conic-gradient(
+    var(--ring-color) calc(var(--ring-fill) * 1turn),
+    var(--color-line) 0
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--ring-thickness)),
+    #000 calc(100% - var(--ring-thickness) + 0.5px)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--ring-thickness)),
+    #000 calc(100% - var(--ring-thickness) + 0.5px)
+  );
+}

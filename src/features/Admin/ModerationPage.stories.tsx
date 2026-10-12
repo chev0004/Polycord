@@ -61,14 +61,22 @@ const activityPage = () =>
     }),
   );
 
+const dayKey = (day: Date) =>
+  `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+
 const mockActivityApi = () => {
   const original = globalThis.fetch;
   recorded.length = 0;
   globalThis.fetch = Object.assign(
-    async (...args: Parameters<typeof fetch>) =>
-      String(args[0]).startsWith('/api/admin/activity-log')
-        ? activityPage()
-        : original(...args),
+    async (...args: Parameters<typeof fetch>) => {
+      const url = String(args[0]);
+      if (url.startsWith('/api/admin/activity-log')) return activityPage();
+      if (url.startsWith('/api/admin/activity-days'))
+        return new Response(
+          JSON.stringify({ days: { [dayKey(new Date())]: 7 } }),
+        );
+      return original(...args);
+    },
     { preconnect: original.preconnect },
   );
   return () => {
@@ -374,6 +382,48 @@ export const ActivityLog: Story = {
     fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));
     await expect(
       await canvas.findByText('Suspended user · 7 days'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const ActivityCalendar: Story = {
+  beforeEach: mockActivityApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Select a date' }),
+    );
+    await expect(
+      await screen.findByRole('button', { name: /, 7 actions$/ }),
+    ).toBeInTheDocument();
+    await expect(screen.getByText('actions this month')).toBeInTheDocument();
+    await expect(
+      screen.getByText(/Full ring: 7\+ in a day/),
+    ).toBeInTheDocument();
+  },
+};
+
+export const SuspiciousHeaderMatchesLog: Story = {
+  beforeEach: mockActivityApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: /^Suspicious activity/ }));
+    const region = within(
+      await canvas.findByRole('region', { name: 'Suspicious activity' }),
+    );
+    await expect(
+      region.getByRole('button', { name: 'Select a date' }),
+    ).toBeInTheDocument();
+    await expect(
+      region.getByRole('button', { name: 'Previous day' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByText(/Events flagged automatically/),
+    ).not.toBeInTheDocument();
+    fireEvent.click(region.getByRole('button', { name: 'Select a date' }));
+    await expect(
+      await screen.findByText('flagged events this month'),
     ).toBeInTheDocument();
   },
 };

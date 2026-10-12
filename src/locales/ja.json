@@ -294,7 +294,6 @@
     "staffMember": "スタッフ",
     "today": "今日",
     "yesterday": "昨日",
-    "suspiciousIntro": "レート制限とIPの一致によって自動的に検出されたイベントです。対応する前にアカウントを確認してください。",
     "colEvent": "イベント",
     "colUser": "ユーザー",
     "colIp": "IPアドレス",
@@ -417,7 +416,16 @@
     "chipSupporter": "サポーター",
     "factSupporter": "サポーター",
     "factSupporterUntil": "{date}まで",
-    "factSupporterNone": "なし"
+    "factSupporterNone": "なし",
+    "calendarUnit_log": "{count}件の操作",
+    "calendarUnit_suspicious": "{count}件の検出イベント",
+    "calendarUnit_reports": "{count}件の報告",
+    "calendarUnit_actioned": "{count}件のアカウント",
+    "calendarMonth_log": "今月の操作",
+    "calendarMonth_suspicious": "今月の検出イベント",
+    "calendarMonth_reports": "今月の報告",
+    "calendarMonth_actioned": "今月対応したアカウント",
+    "calendarLegend": "リング満杯: 1日{count}件以上"
   },
   "UserMenu": {
     "accountMenu": "アカウントメニュー",
@@ -1247,6 +1255,16 @@
   },
   "Metadata": {
     "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
+  },
+  "DatePicker": {
+    "previousMonth": "前の月",
+    "nextMonth": "次の月",
+    "selectDay": "日付を選択",
+    "today": "今日",
+    "cancel": "キャンセル",
+    "apply": "適用",
+    "busiestDay": "最も多い日",
+    "none": "なし"
   },
   "TimeField": {
     "hour": "{label}の時",

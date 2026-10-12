@@ -294,7 +294,6 @@
     "staffMember": "Staff member",
     "today": "Today",
     "yesterday": "Yesterday",
-    "suspiciousIntro": "Events flagged automatically by rate limits and IP matching. Review the account before acting.",
     "colEvent": "Event",
     "colUser": "User",
     "colIp": "IP address",
@@ -417,7 +416,16 @@
     "chipSupporter": "Supporter",
     "factSupporter": "Supporter",
     "factSupporterUntil": "Until {date}",
-    "factSupporterNone": "None"
+    "factSupporterNone": "None",
+    "calendarUnit_log": "{count, plural, one {# action} other {# actions}}",
+    "calendarUnit_suspicious": "{count, plural, one {# flagged event} other {# flagged events}}",
+    "calendarUnit_reports": "{count, plural, one {# report} other {# reports}}",
+    "calendarUnit_actioned": "{count, plural, one {# account} other {# accounts}}",
+    "calendarMonth_log": "actions this month",
+    "calendarMonth_suspicious": "flagged events this month",
+    "calendarMonth_reports": "reports this month",
+    "calendarMonth_actioned": "accounts actioned this month",
+    "calendarLegend": "Full ring: {count}+ in a day"
   },
   "UserMenu": {
     "accountMenu": "Account menu",
@@ -1247,6 +1255,16 @@
   },
   "Metadata": {
     "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
+  },
+  "DatePicker": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "selectDay": "Select day",
+    "today": "Today",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "busiestDay": "busiest day",
+    "none": "None"
   },
   "TimeField": {
     "hour": "{label} hour",
