@@ -616,6 +616,21 @@ export const ManyShortTags: Story = {
   },
 };
 
+const bleedName = async (canvasElement: HTMLElement) => {
+  await canvasElement.ownerDocument.fonts.ready;
+  const card = canvasElement.querySelector('[data-layout="bleed"]') as Element;
+  const script = card.querySelector('.dc-bl-ja') as HTMLElement;
+  const label = card.querySelector('.dc-bl-nl') as HTMLElement;
+  return {
+    script,
+    label,
+    size: () =>
+      Number.parseFloat(
+        script.style.fontSize || getComputedStyle(script).fontSize,
+      ),
+  };
+};
+
 export const LongNativeScript: Story = {
   args: {
     data: build({
@@ -624,16 +639,44 @@ export const LongNativeScript: Story = {
     }),
   },
   play: async ({ canvasElement }) => {
-    await canvasElement.ownerDocument.fonts.ready;
-    const script = canvasElement.querySelector(
-      '[data-layout="bleed"] .dc-bl-ja',
-    ) as HTMLElement;
-    const fontSize = Number.parseFloat(getComputedStyle(script).fontSize);
+    const { script, label, size } = await bleedName(canvasElement);
 
-    await waitFor(() =>
-      expect(script.offsetHeight).toBeLessThanOrEqual(fontSize * 1.5),
+    await waitFor(() => expect(size()).toBeGreaterThan(100));
+    await expect(script.querySelectorAll('br')).toHaveLength(0);
+    await expect(script.offsetWidth).toBeGreaterThan(600);
+    await expect(script.offsetWidth).toBeLessThanOrEqual(640);
+    await expect(script.offsetTop + script.offsetHeight).toBeLessThanOrEqual(
+      label.offsetTop,
     );
-    await expect(script.offsetWidth).toBeLessThanOrEqual(600);
+  },
+};
+
+export const WrappedNativeScript: Story = {
+  args: {
+    data: build({
+      primaryLanguage: 'nr',
+      targetLanguages: [{ language: 'ak', level: Proficiency.INTERMEDIATE }],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const { script, label, size } = await bleedName(canvasElement);
+
+    await waitFor(() => expect(script.querySelectorAll('br')).toHaveLength(1));
+    await expect(size()).toBeGreaterThan(80);
+    await expect(script.offsetWidth).toBeLessThanOrEqual(640);
+    await expect(script.offsetTop + script.offsetHeight).toBeLessThanOrEqual(
+      label.offsetTop + 8,
+    );
+  },
+};
+
+export const ShortNativeScript: Story = {
+  play: async ({ canvasElement }) => {
+    const { script, label, size } = await bleedName(canvasElement);
+
+    await expect(size()).toBe(210);
+    await expect(script.querySelectorAll('br')).toHaveLength(0);
+    await expect(Math.round(label.offsetTop)).toBeGreaterThanOrEqual(162);
   },
 };
 

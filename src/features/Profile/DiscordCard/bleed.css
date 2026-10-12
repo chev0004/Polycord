@@ -21,7 +21,7 @@
 .dc-bl-nl {
   position: absolute;
   left: 40px;
-  top: 162px;
+  top: calc(var(--dc-bl-name-bottom, 170px) - 8px);
 }
 .dc-bl-cy {
   position: absolute;
@@ -35,7 +35,7 @@
   padding-left: 4px;
 }
 .dc-bl-en {
-  font-size: 136px;
+  font-size: var(--dc-bl-learn, 136px);
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.04em;
