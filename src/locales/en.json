@@ -615,6 +615,7 @@
     "boostError": "Boost could not be applied. Please try again.",
     "viewPublicProfile": "View public profile",
     "deleteProfile": "Delete profile",
+    "deleteProfileCancel": "Cancel",
     "deletingProfile": "Deleting profile...",
     "deleteProfileConfirmation": "Delete your profile? This removes it from discovery and cannot be undone.",
     "deleteError": "Profile could not be deleted. Please try again.",
