@@ -25,27 +25,30 @@ const seed: SeedStatus = {
 
 const seedFetch = fn();
 
-const mockSeedApi = (start: number) => () => {
-  const original = globalThis.fetch;
-  let dummies = start;
-  seedFetch.mockReset();
-  globalThis.fetch = Object.assign(
-    async (...args: Parameters<typeof fetch>) => {
-      if (String(args[0]) !== '/api/admin/seed') return original(...args);
-      seedFetch(JSON.parse(String(args[1]?.body)));
-      const { target } = JSON.parse(String(args[1]?.body));
-      dummies =
-        target > dummies
-          ? Math.min(target, dummies + 2000)
-          : Math.max(target, dummies - 2000);
-      return new Response(JSON.stringify({ ...seed, dummies }));
-    },
-    { preconnect: original.preconnect },
-  );
-  return () => {
-    globalThis.fetch = original;
+const mockSeedApi =
+  (start: number, delay = 0) =>
+  () => {
+    const original = globalThis.fetch;
+    let dummies = start;
+    seedFetch.mockReset();
+    globalThis.fetch = Object.assign(
+      async (...args: Parameters<typeof fetch>) => {
+        if (String(args[0]) !== '/api/admin/seed') return original(...args);
+        seedFetch(JSON.parse(String(args[1]?.body)));
+        if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+        const { target } = JSON.parse(String(args[1]?.body));
+        dummies =
+          target > dummies
+            ? Math.min(target, dummies + 2000)
+            : Math.max(target, dummies - 2000);
+        return new Response(JSON.stringify({ ...seed, dummies }));
+      },
+      { preconnect: original.preconnect },
+    );
+    return () => {
+      globalThis.fetch = original;
+    };
   };
-};
 
 const recorded: ModLogEntry[] = [];
 
@@ -336,6 +339,28 @@ export const DummyData: Story = {
     ).toHaveTextContent('17');
     await expect(seedFetch).toHaveBeenCalledTimes(3);
     await expect(seedFetch).toHaveBeenCalledWith({ target: 5000 });
+  },
+};
+
+export const DummyDataProgress: Story = {
+  args: { seed },
+  beforeEach: mockSeedApi(0, 600),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: 'Dummy data' }));
+    const panel = within(
+      await canvas.findByRole('region', { name: 'Dummy data' }),
+    );
+    fireEvent.click(panel.getByRole('button', { name: '5,000' }));
+    const apply = panel.getByRole('button', { name: 'Apply' });
+    await waitFor(() => expect(apply).toBeEnabled());
+    fireEvent.click(apply);
+    const bar = await panel.findByRole('progressbar', {
+      name: 'Dummy data',
+    });
+    await expect(bar).toHaveAttribute('aria-valuemax', '5000');
+    await waitFor(() => expect(bar).toHaveAttribute('aria-valuenow', '2000'));
+    await expect(canvasElement.querySelector('progress')).toBeNull();
   },
 };
 

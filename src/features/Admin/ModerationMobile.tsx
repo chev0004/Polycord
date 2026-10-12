@@ -32,7 +32,6 @@ import {
   MdPersonSearch,
   MdPolicy,
   MdSchedule,
-  MdSearch,
   MdSettingsBackupRestore,
   MdStorage,
   MdSwipeLeft,
@@ -43,7 +42,7 @@ import {
   MdWorkspacePremium,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
-import { NumberStepper } from '@/components/Form';
+import { NumberStepper, SearchField } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
 import type { WarningCategory } from '@/types';
 import {
@@ -536,27 +535,15 @@ const UsersScreen = ({
     <>
       <Header heading={t('tabUsers')} />
       <div className="sticky top-0 z-[5] bg-background-main px-4 pb-2.5">
-        <div className="flex h-12 items-center gap-2 rounded-full border border-[rgba(107,114,128,0.45)] bg-background-darker pr-2 pl-4 text-subtle focus-within:border-primary">
-          <MdSearch size={20} aria-hidden />
-          <input
-            type="search"
-            value={users.query}
-            onChange={(event) => users.setQuery(event.target.value)}
-            placeholder={t('searchPlaceholderShort')}
-            aria-label={t('searchLabel')}
-            className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
-          />
-          {users.query ? (
-            <button
-              type="button"
-              onClick={() => users.setQuery('')}
-              aria-label={t('clearSearch')}
-              className="flex h-8 w-8 items-center justify-center text-muted"
-            >
-              <MdClose size={18} />
-            </button>
-          ) : null}
-        </div>
+        <SearchField
+          className="h-12 border-[rgba(107,114,128,0.45)] pr-2 pl-4 focus-within:border-primary"
+          inputClassName="text-[15px]"
+          value={users.query}
+          onClear={() => users.setQuery('')}
+          onChange={(event) => users.setQuery(event.target.value)}
+          placeholder={t('searchPlaceholderShort')}
+          aria-label={t('searchLabel')}
+        />
       </div>
       <div className="px-3">
         {store.meRole === 'owner' && !trimmed ? (

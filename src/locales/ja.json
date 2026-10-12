@@ -71,6 +71,9 @@
     "loading": "読み込み中...",
     "noResults": "結果が見つかりませんでした。"
   },
+  "SearchField": {
+    "clear": "検索をクリア"
+  },
   "Dropdown": {
     "noResults": "結果が見つかりませんでした",
     "noOptions": "選択肢がありません"
@@ -266,7 +269,6 @@
     "searchPlaceholder": "ユーザー名、表示名、Discord ID",
     "searchPlaceholderShort": "ユーザー名、名前、Discord ID",
     "searchLabel": "ユーザーを検索",
-    "clearSearch": "検索をクリア",
     "recentlyActioned": "最近対応したユーザー",
     "resultsCount": "{count}件の結果",
     "noUsersTitle": "ユーザーが見つかりません",
@@ -626,6 +628,7 @@
     "boostError": "ブーストを適用できませんでした。もう一度お試しください。",
     "viewPublicProfile": "掲載ページを見る",
     "deleteProfile": "プロフィール削除",
+    "deleteProfileCancel": "キャンセル",
     "deletingProfile": "プロフィールを削除中...",
     "deleteProfileConfirmation": "プロフィールを削除しますか？ディスカバリーから削除され、元に戻せません。",
     "deleteError": "プロフィールの削除に失敗しました。もう一度お試しください。",

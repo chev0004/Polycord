@@ -71,6 +71,9 @@
     "loading": "Loading...",
     "noResults": "No results found."
   },
+  "SearchField": {
+    "clear": "Clear search"
+  },
   "Dropdown": {
     "noResults": "No results found",
     "noOptions": "No options"
@@ -266,7 +269,6 @@
     "searchPlaceholder": "Username, display name or Discord ID",
     "searchPlaceholderShort": "Username, name or Discord ID",
     "searchLabel": "Search users",
-    "clearSearch": "Clear search",
     "recentlyActioned": "Recently actioned",
     "resultsCount": "{count, plural, one {# result} other {# results}}",
     "noUsersTitle": "No users found",
@@ -626,6 +628,7 @@
     "boostError": "Boost could not be applied. Please try again.",
     "viewPublicProfile": "View public profile",
     "deleteProfile": "Delete profile",
+    "deleteProfileCancel": "Cancel",
     "deletingProfile": "Deleting profile...",
     "deleteProfileConfirmation": "Delete your profile? This removes it from discovery and cannot be undone.",
     "deleteError": "Profile could not be deleted. Please try again.",

@@ -255,6 +255,73 @@ export const SupporterSavesSupporterDiscordCard: Story = {
   },
 };
 
+const openDeleteDialog = async (canvasElement: HTMLElement) => {
+  await userEvent.click(
+    within(canvasElement).getByRole('button', { name: 'Profile options' }),
+  );
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Delete profile' }),
+  );
+  return screen.findByRole('dialog');
+};
+
+export const DeleteProfileCancel: Story = {
+  args: {
+    initialValues: sampleProfile,
+    onDeleteProfile: fn(),
+  },
+  play: async ({ canvasElement, args }) => {
+    const dialog = await openDeleteDialog(canvasElement);
+    await expect(
+      within(dialog).getByText(/This removes it from discovery/),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Cancel' }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    await expect(args.onDeleteProfile).not.toHaveBeenCalled();
+  },
+};
+
+export const MobileDeleteProfileCancel: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: {
+    initialValues: sampleProfile,
+    onDeleteProfile: fn(),
+  },
+  play: async ({ canvasElement }) => {
+    const options = await within(canvasElement).findByRole('button', {
+      name: 'Profile options',
+    });
+    await userEvent.click(options);
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Delete profile' }),
+    );
+    await userEvent.click(
+      within(
+        await screen.findByRole('dialog', { name: 'Delete profile' }),
+      ).getByRole('button', { name: 'Cancel' }),
+    );
+    await waitFor(() => expect(options).toHaveFocus());
+  },
+};
+
+export const DeleteProfileConfirm: Story = {
+  args: {
+    initialValues: sampleProfile,
+    onDeleteProfile: fn(),
+  },
+  play: async ({ canvasElement, args }) => {
+    const dialog = await openDeleteDialog(canvasElement);
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Delete profile' }),
+    );
+    await waitFor(() => expect(args.onDeleteProfile).toHaveBeenCalledTimes(1));
+  },
+};
+
 export const OptionsMenuTransition: Story = {
   args: {
     initialValues: sampleProfile,
