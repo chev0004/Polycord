@@ -32,7 +32,6 @@ export type DiscordCardData = {
   };
   targets: DiscordCardTarget[];
   tags: string[];
-  tagsText: string;
   availability?: DiscordCardAvailability;
   country: string;
   time: string;

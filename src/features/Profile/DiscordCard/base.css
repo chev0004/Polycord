@@ -87,6 +87,21 @@
 .dc-chip[hidden] {
   display: none;
 }
+.dc-tt {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.dc-tt > span:not(:first-child)::before {
+  content: " · ";
+}
+.dc-tt > span:last-child::before {
+  content: " ";
+}
+.dc-tt > span[hidden] {
+  display: none;
+}
 .dc-chips {
   display: flex;
   gap: 8px;

@@ -152,38 +152,30 @@ export const LocationRow = ({
     </div>
   ) : null;
 
-export const TagChips = ({
-  tags,
-  small = false,
-  style,
-}: {
-  tags: string[];
-  small?: boolean;
-  style?: CSSProperties;
-}) => {
-  const ref = useRef<HTMLDivElement>(null);
+const useFitRow = <T extends HTMLElement>(tags: string[], minShown: number) => {
+  const ref = useRef<T>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the chips are rebuilt whenever the tags change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the items are rebuilt whenever the tags change
   useLayoutEffect(() => {
     const row = ref.current;
     if (!row) return;
-    const chips = [...row.children] as HTMLElement[];
-    const more = chips.pop() as HTMLElement;
+    const items = [...row.children] as HTMLElement[];
+    const more = items.pop() as HTMLElement;
     const fit = () => {
-      let shown = chips.length;
+      let shown = items.length;
       const shrink = (value: string) => {
-        for (const chip of chips) chip.style.flexShrink = value;
+        for (const item of items) item.style.flexShrink = value;
       };
       const show = () => {
-        chips.forEach((chip, index) => {
-          chip.hidden = index >= shown;
+        items.forEach((item, index) => {
+          item.hidden = index >= shown;
         });
-        more.hidden = shown === chips.length;
-        more.textContent = `+${chips.length - shown}`;
+        more.hidden = shown === items.length;
+        more.textContent = `+${items.length - shown}`;
       };
       shrink('0');
       show();
-      while (shown > 1 && row.scrollWidth > row.clientWidth) {
+      while (shown > minShown && row.scrollWidth > row.clientWidth) {
         shown -= 1;
         show();
       }
@@ -196,6 +188,20 @@ export const TagChips = ({
     return () => observer.disconnect();
   }, [tags]);
 
+  return ref;
+};
+
+export const TagChips = ({
+  tags,
+  small = false,
+  style,
+}: {
+  tags: string[];
+  small?: boolean;
+  style?: CSSProperties;
+}) => {
+  const ref = useFitRow<HTMLDivElement>(tags, 1);
+
   return tags.length ? (
     <div ref={ref} className={`dc-chips ${small ? 'dc-sm' : ''}`} style={style}>
       {tags.map((tag) => (
@@ -206,4 +212,23 @@ export const TagChips = ({
       <span className="dc-chip" hidden />
     </div>
   ) : null;
+};
+
+export const TagsText = ({
+  tags,
+  className,
+}: {
+  tags: string[];
+  className: string;
+}) => {
+  const ref = useFitRow<HTMLSpanElement>(tags, 0);
+
+  return (
+    <span ref={ref} className={`dc-tt ${className}`}>
+      {tags.map((tag) => (
+        <span key={tag}>{tag}</span>
+      ))}
+      <span hidden />
+    </span>
+  );
 };
