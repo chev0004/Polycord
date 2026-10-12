@@ -85,6 +85,9 @@
 .dc-g-who {
   min-width: 0;
 }
+.dc-g-who {
+  max-width: 60%;
+}
 .dc-g-nm,
 .dc-g-un {
   white-space: nowrap;
