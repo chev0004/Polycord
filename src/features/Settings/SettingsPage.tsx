@@ -466,7 +466,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </Label>
                 <TextInput
                   id="email"
-                  type="email"
+                  inputMode="email"
+                  autoCapitalize="off"
+                  autoComplete="email"
+                  spellCheck={false}
                   {...register('email')}
                   placeholder={t('emailPlaceholder')}
                   error={!!errors.email}

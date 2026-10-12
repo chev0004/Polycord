@@ -779,8 +779,10 @@ export const MobileSettings = ({
       >
         <TextInput
           id="email-sheet"
-          type="email"
           inputMode="email"
+          autoCapitalize="off"
+          autoComplete="email"
+          spellCheck={false}
           aria-label={t('emailLabel')}
           value={emailDraft}
           placeholder={t('emailPlaceholder')}

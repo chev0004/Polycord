@@ -13,7 +13,7 @@ import {
   moderationSnapshot,
   moderatorSnapshot,
 } from './moderationFixtures';
-import type { ModLogEntry, ModUser, SeedStatus } from './types';
+import type { ModLogEntry, ModSnapshot, ModUser, SeedStatus } from './types';
 
 const seed: SeedStatus = {
   real: 17,
@@ -25,27 +25,30 @@ const seed: SeedStatus = {
 
 const seedFetch = fn();
 
-const mockSeedApi = (start: number) => () => {
-  const original = globalThis.fetch;
-  let dummies = start;
-  seedFetch.mockReset();
-  globalThis.fetch = Object.assign(
-    async (...args: Parameters<typeof fetch>) => {
-      if (String(args[0]) !== '/api/admin/seed') return original(...args);
-      seedFetch(JSON.parse(String(args[1]?.body)));
-      const { target } = JSON.parse(String(args[1]?.body));
-      dummies =
-        target > dummies
-          ? Math.min(target, dummies + 2000)
-          : Math.max(target, dummies - 2000);
-      return new Response(JSON.stringify({ ...seed, dummies }));
-    },
-    { preconnect: original.preconnect },
-  );
-  return () => {
-    globalThis.fetch = original;
+const mockSeedApi =
+  (start: number, delay = 0) =>
+  () => {
+    const original = globalThis.fetch;
+    let dummies = start;
+    seedFetch.mockReset();
+    globalThis.fetch = Object.assign(
+      async (...args: Parameters<typeof fetch>) => {
+        if (String(args[0]) !== '/api/admin/seed') return original(...args);
+        seedFetch(JSON.parse(String(args[1]?.body)));
+        if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+        const { target } = JSON.parse(String(args[1]?.body));
+        dummies =
+          target > dummies
+            ? Math.min(target, dummies + 2000)
+            : Math.max(target, dummies - 2000);
+        return new Response(JSON.stringify({ ...seed, dummies }));
+      },
+      { preconnect: original.preconnect },
+    );
+    return () => {
+      globalThis.fetch = original;
+    };
   };
-};
 
 const recorded: ModLogEntry[] = [];
 
@@ -58,14 +61,77 @@ const activityPage = () =>
     }),
   );
 
+const dayKey = (day: Date) =>
+  `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+
+const mockListsApi =
+  (source: ModSnapshot = moderationSnapshot) =>
+  () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      async (...args: Parameters<typeof fetch>) => {
+        const url = new URL(String(args[0]), 'http://storybook.test');
+        const { searchParams: params } = url;
+        if (url.pathname === '/api/admin/reports') {
+          const reason = params.get('reason');
+          const reports = source.reports.filter(
+            (report) =>
+              (params.get('status') === 'pending') ===
+                (report.status === 'pending') &&
+              (!reason || report.reason === reason),
+          );
+          return new Response(JSON.stringify({ users: [], reports, log: [] }));
+        }
+        if (url.pathname === '/api/admin/actioned') {
+          const action = params.get('action');
+          const actioned = source.log
+            .filter(
+              (entry, index, log) =>
+                entry.userId &&
+                (!action || entry.action === action) &&
+                log.findIndex(
+                  (other) =>
+                    other.userId === entry.userId &&
+                    (!action || other.action === action),
+                ) === index,
+            )
+            .map((entry) => ({
+              id: entry.id,
+              userId: entry.userId,
+              action: entry.action,
+              count: 1,
+              createdAt: entry.createdAt,
+            }));
+          return new Response(
+            JSON.stringify({ users: [], reports: [], log: [], actioned }),
+          );
+        }
+        if (url.pathname === '/api/admin/activity-days')
+          return new Response(
+            JSON.stringify({ days: { [dayKey(new Date())]: 7 } }),
+          );
+        return original(...args);
+      },
+      { preconnect: original.preconnect },
+    );
+    return () => {
+      globalThis.fetch = original;
+    };
+  };
+
 const mockActivityApi = () => {
   const original = globalThis.fetch;
   recorded.length = 0;
   globalThis.fetch = Object.assign(
-    async (...args: Parameters<typeof fetch>) =>
-      String(args[0]).startsWith('/api/admin/activity-log')
-        ? activityPage()
-        : original(...args),
+    async (...args: Parameters<typeof fetch>) => {
+      const url = String(args[0]);
+      if (url.startsWith('/api/admin/activity-log')) return activityPage();
+      if (url.startsWith('/api/admin/activity-days'))
+        return new Response(
+          JSON.stringify({ days: { [dayKey(new Date())]: 7 } }),
+        );
+      return original(...args);
+    },
     { preconnect: original.preconnect },
   );
   return () => {
@@ -217,13 +283,17 @@ const meta: Meta<typeof ModerationPage> = {
     ),
   ],
   args: { initial: moderationSnapshot },
+  beforeEach: mockListsApi(),
 };
 
 export default meta;
 type Story = StoryObj<typeof ModerationPage>;
 
+const queueLoaded = () => screen.findByRole('button', { name: /Ryan Mercer/ });
+
 export const Default: Story = {
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     const queue = canvas.getByRole('region', { name: 'Reports' });
     await expect(
@@ -268,6 +338,28 @@ export const DummyData: Story = {
   },
 };
 
+export const DummyDataProgress: Story = {
+  args: { seed },
+  beforeEach: mockSeedApi(0, 600),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: 'Dummy data' }));
+    const panel = within(
+      await canvas.findByRole('region', { name: 'Dummy data' }),
+    );
+    fireEvent.click(panel.getByRole('button', { name: '5,000' }));
+    const apply = panel.getByRole('button', { name: 'Apply' });
+    await waitFor(() => expect(apply).toBeEnabled());
+    fireEvent.click(apply);
+    const bar = await panel.findByRole('progressbar', {
+      name: 'Dummy data',
+    });
+    await expect(bar).toHaveAttribute('aria-valuemax', '5000');
+    await waitFor(() => expect(bar).toHaveAttribute('aria-valuenow', '2000'));
+    await expect(canvasElement.querySelector('progress')).toBeNull();
+  },
+};
+
 export const DummyDataOverCap: Story = {
   args: { seed },
   play: async ({ canvasElement }) => {
@@ -308,6 +400,7 @@ export const DummyDataMobile: Story = {
 
 export const OwnerModeratesModerator: Story = {
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /Tomás Ruiz/ }));
     await canvas.findByRole('button', { name: /^Warn/ });
@@ -319,6 +412,7 @@ export const OwnerModeratesModerator: Story = {
 
 export const SuspendDialog: Story = {
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: 'Suspend' }));
     const dialog = within(await screen.findByRole('dialog'));
@@ -336,9 +430,99 @@ export const SuspendDialog: Story = {
 
 export const QueueClear: Story = {
   args: { initial: emptyModerationSnapshot },
+  beforeEach: mockListsApi(emptyModerationSnapshot),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Queue clear')).toBeInTheDocument();
+    await expect(
+      await canvas.findByText('No pending reports'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const ReportReasonFilter: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const queue = within(
+      await canvas.findByRole('region', { name: 'Reports' }),
+    );
+    await queue.findByRole('button', { name: /Ryan Mercer/ });
+    fireEvent.click(queue.getByRole('button', { name: 'All reasons' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Harassment' }));
+    await waitFor(() =>
+      expect(
+        queue.queryByRole('button', { name: /Ryan Mercer/ }),
+      ).not.toBeInTheDocument(),
+    );
+    await expect(
+      await queue.findByRole('button', { name: /Tomás Ruiz/ }),
+    ).toBeInTheDocument();
+    fireEvent.click(queue.getByRole('button', { name: 'Clear' }));
+    await expect(
+      await queue.findByRole('button', { name: /Ryan Mercer/ }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const ResolvedReports: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const queue = within(
+      await canvas.findByRole('region', { name: 'Reports' }),
+    );
+    fireEvent.click(queue.getByRole('tab', { name: 'Resolved' }));
+    await expect(
+      await queue.findByRole('button', { name: /Dmitri Volkov/ }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        queue.queryByRole('button', { name: /Ryan Mercer/ }),
+      ).not.toBeInTheDocument(),
+    );
+  },
+};
+
+export const RecentlyActioned: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: 'Users' }));
+    const list = within(await canvas.findByRole('region', { name: 'Users' }));
+    await expect(
+      await list.findByRole('button', { name: /Dmitri Volkov/ }),
+    ).toHaveTextContent('Suspended user');
+    fireEvent.click(list.getByRole('button', { name: 'All actions' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Banned user' }));
+    await expect(
+      await list.findByText('No matching actions'),
+    ).toBeInTheDocument();
+  },
+};
+
+export const MobileReportReasonFilter: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await canvas.findByRole('button', { name: /Ryan Mercer/ });
+    fireEvent.click(canvas.getByRole('button', { name: 'All reasons' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Harassment' }));
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('button', { name: /Ryan Mercer/ }),
+      ).not.toBeInTheDocument(),
+    );
+    await expect(
+      await canvas.findByRole('button', { name: /Tomás Ruiz/ }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const MobileRecentlyActioned: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(await canvas.findByRole('button', { name: 'Users' }));
+    await expect(
+      await canvas.findByRole('button', { name: /Dmitri Volkov/ }),
+    ).toHaveTextContent('Suspended user');
   },
 };
 
@@ -353,9 +537,53 @@ export const ActivityLog: Story = {
   },
 };
 
+export const ActivityCalendar: Story = {
+  beforeEach: mockActivityApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: 'Activity log' }));
+    const log = within(
+      await canvas.findByRole('region', { name: 'Activity log' }),
+    );
+    fireEvent.click(await log.findByRole('button', { name: 'Select a date' }));
+    await expect(
+      await screen.findByRole('button', { name: /, 7 actions$/ }),
+    ).toBeInTheDocument();
+    await expect(screen.getByText('actions this month')).toBeInTheDocument();
+    await expect(
+      screen.getByText(/Full ring: 7\+ in a day/),
+    ).toBeInTheDocument();
+  },
+};
+
+export const SuspiciousHeaderMatchesLog: Story = {
+  beforeEach: mockActivityApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: /^Suspicious activity/ }));
+    const region = within(
+      await canvas.findByRole('region', { name: 'Suspicious activity' }),
+    );
+    await expect(
+      region.getByRole('button', { name: 'Select a date' }),
+    ).toBeInTheDocument();
+    await expect(
+      region.getByRole('button', { name: 'Previous day' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByText(/Events flagged automatically/),
+    ).not.toBeInTheDocument();
+    fireEvent.click(region.getByRole('button', { name: 'Select a date' }));
+    await expect(
+      await screen.findByText('flagged events this month'),
+    ).toBeInTheDocument();
+  },
+};
+
 export const Mobile: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     await expect(
       await canvas.findByText('2 cases need review'),
@@ -370,9 +598,12 @@ export const Mobile: Story = {
 export const MobileQueueClear: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   args: { initial: emptyModerationSnapshot },
+  beforeEach: mockListsApi(emptyModerationSnapshot),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(await canvas.findByText('Queue clear')).toBeInTheDocument();
+    await expect(
+      await canvas.findByText('No pending reports'),
+    ).toBeInTheDocument();
   },
 };
 
@@ -415,6 +646,7 @@ export const IpBlockSelection: Story = {
 export const ModeratorView: Story = {
   args: { initial: moderatorSnapshot },
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Moderator')).toBeInTheDocument();
     await expect(
@@ -578,6 +810,7 @@ export const PendingCasesBeyondLoaded: Story = {
 export const WarnComposer: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
     const dialog = within(await screen.findByRole('dialog'));
@@ -650,6 +883,7 @@ export const WarnComposer: Story = {
 export const WarnPreset: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
     const dialog = within(await screen.findByRole('dialog'));
@@ -685,6 +919,7 @@ export const WarnPreset: Story = {
 export const WarnEditedPreset: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
     const dialog = within(await screen.findByRole('dialog'));
@@ -730,6 +965,7 @@ export const WarnEditedPreset: Story = {
 export const WarnCustomFromStart: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /^Warn/ }));
     const dialog = within(await screen.findByRole('dialog'));
@@ -765,6 +1001,7 @@ export const WarnJapanese: Story = {
   beforeEach: mockModerationApi,
   globals: { locale: 'ja' },
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /^警告/ }));
     const dialog = within(await screen.findByRole('dialog'));
@@ -794,6 +1031,7 @@ export const WarnJapanese: Story = {
 export const HideConfirmation: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     await expect(canvas.queryByRole('textbox', { name: 'Note' })).toBeNull();
     fireEvent.keyDown(document.body, { key: 'h' });
@@ -837,6 +1075,7 @@ export const HideConfirmation: Story = {
 export const DismissConfirmation: Story = {
   beforeEach: mockModerationApi,
   play: async () => {
+    await queueLoaded();
     fireEvent.keyDown(document.body, { key: 'd' });
     let dialog = within(
       await screen.findByRole('dialog', { name: 'Dismiss 2 reports?' }),
@@ -867,6 +1106,7 @@ export const DismissConfirmation: Story = {
 export const DismissStaffReport: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.click(canvas.getByRole('button', { name: /Tomás Ruiz/ }));
     fireEvent.click(
@@ -944,6 +1184,7 @@ export const DismissSwipe: Story = {
 export const WarnCancelled: Story = {
   beforeEach: mockModerationApi,
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     fireEvent.keyDown(document.body, { key: 'w' });
     const dialog = within(await screen.findByRole('dialog'));
@@ -1011,6 +1252,7 @@ export const WarnMobile: Story = {
 
 export const ActionStrip: Story = {
   play: async ({ canvasElement }) => {
+    await queueLoaded();
     const canvas = within(canvasElement);
     const strip = within(
       canvas.getByRole('toolbar', { name: 'Moderation actions' }),

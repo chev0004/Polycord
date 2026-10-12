@@ -22,11 +22,34 @@ export const LOG_ACTIONS = [
   'ip_unblock',
 ] as const;
 
+export const ACTIVITY_KINDS = [
+  'log',
+  'suspicious',
+  'reports',
+  'actioned',
+] as const;
+
+export const REPORT_REASONS = [
+  'spam',
+  'harassment',
+  'inappropriate',
+  'impersonation',
+  'other',
+] as const;
+
+export const REPORT_VIEWS = ['pending', 'resolved'] as const;
+
 export const OWNER_ACTIONS = ['ban', 'unban'] as const;
 
 export type ModAction = (typeof MODERATION_ACTIONS)[number];
 
 export type LogAction = (typeof LOG_ACTIONS)[number];
+
+export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
+
+export type ReportReason = (typeof REPORT_REASONS)[number];
+
+export type ReportView = (typeof REPORT_VIEWS)[number];
 
 export type StaffRole = 'owner' | 'moderator';
 
@@ -59,7 +82,7 @@ export type ModReport = {
   id: string;
   userId: string;
   reporterId: string;
-  reason: 'spam' | 'harassment' | 'inappropriate' | 'impersonation' | 'other';
+  reason: ReportReason;
   details?: string;
   status: 'pending' | 'reviewed' | 'dismissed';
   createdAt: string;
@@ -103,6 +126,14 @@ export type ActivityFilters = Record<string, string>;
 export type ActivityPage<T> = { rows: T[]; nextCursor?: string };
 
 export type ModSuspicious = ModSuspiciousEvent & { count: number };
+
+export type ModActioned = {
+  id: string;
+  userId: string;
+  action: LogAction;
+  count: number;
+  createdAt: string;
+};
 
 export type ModData = {
   users: ModUser[];

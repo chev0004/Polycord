@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   ACTIVITY_PAGE_SIZE,
   pageOf,
+  parseActivityDays,
   parseActivityWindow,
 } from './activityWindow';
 
@@ -33,6 +34,34 @@ describe('parseActivityWindow', () => {
     );
     expect(window?.action).toBe('ban');
     expect(window?.staffId).toBe(id);
+  });
+
+  test('accepts a report reason and status filter', () => {
+    const window = parseActivityWindow(
+      params({
+        from: '2026-10-05T00:00:00.000Z',
+        to: '2026-10-06T00:00:00.000Z',
+        reason: 'spam',
+        status: 'resolved',
+      }),
+    );
+    expect(window?.reason).toBe('spam');
+    expect(window?.status).toBe('resolved');
+  });
+
+  test.each([
+    ['reason', 'rude'],
+    ['status', 'reviewed'],
+  ])('rejects an unknown %s', (key, value) => {
+    expect(
+      parseActivityWindow(
+        params({
+          from: '2026-10-05T00:00:00.000Z',
+          to: '2026-10-06T00:00:00.000Z',
+          [key]: value,
+        }),
+      ),
+    ).toBeNull();
   });
 
   test('accepts a 25 hour daylight saving day', () => {
@@ -100,5 +129,32 @@ describe('pageOf', () => {
   test('has no cursor on the final page', () => {
     expect(pageOf(rows(ACTIVITY_PAGE_SIZE)).nextCursor).toBeUndefined();
     expect(pageOf([]).nextCursor).toBeUndefined();
+  });
+});
+
+describe('parseActivityDays', () => {
+  const month = {
+    kind: 'log',
+    from: '2026-10-01T05:00:00.000Z',
+    to: '2026-11-01T05:00:00.000Z',
+    timeZone: 'America/Chicago',
+  };
+
+  test('accepts a month in a time zone', () => {
+    const query = parseActivityDays(params(month));
+    expect(query?.kind).toBe('log');
+    expect(query?.timeZone).toBe('America/Chicago');
+    expect(query?.from.toISOString()).toBe('2026-10-01T05:00:00.000Z');
+  });
+
+  test.each([
+    ['unknown kind', { ...month, kind: 'everything' }],
+    ['missing zone', { ...month, timeZone: '' }],
+    ['unknown zone', { ...month, timeZone: 'Mars/Olympus' }],
+    ['reversed range', { ...month, from: month.to, to: month.from }],
+    ['range over a month', { ...month, to: '2026-12-15T05:00:00.000Z' }],
+    ['bad dates', { ...month, from: 'last month' }],
+  ])('rejects %s', (_name, values) => {
+    expect(parseActivityDays(params(values))).toBeNull();
   });
 });

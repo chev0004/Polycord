@@ -24,6 +24,7 @@ import {
 } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { Chip } from '@/components/Chip';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   Combobox,
   FieldError,
@@ -255,6 +256,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [boostError, setBoostError] = useState<BoostDialogError | null>(null);
   const [boostOpen, setBoostOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const optionsTrigger = useRef<HTMLButtonElement>(null);
   const [lastAvailability, setLastAvailability] = useState(
     DEFAULT_AVAILABILITY_PATTERN,
   );
@@ -441,12 +444,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const handleDeleteProfile = async () => {
     if (!onDeleteProfile || isDeleting) {
-      return;
-    }
-
-    const confirmed = window.confirm(t('deleteProfileConfirmation'));
-
-    if (!confirmed) {
       return;
     }
 
@@ -789,7 +786,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       label: isDeleting ? t('deletingProfile') : t('deleteProfile'),
       danger: true,
       disabled: isDeleting,
-      onSelect: handleDeleteProfile,
+      onSelect: () => setDeleteOpen(true),
     },
   ].filter((item) => item !== undefined && item !== false);
 
@@ -806,6 +803,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         onBoost={handleBoostProfile}
       />
     ) : null;
+
+  const deleteDialog = onDeleteProfile ? (
+    <ConfirmDialog
+      open={deleteOpen}
+      onOpenChange={setDeleteOpen}
+      title={t('deleteProfile')}
+      description={t('deleteProfileConfirmation')}
+      cancelLabel={t('deleteProfileCancel')}
+      confirmLabel={t('deleteProfile')}
+      returnFocus={optionsTrigger}
+      onConfirm={handleDeleteProfile}
+    />
+  ) : null;
 
   if (mobile) {
     return (
@@ -824,6 +834,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           statusMessage={statusMessage}
           draftNotice={draftNotice}
           menuItems={menuItems}
+          optionsTrigger={optionsTrigger}
           cardStylePicker={cardStylePicker}
           voiceEditor={voiceEditor}
           availabilityEditor={availabilityEditor}
@@ -836,6 +847,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           submittingLabel={submittingLabel}
         />
         {boostDialog}
+        {deleteDialog}
       </>
     );
   }
@@ -865,6 +877,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <Popover.Root open={optionsOpen} onOpenChange={setOptionsOpen}>
             <Popover.Trigger asChild>
               <button
+                ref={optionsTrigger}
                 type="button"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background-dark text-soft transition-colors hover:bg-background-darker hover:text-foreground focus:outline-none focus-visible:bg-background-darker focus-visible:text-foreground"
                 aria-label={t('profileOptions')}
@@ -879,7 +892,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 align="end"
                 sideOffset={6}
                 onCloseAutoFocus={(event) => {
-                  if (boostOpen) event.preventDefault();
+                  if (boostOpen || deleteOpen) event.preventDefault();
                 }}
               >
                 <div className="flex flex-col">
@@ -914,7 +927,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         icon={MdDeleteOutline}
                         danger
                         disabled={isDeleting}
-                        onClick={handleDeleteProfile}
+                        onClick={() => setDeleteOpen(true)}
                       >
                         {isDeleting ? t('deletingProfile') : t('deleteProfile')}
                       </MenuItem>
@@ -1249,6 +1262,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </aside>
       </fieldset>
       {boostDialog}
+      {deleteDialog}
     </form>
   );
 };

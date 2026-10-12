@@ -4,9 +4,11 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import type {
   ActivityFilters,
+  ActivityKind,
   ActivityPage,
   ActivityRange,
   IpBlock,
+  ModActioned,
   ModData,
   ModLogEntry,
   ModReport,
@@ -78,6 +80,13 @@ const send = async (url: string, method: string, body: object) => {
   }
   return response.json();
 };
+
+const pageQuery = (cursor: string | undefined, filters: ActivityFilters) => ({
+  ...(cursor ? { cursor } : {}),
+  ...Object.fromEntries(Object.entries(filters).filter(([, value]) => value)),
+});
+
+const DAY_COUNTS_TTL_MS = 60000;
 
 export const useModeration = (initial: ModSnapshot) => {
   const [data, setData] = useState<ModData>(initial);
@@ -176,13 +185,42 @@ export const useModeration = (initial: ModSnapshot) => {
       const result = await loadWindow<ModData & { nextCursor?: string }>(
         '/api/admin/activity-log',
         range,
-        {
-          ...(cursor ? { cursor } : {}),
-          ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)),
-        },
+        pageQuery(cursor, filters),
       );
       merge(result);
       return { rows: result.log, nextCursor: result.nextCursor };
+    },
+    [loadWindow, merge],
+  );
+
+  const loadReports = useCallback(
+    async (
+      range: ActivityRange,
+      cursor?: string,
+      filters: ActivityFilters = {},
+    ): Promise<ActivityPage<ModReport>> => {
+      const result = await loadWindow<ModData & { nextCursor?: string }>(
+        '/api/admin/reports',
+        range,
+        pageQuery(cursor, filters),
+      );
+      merge(result);
+      return { rows: result.reports, nextCursor: result.nextCursor };
+    },
+    [loadWindow, merge],
+  );
+
+  const loadActioned = useCallback(
+    async (
+      range: ActivityRange,
+      cursor?: string,
+      filters: ActivityFilters = {},
+    ): Promise<ActivityPage<ModActioned>> => {
+      const result = await loadWindow<
+        ModData & { actioned: ModActioned[]; nextCursor?: string }
+      >('/api/admin/actioned', range, pageQuery(cursor, filters));
+      merge(result);
+      return { rows: result.actioned, nextCursor: result.nextCursor };
     },
     [loadWindow, merge],
   );
@@ -199,6 +237,38 @@ export const useModeration = (initial: ModSnapshot) => {
       return { rows: result.activity, nextCursor: result.nextCursor };
     },
     [loadWindow, merge],
+  );
+
+  const dayCounts = useRef(
+    new Map<string, { at: number; days: Promise<Record<string, number>> }>(),
+  );
+
+  const loadActivityDays = useCallback(
+    (kind: ActivityKind, month: Date) => {
+      const key = `${kind}:${month.getFullYear()}-${month.getMonth()}`;
+      const cached = dayCounts.current.get(key);
+      if (cached && Date.now() - cached.at < DAY_COUNTS_TTL_MS)
+        return cached.days;
+      const days = loadWindow<{ days: Record<string, number> }>(
+        '/api/admin/activity-days',
+        {
+          from: month.toISOString(),
+          to: new Date(
+            month.getFullYear(),
+            month.getMonth() + 1,
+            1,
+          ).toISOString(),
+        },
+        {
+          kind,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      ).then((result) => result.days);
+      dayCounts.current.set(key, { at: Date.now(), days });
+      days.catch(() => dayCounts.current.delete(key));
+      return days;
+    },
+    [loadWindow],
   );
 
   const loadSuspiciousEvents = useCallback(
@@ -235,6 +305,11 @@ export const useModeration = (initial: ModSnapshot) => {
     [data.users],
   );
 
+  const reportsById = useMemo(
+    () => new Map(data.reports.map((report) => [report.id, report])),
+    [data.reports],
+  );
+
   const pendingGroups = useMemo(
     () => groupReports(data.reports, 'pending'),
     [data.reports],
@@ -252,15 +327,12 @@ export const useModeration = (initial: ModSnapshot) => {
   const userReports = (userId: string) =>
     data.reports.filter((report) => report.userId === userId);
 
-  const recentUserIds = [
-    ...new Set(data.log.flatMap((entry) => entry.userId ?? [])),
-  ].slice(0, 6);
-
   return {
     ...data,
     merge,
     revision,
     usersById,
+    reportsById,
     pendingGroups,
     pendingCases,
     meId: initial.meId,
@@ -274,8 +346,11 @@ export const useModeration = (initial: ModSnapshot) => {
     revokePremium: (userId: string) => changePremium('DELETE', { userId }),
     loadIpBlocks,
     loadActivityLog,
+    loadReports,
+    loadActioned,
     loadSuspicious,
     loadSuspiciousEvents,
+    loadActivityDays,
     blockIps: (body: { ips: string[]; userId?: string; reason?: string }) =>
       changeIpBlocks('POST', body),
     unblockIp: (id: string) => changeIpBlocks('DELETE', { id }),
@@ -284,7 +359,6 @@ export const useModeration = (initial: ModSnapshot) => {
     searchPage,
     userLog,
     userReports,
-    recentUserIds,
   };
 };
 

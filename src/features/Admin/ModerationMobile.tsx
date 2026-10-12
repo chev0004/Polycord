@@ -32,7 +32,6 @@ import {
   MdPersonSearch,
   MdPolicy,
   MdSchedule,
-  MdSearch,
   MdSettingsBackupRestore,
   MdStorage,
   MdSwipeLeft,
@@ -43,7 +42,7 @@ import {
   MdWorkspacePremium,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
-import { NumberStepper } from '@/components/Form';
+import { NumberStepper, SearchField } from '@/components/Form';
 import { ActionSheet, Sheet, SheetGroup, SheetRow } from '@/components/Sheet';
 import type { WarningCategory } from '@/types';
 import {
@@ -52,6 +51,7 @@ import {
   type ActivityPages,
   ActivityStatus,
   useActivityPages,
+  useReportPages,
 } from './ActivityPages';
 import type { ModTab, Notify, UsersQuery } from './ModerationDesktop';
 import { IpBlocksPanel } from './ModerationIpBlocks';
@@ -89,13 +89,15 @@ import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
   ActivityRange,
   ModAction,
+  ModActioned,
   ModLogEntry,
   ModReport,
   ModSuspicious,
   ModUser,
+  ReportView,
   SeedStatus,
 } from './types';
-import { LOG_ACTIONS } from './types';
+import { LOG_ACTIONS, REPORT_REASONS } from './types';
 import {
   groupReports,
   hasStatusChips,
@@ -265,23 +267,28 @@ const avatar40 = '[&>*]:!h-10 [&>*]:!w-10';
 
 const ReportsScreen = ({
   store,
+  pages,
   view,
   setView,
   openCase,
   dismissCase,
 }: {
   store: ModerationStore;
-  view: 'pending' | 'resolved';
-  setView: (view: 'pending' | 'resolved') => void;
+  pages: ActivityPages<ModReport>;
+  view: ReportView;
+  setView: (view: ReportView) => void;
   openCase: (userId: string) => void;
   dismissCase: (group: ReportGroup) => void;
 }) => {
   const t = useTranslations('Admin');
   const { relative } = useModFormat();
-  const pending = store.pendingGroups;
-  const resolved = groupReports(store.reports, 'resolved');
-  const groups = view === 'pending' ? pending : resolved;
-  const segment = (value: 'pending' | 'resolved', label: string) => (
+  const [sheet, setSheet] = useState(false);
+  const rows = (pages.rows ?? []).map(
+    (row) => store.reportsById.get(row.id) ?? row,
+  );
+  const groups = groupReports(rows, view);
+  const { reason = '' } = pages.filters;
+  const segment = (value: ReportView, label: string) => (
     <button
       type="button"
       role="tab"
@@ -299,10 +306,10 @@ const ReportsScreen = ({
         heading={t('tabReports')}
         sub={
           view === 'pending'
-            ? pending.length
+            ? store.pendingCases
               ? t('casesNeedReview', { count: store.pendingCases })
               : t('nothingWaiting')
-            : t('resolvedCases', { count: resolved.length })
+            : t('reportCount', { count: groups.length })
         }
       />
       <div className="px-4 pb-3.5">
@@ -310,12 +317,42 @@ const ReportsScreen = ({
           role="tablist"
           className="grid auto-cols-[minmax(0,1fr)] grid-flow-col gap-[3px] rounded-full bg-background-darker p-[3px]"
         >
-          {segment('pending', t('pendingCount', { count: pending.length }))}
+          {segment('pending', t('pendingCount', { count: store.pendingCases }))}
           {segment('resolved', t('resolved'))}
         </div>
       </div>
+      <div className="px-4 pb-3">
+        <ActivityDayBar
+          pages={pages}
+          kind="reports"
+          loadDays={store.loadActivityDays}
+        />
+      </div>
+      <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
+        <button
+          type="button"
+          onClick={() => setSheet(true)}
+          className={chipButton(Boolean(reason))}
+        >
+          <MdTune size={18} />
+          {reason ? t(`reason_${reason}`) : t('allReasons')}
+          <MdExpandMore size={18} />
+        </button>
+        {pages.filtered ? (
+          <button
+            type="button"
+            onClick={pages.clearFilters}
+            className={chipButton(false)}
+          >
+            <MdClose size={16} />
+            {t('clear')}
+          </button>
+        ) : null}
+      </div>
       <div className="px-3">
-        {groups.length ? (
+        {!pages.rows ? (
+          <ActivityStatus pages={pages} />
+        ) : groups.length ? (
           <>
             <div className={group}>
               {groups.map((entry) => {
@@ -378,23 +415,70 @@ const ReportsScreen = ({
               </p>
             ) : null}
           </>
+        ) : pages.filtered ? (
+          <MobileEmpty
+            icon={MdFilterAltOff}
+            title={t('noReportsMatchTitle')}
+            body={t('noReportsMatchBody')}
+          >
+            <button
+              type="button"
+              onClick={pages.clearFilters}
+              className="h-10 rounded-full border border-primary-dark px-3.5 font-semibold text-primary-light text-sm"
+            >
+              {t('clearFilters')}
+            </button>
+          </MobileEmpty>
         ) : (
           <MobileEmpty
             icon={view === 'pending' ? MdTaskAlt : MdInventory2}
             title={t(
-              view === 'pending' ? 'queueClearTitle' : 'resolvedEmptyTitle',
+              view === 'pending'
+                ? 'pendingDayEmptyTitle'
+                : 'resolvedDayEmptyTitle',
             )}
             body={t(
-              view === 'pending' ? 'queueClearBody' : 'resolvedEmptyBody',
+              view === 'pending'
+                ? 'pendingDayEmptyBody'
+                : 'resolvedDayEmptyBody',
             )}
           />
         )}
+        <ActivityPager pages={pages} />
       </div>
+      <ActionSheet
+        open={sheet}
+        onOpenChange={setSheet}
+        title={t('reportReason')}
+        radio
+        items={[
+          {
+            key: 'all',
+            label: t('allReasons'),
+            selected: !reason,
+            onSelect: () => pages.setFilter('reason', ''),
+          },
+          ...REPORT_REASONS.map((value) => ({
+            key: value,
+            label: t(`reason_${value}`),
+            selected: reason === value,
+            onSelect: () => pages.setFilter('reason', value),
+          })),
+        ]}
+      />
     </>
   );
 };
 
-const UserRow = ({ user, onClick }: { user: ModUser; onClick: () => void }) => (
+const UserRow = ({
+  user,
+  note,
+  onClick,
+}: {
+  user: ModUser;
+  note?: string;
+  onClick: () => void;
+}) => (
   <button
     type="button"
     onClick={onClick}
@@ -410,6 +494,9 @@ const UserRow = ({ user, onClick }: { user: ModUser; onClick: () => void }) => (
       <span className="block truncate text-[13px] text-muted">
         @{user.username}
       </span>
+      {note ? (
+        <span className="block truncate text-[12.5px] text-subtle">{note}</span>
+      ) : null}
       {hasStatusChips(user) ? (
         <span className="mt-[5px] flex flex-wrap gap-1">
           {user.role ? <StaffChip role={user.role} small /> : null}
@@ -424,45 +511,38 @@ const UserRow = ({ user, onClick }: { user: ModUser; onClick: () => void }) => (
 const UsersScreen = ({
   store,
   users,
+  pages,
   openUser,
 }: {
   store: ModerationStore;
   users: UsersQuery;
+  pages: ActivityPages<ModActioned>;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
   const [staffOpen, setStaffOpen] = useState(false);
   const [ipBlocksOpen, setIpBlocksOpen] = useState(false);
+  const [actionSheet, setActionSheet] = useState(false);
   const trimmed = users.query.trim();
-  const list = (trimmed ? (users.results ?? []) : store.recentUserIds).flatMap(
-    (id) => store.usersById.get(id) ?? [],
-  );
+  const actions = new Map((pages.rows ?? []).map((row) => [row.userId, row]));
+  const list = (
+    trimmed ? (users.results ?? []) : (pages.rows ?? []).map((r) => r.userId)
+  ).flatMap((id) => store.usersById.get(id) ?? []);
+  const { action = '' } = pages.filters;
 
   return (
     <>
       <Header heading={t('tabUsers')} />
       <div className="sticky top-0 z-[5] bg-background-main px-4 pb-2.5">
-        <div className="flex h-12 items-center gap-2 rounded-full border border-[rgba(107,114,128,0.45)] bg-background-darker pr-2 pl-4 text-subtle focus-within:border-primary">
-          <MdSearch size={20} aria-hidden />
-          <input
-            type="search"
-            value={users.query}
-            onChange={(event) => users.setQuery(event.target.value)}
-            placeholder={t('searchPlaceholderShort')}
-            aria-label={t('searchLabel')}
-            className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
-          />
-          {users.query ? (
-            <button
-              type="button"
-              onClick={() => users.setQuery('')}
-              aria-label={t('clearSearch')}
-              className="flex h-8 w-8 items-center justify-center text-muted"
-            >
-              <MdClose size={18} />
-            </button>
-          ) : null}
-        </div>
+        <SearchField
+          className="h-12 border-[rgba(107,114,128,0.45)] pr-2 pl-4 focus-within:border-primary"
+          inputClassName="text-[15px]"
+          value={users.query}
+          onClear={() => users.setQuery('')}
+          onChange={(event) => users.setQuery(event.target.value)}
+          placeholder={t('searchPlaceholderShort')}
+          aria-label={t('searchLabel')}
+        />
       </div>
       <div className="px-3">
         {store.meRole === 'owner' && !trimmed ? (
@@ -483,6 +563,38 @@ const UsersScreen = ({
             />
           </div>
         ) : null}
+        {trimmed ? null : (
+          <>
+            <div className="px-1 pt-1 pb-3">
+              <ActivityDayBar
+                pages={pages}
+                kind="actioned"
+                loadDays={store.loadActivityDays}
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto px-1 pb-3.5 [scrollbar-width:none]">
+              <button
+                type="button"
+                onClick={() => setActionSheet(true)}
+                className={chipButton(Boolean(action))}
+              >
+                <MdTune size={18} />
+                {action ? t(`action_${action}`) : t('allActions')}
+                <MdExpandMore size={18} />
+              </button>
+              {pages.filtered ? (
+                <button
+                  type="button"
+                  onClick={pages.clearFilters}
+                  className={chipButton(false)}
+                >
+                  <MdClose size={16} />
+                  {t('clear')}
+                </button>
+              ) : null}
+            </div>
+          </>
+        )}
         {users.searching ? (
           <MobileSkeleton />
         ) : users.failed ? (
@@ -495,6 +607,30 @@ const UsersScreen = ({
             title={t('noUsersTitle')}
             body={t('noUsersBody', { query: trimmed })}
           />
+        ) : !(trimmed || pages.rows) ? (
+          <ActivityStatus pages={pages} />
+        ) : !(trimmed || list.length) ? (
+          pages.filtered ? (
+            <MobileEmpty
+              icon={MdFilterAltOff}
+              title={t('noMatchTitle')}
+              body={t('noMatchBody')}
+            >
+              <button
+                type="button"
+                onClick={pages.clearFilters}
+                className="h-10 rounded-full border border-primary-dark px-3.5 font-semibold text-primary-light text-sm"
+              >
+                {t('clearFilters')}
+              </button>
+            </MobileEmpty>
+          ) : (
+            <MobileEmpty
+              icon={MdHistory}
+              title={t('actionedEmptyTitle')}
+              body={t('actionedEmptyBody')}
+            />
+          )
         ) : (
           <>
             <p className="px-1 pt-2 pb-2 font-semibold text-subtle text-xs uppercase tracking-[0.06em]">
@@ -507,13 +643,39 @@ const UsersScreen = ({
                 <UserRow
                   key={user.id}
                   user={user}
+                  note={
+                    trimmed || !actions.has(user.id)
+                      ? undefined
+                      : t(`action_${actions.get(user.id)?.action}`)
+                  }
                   onClick={() => openUser(user.id)}
                 />
               ))}
             </div>
           </>
         )}
+        {trimmed ? null : <ActivityPager pages={pages} />}
       </div>
+      <ActionSheet
+        open={actionSheet}
+        onOpenChange={setActionSheet}
+        title={t('actionType')}
+        radio
+        items={[
+          {
+            key: 'all',
+            label: t('allActions'),
+            selected: !action,
+            onSelect: () => pages.setFilter('action', ''),
+          },
+          ...LOG_ACTIONS.map((value) => ({
+            key: value,
+            label: t(`action_${value}`),
+            selected: action === value,
+            onSelect: () => pages.setFilter('action', value),
+          })),
+        ]}
+      />
       <Sheet
         open={staffOpen}
         onOpenChange={setStaffOpen}
@@ -565,7 +727,11 @@ const LogScreen = ({
         sub={t('actionsCount', { count: rows.length })}
       />
       <div className="px-4 pb-3">
-        <ActivityDayBar pages={pages} />
+        <ActivityDayBar
+          pages={pages}
+          kind="log"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
         <button
@@ -797,9 +963,13 @@ const FlagsScreen = ({
 
   return (
     <>
-      <Header heading={t('tabSuspicious')} sub={t('suspiciousIntro')} />
+      <Header heading={t('tabSuspicious')} />
       <div className="px-4 pb-3">
-        <ActivityDayBar pages={pages} />
+        <ActivityDayBar
+          pages={pages}
+          kind="suspicious"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className="px-3">
         {!pages.rows ? (
@@ -1890,7 +2060,16 @@ export const ModerationMobile = ({
   notify: Notify;
   seed: SeedStatus | null;
 }) => {
-  const [view, setView] = useState<'pending' | 'resolved'>('pending');
+  const {
+    view,
+    setView,
+    pages: reportPages,
+  } = useReportPages(store, tab === 'reports');
+  const actionedPages = useActivityPages(
+    store.loadActioned,
+    tab === 'users',
+    store.revision,
+  );
   const [page, setPage] = useState<Page | null>(null);
   const [closing, setClosing] = useState(false);
   const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);
@@ -1917,6 +2096,7 @@ export const ModerationMobile = ({
       {tab === 'reports' ? (
         <ReportsScreen
           store={store}
+          pages={reportPages}
           view={view}
           setView={setView}
           openCase={(userId) => setPage({ kind: 'case', userId, view })}
@@ -1924,7 +2104,12 @@ export const ModerationMobile = ({
         />
       ) : null}
       {tab === 'users' ? (
-        <UsersScreen store={store} users={users} openUser={openUser} />
+        <UsersScreen
+          store={store}
+          users={users}
+          pages={actionedPages}
+          openUser={openUser}
+        />
       ) : null}
       {tab === 'log' ? (
         <LogScreen store={store} pages={logPages} openUser={openUser} />

@@ -3,9 +3,10 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MdClose, MdSearch } from 'react-icons/md';
+import { MdClose } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { SearchField } from '@/components/Form';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
 import {
   bannerButton,
@@ -201,20 +202,18 @@ export const BlockedUsers = ({
       aria-label={t('blockedUsersTitle')}
     >
       {users?.length ? (
-        <label className="flex h-11 items-center gap-2 rounded-full border border-line-strong bg-background-darker pr-2 pl-4 text-subtle focus-within:border-primary">
-          <MdSearch size={20} aria-hidden />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') event.preventDefault();
-            }}
-            placeholder={t('blockedUsersSearchPlaceholder')}
-            aria-label={t('blockedUsersSearchLabel')}
-            className="min-w-0 flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-subtle"
-          />
-        </label>
+        <SearchField
+          className="h-11 border-line-strong pr-2 pl-4 focus-within:border-primary"
+          inputClassName="text-[15px]"
+          value={query}
+          onClear={() => setQuery('')}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.preventDefault();
+          }}
+          placeholder={t('blockedUsersSearchPlaceholder')}
+          aria-label={t('blockedUsersSearchLabel')}
+        />
       ) : null}
       {loadFailed ? (
         <div

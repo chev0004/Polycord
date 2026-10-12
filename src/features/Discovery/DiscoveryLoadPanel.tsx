@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { Disclosure } from '@/components/Disclosure';
 import {
   type DiscoveryLoadTrace,
   type LoadPhase,
@@ -88,16 +89,19 @@ export const DiscoveryLoadPanelView = ({
       style={drag.style}
       className={`fixed z-[70] max-h-[50vh] w-[calc(100vw-24px)] max-w-md overflow-auto rounded-xl border border-background-lighter bg-background-darker p-4 font-figtree text-foreground text-sm shadow-xl ${drag.placed ? '' : 'right-3 bottom-3'}`}
     >
-      <details open>
-        <summary
-          {...drag.handle}
-          className="cursor-grab touch-none select-none font-semibold active:cursor-grabbing"
-        >
-          {t('title')}{' '}
-          <span className="ml-2 font-mono text-primary">
-            {seconds(elapsed)}
-          </span>
-        </summary>
+      <Disclosure
+        defaultOpen
+        headerProps={drag.handle}
+        headerClassName="cursor-grab touch-none select-none font-semibold active:cursor-grabbing"
+        title={
+          <>
+            {t('title')}{' '}
+            <span className="ml-2 font-mono text-primary">
+              {seconds(elapsed)}
+            </span>
+          </>
+        }
+      >
         <p className="mt-2 text-muted text-xs">
           {t(trace.finished === undefined ? 'running' : 'complete')} ·{' '}
           {t(trace.transport)}
@@ -203,10 +207,11 @@ export const DiscoveryLoadPanelView = ({
           </p>
         )}
         {trace.resources && trace.resources.length > 0 && (
-          <details className="mt-3 text-muted text-xs">
-            <summary className="cursor-pointer">
-              {t('resources', { count: trace.resources.length })}
-            </summary>
+          <Disclosure
+            className="mt-3 text-muted text-xs"
+            headerClassName="cursor-pointer"
+            title={t('resources', { count: trace.resources.length })}
+          >
             <dl className="mt-2 space-y-2">
               {trace.resources.map((resource) => (
                 <div key={`${resource.name}-${resource.start}`}>
@@ -236,13 +241,14 @@ export const DiscoveryLoadPanelView = ({
                 </div>
               ))}
             </dl>
-          </details>
+          </Disclosure>
         )}
         {trace.history && trace.history.length > 0 && (
-          <details className="mt-3 text-muted text-xs">
-            <summary className="cursor-pointer">
-              {t('history', { count: trace.history.length })}
-            </summary>
+          <Disclosure
+            className="mt-3 text-muted text-xs"
+            headerClassName="cursor-pointer"
+            title={t('history', { count: trace.history.length })}
+          >
             <ol className="mt-2 space-y-1">
               {trace.history.map((visit, index) => (
                 <li
@@ -263,13 +269,14 @@ export const DiscoveryLoadPanelView = ({
                 </li>
               ))}
             </ol>
-          </details>
+          </Disclosure>
         )}
         {trace.attempts && trace.attempts.length > 0 && (
-          <details className="mt-3 text-muted text-xs">
-            <summary className="cursor-pointer">
-              {t('attempts', { count: trace.attempts.length })}
-            </summary>
+          <Disclosure
+            className="mt-3 text-muted text-xs"
+            headerClassName="cursor-pointer"
+            title={t('attempts', { count: trace.attempts.length })}
+          >
             <ol className="mt-2 space-y-1">
               {trace.attempts.map((attempt) => (
                 <li
@@ -286,7 +293,7 @@ export const DiscoveryLoadPanelView = ({
                 </li>
               ))}
             </ol>
-          </details>
+          </Disclosure>
         )}
         <p className="mt-3 text-muted text-xs">{t('limits')}</p>
         <button
@@ -296,7 +303,7 @@ export const DiscoveryLoadPanelView = ({
         >
           {t(copyFailed ? 'copyFailed' : copied ? 'copied' : 'copy')}
         </button>
-      </details>
+      </Disclosure>
     </aside>
   );
 };

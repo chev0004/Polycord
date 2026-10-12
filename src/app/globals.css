@@ -275,6 +275,16 @@
   animation: none;
 }
 
+.PopoverContent.PopoverStill[data-state="open"] {
+  animation-name: popoverFade;
+}
+
+@keyframes popoverFade {
+  from {
+    opacity: 0;
+  }
+}
+
 @keyframes slideLeftAndFade {
   from {
     opacity: 0;
@@ -340,6 +350,27 @@
 
 *:focus {
   outline: none;
+}
+
+.progress-indeterminate {
+  background:
+    linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(193, 213, 233, 0.45) 50%,
+      transparent 70%
+    )
+    0 0 / 200% 100%,
+    var(--color-primary-dark);
+  animation: progressSlide 1.6s linear infinite;
+}
+@keyframes progressSlide {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .skeleton-shimmer {

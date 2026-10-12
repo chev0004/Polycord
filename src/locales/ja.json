@@ -71,6 +71,9 @@
     "loading": "読み込み中...",
     "noResults": "結果が見つかりませんでした。"
   },
+  "SearchField": {
+    "clear": "検索をクリア"
+  },
   "Dropdown": {
     "noResults": "結果が見つかりませんでした",
     "noOptions": "選択肢がありません"
@@ -181,10 +184,6 @@
     "keysWarn": "警告",
     "keysHide": "非表示",
     "keysSuspend": "一時停止",
-    "queueClearTitle": "キューは空です",
-    "queueClearBody": "確認が必要な報告はありません。新しい報告は送信されるとすぐにここに表示されます。",
-    "resolvedEmptyTitle": "対応済みの報告はまだありません",
-    "resolvedEmptyBody": "却下または対応した報告はここに移動します。",
     "detailPendingTitle": "確認する報告はありません",
     "detailPendingBody": "すべての報告に対応済みです。アカウントに直接対応するにはユーザーを検索してください。",
     "detailResolvedTitle": "ケースが選択されていません",
@@ -270,7 +269,6 @@
     "searchPlaceholder": "ユーザー名、表示名、Discord ID",
     "searchPlaceholderShort": "ユーザー名、名前、Discord ID",
     "searchLabel": "ユーザーを検索",
-    "clearSearch": "検索をクリア",
     "recentlyActioned": "最近対応したユーザー",
     "resultsCount": "{count}件の結果",
     "noUsersTitle": "ユーザーが見つかりません",
@@ -294,7 +292,6 @@
     "staffMember": "スタッフ",
     "today": "今日",
     "yesterday": "昨日",
-    "suspiciousIntro": "レート制限とIPの一致によって自動的に検出されたイベントです。対応する前にアカウントを確認してください。",
     "colEvent": "イベント",
     "colUser": "ユーザー",
     "colIp": "IPアドレス",
@@ -320,9 +317,18 @@
     "loadingActivity": "アクティビティを読み込み中…",
     "logEmptyTitle": "この日の操作はありません",
     "logEmptyBody": "この日に行われたモデレーション操作はここに表示されます。",
+    "allReasons": "すべての理由",
+    "reportReason": "報告の理由",
+    "noReportsMatchTitle": "一致する報告はありません",
+    "noReportsMatchBody": "この日の報告にはこのフィルターに一致するものがありません。",
+    "pendingDayEmptyTitle": "未対応の報告はありません",
+    "pendingDayEmptyBody": "この日に届いた確認が必要な報告はここに表示されます。",
+    "resolvedDayEmptyTitle": "対応済みの報告はありません",
+    "resolvedDayEmptyBody": "この日に届いて却下または対応した報告はここに表示されます。",
+    "actionedEmptyTitle": "対応したアカウントはありません",
+    "actionedEmptyBody": "この日にモデレーション操作を受けたアカウントはここに表示されます。",
     "casesNeedReview": "{count}件のケースが確認待ちです",
     "nothingWaiting": "確認待ちはありません",
-    "resolvedCases": "対応済みのケース {count}件",
     "pendingCount": "未対応 · {count}",
     "swipeHint": "ケースを左にスワイプすると却下できます",
     "dismissSwipe": "{name}さんへの報告を却下",
@@ -417,7 +423,16 @@
     "chipSupporter": "サポーター",
     "factSupporter": "サポーター",
     "factSupporterUntil": "{date}まで",
-    "factSupporterNone": "なし"
+    "factSupporterNone": "なし",
+    "calendarUnit_log": "{count}件の操作",
+    "calendarUnit_suspicious": "{count}件の検出イベント",
+    "calendarUnit_reports": "{count}件の報告",
+    "calendarUnit_actioned": "{count}件のアカウント",
+    "calendarMonth_log": "今月の操作",
+    "calendarMonth_suspicious": "今月の検出イベント",
+    "calendarMonth_reports": "今月の報告",
+    "calendarMonth_actioned": "今月対応したアカウント",
+    "calendarLegend": "リング満杯: 1日{count}件以上"
   },
   "UserMenu": {
     "accountMenu": "アカウントメニュー",
@@ -613,6 +628,7 @@
     "boostError": "ブーストを適用できませんでした。もう一度お試しください。",
     "viewPublicProfile": "掲載ページを見る",
     "deleteProfile": "プロフィール削除",
+    "deleteProfileCancel": "キャンセル",
     "deletingProfile": "プロフィールを削除中...",
     "deleteProfileConfirmation": "プロフィールを削除しますか？ディスカバリーから削除され、元に戻せません。",
     "deleteError": "プロフィールの削除に失敗しました。もう一度お試しください。",
@@ -1247,6 +1263,16 @@
   },
   "Metadata": {
     "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
+  },
+  "DatePicker": {
+    "previousMonth": "前の月",
+    "nextMonth": "次の月",
+    "selectDay": "日付を選択",
+    "today": "今日",
+    "cancel": "キャンセル",
+    "apply": "適用",
+    "busiestDay": "最も多い日",
+    "none": "なし"
   },
   "TimeField": {
     "hour": "{label}の時",

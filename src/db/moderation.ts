@@ -1,6 +1,7 @@
 import 'server-only';
 
 import {
+  type AnyColumn,
   and,
   asc,
   count,
@@ -8,13 +9,14 @@ import {
   eq,
   getTableColumns,
   inArray,
+  isNotNull,
   like,
   ne,
   or,
   type SQLWrapper,
   sql,
 } from 'drizzle-orm';
-import type { ModState } from '@/features/Admin/types';
+import type { ActivityKind, ModState } from '@/features/Admin/types';
 import { ACTIVITY_PAGE_SIZE, type ActivityWindow } from '@/lib/activityWindow';
 import type { GrantUnit } from '@/lib/premiumGrant';
 import { afterCursor, cursorAt, withinWindow } from './activityWindow';
@@ -32,6 +34,7 @@ import {
   reports,
   staffRoles,
   subscriptions,
+  suspiciousActivity,
   users,
 } from './schema';
 
@@ -229,6 +232,67 @@ export const listModerationActionsPage = async (window: ActivityWindow) =>
     .orderBy(desc(moderationActions.createdAt), desc(moderationActions.id))
     .limit(ACTIVITY_PAGE_SIZE + 1);
 
+export const listReportsPage = async (window: ActivityWindow) =>
+  db
+    .select({
+      ...getTableColumns(reports),
+      cursorAt: cursorAt(reports.createdAt),
+    })
+    .from(reports)
+    .where(
+      and(
+        withinWindow(reports.createdAt, window),
+        window.reason ? eq(reports.reason, window.reason) : undefined,
+        window.status === 'pending' ? eq(reports.status, 'pending') : undefined,
+        window.status === 'resolved'
+          ? ne(reports.status, 'pending')
+          : undefined,
+        afterCursor(reports.createdAt, reports.id, window.cursor),
+      ),
+    )
+    .orderBy(desc(reports.createdAt), desc(reports.id))
+    .limit(ACTIVITY_PAGE_SIZE + 1);
+
+export const listActionedPage = async (window: ActivityWindow) => {
+  const ranked = db
+    .select({
+      id: moderationActions.id,
+      action: moderationActions.action,
+      userId: moderationActions.targetUserId,
+      createdAt: moderationActions.createdAt,
+      cursorAt: cursorAt(moderationActions.createdAt).as('cursor_at'),
+      total:
+        sql<number>`count(*) over (partition by ${moderationActions.targetUserId})`
+          .mapWith(Number)
+          .as('total'),
+      position:
+        sql<number>`row_number() over (partition by ${moderationActions.targetUserId} order by ${moderationActions.createdAt} desc, ${moderationActions.id} desc)`
+          .mapWith(Number)
+          .as('position'),
+    })
+    .from(moderationActions)
+    .where(
+      and(
+        withinWindow(moderationActions.createdAt, window),
+        isNotNull(moderationActions.targetUserId),
+        window.action ? eq(moderationActions.action, window.action) : undefined,
+      ),
+    )
+    .as('ranked');
+
+  return db
+    .select()
+    .from(ranked)
+    .where(
+      and(
+        eq(ranked.position, 1),
+        afterCursor(ranked.createdAt, ranked.id, window.cursor),
+      ),
+    )
+    .orderBy(desc(ranked.createdAt), desc(ranked.id))
+    .limit(ACTIVITY_PAGE_SIZE + 1);
+};
+
 const warningCount = sql<number>`(select count(*)::int from ${moderationActions} where ${moderationActions.targetUserId} = ${users.id} and ${moderationActions.action} = 'warn')`;
 
 const findModerationUsers = async (userIds: string[] | SQLWrapper) => {
@@ -414,3 +478,39 @@ export const isUserRestricted = (user: {
   suspendedUntil: Date | null;
   bannedAt: Date | null;
 }) => user.bannedAt !== null || isSuspended(user);
+
+const dayOf = (createdAt: AnyColumn, timeZone: string) =>
+  sql<string>`to_char(${createdAt} at time zone ${timeZone}, 'YYYY-MM-DD')`;
+
+export const countActivityByDay = async (
+  kind: ActivityKind,
+  window: ActivityWindow,
+  timeZone: string,
+) => {
+  const createdAt = {
+    log: moderationActions.createdAt,
+    actioned: moderationActions.createdAt,
+    reports: reports.createdAt,
+    suspicious: suspiciousActivity.createdAt,
+  }[kind];
+  const total = {
+    log: sql<number>`count(*)::int`,
+    actioned: sql<number>`count(distinct ${moderationActions.targetUserId})::int`,
+    reports: sql<number>`count(*)::int`,
+    suspicious: sql<number>`count(*)::int`,
+  }[kind];
+  const table = {
+    log: moderationActions,
+    actioned: moderationActions,
+    reports,
+    suspicious: suspiciousActivity,
+  }[kind];
+
+  const rows = await db
+    .select({ day: dayOf(createdAt, timeZone), total })
+    .from(table)
+    .where(withinWindow(createdAt, window))
+    .groupBy(sql`1`);
+
+  return Object.fromEntries(rows.map(({ day, total: count }) => [day, count]));
+};

@@ -20,18 +20,19 @@ import {
   MdOutlineInbox,
   MdPersonSearch,
   MdPolicy,
-  MdSearch,
   MdStorage,
   MdTaskAlt,
   MdTune,
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { SearchField } from '@/components/Form';
 import {
   ActivityDayBar,
   ActivityPager,
   type ActivityPages,
   ActivityStatus,
   useActivityPages,
+  useReportPages,
 } from './ActivityPages';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
@@ -59,12 +60,15 @@ import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
   ActivityRange,
   ModAction,
+  ModActioned,
   ModLogEntry,
+  ModReport,
   ModSuspicious,
   ModUser,
+  ReportView,
   SeedStatus,
 } from './types';
-import { LOG_ACTIONS } from './types';
+import { LOG_ACTIONS, REPORT_REASONS } from './types';
 import {
   groupReports,
   hasStatusChips,
@@ -330,21 +334,28 @@ export const UserDetail = ({
 
 const ReportsTab = ({
   store,
+  pages,
+  view,
+  setView,
   notify,
   openUser,
 }: {
   store: ModerationStore;
+  pages: ActivityPages<ModReport>;
+  view: ReportView;
+  setView: (view: ReportView) => void;
   notify: Notify;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
   const { relative, absolute } = useModFormat();
-  const [view, setView] = useState<'pending' | 'resolved'>('pending');
   const [selected, setSelected] = useState<string | null>(null);
   const lastIndex = useRef(0);
-  const pending = store.pendingGroups;
-  const resolved = groupReports(store.reports, 'resolved');
-  const groups = view === 'pending' ? pending : resolved;
+  const groups = groupReports(
+    (pages.rows ?? []).map((row) => store.reportsById.get(row.id) ?? row),
+    view,
+  );
+  const { reason = '' } = pages.filters;
   const found = groups.findIndex((group) => group.userId === selected);
   const index =
     found >= 0 ? found : Math.min(lastIndex.current, groups.length - 1);
@@ -365,13 +376,13 @@ const ReportsTab = ({
     setSelected(groups[next].userId);
   });
 
-  const switchView = (next: 'pending' | 'resolved') => {
+  const switchView = (next: ReportView) => {
     setView(next);
     setSelected(null);
     lastIndex.current = 0;
   };
 
-  const segment = (value: 'pending' | 'resolved', count: number) => (
+  const segment = (value: ReportView) => (
     <button
       type="button"
       role="tab"
@@ -384,11 +395,6 @@ const ReportsTab = ({
       }`}
     >
       {t(value)}
-      <span
-        className={`font-semibold text-[11.5px] ${view === value ? 'text-primary' : 'text-subtle'}`}
-      >
-        {count}
-      </span>
     </button>
   );
 
@@ -406,12 +412,43 @@ const ReportsTab = ({
             role="tablist"
             className="inline-flex gap-0.5 rounded-full bg-background-darker p-[3px]"
           >
-            {segment('pending', pending.length)}
-            {segment('resolved', resolved.length)}
+            {segment('pending')}
+            {segment('resolved')}
           </div>
         </div>
+        <div className="shrink-0 border-line border-b px-3.5 py-3">
+          <ActivityDayBar
+            pages={pages}
+            kind="reports"
+            loadDays={store.loadActivityDays}
+          />
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
+          <FilterSelect
+            icon={MdTune}
+            label={t('allReasons')}
+            value={reason}
+            onChange={(value) => pages.setFilter('reason', value)}
+            options={REPORT_REASONS.map((value) => ({
+              value,
+              label: t(`reason_${value}`),
+            }))}
+          />
+          {pages.filtered ? (
+            <button
+              type="button"
+              onClick={pages.clearFilters}
+              className="inline-flex h-[34px] items-center gap-1 rounded-full px-2.5 text-muted text-sm hover:bg-background-main hover:text-foreground"
+            >
+              <MdClose size={16} />
+              {t('clear')}
+            </button>
+          ) : null}
+        </div>
         <div className={paneScroll}>
-          {groups.length ? (
+          {!pages.rows ? (
+            <ActivityStatus pages={pages} />
+          ) : groups.length ? (
             <div className="flex flex-col gap-0.5 p-1.5">
               {groups.map((entry) => {
                 const reported = store.usersById.get(entry.userId);
@@ -461,19 +498,39 @@ const ReportsTab = ({
                 );
               })}
             </div>
+          ) : pages.filtered ? (
+            <EmptyState
+              className="h-full px-6 py-10"
+              icon={MdFilterAltOff}
+              title={t('noReportsMatchTitle')}
+              body={t('noReportsMatchBody')}
+            >
+              <button
+                type="button"
+                onClick={pages.clearFilters}
+                className={modButton()}
+              >
+                {t('clearFilters')}
+              </button>
+            </EmptyState>
           ) : (
             <EmptyState
               className="h-full px-6 py-10"
               icon={view === 'pending' ? MdTaskAlt : MdInventory2}
               title={t(
-                view === 'pending' ? 'queueClearTitle' : 'resolvedEmptyTitle',
+                view === 'pending'
+                  ? 'pendingDayEmptyTitle'
+                  : 'resolvedDayEmptyTitle',
               )}
               body={t(
-                view === 'pending' ? 'queueClearBody' : 'resolvedEmptyBody',
+                view === 'pending'
+                  ? 'pendingDayEmptyBody'
+                  : 'resolvedDayEmptyBody',
               )}
             />
           )}
         </div>
+        <ActivityPager pages={pages} />
         <div className="flex shrink-0 flex-wrap items-center gap-3 border-line border-t px-4 py-2.5 text-[11.5px] text-subtle">
           <span className="flex items-center gap-[3px]">
             <Kbd>J</Kbd>
@@ -541,18 +598,24 @@ const ReportsTab = ({
 const UsersTab = ({
   store,
   users,
+  pages,
   notify,
   openUser,
 }: {
   store: ModerationStore;
   users: UsersQuery;
+  pages: ActivityPages<ModActioned>;
   notify: Notify;
   openUser: (userId: string) => void;
 }) => {
   const t = useTranslations('Admin');
   const trimmed = users.query.trim();
-  const listIds = trimmed ? (users.results ?? []) : store.recentUserIds;
+  const actions = new Map((pages.rows ?? []).map((row) => [row.userId, row]));
+  const listIds = trimmed
+    ? (users.results ?? [])
+    : (pages.rows ?? []).map((row) => row.userId);
   const list = listIds.flatMap((id) => store.usersById.get(id) ?? []);
+  const { action = '' } = pages.filters;
   const user = users.selected ? store.usersById.get(users.selected) : undefined;
 
   useEffect(() => {
@@ -569,22 +632,49 @@ const UsersTab = ({
     <div className={workspace}>
       <section className={pane} aria-label={t('tabUsers')}>
         <div className="border-line border-b p-3">
-          <label className="relative block h-[42px]">
-            <MdSearch
-              size={20}
-              aria-hidden
-              className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3.5 text-subtle"
-            />
-            <input
-              type="search"
-              value={users.query}
-              onChange={(event) => users.setQuery(event.target.value)}
-              placeholder={t('searchPlaceholder')}
-              aria-label={t('searchLabel')}
-              className="h-[42px] w-full rounded-full border border-white/[0.07] bg-background-darker pr-4 pl-[42px] text-foreground text-sm outline-none transition-colors placeholder:text-subtle hover:border-white/[0.14] focus:border-white/[0.14]"
-            />
-          </label>
+          <SearchField
+            className="h-[42px] border-white/[0.07] pr-1.5 pl-3.5 transition-colors focus-within:border-white/[0.14] hover:border-white/[0.14]"
+            inputClassName="text-sm"
+            value={users.query}
+            onClear={() => users.setQuery('')}
+            onChange={(event) => users.setQuery(event.target.value)}
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchLabel')}
+          />
         </div>
+        {trimmed ? null : (
+          <>
+            <div className="shrink-0 border-line border-b px-3.5 py-3">
+              <ActivityDayBar
+                pages={pages}
+                kind="actioned"
+                loadDays={store.loadActivityDays}
+              />
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
+              <FilterSelect
+                icon={MdTune}
+                label={t('allActions')}
+                value={action}
+                onChange={(value) => pages.setFilter('action', value)}
+                options={LOG_ACTIONS.map((value) => ({
+                  value,
+                  label: t(`action_${value}`),
+                }))}
+              />
+              {pages.filtered ? (
+                <button
+                  type="button"
+                  onClick={pages.clearFilters}
+                  className="inline-flex h-[34px] items-center gap-1 rounded-full px-2.5 text-muted text-sm hover:bg-background-main hover:text-foreground"
+                >
+                  <MdClose size={16} />
+                  {t('clear')}
+                </button>
+              ) : null}
+            </div>
+          </>
+        )}
         <div className={paneScroll}>
           {users.searching ? (
             <SkeletonRows />
@@ -599,6 +689,32 @@ const UsersTab = ({
               title={t('noUsersTitle')}
               body={t('noUsersBody', { query: trimmed })}
             />
+          ) : !(trimmed || pages.rows) ? (
+            <ActivityStatus pages={pages} />
+          ) : !(trimmed || list.length) ? (
+            pages.filtered ? (
+              <EmptyState
+                className="px-6 py-10"
+                icon={MdFilterAltOff}
+                title={t('noMatchTitle')}
+                body={t('noMatchBody')}
+              >
+                <button
+                  type="button"
+                  onClick={pages.clearFilters}
+                  className={modButton()}
+                >
+                  {t('clearFilters')}
+                </button>
+              </EmptyState>
+            ) : (
+              <EmptyState
+                className="px-6 py-10"
+                icon={MdHistory}
+                title={t('actionedEmptyTitle')}
+                body={t('actionedEmptyBody')}
+              />
+            )
           ) : (
             <>
               <p className="px-[18px] pt-3 pb-1 font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
@@ -613,6 +729,13 @@ const UsersTab = ({
                     user={entry}
                     on={entry.id === users.selected}
                     onClick={() => users.setSelected(entry.id)}
+                    side={
+                      actions.has(entry.id) && !trimmed ? (
+                        <span className="whitespace-nowrap text-[11.5px] text-subtle">
+                          {t(`action_${actions.get(entry.id)?.action}`)}
+                        </span>
+                      ) : undefined
+                    }
                   >
                     <span className="truncate text-muted text-xs">
                       @{entry.username} ·{' '}
@@ -634,6 +757,7 @@ const UsersTab = ({
             </>
           )}
         </div>
+        {trimmed ? null : <ActivityPager pages={pages} />}
       </section>
       <section className={pane} aria-label={user?.displayName}>
         <div className={paneScroll}>
@@ -720,7 +844,7 @@ const FilterSelect = ({
           side="bottom"
           align="start"
           sideOffset={6}
-          className="PopoverContent z-50 min-w-[220px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 font-figtree shadow-lg"
+          className="PopoverContent PopoverStill z-50 min-w-[220px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 font-figtree shadow-lg"
         >
           {item('', label)}
           <div className="my-1 h-px bg-line" />
@@ -791,7 +915,11 @@ const LogTab = ({
   return (
     <section className={tablePane} aria-label={t('tabLog')}>
       <div className="border-line border-b px-3.5 py-3">
-        <ActivityDayBar pages={pages} />
+        <ActivityDayBar
+          pages={pages}
+          kind="log"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className="flex flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
         <FilterSelect
@@ -993,9 +1121,12 @@ const SuspiciousTab = ({
 
   return (
     <section className={tablePane} aria-label={t('tabSuspicious')}>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-line border-b px-5 py-3.5">
-        <p className="text-[12.5px] text-subtle">{t('suspiciousIntro')}</p>
-        <ActivityDayBar pages={pages} />
+      <div className="border-line border-b px-3.5 py-3">
+        <ActivityDayBar
+          pages={pages}
+          kind="suspicious"
+          loadDays={store.loadActivityDays}
+        />
       </div>
       <div className={`${headRow} ${suspiciousColumns}`}>
         <span>{t('colEvent')}</span>
@@ -1049,6 +1180,12 @@ export const ModerationDesktop = ({
   const t = useTranslations('Admin');
   const me = store.usersById.get(store.meId);
   const logPages = useActivityPages(store.loadActivityLog, tab === 'log');
+  const reports = useReportPages(store, tab === 'reports');
+  const actionedPages = useActivityPages(
+    store.loadActioned,
+    tab === 'users',
+    store.revision,
+  );
   const flagPages = useActivityPages(
     store.loadSuspicious,
     tab === 'suspicious',
@@ -1092,7 +1229,7 @@ export const ModerationDesktop = ({
                   side="bottom"
                   align="end"
                   sideOffset={8}
-                  className="PopoverContent z-50 w-[300px] rounded-[18px] border border-gray-500/50 bg-background-dark p-2 font-figtree shadow-lg"
+                  className="PopoverContent PopoverStill z-50 w-[300px] rounded-[18px] border border-gray-500/50 bg-background-dark p-2 font-figtree shadow-lg"
                 >
                   <StaffPanel store={store} />
                 </Popover.Content>
@@ -1112,7 +1249,7 @@ export const ModerationDesktop = ({
                   side="bottom"
                   align="end"
                   sideOffset={8}
-                  className="PopoverContent z-50 max-h-[80vh] w-[360px] overflow-y-auto rounded-[18px] border border-gray-500/50 bg-background-dark p-3 font-figtree shadow-lg"
+                  className="PopoverContent PopoverStill z-50 max-h-[80vh] w-[360px] overflow-y-auto rounded-[18px] border border-gray-500/50 bg-background-dark p-3 font-figtree shadow-lg"
                 >
                   <IpBlocksPanel store={store} />
                 </Popover.Content>
@@ -1168,12 +1305,20 @@ export const ModerationDesktop = ({
         ))}
       </div>
       {tab === 'reports' ? (
-        <ReportsTab store={store} notify={notify} openUser={openUser} />
+        <ReportsTab
+          store={store}
+          pages={reports.pages}
+          view={reports.view}
+          setView={reports.setView}
+          notify={notify}
+          openUser={openUser}
+        />
       ) : null}
       {tab === 'users' ? (
         <UsersTab
           store={store}
           users={users}
+          pages={actionedPages}
           notify={notify}
           openUser={openUser}
         />

@@ -2,15 +2,18 @@ import 'server-only';
 
 import { z } from 'zod';
 import {
+  countActivityByDay,
   countPendingCases,
   hasActivePremiumGrant,
   isSubscriptionActive,
+  listActionedPage,
   listModerationActions,
   listModerationActionsPage,
   listModerationReports,
   listModerationStatesByProfileId,
   listModerationUsers,
   listReportsAgainstUsers,
+  listReportsPage,
   listStaffUserIds,
   listSuspiciousEvents,
   listSuspiciousGroups,
@@ -20,6 +23,7 @@ import {
   searchModerationUserIds,
 } from '@/db';
 import type {
+  ModActioned,
   ModData,
   ModLogEntry,
   ModReport,
@@ -30,7 +34,11 @@ import type {
   StaffRole,
 } from '@/features/Admin/types';
 import type { WarningCategory } from '@/types';
-import { type ActivityWindow, pageOf } from './activityWindow';
+import {
+  type ActivityDaysQuery,
+  type ActivityWindow,
+  pageOf,
+} from './activityWindow';
 import { isOwnerDiscordId, ownerDiscordIds } from './admin';
 import { isPremiumDiscordId } from './entitlements';
 
@@ -208,6 +216,36 @@ export const loadActivityLogPage = async (window: ActivityWindow) => {
   return { nextCursor, ...(await withUsers([], page, [])) };
 };
 
+export const loadReportsPage = async (window: ActivityWindow) => {
+  const { page, nextCursor } = pageOf(await listReportsPage(window));
+  return { nextCursor, ...(await withUsers(page, [], [])) };
+};
+
+export const loadActionedPage = async (window: ActivityWindow) => {
+  const { page, nextCursor } = pageOf(await listActionedPage(window));
+  const rows: ModActioned[] = page.flatMap((row) =>
+    row.userId
+      ? {
+          id: row.id,
+          userId: row.userId,
+          action: row.action,
+          count: row.total,
+          createdAt: row.createdAt.toISOString(),
+        }
+      : [],
+  );
+  const userIds = rows.map(({ userId }) => userId);
+  const [reports, log] = await Promise.all([
+    listReportsAgainstUsers(userIds),
+    listModerationActions(userIds),
+  ]);
+  return {
+    nextCursor,
+    actioned: rows,
+    ...(await withUsers(reports, log, userIds)),
+  };
+};
+
 export const loadSuspiciousPage = async (window: ActivityWindow) => {
   const { page, nextCursor } = pageOf(await listSuspiciousGroups(window));
   const activity: ModSuspicious[] = page.map((row) => ({
@@ -237,3 +275,12 @@ export const loadSuspiciousEvents = async (
   );
   return { events: events.map(toSuspiciousEvent), hasMore };
 };
+
+export const loadActivityDays = async ({
+  kind,
+  from,
+  to,
+  timeZone,
+}: ActivityDaysQuery) => ({
+  days: await countActivityByDay(kind, { from, to }, timeZone),
+});

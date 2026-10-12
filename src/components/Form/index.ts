@@ -7,6 +7,7 @@ export * from './Label';
 export * from './NumberStepper';
 export * from './Radio';
 export * from './ScrollArea';
+export * from './SearchField';
 export * from './Select';
 export * from './SelectItem';
 export * from './TextArea';
