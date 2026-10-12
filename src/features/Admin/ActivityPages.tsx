@@ -66,6 +66,7 @@ export const useActivityPages = <T,>(
       const entry: CachedPage<T> = {
         at: Date.now(),
         request: load(range, cursor, filters),
+        page: cache.current.get(key)?.page,
       };
       entry.request.then(
         (result) => {
