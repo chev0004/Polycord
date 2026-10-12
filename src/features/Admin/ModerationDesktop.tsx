@@ -720,7 +720,7 @@ const FilterSelect = ({
           side="bottom"
           align="start"
           sideOffset={6}
-          className="PopoverContent z-50 min-w-[220px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 font-figtree shadow-lg"
+          className="PopoverContent PopoverStill z-50 min-w-[220px] rounded-[18px] border border-gray-500/50 bg-background-dark p-1.5 font-figtree shadow-lg"
         >
           {item('', label)}
           <div className="my-1 h-px bg-line" />
@@ -1092,7 +1092,7 @@ export const ModerationDesktop = ({
                   side="bottom"
                   align="end"
                   sideOffset={8}
-                  className="PopoverContent z-50 w-[300px] rounded-[18px] border border-gray-500/50 bg-background-dark p-2 font-figtree shadow-lg"
+                  className="PopoverContent PopoverStill z-50 w-[300px] rounded-[18px] border border-gray-500/50 bg-background-dark p-2 font-figtree shadow-lg"
                 >
                   <StaffPanel store={store} />
                 </Popover.Content>
@@ -1112,7 +1112,7 @@ export const ModerationDesktop = ({
                   side="bottom"
                   align="end"
                   sideOffset={8}
-                  className="PopoverContent z-50 max-h-[80vh] w-[360px] overflow-y-auto rounded-[18px] border border-gray-500/50 bg-background-dark p-3 font-figtree shadow-lg"
+                  className="PopoverContent PopoverStill z-50 max-h-[80vh] w-[360px] overflow-y-auto rounded-[18px] border border-gray-500/50 bg-background-dark p-3 font-figtree shadow-lg"
                 >
                   <IpBlocksPanel store={store} />
                 </Popover.Content>
