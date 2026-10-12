@@ -33,6 +33,52 @@ export const ReasonSelected: Story = {
   },
 };
 
+export const AlsoBlockSubmitted: Story = {
+  play: async ({ args, canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(
+      await body.findByRole('radio', { name: 'Spam or scam' }),
+    );
+    const block = body.getByRole('checkbox', {
+      name: /Also block this account/,
+    });
+    await expect(block).not.toBeChecked();
+    await userEvent.click(block);
+    await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+    await expect(args.onSubmit).toHaveBeenCalledWith('spam', '', true);
+  },
+};
+
+export const ReportOnlySubmitted: Story = {
+  play: async ({ args, canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(
+      await body.findByRole('radio', { name: 'Harassment or hate' }),
+    );
+    await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+    await expect(args.onSubmit).toHaveBeenCalledWith('harassment', '', false);
+  },
+};
+
+export const Mobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ args, canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+
+    await expect(await body.findByRole('dialog')).toHaveClass('SheetContent');
+    await userEvent.click(
+      body.getByRole('radio', { name: 'Impersonation or fake profile' }),
+    );
+    await userEvent.click(
+      body.getByRole('checkbox', { name: /Also block this account/ }),
+    );
+    await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+    await expect(args.onSubmit).toHaveBeenCalledWith('impersonation', '', true);
+  },
+};
+
 export const OpensWithTransition: Story = {
   play: async ({ canvasElement }) => {
     const doc = canvasElement.ownerDocument;

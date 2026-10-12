@@ -283,3 +283,69 @@ test('blocked accounts show usernames and a restricted current preview', async (
     await sql.end();
   }
 });
+
+test('a report can also block the reported account', async ({
+  page,
+  context,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const identities = ['Report viewer', 'Report only', 'Report and block'].map(
+    (name) => ({
+      id: randomUUID().replaceAll('-', ''),
+      name: `${name} ${randomUUID().slice(0, 6)}`,
+      username: `reporter-${randomUUID()}`,
+    }),
+  );
+  const accounts: { id: string; profileId: string }[] = [];
+  try {
+    for (const user of identities) {
+      const [account] =
+        await sql`insert into users (discord_user_id, discord_username, display_name) values (${user.id}, ${user.username}, ${user.name}) returning id`;
+      const [profile] =
+        await sql`insert into profiles (last_bumped_at, user_id, is_public, allow_anonymous_copy, primary_language, target_language, proficiency_level, bio) values (now(), ${account.id}, true, false, 'en', 'ja', 'beginner', 'A language partner profile for report tests.') returning id`;
+      accounts.push({ id: account.id, profileId: profile.id });
+    }
+    const [viewer, reportOnly, reportAndBlock] = accounts;
+    await signIn(context, identities[0], viewer.id);
+
+    const report = async (profileId: string, alsoBlock: boolean) => {
+      await page.goto(`/en/u/${profileId}`);
+      await page.getByRole('button', { name: 'More actions' }).click();
+      await page.getByRole('button', { name: 'Report profile' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Report profile' });
+      await dialog.getByRole('radio', { name: 'Spam or scam' }).click();
+      const block = dialog.getByRole('checkbox', {
+        name: 'Also block this account',
+      });
+      await expect(block).not.toBeChecked();
+      if (alsoBlock) await block.click();
+      await dialog.getByRole('button', { name: 'Submit report' }).click();
+      await expect(page.getByText('Report submitted')).toBeVisible();
+    };
+
+    await report(reportOnly.profileId, false);
+    await expect(
+      page.getByRole('heading', { name: 'You blocked this user' }),
+    ).toHaveCount(0);
+    expect(
+      await sql`select 1 from user_blocks where blocker_user_id = ${viewer.id} and blocked_user_id = ${reportOnly.id}`,
+    ).toHaveLength(0);
+    expect(
+      await sql`select 1 from reports where reporter_user_id = ${viewer.id} and reported_user_id = ${reportOnly.id}`,
+    ).toHaveLength(1);
+
+    await report(reportAndBlock.profileId, true);
+    await expect(
+      page.getByRole('heading', { name: 'You blocked this user' }),
+    ).toBeVisible();
+    expect(
+      await sql`select 1 from user_blocks where blocker_user_id = ${viewer.id} and blocked_user_id = ${reportAndBlock.id}`,
+    ).toHaveLength(1);
+    expect(
+      await sql`select 1 from reports where reporter_user_id = ${viewer.id} and reported_user_id = ${reportAndBlock.id}`,
+    ).toHaveLength(1);
+  } finally {
+    await sql`delete from users where id in ${sql(accounts.map(({ id }) => id))}`;
+    await sql.end();
+  }
+});
