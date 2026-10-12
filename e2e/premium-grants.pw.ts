@@ -213,7 +213,7 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
     await ownerPage.goto('/en/admin');
     await ownerPage.getByRole('tab', { name: 'Users' }).click();
     await ownerPage
-      .getByRole('searchbox', { name: 'Search users' })
+      .getByRole('textbox', { name: 'Search users' })
       .fill(`${prefix} Member`);
     await expect(
       ownerPage.getByText('No complimentary Supporter.'),
@@ -232,7 +232,7 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
     await ownerPage.reload();
     await ownerPage.getByRole('tab', { name: 'Users' }).click();
     await ownerPage
-      .getByRole('searchbox', { name: 'Search users' })
+      .getByRole('textbox', { name: 'Search users' })
       .fill(`${prefix} Member`);
     await expect(
       ownerPage.getByText(/^Complimentary Supporter until/),
@@ -246,7 +246,7 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
     await modPage.goto('/en/admin');
     await modPage.getByRole('tab', { name: 'Users' }).click();
     await modPage
-      .getByRole('searchbox', { name: 'Search users' })
+      .getByRole('textbox', { name: 'Search users' })
       .fill(`${prefix} Member`);
     await expect(
       modPage.getByText('Supporter grant fixture profile.'),

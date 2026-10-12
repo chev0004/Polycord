@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
-import { MdClose, MdSearch } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
+import { SearchField } from '@/components/Form';
 import { Spinner } from './ModerationParts';
 import type { ModUser } from './types';
 import type { ModerationStore } from './useModeration';
@@ -130,31 +130,25 @@ export const AccountPicker = ({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="flex h-10 items-center gap-2 rounded-full border border-white/[0.07] bg-background-darker pr-3 pl-3.5 text-subtle focus-within:border-white/[0.14]">
-        <MdSearch size={18} aria-hidden />
-        <input
-          type="search"
-          role="combobox"
-          aria-expanded={navigable}
-          aria-controls={listId}
-          aria-autocomplete="list"
-          aria-activedescendant={navigable ? `${listId}-${active}` : undefined}
-          value={selected ? selected.username : query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            if (value) onChange(null);
-          }}
-          onKeyDown={onKeyDown}
-          placeholder={placeholder}
-          aria-label={label}
-          className="min-w-0 flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-subtle"
-        />
-        {selected || query ? (
-          <button type="button" onClick={clear} aria-label={t('clearSearch')}>
-            <MdClose size={18} />
-          </button>
-        ) : null}
-      </label>
+      <SearchField
+        className="h-10 border-white/[0.07] pr-1.5 pl-3.5 focus-within:border-white/[0.14]"
+        inputClassName="text-sm"
+        iconSize={18}
+        value={selected ? selected.username : query}
+        onClear={clear}
+        role="combobox"
+        aria-expanded={navigable}
+        aria-controls={listId}
+        aria-autocomplete="list"
+        aria-activedescendant={navigable ? `${listId}-${active}` : undefined}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          if (value) onChange(null);
+        }}
+        onKeyDown={onKeyDown}
+        placeholder={placeholder}
+        aria-label={label}
+      />
       {selected ? (
         <div className="flex items-center gap-2.5 rounded-xl p-2">
           <Avatar avatarUrl={selected.avatarUrl} size="sm" />

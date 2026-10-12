@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import {
   type CSSProperties,
   type ReactNode,
+  type RefObject,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -117,6 +118,7 @@ type MobileCardEditorProps = {
   statusMessage: ReactNode;
   draftNotice: ReactNode;
   menuItems: ActionSheetItem[];
+  optionsTrigger: RefObject<HTMLButtonElement | null>;
   cardStylePicker: ReactNode;
   voiceEditor: ReactNode;
   availabilityEditor: ReactNode;
@@ -314,6 +316,7 @@ export const MobileCardEditor = ({
   statusMessage,
   draftNotice,
   menuItems,
+  optionsTrigger,
   cardStylePicker,
   voiceEditor,
   availabilityEditor,
@@ -497,6 +500,7 @@ export const MobileCardEditor = ({
           </button>
           {menuItems.length > 0 ? (
             <SheetIconButton
+              ref={optionsTrigger}
               label={t('profileOptions')}
               onClick={() => openSheet('menu')}
             >
