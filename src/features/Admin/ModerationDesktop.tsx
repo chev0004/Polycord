@@ -33,6 +33,7 @@ import {
   ActivityStatus,
   useActivityPages,
   useReportPages,
+  useTabPrefetch,
 } from './ActivityPages';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
@@ -1185,7 +1186,11 @@ export const ModerationDesktop = ({
 }) => {
   const t = useTranslations('Admin');
   const me = store.usersById.get(store.meId);
-  const logPages = useActivityPages(store.loadActivityLog, tab === 'log');
+  const logPages = useActivityPages(
+    store.loadActivityLog,
+    tab === 'log',
+    store.revision,
+  );
   const reports = useReportPages(store, tab === 'reports');
   const actionedPages = useActivityPages(
     store.loadActioned,
@@ -1195,7 +1200,15 @@ export const ModerationDesktop = ({
   const flagPages = useActivityPages(
     store.loadSuspicious,
     tab === 'suspicious',
+    store.revision,
   );
+  const prefetch: Partial<Record<ModTab, () => void>> = {
+    reports: reports.pages.prefetch,
+    users: actionedPages.prefetch,
+    log: logPages.prefetch,
+    suspicious: flagPages.prefetch,
+  };
+  useTabPrefetch(reports.pages.rows !== undefined, Object.values(prefetch));
   const tabs: { id: ModTab; icon: IconType; label: string; badge?: number }[] =
     [
       {
@@ -1288,6 +1301,8 @@ export const ModerationDesktop = ({
             role="tab"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
+            onPointerEnter={prefetch[id]}
+            onFocus={prefetch[id]}
             className={`inline-flex h-[38px] items-center gap-2 whitespace-nowrap rounded-full px-3.5 font-medium text-sm transition-colors ${
               tab === id
                 ? 'bg-primary-darker text-primary-light'

@@ -22,6 +22,15 @@ const today = () => addDays(new Date(), 0);
 const toInputValue = (day: Date) =>
   `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
+const FRESH_MS = 15000;
+const CACHE_LIMIT = 24;
+
+type CachedPage<T> = {
+  at: number;
+  request: Promise<ActivityPage<T>>;
+  page?: ActivityPage<T>;
+};
+
 export const useActivityPages = <T,>(
   load: (
     range: ActivityRange,
@@ -30,13 +39,15 @@ export const useActivityPages = <T,>(
   ) => Promise<ActivityPage<T>>,
   active: boolean,
   revision = 0,
+  scope = '',
 ) => {
   const [day, setDay] = useState(today);
   const [filters, setFilters] = useState<ActivityFilters>({});
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [page, setPage] = useState<ActivityPage<T> | null>(null);
   const [failed, setFailed] = useState(false);
-  const shown = useRef<{ key: string; load: typeof load } | null>(null);
+  const cache = useRef(new Map<string, CachedPage<T>>());
+  const seenRevision = useRef(revision);
   const range = useMemo(
     () => ({
       from: day.toISOString(),
@@ -44,27 +55,53 @@ export const useActivityPages = <T,>(
     }),
     [day],
   );
+  const keyOf = useCallback(
+    (cursor?: string) => JSON.stringify([scope, range, cursor, filters]),
+    [scope, range, filters],
+  );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: revision refetches the current page after a moderation change
+  const start = useCallback(
+    (cursor?: string) => {
+      const key = keyOf(cursor);
+      const entry: CachedPage<T> = {
+        at: Date.now(),
+        request: load(range, cursor, filters),
+      };
+      entry.request.then(
+        (result) => {
+          entry.page = result;
+        },
+        () => {
+          if (cache.current.get(key) === entry) cache.current.delete(key);
+        },
+      );
+      cache.current.set(key, entry);
+      if (cache.current.size > CACHE_LIMIT)
+        cache.current.delete(cache.current.keys().next().value as string);
+      return entry;
+    },
+    [keyOf, load, range, filters],
+  );
+
   useEffect(() => {
     if (!active) return;
     let current = true;
-    const key = JSON.stringify([range, cursors.at(-1), filters]);
-    if (shown.current?.key !== key || shown.current.load !== load)
-      setPage(null);
+    const refreshed = seenRevision.current !== revision;
+    seenRevision.current = revision;
+    if (refreshed) cache.current.clear();
+    const cursor = cursors.at(-1);
+    const hit = cache.current.get(keyOf(cursor));
+    if (!refreshed) setPage(hit?.page ?? null);
     setFailed(false);
-    load(range, cursors.at(-1), filters).then(
-      (result) => {
-        if (!current) return;
-        shown.current = { key, load };
-        setPage(result);
-      },
+    const entry = hit && Date.now() - hit.at < FRESH_MS ? hit : start(cursor);
+    entry.request.then(
+      (result) => current && setPage(result),
       () => current && setFailed(true),
     );
     return () => {
       current = false;
     };
-  }, [load, range, cursors, filters, active, revision]);
+  }, [active, cursors, keyOf, start, revision]);
 
   const chooseDay = (next: Date) => {
     setDay(next);
@@ -94,11 +131,29 @@ export const useActivityPages = <T,>(
       chooseFilters({ ...filters, [key]: value }),
     clearFilters: () => chooseFilters({}),
     resetPages: () => setCursors([undefined]),
+    prefetch: () => {
+      if (!cache.current.has(keyOf())) start();
+    },
     retry: () => setCursors([...cursors]),
     nextPage: () =>
       page?.nextCursor && setCursors([...cursors, page.nextCursor]),
     previousPage: () => setCursors(cursors.slice(0, -1)),
   };
+};
+
+export const useTabPrefetch = (ready: boolean, prefetches: (() => void)[]) => {
+  const pending = useRef(prefetches);
+  pending.current = prefetches;
+  const done = useRef(false);
+
+  useEffect(() => {
+    if (!ready || done.current) return;
+    done.current = true;
+    const timer = setTimeout(() => {
+      for (const prefetch of pending.current) prefetch();
+    });
+    return () => clearTimeout(timer);
+  }, [ready]);
 };
 
 export const useReportPages = (store: ModerationStore, active: boolean) => {
@@ -109,7 +164,7 @@ export const useReportPages = (store: ModerationStore, active: boolean) => {
       loadReports(range, cursor, { ...filters, status: view }),
     [loadReports, view],
   );
-  const pages = useActivityPages(load, active, store.revision);
+  const pages = useActivityPages(load, active, store.revision, view);
 
   return {
     view,

@@ -53,6 +53,7 @@ import {
   ActivityStatus,
   useActivityPages,
   useReportPages,
+  useTabPrefetch,
 } from './ActivityPages';
 import type { ModTab, Notify, UsersQuery } from './ModerationDesktop';
 import { IpBlocksPanel } from './ModerationIpBlocks';
@@ -1015,11 +1016,13 @@ const FlagsScreen = ({
 const Dock = ({
   tab,
   setTab,
+  prefetch,
   pending,
   seeding,
 }: {
   tab: ModTab;
   setTab: (tab: ModTab) => void;
+  prefetch: Partial<Record<ModTab, () => void>>;
   pending: number;
   seeding: boolean;
 }) => {
@@ -1079,6 +1082,8 @@ const Dock = ({
       }}
       type="button"
       onClick={() => setTab(id)}
+      onPointerDown={prefetch[id]}
+      onFocus={prefetch[id]}
       aria-label={labels[id]}
       aria-current={tab === id ? 'page' : undefined}
       className={`relative z-[2] flex h-12 w-12 items-center justify-center rounded-full transition-[color,transform] duration-300 active:scale-[0.92] ${tab === id ? 'text-on-primary' : 'text-muted'}`}
@@ -2083,14 +2088,26 @@ export const ModerationMobile = ({
     tab === 'users',
     store.revision,
   );
-  const [page, setPage] = useState<Page | null>(null);
-  const [closing, setClosing] = useState(false);
-  const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);
-  const logPages = useActivityPages(store.loadActivityLog, tab === 'log');
+  const logPages = useActivityPages(
+    store.loadActivityLog,
+    tab === 'log',
+    store.revision,
+  );
   const flagPages = useActivityPages(
     store.loadSuspicious,
     tab === 'suspicious',
+    store.revision,
   );
+  const prefetch: Partial<Record<ModTab, () => void>> = {
+    reports: reportPages.prefetch,
+    users: actionedPages.prefetch,
+    log: logPages.prefetch,
+    suspicious: flagPages.prefetch,
+  };
+  useTabPrefetch(reportPages.rows !== undefined, Object.values(prefetch));
+  const [page, setPage] = useState<Page | null>(null);
+  const [closing, setClosing] = useState(false);
+  const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);
 
   const back = () => {
     setClosing(true);
@@ -2141,6 +2158,7 @@ export const ModerationMobile = ({
           setTab(next);
           setPage(null);
         }}
+        prefetch={prefetch}
         pending={store.pendingCases}
         seeding={Boolean(seed)}
       />
