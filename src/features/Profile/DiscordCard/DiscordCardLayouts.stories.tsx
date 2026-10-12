@@ -454,6 +454,31 @@ export const LongTags: Story = {
   },
 };
 
+export const OrbitLongTags: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(20)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const card = canvasElement.querySelector(
+      '[data-layout="orbit"] .dc-ob',
+    ) as HTMLElement;
+    const row = card.querySelector('.dc-chips') as HTMLElement;
+    const widestChip = Math.max(
+      ...[...card.querySelectorAll<HTMLElement>('.dc-ob-c')].map(
+        (chip) => chip.offsetWidth,
+      ),
+    );
+    const orbitLeft = 744 - 150 - widestChip / 2;
+
+    await expect(
+      (row.parentElement as HTMLElement).offsetLeft +
+        row.offsetLeft +
+        row.offsetWidth,
+    ).toBeLessThanOrEqual(orbitLeft);
+  },
+};
+
 export const OverlongTags: Story = {
   args: {
     data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
