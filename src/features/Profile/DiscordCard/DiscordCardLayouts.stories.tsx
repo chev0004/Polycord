@@ -454,6 +454,28 @@ export const LongTags: Story = {
   },
 };
 
+export const OverlongTags: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    for (const { row, more, shown } of tagRows(canvasElement)) {
+      const chip = row.firstElementChild as HTMLElement;
+      await expect(shown).toBe(1);
+      await expect(more.textContent).toBe('+2');
+      await expect(chip.scrollWidth).toBeGreaterThan(chip.clientWidth);
+      await expect(getComputedStyle(chip).textOverflow).toBe('ellipsis');
+    }
+    const diagonalChip = canvasElement.querySelector(
+      '[data-layout="diagonal"] .dc-chip',
+    ) as HTMLElement;
+    await expect(getComputedStyle(diagonalChip).backgroundColor).not.toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+  },
+};
+
 export const ManyShortTags: Story = {
   args: {
     data: build({ tags: ['Art', 'Film', 'Golf', 'Jazz', 'Chess', 'Yoga'] }),
