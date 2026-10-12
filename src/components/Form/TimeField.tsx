@@ -115,27 +115,27 @@ const DesktopTimeField = ({
     onChange(`${pad(nextHour)}:${pad(nextMinute)}`);
   const setPeriod = (nextPm: boolean) =>
     commit(to24(to12(hour), nextPm), minute);
-  const stepHour = (delta: number) =>
+  const typedHour = (text: string) =>
+    twelve
+      ? to24(clamp(Number(text) || 12, 1, 12), pm)
+      : clamp(Number(text), 0, 23);
+  const typedMinute = (text: string) => clamp(Number(text), 0, 59);
+  const stepHour = (from: number, delta: number) =>
     commit(
       twelve
-        ? to24(((to12(hour) - 1 + delta + 12) % 12) + 1, pm)
-        : (hour + delta + 24) % 24,
+        ? to24(((to12(from) - 1 + delta + 12) % 12) + 1, pm)
+        : (from + delta + 24) % 24,
       minute,
     );
 
   const finishHour = (text: string) => {
     setDraft((current) => ({ ...current, hour: undefined }));
-    if (text === '') return;
-    const typed = Number(text);
-    commit(
-      twelve ? to24(clamp(typed || 12, 1, 12), pm) : clamp(typed, 0, 23),
-      minute,
-    );
+    if (text !== '') commit(typedHour(text), minute);
   };
 
   const finishMinute = (text: string) => {
     setDraft((current) => ({ ...current, minute: undefined }));
-    if (text !== '') commit(hour, clamp(Number(text), 0, 59));
+    if (text !== '') commit(hour, typedMinute(text));
   };
 
   const onKeyDown =
@@ -151,8 +151,11 @@ const DesktopTimeField = ({
       if (!delta) return;
       event.preventDefault();
       setOpen(false);
-      if (segment === 'hour') stepHour(delta);
-      else commit(hour, (minute + delta + 60) % 60);
+      const typed = event.currentTarget.value;
+      setDraft((current) => ({ ...current, [segment]: undefined }));
+      if (segment === 'hour') stepHour(typed ? typedHour(typed) : hour, delta);
+      else
+        commit(hour, ((typed ? typedMinute(typed) : minute) + delta + 60) % 60);
     };
 
   const typeInto =
@@ -300,6 +303,7 @@ const WheelColumn = ({
 }) => {
   const initial = useRef(index).current;
   const column = useRef<HTMLDivElement | null>(null);
+  const tapped = useRef<number | null>(null);
   const mount = useCallback(
     (node: HTMLDivElement | null) => {
       column.current = node;
@@ -311,27 +315,32 @@ const WheelColumn = ({
   return (
     <div
       ref={mount}
-      onScroll={(event) =>
-        onIndex(
-          clamp(
-            Math.round(event.currentTarget.scrollTop / WHEEL_ITEM),
-            0,
-            items.length - 1,
-          ),
-        )
-      }
+      onTouchStart={() => {
+        tapped.current = null;
+      }}
+      onScroll={(event) => {
+        const next = clamp(
+          Math.round(event.currentTarget.scrollTop / WHEEL_ITEM),
+          0,
+          items.length - 1,
+        );
+        if (tapped.current === null) onIndex(next);
+        else if (next === tapped.current) tapped.current = null;
+      }}
       className="relative max-w-[120px] flex-1 snap-y snap-mandatory overflow-y-auto py-[88px] [-webkit-mask-image:linear-gradient(transparent,#000_30%,#000_70%,transparent)] [mask-image:linear-gradient(transparent,#000_30%,#000_70%,transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {items.map((item, position) => (
         <button
           key={item}
           type="button"
-          onClick={() =>
+          onClick={() => {
+            onIndex(position);
+            tapped.current = position === index ? null : position;
             column.current?.scrollTo({
               top: position * WHEEL_ITEM,
               behavior: 'smooth',
-            })
-          }
+            });
+          }}
           className={`flex h-11 w-full snap-center items-center justify-center font-medium text-xl tabular-nums ${
             position === index
               ? 'font-semibold text-primary-light'
