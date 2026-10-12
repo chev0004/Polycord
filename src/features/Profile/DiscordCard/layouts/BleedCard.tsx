@@ -43,7 +43,7 @@ export const BleedCard = ({ data, active }: DiscordCardLayoutProps) => {
         <TagChips
           tags={data.tags}
           small
-          style={{ justifyContent: 'flex-end', marginTop: 8 }}
+          style={{ justifyContent: 'safe flex-end', marginTop: 8 }}
         />
         <div className="dc-bl-f">
           {data.availability ? (
