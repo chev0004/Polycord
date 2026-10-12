@@ -11,4 +11,5 @@ export * from './Select';
 export * from './SelectItem';
 export * from './TextArea';
 export * from './TextInput';
+export * from './TimeField';
 export * from './Toggle';

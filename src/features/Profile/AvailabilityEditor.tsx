@@ -1,12 +1,18 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useId } from 'react';
-import { Checkbox, FormGroup, Label, Toggle } from '@/components/Form';
+import {
+  Checkbox,
+  FormGroup,
+  Label,
+  TimeField,
+  Toggle,
+} from '@/components/Form';
 import type {
   AvailabilityDays,
   AvailabilityPattern,
 } from '@/constants/availability';
+import { useTimeFormat } from '@/features/Settings/TimeFormat';
 
 const DAY_KEYS: { id: AvailabilityDays; labelKey: string }[] = [
   { id: 'any', labelKey: 'availabilityDayAny' },
@@ -30,8 +36,7 @@ export const AvailabilityEditor = ({
   disabled = false,
 }: AvailabilityEditorProps) => {
   const t = useTranslations('Profile');
-  const fromId = useId();
-  const toId = useId();
+  const timeFormat = useTimeFormat();
 
   const enabled = Boolean(value);
   const pattern = value ?? lastPattern;
@@ -85,43 +90,31 @@ export const AvailabilityEditor = ({
         </div>
 
         <div className="flex items-end gap-2">
-          <div className="flex flex-1 flex-col gap-1">
-            <label
-              htmlFor={fromId}
-              className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
-            >
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]">
               {t('availabilityFromLabel')}
-            </label>
-            <input
-              id={fromId}
-              type="time"
+            </span>
+            <TimeField
               value={pattern.anyTime ? '' : pattern.from}
+              onChange={(from) => patch({ from, anyTime: false })}
+              format={timeFormat}
+              label={t('availabilityFromLabel')}
               disabled={pattern.anyTime}
-              onChange={(event) =>
-                patch({ from: event.target.value, anyTime: false })
-              }
-              className={`w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none ${pattern.anyTime ? 'opacity-35' : ''}`}
             />
           </div>
-          <span className="pb-[10px] text-[13px] text-subtle">
+          <span className="pb-[15px] text-[13px] text-subtle">
             {t('availabilityTimeSeparator')}
           </span>
-          <div className="flex flex-1 flex-col gap-1">
-            <label
-              htmlFor={toId}
-              className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]"
-            >
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="font-semibold text-[11px] text-subtle uppercase tracking-[0.05em]">
               {t('availabilityToLabel')}
-            </label>
-            <input
-              id={toId}
-              type="time"
+            </span>
+            <TimeField
               value={pattern.anyTime ? '' : pattern.to}
+              onChange={(to) => patch({ to, anyTime: false })}
+              format={timeFormat}
+              label={t('availabilityToLabel')}
               disabled={pattern.anyTime}
-              onChange={(event) =>
-                patch({ to: event.target.value, anyTime: false })
-              }
-              className={`w-full rounded-lg border border-line bg-background-darker px-3 py-[9px] text-foreground text-sm transition-colors focus:border-primary focus:outline-none ${pattern.anyTime ? 'opacity-35' : ''}`}
             />
           </div>
         </div>

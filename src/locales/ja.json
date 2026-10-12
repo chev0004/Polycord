@@ -1246,6 +1246,16 @@
   "Metadata": {
     "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
   },
+  "TimeField": {
+    "hour": "{label}の時",
+    "minute": "{label}の分",
+    "period": "{label}の午前または午後",
+    "hourColumn": "時",
+    "minuteColumn": "分",
+    "periodColumn": "午前/午後",
+    "cancel": "キャンセル",
+    "done": "完了"
+  },
   "Sheet": {
     "search": "検索",
     "noResults": "見つかりませんでした",
