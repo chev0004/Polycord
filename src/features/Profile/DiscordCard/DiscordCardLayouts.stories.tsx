@@ -410,16 +410,18 @@ export const LongLanguageNames: Story = {
 };
 
 const tagRows = (canvasElement: HTMLElement) =>
-  [...canvasElement.querySelectorAll<HTMLElement>('.dc-chips')].map((row) => {
-    const chips = [...row.children] as HTMLElement[];
-    const more = chips.pop() as HTMLElement;
-    return {
-      row,
-      more,
-      shown: chips.filter((chip) => !chip.hidden).length,
-      total: chips.length,
-    };
-  });
+  [...canvasElement.querySelectorAll<HTMLElement>('.dc-chips, .dc-tt')].map(
+    (row) => {
+      const chips = [...row.children] as HTMLElement[];
+      const more = chips.pop() as HTMLElement;
+      return {
+        row,
+        more,
+        shown: chips.filter((chip) => !chip.hidden).length,
+        total: chips.length,
+      };
+    },
+  );
 
 const expectTagsToFit = async (canvasElement: HTMLElement) => {
   await canvasElement.ownerDocument.fonts.ready;
@@ -522,13 +524,46 @@ export const TagsYieldToDetails: Story = {
   },
 };
 
+export const InterestsTextRows: Story = {
+  args: {
+    data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(20)) }),
+  },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const rows = [...canvasElement.querySelectorAll<HTMLElement>('.dc-tt')];
+
+    await expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      await expect(row.lastElementChild).toHaveTextContent(/^\+[1-3]$/);
+    }
+  },
+};
+
+export const FewShortTagsOnTextRows: Story = {
+  args: { data: build({ tags: ['Art', 'Film'] }) },
+  play: async ({ canvasElement }) => {
+    await expectTagsToFit(canvasElement);
+    const rows = tagRows(canvasElement).filter(({ row }) =>
+      row.classList.contains('dc-tt'),
+    );
+
+    await expect(rows).toHaveLength(2);
+    for (const { more, shown } of rows) {
+      await expect(shown).toBe(2);
+      await expect(more.hidden).toBe(true);
+    }
+  },
+};
+
 export const OverlongTags: Story = {
   args: {
     data: build({ tags: ['A', 'B', 'C'].map((letter) => letter.repeat(120)) }),
   },
   play: async ({ canvasElement }) => {
     await expectTagsToFit(canvasElement);
-    for (const { row, more, shown } of tagRows(canvasElement)) {
+    for (const { row, more, shown } of tagRows(canvasElement).filter(
+      ({ row }) => row.classList.contains('dc-chips'),
+    )) {
       const chip = row.firstElementChild as HTMLElement;
       await expect(shown).toBe(1);
       await expect(more.textContent).toBe('+2');
