@@ -1,5 +1,12 @@
 import type { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import {
   isNoticePending,
   type Notification,
@@ -19,6 +26,24 @@ export type InboxNotification = Notification & {
 };
 
 const CHANGED_EVENT = 'polycord:inbox-changed';
+
+const noReadUpdates: Record<string, boolean> = {};
+let sharedReadUpdates = noReadUpdates;
+const readUpdateListeners = new Set<() => void>();
+
+const setReadUpdates = (
+  update: (previous: Record<string, boolean>) => Record<string, boolean>,
+) => {
+  sharedReadUpdates = update(sharedReadUpdates);
+  for (const listener of readUpdateListeners) listener();
+};
+
+const subscribeReadUpdates = (listener: () => void) => {
+  readUpdateListeners.add(listener);
+  return () => {
+    readUpdateListeners.delete(listener);
+  };
+};
 
 const visibleForPremium = <T extends { kind: Notification['kind'] }>(
   items: T[],
@@ -72,7 +97,11 @@ export const useInbox = ({
   const [loading, setLoading] = useState(persist);
   const [error, setError] = useState<'loadError' | 'writeError' | null>(null);
   const [pending, setPending] = useState(false);
-  const [readUpdates, setReadUpdates] = useState<Record<string, boolean>>({});
+  const readUpdates = useSyncExternalStore(
+    subscribeReadUpdates,
+    () => sharedReadUpdates,
+    () => noReadUpdates,
+  );
   const readWrites = useRef(new Map<string, Promise<void>>());
   const request = useRef<AbortController | null>(null);
   const saving = useRef(false);
