@@ -1,5 +1,5 @@
 import { createHmac, randomUUID } from 'node:crypto';
-import { expect, test } from '@playwright/test';
+import { expect, type Request, test } from '@playwright/test';
 import postgres from 'postgres';
 
 type Account = { id: string; discordUserId: string };
@@ -76,13 +76,16 @@ test.describe('admin tab switching', () => {
     ]);
     const page = await context.newPage();
     const requests: string[] = [];
-    page.on('request', (request) => {
+    const finished: string[] = [];
+    const track = (urls: string[]) => (request: Request) => {
       const { pathname, search } = new URL(request.url());
       if (pathname.startsWith('/api/admin/') && pathname !== '/api/admin/seed')
-        requests.push(`${pathname}${search}`);
-    });
-    const count = (path: string) =>
-      requests.filter((url) => url.startsWith(path)).length;
+        urls.push(`${pathname}${search}`);
+    };
+    page.on('request', track(requests));
+    page.on('requestfinished', track(finished));
+    const count = (path: string, urls = requests) =>
+      urls.filter((url) => url.startsWith(path)).length;
 
     await page.goto('/en/admin');
     const queue = page.getByRole('region', { name: 'Reports', exact: true });
@@ -90,11 +93,13 @@ test.describe('admin tab switching', () => {
       queue.getByRole('button', { name: new RegExp(`${prefix} Reported`) }),
     ).toHaveCount(5);
     await expect
-      .poll(() => [
-        count('/api/admin/actioned'),
-        count('/api/admin/activity-log'),
-        count('/api/admin/suspicious-activity'),
-      ])
+      .poll(() =>
+        [
+          '/api/admin/actioned',
+          '/api/admin/activity-log',
+          '/api/admin/suspicious-activity',
+        ].map((path) => count(path, finished)),
+      )
       .toEqual([1, 1, 1]);
 
     await page.evaluate(() => {
