@@ -71,6 +71,9 @@
     "loading": "Loading...",
     "noResults": "No results found."
   },
+  "SearchField": {
+    "clear": "Clear search"
+  },
   "Dropdown": {
     "noResults": "No results found",
     "noOptions": "No options"

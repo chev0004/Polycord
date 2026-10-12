@@ -71,6 +71,9 @@
     "loading": "読み込み中...",
     "noResults": "結果が見つかりませんでした。"
   },
+  "SearchField": {
+    "clear": "検索をクリア"
+  },
   "Dropdown": {
     "noResults": "結果が見つかりませんでした",
     "noOptions": "選択肢がありません"
