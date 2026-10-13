@@ -6,7 +6,10 @@ import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { DatePicker } from '@/components/DatePicker';
 import {
   type CachedPage,
+  loadDayCounts,
   pageCache,
+  peekDayCounts,
+  prefetchDayCounts,
   reportViewCache,
   viewCache,
 } from './adminCache';
@@ -195,20 +198,17 @@ const stepButton =
 export const ActivityDayBar = ({
   pages,
   kind,
-  loadDays,
 }: {
   pages: ActivityPages;
   kind: ActivityKind;
-  loadDays: (
-    kind: ActivityKind,
-    month: Date,
-  ) => Promise<Record<string, number>>;
 }) => {
   const t = useTranslations('Admin');
   const { date } = useModFormat();
-  const load = useCallback(
-    (month: Date) => loadDays(kind, month),
-    [loadDays, kind],
+  const load = useCallback((month: Date) => loadDayCounts(kind, month), [kind]);
+  const peek = useCallback((month: Date) => peekDayCounts(kind, month), [kind]);
+  const prefetch = useCallback(
+    (month: Date) => prefetchDayCounts(kind, month),
+    [kind],
   );
 
   return (
@@ -228,6 +228,8 @@ export const ActivityDayBar = ({
         label={t('selectDate')}
         activity={{
           load,
+          peek,
+          prefetch,
           tone: kind === 'suspicious' ? 'danger' : 'primary',
           unit: (count) => t(`calendarUnit_${kind}`, { count }),
           monthLabel: t(`calendarMonth_${kind}`),
