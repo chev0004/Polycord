@@ -1022,7 +1022,7 @@
     "blockConfirm": "ユーザーをブロック",
     "moderateProfile": "対応する",
     "blockingProfile": "{name}さんをブロック中…",
-    "voiceIntroPlay": "あなたのボイスイントロを再生",
+    "voiceIntroPlay": "ボイスイントロを再生",
     "voiceIntroStop": "ボイスイントロを停止",
     "searchPlaceholder": "名前、言語、国、タグ、自己紹介を検索…",
     "searchLabel": "プロフィールを検索",
