@@ -13,6 +13,7 @@ import { StaffPill } from '@/features/Admin/StaffPill';
 import { Footer } from '@/features/Footer';
 import { WarningNoticeHost } from '@/features/Inbox/WarningNoticeHost';
 import { Navbar } from '@/features/Navbar';
+import { ProfileSheetHost } from '@/features/Profile/ProfileSheetHost';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { MobileNavigation } from './MobileNavigation';
 import { useRouteProgressRouter } from './RouteProgress';
@@ -114,6 +115,7 @@ export const AppShell = ({
           />
           <div className="flex flex-1 flex-col">{children}</div>
           <Footer locale={locale} />
+          <ProfileSheetHost />
           {docked ? (
             <MobileNavigation
               locale={locale}

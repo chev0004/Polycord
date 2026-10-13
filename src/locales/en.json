@@ -90,6 +90,7 @@
     "writeError": "Your change could not be confirmed. Refresh the inbox to check, then try the action again.",
     "retry": "Retry",
     "viewProfile": "View profile",
+    "profileUnavailableTitle": "Profile unavailable",
     "profileUnavailable": "This profile is no longer available to you.",
     "previousPage": "Previous page",
     "nextPage": "Next page",
