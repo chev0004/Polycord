@@ -647,8 +647,8 @@ export const DiscoveryPage = ({
   });
 
   useEffect(() => {
-    discoveryCache.setCriteria(criteriaKey);
-  }, [criteriaKey]);
+    if (urlQuery !== null) discoveryCache.setCriteria(criteriaKey);
+  }, [criteriaKey, urlQuery]);
 
   const lastPage = stacked ? Math.min(totalPages, MAX_STACK_PAGES) : totalPages;
   const canPrefetch =
