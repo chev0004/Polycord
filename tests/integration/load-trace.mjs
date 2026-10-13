@@ -164,6 +164,7 @@ const ownerIdentity = {
 mock.module('../../src/lib/auth', () => ({
   getCurrentUser: async () => ownerIdentity.account.currentUser,
   getSessionIdentity: async () => ownerIdentity,
+  getSessionAccountId: async () => ownerIdentity.account.currentUser.accountId,
   isBannedIdentity: async () => false,
 }));
 mock.module('../../src/db/ipBans', () => ({

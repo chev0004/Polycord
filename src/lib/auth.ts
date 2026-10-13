@@ -175,6 +175,13 @@ export const isBannedIdentity = async (discordUserId: string) => {
   return identityRestriction(user, restriction) === 'banned';
 };
 
+export const getSessionAccountId = async () => {
+  const sessionCookie = (await cookies()).get(AUTH_SESSION_COOKIE)?.value;
+  return sessionCookie
+    ? ((await readSessionFromCookieValue(sessionCookie))?.accountId ?? null)
+    : null;
+};
+
 export const getSessionIdentity = cache(async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(AUTH_SESSION_COOKIE)?.value;

@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import type { z } from 'zod';
 import { countPendingCases, hasStaffRole } from '@/db';
 import type { StaffRole } from '@/features/Admin/types';
-import { type CurrentUser, getCurrentUser } from './auth';
+import { type CurrentUser, getCurrentUser, getSessionAccountId } from './auth';
 import { isOwnerDiscordId } from './ownerIds';
 
 export { isOwnerDiscordId, ownerDiscordIds } from './ownerIds';
@@ -18,6 +18,21 @@ export const getStaffRole = async (
 ): Promise<StaffRole | null> => {
   if (isOwner(user)) return 'owner';
   return (await hasStaffRole(user.accountId)) ? 'moderator' : null;
+};
+
+export const getStaffAccess = async () => {
+  const accountId = await getSessionAccountId();
+  const [user, moderator] = await Promise.all([
+    getCurrentUser(),
+    accountId ? hasStaffRole(accountId) : false,
+  ]);
+  if (!user) return null;
+  const role: StaffRole | null = isOwner(user)
+    ? 'owner'
+    : moderator
+      ? 'moderator'
+      : null;
+  return role ? { user, role } : null;
 };
 
 export const loadStaffNav = async (
