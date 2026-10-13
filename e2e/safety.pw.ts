@@ -308,12 +308,16 @@ test('a report can also block the reported account', async ({
     const [viewer, reportOnly, reportAndBlock] = accounts;
     await signIn(context, identities[0], viewer.id);
 
-    const report = async (profileId: string, alsoBlock: boolean) => {
+    const report = async (
+      profileId: string,
+      alsoBlock: boolean,
+      reason = 'Spam or scam',
+    ) => {
       await page.goto(`/en/u/${profileId}`);
       await page.getByRole('button', { name: 'More actions' }).click();
       await page.getByRole('button', { name: 'Report profile' }).click();
       const dialog = page.getByRole('dialog', { name: 'Report profile' });
-      await dialog.getByRole('radio', { name: 'Spam or scam' }).click();
+      await dialog.getByRole('radio', { name: reason }).click();
       const block = dialog.getByRole('checkbox', {
         name: 'Also block this account',
       });
@@ -334,7 +338,7 @@ test('a report can also block the reported account', async ({
       await sql`select 1 from reports where reporter_user_id = ${viewer.id} and reported_user_id = ${reportOnly.id}`,
     ).toHaveLength(1);
 
-    await report(reportAndBlock.profileId, true);
+    await report(reportAndBlock.profileId, true, 'Disruptive profile content');
     await expect(
       page.getByRole('heading', { name: 'You blocked this user' }),
     ).toBeVisible();
@@ -342,7 +346,7 @@ test('a report can also block the reported account', async ({
       await sql`select 1 from user_blocks where blocker_user_id = ${viewer.id} and blocked_user_id = ${reportAndBlock.id}`,
     ).toHaveLength(1);
     expect(
-      await sql`select 1 from reports where reporter_user_id = ${viewer.id} and reported_user_id = ${reportAndBlock.id}`,
+      await sql`select 1 from reports where reporter_user_id = ${viewer.id} and reported_user_id = ${reportAndBlock.id} and reason = 'disruptive_profile'`,
     ).toHaveLength(1);
   } finally {
     await sql`delete from users where id in ${sql(accounts.map(({ id }) => id))}`;

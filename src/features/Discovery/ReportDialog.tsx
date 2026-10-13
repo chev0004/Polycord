@@ -15,6 +15,7 @@ const REPORT_REASONS: ReportReason[] = [
   'harassment',
   'inappropriate',
   'impersonation',
+  'disruptive_profile',
   'other',
 ];
 
@@ -23,6 +24,7 @@ const reasonLabelKeys: Record<ReportReason, string> = {
   harassment: 'reportReasonHarassment',
   inappropriate: 'reportReasonInappropriate',
   impersonation: 'reportReasonImpersonation',
+  disruptive_profile: 'reportReasonDisruptive',
   other: 'reportReasonOther',
 };
 
@@ -102,6 +104,11 @@ export const ReportDialog = ({
               key={value}
               value={value}
               label={t(reasonLabelKeys[value])}
+              description={
+                value === 'disruptive_profile'
+                  ? t('reportReasonDisruptiveDescription')
+                  : undefined
+              }
             />
           ))}
         </RadioGroup>

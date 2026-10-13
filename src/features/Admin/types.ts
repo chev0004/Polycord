@@ -34,6 +34,7 @@ export const REPORT_REASONS = [
   'harassment',
   'inappropriate',
   'impersonation',
+  'disruptive_profile',
   'other',
 ] as const;
 

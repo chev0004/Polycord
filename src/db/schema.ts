@@ -70,6 +70,7 @@ export const reportReasonEnum = pgEnum('report_reason', [
   'harassment',
   'inappropriate',
   'impersonation',
+  'disruptive_profile',
   'other',
 ]);
 

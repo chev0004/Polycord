@@ -70,7 +70,7 @@ test.describe('admin report and actioned pages', () => {
     await sql`delete from moderation_actions`;
     await sql`delete from reports`;
     await sql`insert into reports (reporter_user_id, reported_user_id, reason, status, created_at)
-      select ${reporter.id}, u.id, case when n <= 10 then 'harassment' else 'spam' end::report_reason,
+      select ${reporter.id}, u.id, case when n <= 10 then 'harassment' when n <= 13 then 'disruptive_profile' else 'spam' end::report_reason,
         'pending', ${utcToday} + n * interval '1 minute'
       from (select id, row_number() over (order by discord_user_id) n from users where discord_user_id like ${`${prefix}-rep-%`}) u`;
     await sql`insert into reports (reporter_user_id, reported_user_id, reason, status, created_at)
@@ -139,6 +139,11 @@ test.describe('admin report and actioned pages', () => {
     );
     expect((await filtered.json()).page).toHaveLength(10);
 
+    const disruptive = await context.request.get(
+      `/api/admin/reports?${query({ status: 'pending', reason: 'disruptive_profile' })}`,
+    );
+    expect((await disruptive.json()).page).toHaveLength(3);
+
     const actioned = await context.request.get(
       `/api/admin/actioned?${query()}`,
     );
@@ -193,6 +198,17 @@ test.describe('admin report and actioned pages', () => {
     await page.getByRole('button', { name: 'Harassment', exact: true }).click();
     await expect(rows).toHaveCount(10);
     await expect(queue.getByText('Page 1')).toBeVisible();
+    await queue.getByRole('button', { name: 'Clear', exact: true }).click();
+    await expect(rows).toHaveCount(25);
+
+    await queue.getByRole('button', { name: 'All reasons' }).click();
+    await page
+      .getByRole('button', { name: 'Disruptive profile content', exact: true })
+      .click();
+    await expect(rows).toHaveCount(3);
+    await expect(
+      queue.getByText('Disruptive profile content').first(),
+    ).toBeVisible();
     await queue.getByRole('button', { name: 'Clear', exact: true }).click();
     await expect(rows).toHaveCount(25);
 
