@@ -1184,17 +1184,20 @@ export const ModerationDesktop = ({
     store.loadActivityLog,
     tab === 'log',
     store.revision,
+    'log',
   );
   const reports = useReportPages(store, tab === 'reports');
   const actionedPages = useActivityPages(
     store.loadActioned,
     tab === 'users',
     store.revision,
+    'actioned',
   );
   const flagPages = useActivityPages(
     store.loadSuspicious,
     tab === 'suspicious',
     store.revision,
+    'suspicious',
   );
   const prefetch: Partial<Record<ModTab, () => void>> = {
     reports: reports.pages.prefetch,
