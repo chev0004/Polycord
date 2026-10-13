@@ -229,4 +229,57 @@ test.describe('admin tab switching', () => {
       .toEqual([true, true, true, true]);
     await context.close();
   });
+
+  test('staff who arrive without the time zone cookie still get the seeded Reports', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    const payload = Buffer.from(
+      JSON.stringify({
+        user: {
+          id: owner.discordUserId,
+          accountId: owner.id,
+          name: owner.discordUserId,
+          username: owner.discordUserId,
+        },
+        issuedAt: Date.now(),
+        expiresAt: Date.now() + 3600000,
+      }),
+    ).toString('base64url');
+    const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+      .update(payload)
+      .digest('base64url');
+    await context.addCookies([
+      {
+        name: 'polycord_session',
+        value: `${payload}.${signature}`,
+        domain: 'localhost',
+        path: '/',
+      },
+    ]);
+    const page = await context.newPage();
+    const finished: string[] = [];
+    page.on('requestfinished', (request) => {
+      finished.push(new URL(request.url()).pathname);
+    });
+    await page.goto('/en');
+    await expect
+      .poll(async () =>
+        (await context.cookies()).some(({ name }) => name === 'polycord_tz'),
+      )
+      .toBe(true);
+    await page.getByRole('link', { name: 'Admin' }).click();
+    await expect(page).toHaveURL(/\/en\/admin$/);
+    await expect(
+      page
+        .getByRole('region', { name: 'Reports', exact: true })
+        .getByRole('button', { name: new RegExp(`${prefix} Reported`) }),
+    ).toHaveCount(4);
+    expect(finished.some((path) => path === '/api/admin/reports')).toBe(false);
+    await context.close();
+  });
 });
