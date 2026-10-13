@@ -14,6 +14,7 @@ import type { ActionSheetItem } from '@/components/Sheet';
 import { ToastStack } from '@/components/Toast';
 import { BlockDialog } from '@/features/Discovery/BlockDialog';
 import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
+import { recordProfileView } from '@/features/Discovery/profileViewRequest';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
 import { useToastStack } from '@/hooks/useToast';
@@ -153,7 +154,10 @@ export const ProfileSheetHost = () => {
         if (!response.ok) throw new Error('Profile unavailable');
         return response.json() as Promise<ProfileSheetData>;
       })
-      .then((data) => setLoaded({ id: target, data }))
+      .then((data) => {
+        if (!data.isOwn) recordProfileView(target);
+        setLoaded({ id: target, data });
+      })
       .catch(() => {
         if (controller.signal.aborted) return;
         addToast({
