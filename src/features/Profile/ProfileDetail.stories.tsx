@@ -345,6 +345,30 @@ export const LongContent: Story = {
   },
 };
 
+export const LongTagsWrapAtHalfWidth: Story = {
+  args: {
+    profile: {
+      ...profile,
+      tags: ['A', 'B', 'C', 'D', 'R', 'E', 'F', 'X'].map((letter) =>
+        letter.repeat(20),
+      ),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const header = canvasElement.querySelector('header') as HTMLElement;
+    const firstTag = canvas.getByRole('button', { name: 'A'.repeat(20) });
+    const tagRow = firstTag.parentElement as HTMLElement;
+    const name = canvas.getByRole('heading', { level: 1 });
+
+    await expect(tagRow.offsetWidth).toBeLessThanOrEqual(
+      header.clientWidth / 2,
+    );
+    await expect(tagRow.offsetHeight).toBeGreaterThan(firstTag.offsetHeight);
+    await expect(name.offsetWidth).toBeGreaterThan(0);
+  },
+};
+
 export const LoggedOutPrivateUsername: Story = {
   args: {
     isLoggedIn: false,
