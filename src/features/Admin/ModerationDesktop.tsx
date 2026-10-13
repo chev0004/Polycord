@@ -35,6 +35,7 @@ import {
   useReportPages,
   useTabPrefetch,
 } from './ActivityPages';
+import { prefetchRecentMonths } from './adminCache';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
@@ -69,7 +70,7 @@ import type {
   ReportView,
   SeedStatus,
 } from './types';
-import { LOG_ACTIONS, REPORT_REASONS } from './types';
+import { ACTIVITY_KINDS, LOG_ACTIONS, REPORT_REASONS } from './types';
 import {
   groupReports,
   hasStatusChips,
@@ -418,11 +419,7 @@ const ReportsTab = ({
           </div>
         </div>
         <div className="shrink-0 border-line border-b px-3.5 py-3">
-          <ActivityDayBar
-            pages={pages}
-            kind="reports"
-            loadDays={store.loadActivityDays}
-          />
+          <ActivityDayBar pages={pages} kind="reports" />
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
           <FilterSelect
@@ -646,11 +643,7 @@ const UsersTab = ({
         {trimmed ? null : (
           <>
             <div className="shrink-0 border-line border-b px-3.5 py-3">
-              <ActivityDayBar
-                pages={pages}
-                kind="actioned"
-                loadDays={store.loadActivityDays}
-              />
+              <ActivityDayBar pages={pages} kind="actioned" />
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
               <FilterSelect
@@ -916,11 +909,7 @@ const LogTab = ({
   return (
     <section className={tablePane} aria-label={t('tabLog')}>
       <div className="border-line border-b px-3.5 py-3">
-        <ActivityDayBar
-          pages={pages}
-          kind="log"
-          loadDays={store.loadActivityDays}
-        />
+        <ActivityDayBar pages={pages} kind="log" />
       </div>
       <div className="flex flex-wrap items-center gap-1.5 border-line border-b px-3.5 py-3">
         <FilterSelect
@@ -1123,11 +1112,7 @@ const SuspiciousTab = ({
   return (
     <section className={tablePane} aria-label={t('tabSuspicious')}>
       <div className="border-line border-b px-3.5 py-3">
-        <ActivityDayBar
-          pages={pages}
-          kind="suspicious"
-          loadDays={store.loadActivityDays}
-        />
+        <ActivityDayBar pages={pages} kind="suspicious" />
       </div>
       <div className={`${headRow} ${suspiciousColumns}`}>
         <span>{t('colEvent')}</span>
@@ -1205,7 +1190,10 @@ export const ModerationDesktop = ({
     log: logPages.prefetch,
     suspicious: flagPages.prefetch,
   };
-  useTabPrefetch(reports.pages.rows !== undefined, Object.values(prefetch));
+  useTabPrefetch(reports.pages.rows !== undefined, [
+    ...Object.values(prefetch),
+    () => prefetchRecentMonths(ACTIVITY_KINDS),
+  ]);
   const tabs: { id: ModTab; icon: IconType; label: string; badge?: number }[] =
     [
       {

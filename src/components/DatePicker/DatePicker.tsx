@@ -13,6 +13,8 @@ export type DayCounts = Record<string, number>;
 
 export type DayActivity = {
   load: (month: Date) => Promise<DayCounts>;
+  peek?: (month: Date) => DayCounts | undefined;
+  prefetch?: (month: Date) => void;
   tone: CalendarHeat['tone'];
   unit: (count: number) => string;
   monthLabel: string;
@@ -54,23 +56,42 @@ const Panel = ({
   const t = useTranslations('DatePicker');
   const locale = useLocale();
   const [view, setView] = useState(() => monthOf(selected));
-  const [counts, setCounts] = useState<DayCounts | null>(null);
   const load = activity?.load;
+  const peek = activity?.peek;
+  const todayTime = today.getTime();
+  const prefetch = activity?.prefetch;
+  const [loaded, setLoaded] = useState(() => {
+    const counts = peek?.(view);
+    return counts ? { month: view.getTime(), counts } : null;
+  });
+  const counts =
+    peek?.(view) ?? (loaded?.month === view.getTime() ? loaded.counts : null);
 
   useEffect(() => {
-    setCounts(null);
     if (!load) return;
+    const month = view.getTime();
+    const known = peek?.(view);
+    if (known) setLoaded({ month, counts: known });
     let current = true;
     load(view).then(
-      (result) => current && setCounts(result),
+      (result) => current && setLoaded({ month, counts: result }),
       () => {},
     );
+    for (const offset of [-1, 1]) {
+      const neighbour = new Date(
+        view.getFullYear(),
+        view.getMonth() + offset,
+        1,
+      );
+      if (neighbour.getTime() <= todayTime) prefetch?.(neighbour);
+    }
     return () => {
       current = false;
     };
-  }, [load, view]);
+  }, [load, peek, prefetch, view, todayTime]);
 
-  const entries = Object.entries(counts ?? {});
+  const shown = counts ?? loaded?.counts;
+  const entries = Object.entries(shown ?? {});
   const total = entries.reduce((sum, [, count]) => sum + count, 0);
   const busiest = entries.reduce<[string, number] | null>(
     (best, entry) => (!best || entry[1] > best[1] ? entry : best),
@@ -103,9 +124,11 @@ const Panel = ({
       }
       summary={
         activity ? (
-          <div className="flex gap-7 px-1 pb-3.5">
+          <div
+            className={`flex gap-7 px-1 pb-3.5 transition-opacity duration-150 ${shown && !counts ? 'opacity-50' : ''}`}
+          >
             <Stat
-              value={counts ? total.toLocaleString(locale) : '–'}
+              value={shown ? total.toLocaleString(locale) : '–'}
               label={activity.monthLabel}
             />
             <Stat
@@ -162,6 +185,17 @@ export const DatePicker = ({
   const mobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
+  const warm = () => {
+    const month = monthOf(value);
+    for (const offset of [0, -1, 1]) {
+      const neighbour = new Date(
+        month.getFullYear(),
+        month.getMonth() + offset,
+        1,
+      );
+      if (neighbour <= today) activity?.prefetch?.(neighbour);
+    }
+  };
   const triggerClass =
     'inline-flex h-8 items-center gap-2 rounded-full border border-white/[0.07] bg-background-darker px-3 text-foreground text-sm tabular-nums transition-colors duration-150 hover:border-white/[0.14] data-[state=open]:border-white/[0.14]';
   const content = (
@@ -183,6 +217,8 @@ export const DatePicker = ({
         <button
           type="button"
           aria-label={label}
+          onPointerEnter={warm}
+          onFocus={warm}
           onClick={() => {
             setDraft(value);
             setOpen(true);
@@ -236,7 +272,13 @@ export const DatePicker = ({
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        <button type="button" aria-label={label} className={triggerClass}>
+        <button
+          type="button"
+          aria-label={label}
+          onPointerEnter={warm}
+          onFocus={warm}
+          className={triggerClass}
+        >
           {content}
         </button>
       </Popover.Trigger>

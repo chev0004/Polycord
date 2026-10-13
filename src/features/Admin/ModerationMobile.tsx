@@ -54,6 +54,7 @@ import {
   useReportPages,
   useTabPrefetch,
 } from './ActivityPages';
+import { prefetchRecentMonths } from './adminCache';
 import type { ModTab, Notify, UsersQuery } from './ModerationDesktop';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
@@ -98,7 +99,7 @@ import type {
   ReportView,
   SeedStatus,
 } from './types';
-import { LOG_ACTIONS, REPORT_REASONS } from './types';
+import { ACTIVITY_KINDS, LOG_ACTIONS, REPORT_REASONS } from './types';
 import {
   groupReports,
   hasStatusChips,
@@ -323,11 +324,7 @@ const ReportsScreen = ({
         </div>
       </div>
       <div className="px-4 pb-3">
-        <ActivityDayBar
-          pages={pages}
-          kind="reports"
-          loadDays={store.loadActivityDays}
-        />
+        <ActivityDayBar pages={pages} kind="reports" />
       </div>
       <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
         <button
@@ -567,11 +564,7 @@ const UsersScreen = ({
         {trimmed ? null : (
           <>
             <div className="px-1 pt-1 pb-3">
-              <ActivityDayBar
-                pages={pages}
-                kind="actioned"
-                loadDays={store.loadActivityDays}
-              />
+              <ActivityDayBar pages={pages} kind="actioned" />
             </div>
             <div className="flex gap-2 overflow-x-auto px-1 pb-3.5 [scrollbar-width:none]">
               <button
@@ -728,11 +721,7 @@ const LogScreen = ({
         sub={t('actionsCount', { count: rows.length })}
       />
       <div className="px-4 pb-3">
-        <ActivityDayBar
-          pages={pages}
-          kind="log"
-          loadDays={store.loadActivityDays}
-        />
+        <ActivityDayBar pages={pages} kind="log" />
       </div>
       <div className="flex gap-2 overflow-x-auto px-4 pb-3.5 [scrollbar-width:none]">
         <button
@@ -966,11 +955,7 @@ const FlagsScreen = ({
     <>
       <Header heading={t('tabSuspicious')} />
       <div className="px-4 pb-3">
-        <ActivityDayBar
-          pages={pages}
-          kind="suspicious"
-          loadDays={store.loadActivityDays}
-        />
+        <ActivityDayBar pages={pages} kind="suspicious" />
       </div>
       <div className="px-3">
         {!pages.rows ? (
@@ -2094,7 +2079,10 @@ export const ModerationMobile = ({
     log: logPages.prefetch,
     suspicious: flagPages.prefetch,
   };
-  useTabPrefetch(reportPages.rows !== undefined, Object.values(prefetch));
+  useTabPrefetch(reportPages.rows !== undefined, [
+    ...Object.values(prefetch),
+    () => prefetchRecentMonths(ACTIVITY_KINDS),
+  ]);
   const [page, setPage] = useState<Page | null>(null);
   const [closing, setClosing] = useState(false);
   const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);
