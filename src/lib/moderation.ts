@@ -164,18 +164,41 @@ export const loadProfileCase = async (profileId: string) => {
 export const loadModerationSnapshot = async (
   meId: string,
   meRole: StaffRole,
+  today?: { from: Date; to: Date } | null,
 ): Promise<ModSnapshot> => {
-  const [staff, pendingCases] = await Promise.all([
+  const [staff, pendingCases, first] = await Promise.all([
     listStaffUserIds(ownerDiscordIds()),
     countPendingCases(),
+    today ? loadReportsPage({ ...today, status: 'pending' }) : null,
   ]);
+  const data = await withUsers([], [], staff);
 
   return {
-    ...(await withUsers([], [], staff)),
+    users: first
+      ? [
+          ...first.users,
+          ...data.users.filter(
+            (user) => !first.users.some((u) => u.id === user.id),
+          ),
+        ]
+      : data.users,
+    reports: first?.reports ?? data.reports,
+    log: first?.log ?? data.log,
     staff,
     meRole,
     pendingCases,
     meId,
+    firstPage:
+      today && first
+        ? {
+            scope: 'reports:pending',
+            range: {
+              from: today.from.toISOString(),
+              to: today.to.toISOString(),
+            },
+            page: { rows: first.page, nextCursor: first.nextCursor },
+          }
+        : undefined,
   };
 };
 

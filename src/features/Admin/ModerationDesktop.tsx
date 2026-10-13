@@ -1198,10 +1198,16 @@ export const ModerationDesktop = ({
     log: logPages.prefetch,
     suspicious: flagPages.prefetch,
   };
-  useTabPrefetch(reports.pages.rows !== undefined, [
-    ...Object.values(prefetch),
-    () => prefetchRecentMonths(ACTIVITY_KINDS),
-  ]);
+  useTabPrefetch(
+    [reports.pages, actionedPages, logPages, flagPages].some(
+      ({ rows }) => rows !== undefined,
+    ),
+    [
+      ...Object.values(prefetch),
+      reports.prefetchOtherView,
+      () => prefetchRecentMonths(ACTIVITY_KINDS),
+    ],
+  );
   const tabs: { id: ModTab; icon: IconType; label: string; badge?: number }[] =
     [
       {

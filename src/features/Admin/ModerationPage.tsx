@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ToastStack } from '@/components/Toast';
 import { useSyncPendingCases } from '@/features/Navigation/AppShell';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { FirstPageContext } from './ActivityPages';
 import { tabCache } from './adminCache';
 import { ModerationDesktop, type ModTab } from './ModerationDesktop';
 import { ModerationMobile } from './ModerationMobile';
@@ -73,7 +74,7 @@ export const ModerationPage = ({
   };
 
   return (
-    <>
+    <FirstPageContext.Provider value={initial.firstPage ?? null}>
       {mobile ? (
         <ModerationMobile
           store={store}
@@ -97,6 +98,6 @@ export const ModerationPage = ({
         </div>
       )}
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
-    </>
+    </FirstPageContext.Provider>
   );
 };
