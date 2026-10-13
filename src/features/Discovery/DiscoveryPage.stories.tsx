@@ -9,12 +9,15 @@ import {
   within,
 } from '@storybook/test';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
 import { moderationSnapshot } from '@/features/Admin/moderationFixtures';
 import type { ModUser } from '@/features/Admin/types';
 import { AppShell } from '@/features/Navigation/AppShell';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
 import { DiscoveryPage } from './DiscoveryPage';
+import { discoveryCache } from './discoveryCache';
+import type { DiscoveryData } from './discoveryData';
 import { createSampleProfiles } from './profileFixtures';
 import { blockedProfileIds } from './safetyRequests';
 import { DiscoverySkeletonContext } from './skeletonContext';
@@ -844,4 +847,84 @@ export const StaffChipsFollowActions: Story = {
     await waitFor(() => expect(chipText()).toContain('Warned 1×'));
     await expect(chipText()).not.toContain('1 pending report');
   },
+};
+
+const CACHED_URL = '/api/discovery?&locale=en';
+let freshSnapshot: DiscoveryData;
+let releaseRefresh = () => {};
+
+const heldRefresh = () => {
+  const original = globalThis.fetch;
+  const gate = new Promise<void>((resolve) => {
+    releaseRefresh = resolve;
+  });
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) => {
+      if (!String(args[0]).startsWith('/api/discovery/bootstrap'))
+        return original(...args);
+      await gate;
+      return Response.json({
+        viewer: { isLoggedIn: true },
+        data: freshSnapshot,
+      });
+    },
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+    discoveryCache.clear();
+  };
+};
+
+const CachedVisit = (args: React.ComponentProps<typeof DiscoveryPage>) => {
+  const t = useTranslations('DiscoveryStories');
+  useState(() => {
+    const sample = createSampleProfiles(t);
+    const snapshot = (name: string): DiscoveryData => ({
+      profiles: sample.map((profile, index) =>
+        index === 0 ? { ...profile, displayName: name } : profile,
+      ),
+      total: sample.length,
+      page: 1,
+      tags: [],
+      savedProfileIds: [],
+    });
+    discoveryCache.clear();
+    discoveryCache.set(
+      CACHED_URL,
+      snapshot('Stale card'),
+      discoveryCache.begin(CACHED_URL),
+    );
+    freshSnapshot = snapshot('Fresh card');
+  });
+
+  return <DiscoveryPage {...args} fetchOnMount />;
+};
+
+const cachedVisitPlay: Story['play'] = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const bar = canvasElement.ownerDocument.querySelector('div.fixed.top-0.h-1');
+
+  await canvas.findByText('Stale card');
+  await expect(canvasElement.querySelector('.skeleton-shimmer')).toBeNull();
+  await waitFor(() => expect(bar).toHaveClass('opacity-100'));
+
+  releaseRefresh();
+
+  await canvas.findByText('Fresh card');
+  await expect(canvas.queryByText('Stale card')).toBeNull();
+  await waitFor(() => expect(bar).toHaveClass('opacity-0'));
+};
+
+export const CachedVisitRefreshes: Story = {
+  beforeEach: heldRefresh,
+  render: (args) => <CachedVisit {...args} />,
+  play: cachedVisitPlay,
+};
+
+export const MobileCachedVisitRefreshes: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  beforeEach: heldRefresh,
+  render: (args) => <CachedVisit {...args} />,
+  play: cachedVisitPlay,
 };

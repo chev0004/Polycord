@@ -122,5 +122,23 @@ describe('discoveryCache', () => {
       discoveryCache.set('/p2', snapshot(4), discoveryCache.begin('/p2'));
       expect(discoveryCache.prefetched('/p2')).toBe(false);
     });
+
+    test('keeps the snapshot but stops treating it as fresh once expired', async () => {
+      mockFetch(ok(3));
+      discoveryCache.prefetch('/p2');
+      await settle();
+      discoveryCache.expire();
+      expect(discoveryCache.get('/p2')?.total).toBe(3);
+      expect(discoveryCache.prefetched('/p2')).toBe(false);
+    });
+
+    test('ignores a prefetch that was in flight when it expired', async () => {
+      mockFetch(ok(3));
+      discoveryCache.prefetch('/p2');
+      discoveryCache.expire();
+      await settle();
+      expect(discoveryCache.get('/p2')).toBeUndefined();
+      expect(discoveryCache.pending('/p2')).toBeUndefined();
+    });
   });
 });
