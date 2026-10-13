@@ -23,8 +23,10 @@ const SEARCH_PARAM = 'q';
 const TAGS_PARAM = 'tag';
 const SORT_PARAM = 'sort';
 const PAGE_PARAM = 'page';
-const AVAILABILITY_PARAM = 'avail';
-const AVAILABILITY_FILTER_ID = 'availability';
+const SINGLE_FILTER_PARAMS = [
+  ['availability', 'avail'],
+  ['voiceIntro', 'voice'],
+] as const;
 
 const MULTI_FILTER_PARAMS = [
   ['primaryLanguage', 'primary'],
@@ -39,7 +41,7 @@ const MANAGED_PARAMS = [
   TAGS_PARAM,
   SORT_PARAM,
   PAGE_PARAM,
-  AVAILABILITY_PARAM,
+  ...SINGLE_FILTER_PARAMS.map(([, param]) => param),
   ...MULTI_FILTER_PARAMS.map(([, param]) => param),
 ];
 
@@ -69,9 +71,11 @@ export const parseDiscoveryState = (
     }
   }
 
-  const availability = params.get(AVAILABILITY_PARAM);
-  if (availability) {
-    filterValues[AVAILABILITY_FILTER_ID] = availability;
+  for (const [id, param] of SINGLE_FILTER_PARAMS) {
+    const value = params.get(param);
+    if (value) {
+      filterValues[id] = value;
+    }
   }
 
   const sort = params.get(SORT_PARAM);
@@ -131,9 +135,11 @@ export const buildDiscoveryQuery = (
     }
   }
 
-  const availability = toFirstValue(state.filterValues[AVAILABILITY_FILTER_ID]);
-  if (availability) {
-    params.set(AVAILABILITY_PARAM, availability);
+  for (const [id, param] of SINGLE_FILTER_PARAMS) {
+    const value = toFirstValue(state.filterValues[id]);
+    if (value) {
+      params.set(param, value);
+    }
   }
 
   for (const tag of state.selectedTags) {
