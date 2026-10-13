@@ -82,6 +82,7 @@ export const PublicProfileClient = ({
       isSaved: initialSaved,
       isOwn: isOwnProfile,
       viewerTimezone,
+      staff,
     });
     router.replace(`/${locale}`);
   }, [
@@ -91,6 +92,7 @@ export const PublicProfileClient = ({
     initialSaved,
     isOwnProfile,
     viewerTimezone,
+    staff,
     router,
     locale,
   ]);

@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
@@ -8,6 +9,7 @@ import {
   MdBookmark,
   MdBookmarkBorder,
   MdFlag,
+  MdOutlineShield,
   MdShare,
 } from 'react-icons/md';
 import type { ActionSheetItem } from '@/components/Sheet';
@@ -21,15 +23,22 @@ import { useToastStack } from '@/hooks/useToast';
 import { type ProfileSheetData, profileSheetStore } from './profileSheetStore';
 import { useProfileActions } from './useProfileActions';
 
+const MobileTakeAction = dynamic(() =>
+  import('@/features/Admin/MobileTakeAction').then(
+    (module) => module.MobileTakeAction,
+  ),
+);
+
 const CLOSE_ANIMATION_MS = 300;
 
 const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
-  const { profile, isLoggedIn, isOwn, viewerTimezone } = data;
+  const { profile, isLoggedIn, isOwn, viewerTimezone, staff } = data;
   const t = useTranslations('Discovery');
   const locale = useLocale();
   const [open, setOpen] = useState(true);
   const [isSaved, setIsSaved] = useState(data.isSaved);
   const [blockOpen, setBlockOpen] = useState(false);
+  const [moderateOpen, setModerateOpen] = useState(false);
   const returnFocus = useRef<HTMLElement>(null);
   const actions = useProfileActions(locale, isLoggedIn, () => setOpen(false));
 
@@ -95,6 +104,16 @@ const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
             onSelect: () => setBlockOpen(true),
           },
         ]),
+    ...(staff && !isOwn
+      ? [
+          {
+            key: 'moderate',
+            icon: MdOutlineShield,
+            label: t('moderateProfile'),
+            onSelect: () => setModerateOpen(true),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -122,6 +141,16 @@ const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
           await actions.block(profile.id);
         }}
       />
+      {staff && moderateOpen ? (
+        <MobileTakeAction
+          profileId={profile.id}
+          displayName={profile.displayName}
+          meId={staff.meId}
+          meRole={staff.role}
+          addToast={actions.addToast}
+          onClose={() => setModerateOpen(false)}
+        />
+      ) : null}
       {actions.feedback}
     </>
   );

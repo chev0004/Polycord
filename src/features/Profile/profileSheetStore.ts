@@ -1,3 +1,4 @@
+import type { StaffRole } from '@/features/Admin/types';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 
 export type ProfileSheetData = {
@@ -6,6 +7,7 @@ export type ProfileSheetData = {
   isSaved: boolean;
   isOwn: boolean;
   viewerTimezone?: string;
+  staff?: { meId: string; role: StaffRole };
 };
 
 export type ProfileSheetTarget = string | ProfileSheetData;

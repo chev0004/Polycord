@@ -7,6 +7,7 @@ import {
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
 } from '@/db';
+import { getStaffRole } from '@/lib/admin';
 import { gatedRoute } from '@/lib/gatedRoute';
 
 export const GET = gatedRoute(
@@ -24,12 +25,13 @@ export const GET = gatedRoute(
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    const [viewerProfile, savedIds] = user
+    const [viewerProfile, savedIds, role] = user
       ? await Promise.all([
           getProfileByUserId(user.accountId),
           listSavedProfileIds(user.accountId),
+          getStaffRole(user),
         ])
-      : [null, []];
+      : [null, [], null];
 
     return NextResponse.json(
       {
@@ -40,6 +42,7 @@ export const GET = gatedRoute(
         viewerTimezone: viewerProfile
           ? toViewerAvailabilityContext(viewerProfile.profile).timezone
           : undefined,
+        staff: user && role ? { meId: user.accountId, role } : undefined,
       },
       { headers: { 'Cache-Control': 'private, no-store' } },
     );
