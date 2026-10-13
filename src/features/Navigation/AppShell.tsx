@@ -73,6 +73,18 @@ export const AppShell = ({
   const [liveCases, setLiveCases] = useState(pendingCases);
 
   useEffect(() => setLiveCases(pendingCases), [pendingCases]);
+
+  const staff = pendingCases !== undefined;
+  useEffect(() => {
+    if (!staff) return;
+    void window.cookieStore?.set({
+      name: 'polycord_tz',
+      value: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      path: '/',
+      expires: Date.now() + 365 * 86400000,
+      sameSite: 'lax',
+    });
+  }, [staff]);
   const pathname = usePathname();
   const mobile = useIsMobile();
   const staffArea = pathname.split('/')[2] === 'admin';
