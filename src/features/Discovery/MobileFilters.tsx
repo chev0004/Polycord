@@ -54,6 +54,7 @@ const SECTIONS = [
     labelKey: 'filterAvailability',
     ids: ['availability'],
   },
+  { key: 'voice', labelKey: 'filterVoiceIntro', ids: ['voiceIntro'] },
 ];
 
 const FilterCount = ({ count }: { count: number }) => (

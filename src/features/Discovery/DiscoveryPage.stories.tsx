@@ -347,6 +347,73 @@ export const Mobile: Story = {
   },
 };
 
+const renderWithVoiceIntros: Story['render'] = (args) => {
+  const t = useTranslations('DiscoveryStories');
+  const profiles = createSampleProfiles(t).map((profile, index) =>
+    index < 2 ? { ...profile, voiceIntroSeconds: 8 } : profile,
+  );
+
+  return <DiscoveryPage {...args} profiles={profiles} />;
+};
+
+export const VoiceIntroFilter: Story = {
+  render: renderWithVoiceIntros,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const doc = canvasElement.ownerDocument;
+
+    await expect(canvas.getByText('9 partners')).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole('button', { name: 'Voice intro' }));
+    const popover = within(
+      await waitFor(() => {
+        const content = doc.querySelector<HTMLElement>('.PopoverContent');
+        if (!content) throw new Error('Filter popover did not open');
+        return content;
+      }),
+    );
+    await userEvent.click(
+      await popover.findByRole('button', { name: 'Has voice intro' }),
+    );
+    await userEvent.click(popover.getByRole('button', { name: 'Apply' }));
+
+    await waitFor(() =>
+      expect(canvas.getByText('2 partners')).toBeInTheDocument(),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
+    await waitFor(() =>
+      expect(canvas.getByText('9 partners')).toBeInTheDocument(),
+    );
+  },
+};
+
+export const MobileVoiceIntroFilter: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: renderWithVoiceIntros,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText('9 partners')).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole('button', { name: 'Filters' }));
+    const sheet = within(await screen.findByRole('dialog'));
+    await userEvent.click(
+      await sheet.findByRole('button', { name: 'Has voice intro' }),
+    );
+    await userEvent.click(
+      await sheet.findByRole('button', { name: 'Show 2 partners' }),
+    );
+
+    await waitFor(() =>
+      expect(canvas.getByText('2 partners')).toBeInTheDocument(),
+    );
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Remove Has voice intro' }),
+    );
+    await waitFor(() =>
+      expect(canvas.getByText('9 partners')).toBeInTheDocument(),
+    );
+  },
+};
+
 export const MobileYourCard: Story = {
   parameters: {
     viewport: {

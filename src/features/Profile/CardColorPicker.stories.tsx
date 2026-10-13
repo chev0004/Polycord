@@ -79,9 +79,9 @@ export const FreeTease: Story = {
 
     await waitFor(() => expect(indigo).toHaveAttribute('aria-pressed', 'true'));
     await expect(sky).toHaveAttribute('aria-pressed', 'false');
-    await expect(canvas.getByText(/matching card tint/)).toBeInTheDocument();
+    const upsell = canvas.getByText(/matching card tint/);
     await expect(
-      canvas.getByRole('link', { name: 'Supporter' }),
+      within(upsell).getByRole('link', { name: 'Supporter' }),
     ).toBeInTheDocument();
 
     await userEvent.click(indigo);
@@ -90,6 +90,68 @@ export const FreeTease: Story = {
       expect(indigo).toHaveAttribute('aria-pressed', 'false'),
     );
     await expect(sky).toHaveAttribute('aria-pressed', 'true');
+  },
+};
+
+export const FreeCustomPreview: Story = {
+  args: { premium: false, initialValue: 'sky' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const sky = canvas.getByRole('button', { name: 'Sky banner colour' });
+    const custom = canvas.getByRole('button', {
+      name: 'Open custom gradient picker',
+    });
+
+    await userEvent.click(custom);
+    await expect(
+      await body.findByText('Preview only. Saving this needs Supporter.'),
+    ).toBeInTheDocument();
+
+    const hexInput = body.getByLabelText('Hex colour');
+    await userEvent.clear(hexInput);
+    await userEvent.type(hexInput, '22cc88');
+
+    await waitFor(() => expect(custom).toHaveAttribute('aria-pressed', 'true'));
+    await expect(sky).toHaveAttribute('aria-pressed', 'false');
+    await expect(canvas.getByText('custom gradient')).toBeInTheDocument();
+    await expect(canvas.getByText('Preview only')).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(sky);
+
+    await waitFor(() => expect(sky).toHaveAttribute('aria-pressed', 'true'));
+    await expect(custom).toHaveAttribute('aria-pressed', 'false');
+  },
+};
+
+export const FreeAccentPreview: Story = {
+  args: { premium: false, initialValue: 'sky' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Open accent colour picker' }),
+    );
+    const hexInput = await body.findByLabelText('Hex colour');
+    await userEvent.clear(hexInput);
+    await userEvent.type(hexInput, '00ffaa');
+
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: /reset to auto/i }),
+      ).toBeInTheDocument(),
+    );
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(
+      canvas.getByRole('button', { name: /reset to auto/i }),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('button', { name: /reset to auto/i }),
+      ).not.toBeInTheDocument(),
+    );
   },
 };
 
