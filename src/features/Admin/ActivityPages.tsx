@@ -9,6 +9,7 @@ import {
   loadDayCounts,
   pageCache,
   peekDayCounts,
+  peekFreshDayCounts,
   prefetchDayCounts,
   reportViewCache,
   viewCache,
@@ -48,7 +49,7 @@ const CACHE_LIMIT = 120;
 
 const knownEmpty = (kind: ActivityKind | undefined, day: Date) => {
   if (!kind || toInputValue(day) === toInputValue(today())) return false;
-  const counts = peekDayCounts(
+  const counts = peekFreshDayCounts(
     kind,
     new Date(day.getFullYear(), day.getMonth(), 1),
   );
