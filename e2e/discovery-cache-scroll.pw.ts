@@ -91,7 +91,6 @@ for (const status of [200, 503]) {
 
 for (const [width, restore] of [
   [1280, false],
-  [390, false],
   [1280, true],
 ] as const) {
   test(`returning from a profile preserves scrolling at ${width}px with restoration ${restore}`, async ({
@@ -129,15 +128,8 @@ for (const [width, restore] of [
           ).next.router.push(target);
         }, to);
       const profileUrl = `/en/u/${profiles[0].id}?from=${encodeURIComponent(url)}`;
-      const sheet = page.getByRole('dialog');
-      if (width < 768) {
-        await page.getByRole('button', { name: 'Card menu' }).first().click();
-        await page.getByRole('button', { name: 'View profile' }).click();
-        await expect(sheet).toBeVisible();
-      } else {
-        await push(profileUrl);
-        await expect(page).toHaveURL(profileUrl);
-      }
+      await push(profileUrl);
+      await expect(page).toHaveURL(profileUrl);
       held = true;
       if (restore)
         await page.evaluate((href) => {
@@ -146,14 +138,9 @@ for (const [width, restore] of [
             JSON.stringify({ href, scrollY: 200 }),
           );
         }, url);
-      if (width < 768) {
-        await sheet.getByRole('button', { name: 'Close' }).click();
-        await expect(sheet).toHaveCount(0);
-      } else {
-        await page
-          .getByRole('button', { name: 'Back to discovery', exact: true })
-          .click();
-      }
+      await page
+        .getByRole('button', { name: 'Back to discovery', exact: true })
+        .click();
       await expect(page.locator('article')).toHaveCount(9);
       await expect
         .poll(() => page.evaluate(() => window.scrollY))
@@ -189,3 +176,38 @@ for (const [width, restore] of [
     }
   });
 }
+
+test('dismissing the mobile profile sheet preserves scrolling', async ({
+  page,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const prefix = randomUUID().slice(0, 8);
+  const owners =
+    await sql`insert into users (discord_user_id, discord_username, display_name)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Scroll ' || lpad(n::text, 2, '0') from generate_series(1, 9) n returning id`;
+  const ids = owners.map((owner) => owner.id);
+  try {
+    await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio, tags)
+      select now(), id, true, 'en', 'ja', 'intermediate', repeat('A scroll fixture. ', 12), array[${prefix}] from users where id in ${sql(ids)}`;
+    await page.setViewportSize({ width: 390, height: 700 });
+    await page.goto(`/en?tag=${prefix}`);
+    await expect(page.locator('article')).toHaveCount(9);
+    await page.mouse.move(0, 0);
+    await page.mouse.wheel(0, 500);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(500);
+    const sheet = page.getByRole('dialog');
+    await page
+      .getByRole('button', { name: 'Card menu' })
+      .first()
+      .dispatchEvent('click');
+    await page.getByRole('button', { name: 'View profile' }).click();
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await expect(sheet).toHaveCount(0);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(500);
+  } finally {
+    await sql`delete from users where id in ${sql(ids)}`;
+    await sql.end();
+  }
+});
