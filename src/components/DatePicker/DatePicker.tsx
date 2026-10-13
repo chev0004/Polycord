@@ -64,7 +64,8 @@ const Panel = ({
     const counts = peek?.(view);
     return counts ? { month: view.getTime(), counts } : null;
   });
-  const counts = loaded?.month === view.getTime() ? loaded.counts : null;
+  const counts =
+    peek?.(view) ?? (loaded?.month === view.getTime() ? loaded.counts : null);
 
   useEffect(() => {
     if (!load) return;
