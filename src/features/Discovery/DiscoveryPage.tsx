@@ -489,10 +489,11 @@ export const DiscoveryPage = ({
       const controller = new AbortController();
       requestRef.current = controller;
       const generation = discoveryCache.begin(requestUrl);
+      const cachedVisit =
+        !hasLoaded.current && appliedUrl.current === requestUrl;
       if (
-        !skeleton &&
         trigger &&
-        hasLoaded.current &&
+        (hasLoaded.current ? !skeleton : cachedVisit) &&
         !settleRequest.current &&
         !barSettle.current
       )
