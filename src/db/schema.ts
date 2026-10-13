@@ -413,6 +413,7 @@ export const reports = pgTable(
     index('reports_reported_user_id_idx').on(table.reportedUserId),
     index('reports_reporter_user_id_idx').on(table.reporterUserId),
     index('reports_status_idx').on(table.status),
+    index('reports_created_at_idx').on(table.createdAt.desc(), table.id.desc()),
     check(
       'reports_details_length_check',
       sql`${table.details} is null or char_length(${table.details}) <= 1000`,
@@ -478,6 +479,10 @@ export const moderationActions = pgTable(
   },
   (table) => [
     index('moderation_actions_created_at_idx').on(table.createdAt),
+    index('moderation_actions_created_at_target_idx').on(
+      table.createdAt,
+      table.targetUserId,
+    ),
     index('moderation_actions_target_user_id_idx').on(table.targetUserId),
     check(
       'moderation_actions_note_length_check',

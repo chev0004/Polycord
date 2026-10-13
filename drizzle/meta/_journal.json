@@ -260,6 +260,13 @@
       "when": 1791570612840,
       "tag": "0036_owner_dev_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1791864294656,
+      "tag": "0037_admin_activity_indexes",
+      "breakpoints": true
     }
   ]
 }

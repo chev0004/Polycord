@@ -366,6 +366,11 @@ export const LongTagsWrapAtHalfWidth: Story = {
     );
     await expect(tagRow.offsetHeight).toBeGreaterThan(firstTag.offsetHeight);
     await expect(name.offsetWidth).toBeGreaterThan(0);
+    await expect(
+      name.getBoundingClientRect().top -
+        (header.firstElementChild as HTMLElement).getBoundingClientRect()
+          .bottom,
+    ).toBeLessThanOrEqual(24);
   },
 };
 
