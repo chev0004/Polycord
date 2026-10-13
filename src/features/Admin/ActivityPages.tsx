@@ -17,6 +17,7 @@ import {
   loadDayCounts,
   pageCache,
   peekDayCounts,
+  peekFreshDayCounts,
   prefetchDayCounts,
   reportViewCache,
   viewCache,
@@ -40,17 +41,24 @@ const today = () => addDays(new Date(), 0);
 const toInputValue = (day: Date) =>
   `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
-const FRESH_MS = 15000;
-const CACHE_LIMIT = 120;
-
 const rangeOf = (day: Date) => ({
   from: day.toISOString(),
   to: addDays(day, 1).toISOString(),
 });
 
+const pageKey = (
+  scope: string,
+  range: ActivityRange,
+  cursor: string | undefined,
+  filters: ActivityFilters,
+) => JSON.stringify([scope, range, cursor, filters]);
+
+const FRESH_MS = 15000;
+const CACHE_LIMIT = 120;
+
 const knownEmpty = (kind: ActivityKind | undefined, day: Date) => {
   if (!kind || toInputValue(day) === toInputValue(today())) return false;
-  const counts = peekDayCounts(
+  const counts = peekFreshDayCounts(
     kind,
     new Date(day.getFullYear(), day.getMonth(), 1),
   );
@@ -80,13 +88,6 @@ const track = <T,>(key: string, request: Promise<ActivityPage<T>>) => {
   return entry;
 };
 
-const keyOfPage = (
-  scope: string,
-  range: ActivityRange,
-  cursor: string | undefined,
-  filters: ActivityFilters,
-) => JSON.stringify([scope, range, cursor, filters]);
-
 export const fade = ({ stale }: { stale: boolean }) =>
   `transition-opacity duration-150 ${stale ? 'opacity-50' : ''}`;
 
@@ -115,11 +116,15 @@ export const useActivityPages = <T,>(
     key: string;
     page: ActivityPage<T>;
   } | null>(() => {
-    if (!seed) return null;
-    const seededKey = keyOfPage(scope, seed.range, undefined, {});
-    if (typeof window !== 'undefined' && !pageCache.has(seededKey))
-      track(seededKey, Promise.resolve(seed.page));
-    return { key: seededKey, page: seed.page as unknown as ActivityPage<T> };
+    if (seed) {
+      const seededKey = pageKey(scope, seed.range, undefined, {});
+      if (typeof window !== 'undefined' && !pageCache.has(seededKey))
+        track(seededKey, Promise.resolve(seed.page));
+      return { key: seededKey, page: seed.page as unknown as ActivityPage<T> };
+    }
+    const key = pageKey(scope, rangeOf(day), undefined, filters);
+    const page = (pageCache.get(key) as CachedPage<T> | undefined)?.page;
+    return page ? { key, page } : null;
   });
   const [failed, setFailed] = useState(false);
   const cache = useRef(pageCache as Map<string, CachedPage<T>>);
@@ -131,7 +136,7 @@ export const useActivityPages = <T,>(
   );
   const keyFor = useCallback(
     (target: ActivityRange, cursor?: string) =>
-      keyOfPage(scope, target, cursor, filters),
+      pageKey(scope, target, cursor, filters),
     [scope, filters],
   );
   const key = keyFor(range, cursors.at(-1));
@@ -270,7 +275,7 @@ export const useReportPages = (store: ModerationStore, active: boolean) => {
     const saved = viewCache.get(otherScope);
     const otherRange = rangeOf(saved?.day ?? today());
     const otherFilters = saved?.filters ?? {};
-    const otherKey = keyOfPage(otherScope, otherRange, undefined, otherFilters);
+    const otherKey = pageKey(otherScope, otherRange, undefined, otherFilters);
     if (pageCache.has(otherKey)) return;
     track(
       otherKey,
