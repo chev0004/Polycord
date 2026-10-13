@@ -28,6 +28,18 @@ const today = () => addDays(new Date(), 0);
 const toInputValue = (day: Date) =>
   `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
+const rangeOf = (day: Date) => ({
+  from: day.toISOString(),
+  to: addDays(day, 1).toISOString(),
+});
+
+const keyFor = (
+  scope: string,
+  range: ActivityRange,
+  cursor: string | undefined,
+  filters: ActivityFilters,
+) => JSON.stringify([scope, range, cursor, filters]);
+
 const FRESH_MS = 15000;
 const CACHE_LIMIT = 120;
 
@@ -46,19 +58,20 @@ export const useActivityPages = <T,>(
     () => viewCache.get(scope)?.filters ?? {},
   );
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
-  const [page, setPage] = useState<ActivityPage<T> | null>(null);
+  const [page, setPage] = useState<ActivityPage<T> | null>(
+    () =>
+      (
+        pageCache.get(keyFor(scope, rangeOf(day), undefined, filters)) as
+          | CachedPage<T>
+          | undefined
+      )?.page ?? null,
+  );
   const [failed, setFailed] = useState(false);
   const cache = useRef(pageCache as Map<string, CachedPage<T>>);
   const seenRevision = useRef(revision);
-  const range = useMemo(
-    () => ({
-      from: day.toISOString(),
-      to: addDays(day, 1).toISOString(),
-    }),
-    [day],
-  );
+  const range = useMemo(() => rangeOf(day), [day]);
   const keyOf = useCallback(
-    (cursor?: string) => JSON.stringify([scope, range, cursor, filters]),
+    (cursor?: string) => keyFor(scope, range, cursor, filters),
     [scope, range, filters],
   );
 
