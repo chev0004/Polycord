@@ -5,6 +5,7 @@ export type ReportReason =
   | 'harassment'
   | 'inappropriate'
   | 'impersonation'
+  | 'disruptive_profile'
   | 'other';
 
 export class ReportProfileError extends Error {

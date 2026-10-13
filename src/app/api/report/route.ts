@@ -19,6 +19,7 @@ const REPORT_REASONS: ReportReason[] = [
   'harassment',
   'inappropriate',
   'impersonation',
+  'disruptive_profile',
   'other',
 ];
 

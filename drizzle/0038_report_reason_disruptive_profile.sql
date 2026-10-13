@@ -1,0 +1,1 @@
+ALTER TYPE "public"."report_reason" ADD VALUE 'disruptive_profile' BEFORE 'other';
