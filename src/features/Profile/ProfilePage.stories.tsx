@@ -1621,3 +1621,86 @@ export const SupporterSavesCustomColours: Story = {
     );
   },
 };
+
+const mockTagApi = () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) =>
+      String(args[0]).startsWith('/api/tags')
+        ? new Response(
+            JSON.stringify({
+              tags: [
+                { tag: 'Gaming', count: 40 },
+                { tag: 'Travel', count: 27 },
+              ],
+            }),
+          )
+        : original(...args),
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+  };
+};
+
+export const SuggestsExistingTags: Story = {
+  args: { initialValues: sampleProfile },
+  beforeEach: mockTagApi,
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByPlaceholderText('Type a tag and press Enter'),
+    );
+    await userEvent.click(
+      await screen.findByRole('option', { name: /^Gaming/ }),
+    );
+
+    await waitFor(() =>
+      expect(canvas.getAllByText('Gaming').length).toBeGreaterThanOrEqual(2),
+    );
+    await expect(canvas.getByText(/4\/5 tags/)).toBeInTheDocument();
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Profile' }),
+    );
+
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tags: ['Anime', 'Cooking', 'Photography', 'Gaming'],
+        }),
+      ),
+    );
+  },
+};
+
+export const MobileSuggestsExistingTags: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  beforeEach: mockTagApi,
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^Tags/ }));
+    const sheet = within(await screen.findByRole('dialog'));
+    await userEvent.click(
+      sheet.getByPlaceholderText('Type a tag and press Enter'),
+    );
+    await userEvent.click(
+      await screen.findByRole('option', { name: /^Travel/ }),
+    );
+    await waitFor(() =>
+      expect(sheet.getAllByText('Travel').length).toBeGreaterThanOrEqual(1),
+    );
+    fireEvent.click(sheet.getByRole('button', { name: 'Done' }));
+    fireEvent.click(await canvas.findByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tags: ['Anime', 'Cooking', 'Photography', 'Travel'],
+        }),
+      ),
+    );
+  },
+};

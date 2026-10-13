@@ -31,7 +31,6 @@ import {
   FormGroup,
   Label,
   TextArea,
-  TextInput,
   Toggle,
 } from '@/components/Form';
 import { DraftNotice } from '@/components/Form/DraftNotice';
@@ -82,6 +81,7 @@ import {
   profileDraftSchema,
   profileSchema,
 } from './schema';
+import { TagAutocomplete } from './TagAutocomplete';
 import {
   createEmptyLanguageRow,
   TargetLanguagesEditor,
@@ -119,6 +119,7 @@ type ProfilePageProps = {
 
 const FREE_TAG_CAP = entitlementLimit('profile.tags', false);
 const PREMIUM_TAG_CAP = entitlementLimit('profile.tags', true);
+const NO_TAGS: string[] = [];
 const PREVIEW_TEASE_VOICE_SECONDS = 12;
 const FIELDS_WITH_ERRORS = new Set([
   'primaryLanguage',
@@ -577,10 +578,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       name="tags"
       control={control}
       render={({ field }) => {
-        const currentTags = field.value ?? [];
+        const currentTags = field.value ?? NO_TAGS;
 
-        const handleAddTag = () => {
-          const newTag = tagInput.trim();
+        const handleAddTag = (rawTag: string) => {
+          const newTag = rawTag.trim();
 
           if (!newTag) return;
           if (newTag.length < 2) {
@@ -631,23 +632,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
             )}
             <div className="flex gap-2">
-              <TextInput
+              <TagAutocomplete
                 id={tagsInputId}
                 value={tagInput}
-                onChange={(event) => setTagInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    handleAddTag();
-                  }
-                }}
+                onValueChange={setTagInput}
+                selected={currentTags}
+                onAdd={handleAddTag}
                 placeholder={t('tagsPlaceholder')}
-                className="flex-1"
                 error={!!tagsError}
               />
               <button
                 type="button"
-                onClick={handleAddTag}
+                onClick={() => handleAddTag(tagInput)}
                 aria-label={t('addTag')}
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-primary-light focus:outline-none focus-visible:bg-primary-light active:scale-[0.98]"
               >

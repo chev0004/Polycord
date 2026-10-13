@@ -35,6 +35,8 @@ import {
 import { profiles, savedProfiles, subscriptions, users } from './schema';
 
 const TOP_TAGS = 32;
+const POPULAR_TAG_SUGGESTIONS = 5;
+const SEARCH_TAG_SUGGESTIONS = 8;
 const TAG_CACHE_SIZE = 64;
 const TAG_CACHE_MS = 60000;
 
@@ -80,12 +82,12 @@ let tagCache:
   | { expires: number; tags: Promise<DiscoveryTagCount[]> }
   | undefined;
 
-const tagCounts = (where: SQL | undefined, limit?: number) =>
+const tagCounts = (where: SQL | undefined, limit?: number, lead?: SQL) =>
   db
     .execute<DiscoveryTagCount>(sql`select tag, count(*)::int as count from ${profiles}
       inner join ${users} on ${profiles.userId} = ${users.id}
       cross join lateral unnest(${profiles.tags}) tag where ${where}
-      group by tag order by count(*) desc, tag ${limit ? sql`limit ${limit}` : sql``}`)
+      group by tag order by ${lead ?? sql``} count(*) desc, tag ${limit ? sql`limit ${limit}` : sql``}`)
     .then(({ rows }) => rows);
 
 const loadTopTags = () => {
@@ -440,4 +442,32 @@ export const listDiscoveryPage = async (
     tags,
     savedProfileIds: saved.map((row) => row.id),
   };
+};
+
+export const suggestTags = async (
+  viewerUserId: string,
+  query: string,
+  exclude: string[],
+) => {
+  const skipped = new Set(exclude.map((tag) => tag.toLowerCase()));
+  const available = ({ tag }: DiscoveryTagCount) =>
+    !skipped.has(tag.toLowerCase());
+  const term = query.trim();
+  if (!term) {
+    return (await listTopTags(viewerUserId, []))
+      .filter(available)
+      .slice(0, POPULAR_TAG_SUGGESTIONS);
+  }
+
+  const escaped = term.replace(/[\\%_]/g, '\\$&');
+  const matches = await tagCounts(
+    and(
+      discoverable(),
+      sql`${profiles.userId} not in ${blockedUserIds(viewerUserId)}`,
+      sql`tag ilike ${`%${escaped}%`}`,
+    ),
+    SEARCH_TAG_SUGGESTIONS + skipped.size,
+    sql`(lower(tag) = lower(${term})) desc, (tag ilike ${`${escaped}%`}) desc,`,
+  );
+  return matches.filter(available).slice(0, SEARCH_TAG_SUGGESTIONS);
 };
