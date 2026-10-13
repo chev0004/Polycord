@@ -1,5 +1,6 @@
 'use client';
 
+import { discoveryCache } from '@/features/Discovery/discoveryCache';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import { saveResponseError } from '@/lib/formErrors';
@@ -43,6 +44,7 @@ export const OnboardingRouteClient = ({
           throw await saveResponseError(response, 'Profile save failed');
         }
 
+        discoveryCache.expire();
         router.push(`/${locale}`);
         router.refresh();
       }}

@@ -72,6 +72,12 @@ export const discoveryCache = {
           : data.savedProfileIds.filter((id) => id !== profileId),
       });
   },
+  expire: () => {
+    prefetchedAt.clear();
+    for (const url of pending.keys())
+      generations.set(url, (generations.get(url) ?? 0) + 1);
+    pending.clear();
+  },
   invalidate: () => {
     entries.clear();
     pending.clear();

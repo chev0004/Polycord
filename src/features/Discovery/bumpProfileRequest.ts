@@ -1,3 +1,5 @@
+import { discoveryCache } from './discoveryCache';
+
 export type BumpProfileResponse = {
   lastBumpedAt: string;
   nextBumpAt: string;
@@ -29,5 +31,6 @@ export const bumpProfileRequest = async (): Promise<BumpProfileResponse> => {
     );
   }
 
+  discoveryCache.expire();
   return data as BumpProfileResponse;
 };
