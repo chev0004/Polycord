@@ -163,7 +163,10 @@ export const ProfileSheetHost = () => {
         });
         profileSheetStore.close();
       });
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      setLoaded(null);
+    };
   }, [target, addToast, unavailableTitle, unavailableDescription]);
 
   const data =
