@@ -73,16 +73,6 @@ export const ModerationPage = ({
     setTab('users');
   };
 
-  useEffect(() => {
-    void window.cookieStore?.set({
-      name: 'polycord_tz',
-      value: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      path: '/',
-      expires: Date.now() + 365 * 86400000,
-      sameSite: 'lax',
-    });
-  }, []);
-
   return (
     <FirstPageContext.Provider value={initial.firstPage ?? null}>
       {mobile ? (
