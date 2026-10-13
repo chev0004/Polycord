@@ -53,6 +53,7 @@ async function renderFrame({ children, params }: AppFrameProps) {
           <AppShell
             locale={lang}
             isLoggedIn={Boolean(user)}
+            viewerUserId={user?.accountId}
             userAvatarUrl={user?.avatarUrl}
             pendingCases={staffNav?.pendingCases}
           >

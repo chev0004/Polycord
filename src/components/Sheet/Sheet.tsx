@@ -320,6 +320,7 @@ export type ActionSheetItem = {
   disabled?: boolean;
   selected?: boolean;
   onSelect: () => void;
+  immediate?: boolean;
   onPointerDown?: () => void;
 };
 
@@ -351,13 +352,14 @@ export const ActionSheet = ({
       }}
     >
       <SheetGroup>
-        {items.map(({ key, selected, onSelect, ...item }) => (
+        {items.map(({ key, selected, onSelect, immediate, ...item }) => (
           <SheetRow
             key={key}
             {...item}
             pressed={radio ? Boolean(selected) : undefined}
             onClick={() => {
-              pending.current = onSelect;
+              if (immediate) onSelect();
+              else pending.current = onSelect;
               onOpenChange(false);
             }}
           >

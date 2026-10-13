@@ -1163,6 +1163,7 @@
     "errorRetry": "もう一度試す"
   },
   "PublicProfile": {
+    "loading": "プロフィールを読み込み中...",
     "backToDiscovery": "ディスカバリーに戻る",
     "backToSaved": "保存済みプロフィールに戻る",
     "backToEditor": "プロフィール編集に戻る",

@@ -1163,6 +1163,7 @@
     "errorRetry": "Try again"
   },
   "PublicProfile": {
+    "loading": "Loading profile...",
     "backToDiscovery": "Back to discovery",
     "backToSaved": "Back to saved profiles",
     "backToEditor": "Back to profile editor",

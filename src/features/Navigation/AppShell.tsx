@@ -6,6 +6,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -14,6 +15,7 @@ import { Footer } from '@/features/Footer';
 import { WarningNoticeHost } from '@/features/Inbox/WarningNoticeHost';
 import { Navbar } from '@/features/Navbar';
 import { ProfileSheetHost } from '@/features/Profile/ProfileSheetHost';
+import { profileSheetStore } from '@/features/Profile/profileSheetStore';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { MobileNavigation } from './MobileNavigation';
 import { useRouteProgressRouter } from './RouteProgress';
@@ -56,6 +58,7 @@ type AppShellProps = {
   locale: string;
   isLoggedIn: boolean;
   viewerLoading?: boolean;
+  viewerUserId?: string;
   userAvatarUrl?: string;
   pendingCases?: number;
   children: React.ReactNode;
@@ -65,11 +68,15 @@ export const AppShell = ({
   locale,
   isLoggedIn,
   viewerLoading,
+  viewerUserId,
   userAvatarUrl,
   pendingCases,
   children,
 }: AppShellProps) => {
   const router = useRouteProgressRouter();
+  useLayoutEffect(() => {
+    if (!viewerLoading) profileSheetStore.setViewer(viewerUserId ?? null);
+  }, [viewerLoading, viewerUserId]);
   const [bump, setBump] = useState<BumpAction | null>(null);
   const [liveCases, setLiveCases] = useState(pendingCases);
 

@@ -1,3 +1,4 @@
+import { profileSheetStore } from '@/features/Profile/profileSheetStore';
 import type { DiscoveryData } from './discoveryData';
 import type { DiscoveryViewer } from './discoveryViewer';
 
@@ -79,6 +80,7 @@ export const discoveryCache = {
     pending.clear();
   },
   invalidate: () => {
+    profileSheetStore.invalidate();
     entries.clear();
     pending.clear();
     prefetchedAt.clear();
@@ -86,6 +88,7 @@ export const discoveryCache = {
       generations.set(url, generation + 1);
   },
   clear: () => {
+    profileSheetStore.invalidate();
     entries.clear();
     pending.clear();
     prefetchedAt.clear();

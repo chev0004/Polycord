@@ -71,6 +71,10 @@ export const InboxContent = ({
     if (notice) return openNotice(id);
     setActiveId(id);
     setOpen(true);
+    const profileId = inbox.notifications.find(
+      (n) => n.id === id,
+    )?.actorProfileId;
+    if (inbox.premium && profileId) profileSheetStore.prefetch(profileId);
     if (!read) void inbox.setRead(id, true);
   };
 
@@ -92,6 +96,7 @@ export const InboxContent = ({
                 key: 'link',
                 icon: link.icon,
                 label: link.label,
+                immediate: true,
                 onSelect: () => profileSheetStore.open(link.profileId),
               },
             ]
