@@ -389,10 +389,14 @@ export const GradientColorPicker = ({
           type="button"
           aria-label={t('customGradientPickerLabel')}
           aria-pressed={isActive}
-          className={swatchClasses}
+          className={`${swatchClasses} ${previewOnly && !isActive ? 'opacity-40 hover:opacity-75 data-[state=open]:opacity-100' : ''}`}
           style={{
             background: gradientCss,
-            boxShadow: isActive ? SELECTED_RING : undefined,
+            boxShadow: isActive
+              ? previewOnly
+                ? TEASE_RING
+                : SELECTED_RING
+              : undefined,
           }}
         >
           <MdPalette
@@ -448,10 +452,14 @@ export const AccentPicker = ({
           <button
             type="button"
             aria-label={t('accentPickerLabel')}
-            className={swatchClasses}
+            className={`${swatchClasses} ${previewOnly && !value ? 'opacity-40 hover:opacity-75 data-[state=open]:opacity-100' : ''}`}
             style={{
               background: display,
-              boxShadow: value ? SELECTED_RING : undefined,
+              boxShadow: value
+                ? previewOnly
+                  ? TEASE_RING
+                  : SELECTED_RING
+                : undefined,
             }}
           />
         </Popover.Trigger>
