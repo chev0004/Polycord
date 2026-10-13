@@ -20,7 +20,7 @@ import {
   SheetIconButton,
 } from '@/components/Sheet';
 import { finishPageLoad, startLoadTrace } from '@/features/Discovery/loadTrace';
-import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
+import { profileSheetStore } from '@/features/Profile/profileSheetStore';
 import { hasNotice, type Notifications } from '@/types';
 import { getNotificationMessage } from './NotificationEntry';
 import { formatRelativeTime, useInbox } from './useInbox';
@@ -62,7 +62,6 @@ export const InboxContent = ({
   const t = useTranslations('Inbox');
   const sheet = useTranslations('Sheet');
   const locale = useLocale();
-  const router = useRouteProgressRouter();
   const openNotice = useOpenNotice();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -80,7 +79,7 @@ export const InboxContent = ({
       ? {
           icon: MdOutlinePersonOutline,
           label: t('viewProfile'),
-          href: `/${locale}/u/${active.actorProfileId}`,
+          profileId: active.actorProfileId,
         }
       : null
     : null;
@@ -93,7 +92,7 @@ export const InboxContent = ({
                 key: 'link',
                 icon: link.icon,
                 label: link.label,
-                onSelect: () => router.push(link.href),
+                onSelect: () => profileSheetStore.open(link.profileId),
               },
             ]
           : []),

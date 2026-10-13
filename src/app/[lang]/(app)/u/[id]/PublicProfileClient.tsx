@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AvailabilityPattern } from '@/constants/availability';
 import type { StaffRole } from '@/features/Admin/types';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
@@ -16,6 +16,7 @@ import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
 import { MemberEmptyState } from '@/features/Profile/MemberEmptyState';
 import { ProfileDetail } from '@/features/Profile/ProfileDetail';
 import { profileReturn } from '@/features/Profile/profileReturn';
+import { profileSheetStore } from '@/features/Profile/profileSheetStore';
 import { useProfileActions } from '@/features/Profile/useProfileActions';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 
@@ -68,7 +69,33 @@ export const PublicProfileClient = ({
   const { refresh } = router;
   const signIn = () => window.location.assign(signInHref(locale));
 
+  const redirected = useRef(false);
+
   useEffect(() => setIsSaved(initialSaved), [initialSaved]);
+
+  useEffect(() => {
+    if (!mobile || redirected.current) return;
+    redirected.current = true;
+    profileSheetStore.open({
+      profile,
+      isLoggedIn,
+      isSaved: initialSaved,
+      isOwn: isOwnProfile,
+      viewerTimezone,
+      staff,
+    });
+    router.replace(`/${locale}`);
+  }, [
+    mobile,
+    profile,
+    isLoggedIn,
+    initialSaved,
+    isOwnProfile,
+    viewerTimezone,
+    staff,
+    router,
+    locale,
+  ]);
 
   useHistoryRefresh(refresh);
 
@@ -100,7 +127,7 @@ export const PublicProfileClient = ({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-[1080px] px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[1080px] px-4 py-8 max-md:hidden sm:px-6">
         <BackButton href={back.href} label={tPublic(back.label)} />
         {blocked ? (
           <MemberEmptyState kind="blocked" />
