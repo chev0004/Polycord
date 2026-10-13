@@ -4,6 +4,12 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { DatePicker } from '@/components/DatePicker';
+import {
+  type CachedPage,
+  pageCache,
+  reportViewCache,
+  viewCache,
+} from './adminCache';
 import { ActionError, Spinner, useModFormat } from './ModerationParts';
 import type {
   ActivityFilters,
@@ -23,13 +29,7 @@ const toInputValue = (day: Date) =>
   `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
 
 const FRESH_MS = 15000;
-const CACHE_LIMIT = 24;
-
-type CachedPage<T> = {
-  at: number;
-  request: Promise<ActivityPage<T>>;
-  page?: ActivityPage<T>;
-};
+const CACHE_LIMIT = 120;
 
 export const useActivityPages = <T,>(
   load: (
@@ -38,15 +38,17 @@ export const useActivityPages = <T,>(
     filters?: ActivityFilters,
   ) => Promise<ActivityPage<T>>,
   active: boolean,
-  revision = 0,
-  scope = '',
+  revision: number,
+  scope: string,
 ) => {
-  const [day, setDay] = useState(today);
-  const [filters, setFilters] = useState<ActivityFilters>({});
+  const [day, setDay] = useState(() => viewCache.get(scope)?.day ?? today());
+  const [filters, setFilters] = useState<ActivityFilters>(
+    () => viewCache.get(scope)?.filters ?? {},
+  );
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [page, setPage] = useState<ActivityPage<T> | null>(null);
   const [failed, setFailed] = useState(false);
-  const cache = useRef(new Map<string, CachedPage<T>>());
+  const cache = useRef(pageCache as Map<string, CachedPage<T>>);
   const seenRevision = useRef(revision);
   const range = useMemo(
     () => ({
@@ -105,11 +107,13 @@ export const useActivityPages = <T,>(
   }, [active, cursors, keyOf, start, revision]);
 
   const chooseDay = (next: Date) => {
+    viewCache.set(scope, { day: next, filters });
     setDay(next);
     setCursors([undefined]);
   };
 
   const chooseFilters = (next: ActivityFilters) => {
+    viewCache.set(scope, { day, filters: next });
     setFilters(next);
     setCursors([undefined]);
   };
@@ -158,19 +162,25 @@ export const useTabPrefetch = (ready: boolean, prefetches: (() => void)[]) => {
 };
 
 export const useReportPages = (store: ModerationStore, active: boolean) => {
-  const [view, setView] = useState<ReportView>('pending');
+  const [view, setView] = useState<ReportView>(reportViewCache.view);
   const { loadReports } = store;
   const load = useCallback(
     (range: ActivityRange, cursor?: string, filters: ActivityFilters = {}) =>
       loadReports(range, cursor, { ...filters, status: view }),
     [loadReports, view],
   );
-  const pages = useActivityPages(load, active, store.revision, view);
+  const pages = useActivityPages(
+    load,
+    active,
+    store.revision,
+    `reports:${view}`,
+  );
 
   return {
     view,
     pages,
     setView: (next: ReportView) => {
+      reportViewCache.view = next;
       setView(next);
       pages.resetPages();
     },
