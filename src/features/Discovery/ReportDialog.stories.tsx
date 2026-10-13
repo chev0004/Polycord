@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, userEvent, within } from '@storybook/test';
+import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
 import { ReportDialog } from './ReportDialog';
 import 'src/app/globals.css';
 
@@ -95,4 +95,32 @@ export const OpensWithTransition: Story = {
       Math.abs(box.top + box.height / 2 - view.innerHeight / 2),
     ).toBeLessThan(2);
   },
+};
+
+const submitDisruptiveReport: Story['play'] = async ({
+  args,
+  canvasElement,
+}) => {
+  const body = within(canvasElement.ownerDocument.body);
+
+  const hint = await body.findByText(/deliberately loud or distorted/);
+  await waitFor(() => expect(hint).toBeVisible());
+  await userEvent.click(
+    body.getByRole('radio', { name: /Disruptive profile content/ }),
+  );
+  await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+  await expect(args.onSubmit).toHaveBeenCalledWith(
+    'disruptive_profile',
+    '',
+    false,
+  );
+};
+
+export const DisruptiveProfileContent: Story = {
+  play: submitDisruptiveReport,
+};
+
+export const MobileDisruptiveProfileContent: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: submitDisruptiveReport,
 };
