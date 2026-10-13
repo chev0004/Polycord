@@ -13,6 +13,7 @@ import { StaffPill } from '@/features/Admin/StaffPill';
 import { Footer } from '@/features/Footer';
 import { WarningNoticeHost } from '@/features/Inbox/WarningNoticeHost';
 import { Navbar } from '@/features/Navbar';
+import { ProfileSheetHost } from '@/features/Profile/ProfileSheetHost';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { MobileNavigation } from './MobileNavigation';
 import { useRouteProgressRouter } from './RouteProgress';
@@ -73,6 +74,18 @@ export const AppShell = ({
   const [liveCases, setLiveCases] = useState(pendingCases);
 
   useEffect(() => setLiveCases(pendingCases), [pendingCases]);
+
+  const staff = pendingCases !== undefined;
+  useEffect(() => {
+    if (!staff) return;
+    void window.cookieStore?.set({
+      name: 'polycord_tz',
+      value: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      path: '/',
+      expires: Date.now() + 365 * 86400000,
+      sameSite: 'lax',
+    });
+  }, [staff]);
   const pathname = usePathname();
   const mobile = useIsMobile();
   const staffArea = pathname.split('/')[2] === 'admin';
@@ -114,6 +127,7 @@ export const AppShell = ({
           />
           <div className="flex flex-1 flex-col">{children}</div>
           <Footer locale={locale} />
+          <ProfileSheetHost />
           {docked ? (
             <MobileNavigation
               locale={locale}

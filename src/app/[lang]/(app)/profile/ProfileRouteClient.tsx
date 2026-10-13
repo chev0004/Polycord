@@ -5,7 +5,9 @@ import { discoveryCache } from '@/features/Discovery/discoveryCache';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import { boostProfileRequest } from '@/features/Profile/boostProfileRequest';
+import { profileSheetStore } from '@/features/Profile/profileSheetStore';
 import type { ProfileFormValues } from '@/features/Profile/schema';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { saveResponseError } from '@/lib/formErrors';
 
 type ProfileRouteClientProps = {
@@ -45,6 +47,7 @@ export const ProfileRouteClient = ({
   userUsername,
 }: ProfileRouteClientProps) => {
   const router = useRouteProgressRouter();
+  const mobile = useIsMobile();
 
   return (
     <ProfilePage
@@ -82,9 +85,11 @@ export const ProfileRouteClient = ({
       onViewPublicProfile={
         profileId
           ? () =>
-              router.push(
-                `/${locale}/u/${profileId}?from=${encodeURIComponent(`/${locale}/profile`)}`,
-              )
+              mobile
+                ? profileSheetStore.open(profileId)
+                : router.push(
+                    `/${locale}/u/${profileId}?from=${encodeURIComponent(`/${locale}/profile`)}`,
+                  )
           : undefined
       }
       onSubmit={async (data) => {
