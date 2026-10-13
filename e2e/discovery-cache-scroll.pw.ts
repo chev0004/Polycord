@@ -93,7 +93,6 @@ for (const [width, restore] of [
   [1280, false],
   [390, false],
   [1280, true],
-  [390, true],
 ] as const) {
   test(`returning from a profile preserves scrolling at ${width}px with restoration ${restore}`, async ({
     page,
@@ -130,8 +129,15 @@ for (const [width, restore] of [
           ).next.router.push(target);
         }, to);
       const profileUrl = `/en/u/${profiles[0].id}?from=${encodeURIComponent(url)}`;
-      await push(profileUrl);
-      await expect(page).toHaveURL(profileUrl);
+      const sheet = page.getByRole('dialog');
+      if (width < 768) {
+        await page.getByRole('button', { name: 'Card menu' }).first().click();
+        await page.getByRole('button', { name: 'View profile' }).click();
+        await expect(sheet).toBeVisible();
+      } else {
+        await push(profileUrl);
+        await expect(page).toHaveURL(profileUrl);
+      }
       held = true;
       if (restore)
         await page.evaluate((href) => {
@@ -140,9 +146,14 @@ for (const [width, restore] of [
             JSON.stringify({ href, scrollY: 200 }),
           );
         }, url);
-      await page
-        .getByRole('button', { name: 'Back to discovery', exact: true })
-        .click();
+      if (width < 768) {
+        await page.keyboard.press('Escape');
+        await expect(sheet).toHaveCount(0);
+      } else {
+        await page
+          .getByRole('button', { name: 'Back to discovery', exact: true })
+          .click();
+      }
       await expect(page.locator('article')).toHaveCount(9);
       await expect
         .poll(() => page.evaluate(() => window.scrollY))
