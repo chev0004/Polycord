@@ -38,3 +38,15 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
     expect(output).toContain('discovery selected tags passed');
   },
 );
+
+test.skipIf(!process.env.TEST_DATABASE_URL)(
+  'discovery filters to profiles with a playable voice intro',
+  () => {
+    const output = execFileSync(
+      process.execPath,
+      ['run', 'tests/integration/discovery-voice.mjs'],
+      { encoding: 'utf8', timeout: 30000 },
+    );
+    expect(output).toContain('discovery voice intro filter passed');
+  },
+);

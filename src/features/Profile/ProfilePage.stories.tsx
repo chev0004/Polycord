@@ -1468,3 +1468,156 @@ export const MobileSupporterSavesSupporterDiscordCard: Story = {
     );
   },
 };
+
+const PREVIEW_ONLY_NOTE = 'Preview only. Saving this needs Supporter.';
+
+const pickColour = async (
+  canvasElement: HTMLElement,
+  pickerName: string,
+  hex: string,
+) => {
+  const body = within(canvasElement.ownerDocument.body);
+  await userEvent.click(body.getByRole('button', { name: pickerName }));
+  setFieldValue(
+    (await body.findByLabelText('Hex colour')) as HTMLInputElement,
+    hex,
+  );
+  await waitFor(() =>
+    expect(body.getByLabelText('Hex colour')).toHaveValue(hex),
+  );
+  return body;
+};
+
+const previewFreeColours = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement);
+  const gradient = await pickColour(
+    canvasElement,
+    'Open custom gradient picker',
+    '22cc88',
+  );
+  await waitFor(() =>
+    expect(gradient.getByText(PREVIEW_ONLY_NOTE)).toBeVisible(),
+  );
+  await userEvent.keyboard('{Escape}');
+  const accent = await pickColour(
+    canvasElement,
+    'Open accent colour picker',
+    '00ffaa',
+  );
+  await waitFor(() =>
+    expect(accent.getByText(PREVIEW_ONLY_NOTE)).toBeVisible(),
+  );
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() =>
+    expect(
+      canvas.getByRole('button', { name: 'Open custom gradient picker' }),
+    ).toHaveAttribute('aria-pressed', 'true'),
+  );
+  await expect(canvas.getByText('custom gradient')).toBeInTheDocument();
+  await expect(
+    canvas.getByRole('button', { name: /reset to auto/i }),
+  ).toBeInTheDocument();
+};
+
+export const FreeCustomColourPreview: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await previewFreeColours(canvasElement);
+
+    await expect(
+      canvas.queryByRole('button', { name: 'Save Profile' }),
+    ).not.toBeInTheDocument();
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Sky banner colour' }));
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Open custom gradient picker' }),
+      ).toHaveAttribute('aria-pressed', 'false'),
+    );
+  },
+};
+
+export const FreeCustomColourPreviewIsNotSaved: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await previewFreeColours(canvasElement);
+    setFieldValue(
+      canvas.getByLabelText('Bio') as HTMLTextAreaElement,
+      'A bio edited while previewing custom colours.',
+    );
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Profile' }),
+    );
+
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bio: 'A bio edited while previewing custom colours.',
+          cardColor: DEFAULT_CARD_COLOR,
+        }),
+      ),
+    );
+    const submitted = JSON.stringify(
+      (args.onSubmit as ReturnType<typeof fn>).mock.calls[0],
+    );
+    await expect(submitted).not.toContain('22cc88');
+    await expect(submitted).not.toContain('00ffaa');
+  },
+};
+
+export const MobileFreeCustomColourPreview: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: 'Card Style' }));
+    await screen.findByRole('dialog');
+    const gradient = await pickColour(
+      canvasElement,
+      'Open custom gradient picker',
+      '22cc88',
+    );
+    await waitFor(() =>
+      expect(gradient.getByText(PREVIEW_ONLY_NOTE)).toBeVisible(),
+    );
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(
+        gradient.getByRole('button', { name: 'Open custom gradient picker' }),
+      ).toHaveAttribute('aria-pressed', 'true'),
+    );
+    await expect(gradient.getByText('custom gradient')).toBeInTheDocument();
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+};
+
+export const SupporterSavesCustomColours: Story = {
+  args: { initialValues: sampleProfile, premium: true },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await pickColour(canvasElement, 'Open custom gradient picker', '22cc88');
+    await userEvent.keyboard('{Escape}');
+    await pickColour(canvasElement, 'Open accent colour picker', '00ffaa');
+    await userEvent.keyboard('{Escape}');
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Profile' }),
+    );
+
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cardColor: 'custom',
+          customGradient: expect.objectContaining({ from: '#22cc88' }),
+          accentOverride: '#00ffaa',
+        }),
+      ),
+    );
+  },
+};

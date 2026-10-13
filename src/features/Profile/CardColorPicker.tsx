@@ -3,7 +3,7 @@
 import * as Popover from '@radix-ui/react-popover';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { MdColorize, MdPalette, MdRestartAlt } from 'react-icons/md';
 import { FormGroup, Label } from '@/components/Form';
 import {
@@ -291,11 +291,13 @@ const ColorControls = ({
 type GradientPickerPopoverProps = {
   gradient: CustomGradient;
   onChange: (next: CustomGradient) => void;
+  previewOnly?: boolean;
 };
 
 export const GradientPickerPopover = ({
   gradient,
   onChange,
+  previewOnly = false,
 }: GradientPickerPopoverProps) => {
   const t = useTranslations('Profile');
   const [activeStop, setActiveStop] = useState<0 | 1>(0);
@@ -355,6 +357,11 @@ export const GradientPickerPopover = ({
         onHexChange={updateActiveHex}
         onHsvChange={(next) => updateActiveHex(hsvToHex(next))}
       />
+      {previewOnly ? (
+        <p className="text-[11px] text-subtle leading-snug">
+          {t('customPreviewOnlyNote')}
+        </p>
+      ) : null}
     </Popover.Content>
   );
 };
@@ -363,12 +370,14 @@ type GradientColorPickerProps = {
   gradient: CustomGradient;
   isActive: boolean;
   onChange: (next: CustomGradient) => void;
+  previewOnly?: boolean;
 };
 
 export const GradientColorPicker = ({
   gradient,
   isActive,
   onChange,
+  previewOnly = false,
 }: GradientColorPickerProps) => {
   const t = useTranslations('Profile');
   const gradientCss = `linear-gradient(115deg, ${gradient.from}, ${gradient.to})`;
@@ -393,7 +402,11 @@ export const GradientColorPicker = ({
         </button>
       </Popover.Trigger>
       <Popover.Portal>
-        <GradientPickerPopover gradient={gradient} onChange={onChange} />
+        <GradientPickerPopover
+          gradient={gradient}
+          onChange={onChange}
+          previewOnly={previewOnly}
+        />
       </Popover.Portal>
     </Popover.Root>
   );
@@ -403,12 +416,14 @@ type AccentPickerProps = {
   value: string | null;
   autoColor: string;
   onChange: (next: string | null) => void;
+  previewOnly?: boolean;
 };
 
 export const AccentPicker = ({
   value,
   autoColor,
   onChange,
+  previewOnly = false,
 }: AccentPickerProps) => {
   const t = useTranslations('Profile');
   const display = value && isValidHex(value) ? value : autoColor;
@@ -455,6 +470,11 @@ export const AccentPicker = ({
               onHexChange={updateHex}
               onHsvChange={(next) => updateHex(hsvToHex(next))}
             />
+            {previewOnly ? (
+              <p className="text-[11px] text-subtle leading-snug">
+                {t('customPreviewOnlyNote')}
+              </p>
+            ) : null}
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
@@ -499,6 +519,19 @@ export const CardColorPicker = ({
 }: CardColorPickerProps) => {
   const t = useTranslations('Profile');
   const locale = useLocale();
+  const richTags = {
+    strong: (chunks: ReactNode) => (
+      <strong className="font-semibold text-foreground">{chunks}</strong>
+    ),
+    premiumLink: (chunks: ReactNode) => (
+      <Link
+        href={`/${locale}/settings#supporter`}
+        className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
+      >
+        {chunks}
+      </Link>
+    ),
+  };
 
   return (
     <>
@@ -572,16 +605,20 @@ export const CardColorPicker = ({
             );
           })}
 
-          {premium ? (
-            <GradientColorPicker
-              gradient={customGradient}
-              isActive={value === CUSTOM_CARD_THEME_ID}
-              onChange={(gradient) => {
-                onCustomGradient?.(gradient);
-                onChange(CUSTOM_CARD_THEME_ID);
-              }}
-            />
-          ) : null}
+          <GradientColorPicker
+            gradient={customGradient}
+            isActive={
+              premium
+                ? value === CUSTOM_CARD_THEME_ID
+                : tease === CUSTOM_CARD_THEME_ID
+            }
+            previewOnly={!premium}
+            onChange={(gradient) => {
+              onCustomGradient?.(gradient);
+              if (premium) onChange(CUSTOM_CARD_THEME_ID);
+              else onTease(CUSTOM_CARD_THEME_ID);
+            }}
+          />
         </div>
 
         <p className="text-[12px] text-subtle">
@@ -590,37 +627,40 @@ export const CardColorPicker = ({
 
         {!premium && tease ? (
           <p className="text-[13px] text-muted leading-relaxed">
-            {t.rich('cardColorTeaseUpsell', {
-              theme: t(COLOR_LABEL_KEYS[tease]),
-              strong: (chunks) => (
-                <strong className="font-semibold text-foreground">
-                  {chunks}
-                </strong>
-              ),
-              premiumLink: (chunks) => (
-                <Link
-                  href={`/${locale}/settings#supporter`}
-                  className="font-semibold text-primary-light focus:outline-none focus-visible:text-primary-lighter"
-                >
-                  {chunks}
-                </Link>
-              ),
-            })}
+            {t.rich(
+              tease === CUSTOM_CARD_THEME_ID
+                ? 'cardColorCustomPreviewUpsell'
+                : 'cardColorTeaseUpsell',
+              {
+                theme: t(COLOR_LABEL_KEYS[tease] ?? 'cardColorCustom'),
+                ...richTags,
+              },
+            )}
           </p>
         ) : null}
       </FormGroup>
 
-      {premium ? (
-        <FormGroup>
-          <Label>{t('accentColourLabel')}</Label>
-          <AccentPicker
-            value={accentOverride}
-            autoColor={autoAccent}
-            onChange={(color) => onAccentOverride?.(color)}
-          />
-          <p className="text-[12px] text-subtle">{t('accentColourHint')}</p>
-        </FormGroup>
-      ) : null}
+      <FormGroup>
+        <Label>
+          {t('accentColourLabel')}
+          {premium ? null : (
+            <span className="ml-2 inline-flex items-center rounded-full bg-overlay px-[9px] py-0.5 font-bold text-[10.5px] text-soft uppercase tracking-[0.05em]">
+              {t('previewOnlyTag')}
+            </span>
+          )}
+        </Label>
+        <AccentPicker
+          value={accentOverride}
+          autoColor={autoAccent}
+          previewOnly={!premium}
+          onChange={(color) => onAccentOverride?.(color)}
+        />
+        <p className="text-[12px] text-subtle">
+          {premium
+            ? t('accentColourHint')
+            : t.rich('accentColourHintFree', richTags)}
+        </p>
+      </FormGroup>
     </>
   );
 };
