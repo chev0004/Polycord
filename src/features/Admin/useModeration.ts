@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { GrantUnit } from '@/lib/premiumGrant';
+import { bindAdminCache, dataCache, dayCache } from './adminCache';
 import type {
   ActivityFilters,
   ActivityKind,
@@ -89,10 +90,25 @@ const pageQuery = (cursor: string | undefined, filters: ActivityFilters) => ({
 const DAY_COUNTS_TTL_MS = 60000;
 
 export const useModeration = (initial: ModSnapshot) => {
-  const [data, setData] = useState<ModData>(initial);
+  bindAdminCache(initial.meId);
+  const [data, setData] = useState<ModData>(() =>
+    dataCache.current
+      ? {
+          users: mergeById(dataCache.current.users, initial.users),
+          reports: mergeById(dataCache.current.reports, initial.reports).sort(
+            byNewest,
+          ),
+          log: mergeById(dataCache.current.log, initial.log).sort(byNewest),
+        }
+      : initial,
+  );
   const [staff, setStaff] = useState(initial.staff);
   const [pendingCases, setPendingCases] = useState(initial.pendingCases);
   const [revision, setRevision] = useState(0);
+
+  useEffect(() => {
+    dataCache.current = data;
+  }, [data]);
 
   const merge = useCallback(
     (next: ModData) =>
@@ -240,14 +256,10 @@ export const useModeration = (initial: ModSnapshot) => {
     [loadWindow, merge],
   );
 
-  const dayCounts = useRef(
-    new Map<string, { at: number; days: Promise<Record<string, number>> }>(),
-  );
-
   const loadActivityDays = useCallback(
     (kind: ActivityKind, month: Date) => {
       const key = `${kind}:${month.getFullYear()}-${month.getMonth()}`;
-      const cached = dayCounts.current.get(key);
+      const cached = dayCache.get(key);
       if (cached && Date.now() - cached.at < DAY_COUNTS_TTL_MS)
         return cached.days;
       const days = loadWindow<{ days: Record<string, number> }>(
@@ -265,8 +277,8 @@ export const useModeration = (initial: ModSnapshot) => {
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
       ).then((result) => result.days);
-      dayCounts.current.set(key, { at: Date.now(), days });
-      days.catch(() => dayCounts.current.delete(key));
+      dayCache.set(key, { at: Date.now(), days });
+      days.catch(() => dayCache.delete(key));
       return days;
     },
     [loadWindow],

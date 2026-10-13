@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ToastStack } from '@/components/Toast';
 import { useSyncPendingCases } from '@/features/Navigation/AppShell';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { tabCache } from './adminCache';
 import { ModerationDesktop, type ModTab } from './ModerationDesktop';
 import { ModerationMobile } from './ModerationMobile';
 import type { ModSnapshot, SeedStatus } from './types';
@@ -21,7 +22,11 @@ export const ModerationPage = ({
   useSyncPendingCases(store.pendingCases);
   const mobile = useIsMobile();
   const { notify, toasts, dismissToast } = useModerationToasts();
-  const [tab, setTab] = useState<ModTab>('reports');
+  const [tab, setTabState] = useState<ModTab>(tabCache.tab);
+  const setTab = (next: ModTab) => {
+    tabCache.tab = next;
+    setTabState(next);
+  };
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [results, setResults] = useState<string[] | null>(null);
