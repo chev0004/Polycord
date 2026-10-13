@@ -441,7 +441,7 @@ export const ProfileDetail = ({
       >
         {bannerActions}
       </div>
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-3.5 px-5 pb-2 min-[861px]:gap-x-5 min-[861px]:px-7">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-3.5 px-5 pb-2 min-[861px]:grid-cols-[minmax(0,1fr)_fit-content(50%)] min-[861px]:gap-x-5 min-[861px]:px-7">
         <div
           className="-mt-[62px] relative z-[1] justify-self-start rounded-full bg-background-dark p-2"
           style={tinted ? { background: tintedSurface } : undefined}
