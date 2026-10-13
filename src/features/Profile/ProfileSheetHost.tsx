@@ -104,8 +104,9 @@ const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
         onOpenChange={handleOpenChange}
         isLoggedIn={isLoggedIn}
         viewerTimezone={viewerTimezone}
-        onCopyUsername={() => {
-          if (!isOwn) notifyUsernameCopied(profile.id).catch(() => {});
+        onCopyUsername={(_username, _id, _avatarUrl, copiedToClipboard) => {
+          if (copiedToClipboard && !isOwn)
+            notifyUsernameCopied(profile.id).catch(() => {});
         }}
         menuItems={menuItems}
         pointerReturnFocus={false}
