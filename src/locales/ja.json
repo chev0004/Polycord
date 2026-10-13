@@ -642,7 +642,7 @@
     "cardStyle": "カードスタイル",
     "cardStyleDescription": "ディスカバリーでのカードの見え方。",
     "discordCardTitle": "Discordカード",
-    "discordCardDescription": "プロフィールカード画像のレイアウトを選べます。",
+    "discordCardDescription": "PolycordのDiscordアプリで/profileを使うと生成されるプロフィールカード画像のレイアウトを選べます。",
     "discordCardPreviewLabel": "プレビュー",
     "discordCardFreeLabel": "無料",
     "discordCardPremiumLabel": "サポーター",
