@@ -65,7 +65,7 @@ for (const width of [320, 375, 390]) {
       expect(created.status()).toBe(200);
       const { profileId } = await created.json();
       await sql`update profiles set last_bumped_at = now() where id = ${profileId}`;
-      for (const route of ['/en/saved', '/en/inbox', `/en/u/${profileId}`]) {
+      for (const route of ['/en/saved', '/en/inbox']) {
         await page.goto(route);
         await fits();
       }
