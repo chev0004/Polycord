@@ -15,6 +15,7 @@ export type DayActivity = {
   load: (month: Date) => Promise<DayCounts>;
   peek?: (month: Date) => DayCounts | undefined;
   prefetch?: (month: Date) => void;
+  prefetchDay?: (day: Date) => void;
   tone: CalendarHeat['tone'];
   unit: (count: number) => string;
   monthLabel: string;
@@ -106,6 +107,7 @@ const Panel = ({
       selected={selected}
       today={today}
       onSelect={onSelect}
+      onDayIntent={activity?.prefetchDay}
       heat={
         activity
           ? {

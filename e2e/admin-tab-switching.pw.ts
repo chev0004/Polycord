@@ -142,8 +142,11 @@ test.describe('admin tab switching', () => {
       '/api/admin/actioned',
       '/api/admin/activity-log',
       '/api/admin/suspicious-activity',
-    ])
-      expect(count(path)).toBe(1);
+    ]) {
+      const urls = requests.filter((url) => url.startsWith(path));
+      expect(urls.length).toBeGreaterThan(0);
+      expect(new Set(urls).size).toBe(urls.length);
+    }
 
     await queue
       .getByRole('button', { name: new RegExp(`${prefix} Reported 01`) })

@@ -48,6 +48,13 @@ const dayKeyOf = (kind: ActivityKind, month: Date) =>
 export const peekDayCounts = (kind: ActivityKind, month: Date) =>
   dayCache.get(dayKeyOf(kind, month))?.counts;
 
+export const peekFreshDayCounts = (kind: ActivityKind, month: Date) => {
+  const entry = dayCache.get(dayKeyOf(kind, month));
+  return Date.now() - (entry?.at ?? 0) < DAY_COUNTS_TTL_MS
+    ? entry?.counts
+    : undefined;
+};
+
 export const staleDayCounts = () => {
   for (const entry of dayCache.values()) entry.at = 0;
 };

@@ -34,6 +34,7 @@ export const Calendar = ({
   selected,
   today,
   onSelect,
+  onDayIntent,
   heat,
   summary,
   footer,
@@ -43,6 +44,7 @@ export const Calendar = ({
   selected: Date;
   today: Date;
   onSelect: (day: Date) => void;
+  onDayIntent?: (day: Date) => void;
   heat?: CalendarHeat;
   summary?: ReactNode;
   footer?: ReactNode;
@@ -127,6 +129,8 @@ export const Calendar = ({
               aria-pressed={on}
               aria-label={dayHeat?.label}
               onClick={() => onSelect(day)}
+              onPointerEnter={() => onDayIntent?.(day)}
+              onFocus={() => onDayIntent?.(day)}
               style={
                 dayHeat
                   ? ({
