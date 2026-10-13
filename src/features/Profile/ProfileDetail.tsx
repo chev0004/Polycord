@@ -517,7 +517,7 @@ export const ProfileDetail = ({
             </Popover.Root>
           ) : null}
         </div>
-        <div className="col-span-2 col-start-1 flex min-w-0 flex-col gap-1.5 min-[861px]:col-span-1">
+        <div className="col-span-2 col-start-1 flex min-w-0 flex-col gap-1.5 min-[861px]:col-span-1 min-[861px]:self-start">
           <h1 className="min-w-0">
             <button
               type="button"
