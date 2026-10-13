@@ -2054,6 +2054,7 @@ export const ModerationMobile = ({
   const {
     view,
     setView,
+    prefetchOtherView,
     pages: reportPages,
   } = useReportPages(store, tab === 'reports');
   const actionedPages = useActivityPages(
@@ -2083,10 +2084,16 @@ export const ModerationMobile = ({
     log: logPages.prefetch,
     suspicious: flagPages.prefetch,
   };
-  useTabPrefetch(reportPages.rows !== undefined, [
-    ...Object.values(prefetch),
-    () => prefetchRecentMonths(ACTIVITY_KINDS),
-  ]);
+  useTabPrefetch(
+    [reportPages, actionedPages, logPages, flagPages].some(
+      ({ rows }) => rows !== undefined,
+    ),
+    [
+      ...Object.values(prefetch),
+      prefetchOtherView,
+      () => prefetchRecentMonths(ACTIVITY_KINDS),
+    ],
+  );
   const [page, setPage] = useState<Page | null>(null);
   const [closing, setClosing] = useState(false);
   const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ToastStack } from '@/components/Toast';
 import { useSyncPendingCases } from '@/features/Navigation/AppShell';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { FirstPageContext } from './ActivityPages';
 import { tabCache } from './adminCache';
 import { ModerationDesktop, type ModTab } from './ModerationDesktop';
 import { ModerationMobile } from './ModerationMobile';
@@ -72,8 +73,18 @@ export const ModerationPage = ({
     setTab('users');
   };
 
+  useEffect(() => {
+    void window.cookieStore?.set({
+      name: 'polycord_tz',
+      value: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      path: '/',
+      expires: Date.now() + 365 * 86400000,
+      sameSite: 'lax',
+    });
+  }, []);
+
   return (
-    <>
+    <FirstPageContext.Provider value={initial.firstPage ?? null}>
       {mobile ? (
         <ModerationMobile
           store={store}
@@ -97,6 +108,6 @@ export const ModerationPage = ({
         </div>
       )}
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
-    </>
+    </FirstPageContext.Provider>
   );
 };
