@@ -124,7 +124,9 @@ test.describe('admin activity pages', () => {
 
     await page.getByRole('button', { name: 'Select a date' }).click();
     await page.getByRole('button', { name: 'Previous month' }).click();
-    await page.getByRole('button', { name: '15', exact: true }).click();
+    await page
+      .getByRole('button', { name: /^\w{3}, \w{3} 15, \d+ actions?$/ })
+      .click();
     await expect(page.getByText('No activity on this day')).toBeVisible();
 
     await page
@@ -173,9 +175,41 @@ test.describe('admin activity pages', () => {
       page.getByRole('button', { name: `${label(1)}, 3 actions` }),
     ).toBeVisible();
     await expect(page.getByText('actions this month')).toBeVisible();
-    expect(counts).toHaveLength(1);
-    expect(counts[0]).toContain('kind=log');
-    expect(counts[0]).toContain('timeZone=UTC');
+    const log = counts.filter((url) => url.includes('kind=log'));
+    expect(new Set(counts).size).toBe(counts.length);
+    expect(log.length).toBeGreaterThan(0);
+    expect(log[0]).toContain('timeZone=UTC');
+    await context.close();
+  });
+
+  test('the calendar opens with its counts on the first frame', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    await signIn(context, owner);
+    const page = await context.newPage();
+    const finished: string[] = [];
+    page.on('requestfinished', (request) => {
+      if (request.url().includes('/api/admin/activity-days'))
+        finished.push(request.url());
+    });
+
+    await page.goto('/en/admin');
+    await expect.poll(() => finished.length).toBeGreaterThanOrEqual(4);
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await page.getByRole('button', { name: 'Select a date' }).click();
+    expect(
+      await page.getByRole('button', { name: /, \d+ actions?$/ }).count(),
+    ).toBeGreaterThan(0);
+    expect(await page.getByText('actions this month').isVisible()).toBe(true);
+    await page.getByRole('button', { name: 'Previous month' }).click();
+    expect(
+      await page.getByRole('button', { name: /, \d+ actions?$/ }).count(),
+    ).toBeGreaterThan(0);
     await context.close();
   });
 
