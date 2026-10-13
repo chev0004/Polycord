@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
 import { scopedRoute } from '@/db/client';
-import { getStaffRole } from '@/lib/admin';
-import { getCurrentUser } from '@/lib/auth';
+import { getStaffAccess } from '@/lib/admin';
 import { searchModeration } from '@/lib/moderation';
 
 export const GET = scopedRoute(async (request: Request) => {
-  const currentUser = await getCurrentUser();
-
-  if (!currentUser || !(await getStaffRole(currentUser))) {
+  if (!(await getStaffAccess())) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
