@@ -419,10 +419,12 @@ test('admins moderate a report while members cannot reach admin tools', async ({
     await expect(moreActions).toBeFocused();
     await expect(page).toHaveURL(`/en/u/${profile.id}`);
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/en/u/${profile.id}`);
+    await expect(page).toHaveURL('/en');
     await moreActions.click();
     await page.getByRole('button', { name: 'Take action' }).click();
     await expect(
-      page.getByRole('dialog', { name: `${prefix} Reported` }),
+      page.getByRole('dialog', { name: `${prefix} Reported` }).last(),
     ).toBeVisible();
     await page.setViewportSize({ width: 1280, height: 720 });
     await memberPage.goto(`/en/u/${profile.id}`);
