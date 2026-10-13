@@ -90,6 +90,7 @@
     "writeError": "変更を確認できませんでした。受信トレイを更新して確認してから、もう一度操作してください。",
     "retry": "再試行",
     "viewProfile": "プロフィールを見る",
+    "profileUnavailableTitle": "プロフィールを表示できません",
     "profileUnavailable": "このプロフィールは現在表示できません。",
     "previousPage": "前のページ",
     "nextPage": "次のページ",

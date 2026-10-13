@@ -57,6 +57,8 @@ test.describe('admin activity pages', () => {
     await sql`insert into moderation_actions (admin_user_id, target_user_id, action, note, created_at)
       select ${owner.id}, ${target.id}, 'warn', 'yesterday-' || n, ${utcToday} - interval '1 day' + n * interval '1 minute'
       from generate_series(1, 3) as n`;
+    await sql`insert into moderation_actions (admin_user_id, target_user_id, action, note, created_at)
+      values (${owner.id}, ${target.id}, 'warn', 'older-1', ${utcToday} - interval '5 days' + interval '1 minute')`;
   });
 
   test.afterAll(async () => {
@@ -210,6 +212,106 @@ test.describe('admin activity pages', () => {
     expect(
       await page.getByRole('button', { name: /, \d+ actions?$/ }).count(),
     ).toBeGreaterThan(0);
+    await context.close();
+  });
+
+  test('adjacent and empty days open without a request or a spinner', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    await signIn(context, owner);
+    const page = await context.newPage();
+    const logRequests: string[] = [];
+    const dayRequests: string[] = [];
+    page.on('requestfinished', (request) => {
+      const url = request.url();
+      if (url.includes('/api/admin/activity-log')) logRequests.push(url);
+      if (url.includes('/api/admin/activity-days')) dayRequests.push(url);
+    });
+
+    await page.goto('/en/admin');
+    await page.waitForResponse((response) =>
+      response.url().includes('/api/admin/reports'),
+    );
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await expect(page.getByText(/^today-\d+$/).first()).toBeVisible();
+    await expect.poll(() => logRequests.length).toBeGreaterThanOrEqual(2);
+    await expect
+      .poll(() => dayRequests.filter((url) => url.includes('kind=log')).length)
+      .toBeGreaterThanOrEqual(1);
+    await page.evaluate(() => {
+      const view = window as unknown as { spinner: boolean };
+      view.spinner = false;
+      new MutationObserver((records) => {
+        for (const record of records)
+          for (const node of record.addedNodes)
+            if (node.textContent?.includes('Loading activity'))
+              view.spinner = true;
+      }).observe(document.body, { childList: true, subtree: true });
+    });
+
+    await page.getByRole('button', { name: 'Previous day' }).click();
+    await expect(page.getByText(/^yesterday-\d+$/)).toHaveCount(3, {
+      timeout: 300,
+    });
+
+    const requested = logRequests.length;
+    await page.getByRole('button', { name: 'Previous day' }).click();
+    await expect(page.getByText('No activity on this day')).toBeVisible({
+      timeout: 300,
+    });
+    expect(logRequests).toHaveLength(requested);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { spinner: boolean }).spinner,
+      ),
+    ).toBe(false);
+    await context.close();
+  });
+
+  test('an uncached day keeps the previous rows dimmed while it loads', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    await signIn(context, owner);
+    const page = await context.newPage();
+    await page.goto('/en/admin');
+    await page.waitForResponse((response) =>
+      response.url().includes('/api/admin/reports'),
+    );
+    await page.getByRole('tab', { name: 'Activity log' }).click();
+    await expect(page.getByText(/^today-\d+$/).first()).toBeVisible();
+    await page.route('**/api/admin/activity-log*', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+
+    await page.getByRole('button', { name: 'Select a date' }).click();
+    const older = new Date(Date.now() - 5 * 86400000).toLocaleDateString(
+      'en-US',
+      { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' },
+    );
+    const day = page.getByRole('button', { name: `${older}, 1 action` });
+    if (!(await day.count()))
+      await page.getByRole('button', { name: 'Previous month' }).click();
+    await day.click();
+
+    const rows = page.getByText(/^today-\d+$/).first();
+    await expect(rows).toBeVisible();
+    await expect(
+      rows.locator('xpath=ancestor::div[contains(@class,"opacity-50")]'),
+    ).toHaveCount(1);
+    await expect(page.getByText('Loading activity')).toHaveCount(0);
+    await expect(page.getByText('older-1')).toBeVisible();
+    await expect(page.getByText(/^today-\d+$/)).toHaveCount(0);
     await context.close();
   });
 

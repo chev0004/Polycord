@@ -31,6 +31,7 @@ import {
   ActivityPager,
   type ActivityPages,
   ActivityStatus,
+  fade,
   useActivityPages,
   useReportPages,
   useTabPrefetch,
@@ -443,7 +444,7 @@ const ReportsTab = ({
             </button>
           ) : null}
         </div>
-        <div className={paneScroll}>
+        <div className={`${paneScroll} ${fade(pages)}`}>
           {!pages.rows ? (
             <ActivityStatus pages={pages} />
           ) : groups.length ? (
@@ -669,7 +670,7 @@ const UsersTab = ({
             </div>
           </>
         )}
-        <div className={paneScroll}>
+        <div className={`${paneScroll} ${trimmed ? '' : fade(pages)}`}>
           {users.searching ? (
             <SkeletonRows />
           ) : users.failed ? (
@@ -953,60 +954,62 @@ const LogTab = ({
         <span>{t('colTime')}</span>
         <span>{t('colNote')}</span>
       </div>
-      {!pages.rows ? (
-        <ActivityStatus pages={pages} />
-      ) : rows.length ? (
-        rows.map((entry) => (
-          <div key={entry.id} className={`${bodyRow} ${logColumns}`}>
-            <span className="inline-flex items-center gap-2 font-medium text-foreground">
-              <span
-                className={`h-2 w-2 shrink-0 rounded-full ${ACTION_TONE[entry.action]}`}
+      <div className={fade(pages)}>
+        {!pages.rows ? (
+          <ActivityStatus pages={pages} />
+        ) : rows.length ? (
+          rows.map((entry) => (
+            <div key={entry.id} className={`${bodyRow} ${logColumns}`}>
+              <span className="inline-flex items-center gap-2 font-medium text-foreground">
+                <span
+                  className={`h-2 w-2 shrink-0 rounded-full ${ACTION_TONE[entry.action]}`}
+                />
+                {label(entry)}
+              </span>
+              <UserCell
+                user={store.usersById.get(entry.userId ?? '')}
+                onClick={() => entry.userId && openUser(entry.userId)}
               />
-              {label(entry)}
-            </span>
-            <UserCell
-              user={store.usersById.get(entry.userId ?? '')}
-              onClick={() => entry.userId && openUser(entry.userId)}
-            />
-            <span className="min-w-0 truncate text-muted">
-              {store.usersById.get(entry.staffId ?? '')?.displayName ??
-                t('unknownUser')}
-            </span>
-            <time
-              dateTime={entry.createdAt}
-              title={relative(entry.createdAt)}
-              className="text-muted"
-            >
-              {absolute(entry.createdAt)}
-            </time>
-            <span className="min-w-0 break-words font-light text-muted">
-              {entryNote(entry) ?? <span className="text-subtle">-</span>}
-            </span>
-          </div>
-        ))
-      ) : pages.filtered ? (
-        <EmptyState
-          className="px-6 py-10"
-          icon={MdFilterAltOff}
-          title={t('noMatchTitle')}
-          body={t('noMatchBody')}
-        >
-          <button
-            type="button"
-            onClick={pages.clearFilters}
-            className={modButton()}
+              <span className="min-w-0 truncate text-muted">
+                {store.usersById.get(entry.staffId ?? '')?.displayName ??
+                  t('unknownUser')}
+              </span>
+              <time
+                dateTime={entry.createdAt}
+                title={relative(entry.createdAt)}
+                className="text-muted"
+              >
+                {absolute(entry.createdAt)}
+              </time>
+              <span className="min-w-0 break-words font-light text-muted">
+                {entryNote(entry) ?? <span className="text-subtle">-</span>}
+              </span>
+            </div>
+          ))
+        ) : pages.filtered ? (
+          <EmptyState
+            className="px-6 py-10"
+            icon={MdFilterAltOff}
+            title={t('noMatchTitle')}
+            body={t('noMatchBody')}
           >
-            {t('clearFilters')}
-          </button>
-        </EmptyState>
-      ) : (
-        <EmptyState
-          className="px-6 py-10"
-          icon={MdHistory}
-          title={t('logEmptyTitle')}
-          body={t('logEmptyBody')}
-        />
-      )}
+            <button
+              type="button"
+              onClick={pages.clearFilters}
+              className={modButton()}
+            >
+              {t('clearFilters')}
+            </button>
+          </EmptyState>
+        ) : (
+          <EmptyState
+            className="px-6 py-10"
+            icon={MdHistory}
+            title={t('logEmptyTitle')}
+            body={t('logEmptyBody')}
+          />
+        )}
+      </div>
       <ActivityPager pages={pages} />
     </section>
   );
@@ -1121,26 +1124,28 @@ const SuspiciousTab = ({
         <span>{t('colTime')}</span>
         <span />
       </div>
-      {!pages.rows ? (
-        <ActivityStatus pages={pages} />
-      ) : pages.rows.length ? (
-        pages.rows.map((row) => (
-          <SuspiciousRow
-            key={row.id}
-            row={row}
-            range={pages.range}
-            store={store}
-            openUser={openUser}
+      <div className={fade(pages)}>
+        {!pages.rows ? (
+          <ActivityStatus pages={pages} />
+        ) : pages.rows.length ? (
+          pages.rows.map((row) => (
+            <SuspiciousRow
+              key={row.id}
+              row={row}
+              range={pages.range}
+              store={store}
+              openUser={openUser}
+            />
+          ))
+        ) : (
+          <EmptyState
+            className="px-6 py-10"
+            icon={MdPolicy}
+            title={t('suspiciousEmptyTitle')}
+            body={t('suspiciousEmptyBody')}
           />
-        ))
-      ) : (
-        <EmptyState
-          className="px-6 py-10"
-          icon={MdPolicy}
-          title={t('suspiciousEmptyTitle')}
-          body={t('suspiciousEmptyBody')}
-        />
-      )}
+        )}
+      </div>
       <ActivityPager pages={pages} />
     </section>
   );
@@ -1170,6 +1175,7 @@ export const ModerationDesktop = ({
     tab === 'log',
     store.revision,
     'log',
+    'log',
   );
   const reports = useReportPages(store, tab === 'reports');
   const actionedPages = useActivityPages(
@@ -1177,11 +1183,13 @@ export const ModerationDesktop = ({
     tab === 'users',
     store.revision,
     'actioned',
+    'actioned',
   );
   const flagPages = useActivityPages(
     store.loadSuspicious,
     tab === 'suspicious',
     store.revision,
+    'suspicious',
     'suspicious',
   );
   const prefetch: Partial<Record<ModTab, () => void>> = {
@@ -1190,10 +1198,16 @@ export const ModerationDesktop = ({
     log: logPages.prefetch,
     suspicious: flagPages.prefetch,
   };
-  useTabPrefetch(reports.pages.rows !== undefined, [
-    ...Object.values(prefetch),
-    () => prefetchRecentMonths(ACTIVITY_KINDS),
-  ]);
+  useTabPrefetch(
+    [reports.pages, actionedPages, logPages, flagPages].some(
+      ({ rows }) => rows !== undefined,
+    ),
+    [
+      ...Object.values(prefetch),
+      reports.prefetchOtherView,
+      () => prefetchRecentMonths(ACTIVITY_KINDS),
+    ],
+  );
   const tabs: { id: ModTab; icon: IconType; label: string; badge?: number }[] =
     [
       {

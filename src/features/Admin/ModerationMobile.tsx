@@ -50,6 +50,7 @@ import {
   ActivityPager,
   type ActivityPages,
   ActivityStatus,
+  fade,
   useActivityPages,
   useReportPages,
   useTabPrefetch,
@@ -347,7 +348,7 @@ const ReportsScreen = ({
           </button>
         ) : null}
       </div>
-      <div className="px-3">
+      <div className={`px-3 ${fade(pages)}`}>
         {!pages.rows ? (
           <ActivityStatus pages={pages} />
         ) : groups.length ? (
@@ -542,7 +543,7 @@ const UsersScreen = ({
           aria-label={t('searchLabel')}
         />
       </div>
-      <div className="px-3">
+      <div className={`px-3 ${trimmed ? '' : fade(pages)}`}>
         {store.meRole === 'owner' && !trimmed ? (
           <div className={`${group} mb-1.5`}>
             <SheetRow
@@ -753,7 +754,7 @@ const LogScreen = ({
           </button>
         ) : null}
       </div>
-      <div className="px-3">
+      <div className={`px-3 ${fade(pages)}`}>
         {!pages.rows ? (
           <ActivityStatus pages={pages} />
         ) : rows.length ? (
@@ -957,7 +958,7 @@ const FlagsScreen = ({
       <div className="px-4 pb-3">
         <ActivityDayBar pages={pages} kind="suspicious" />
       </div>
-      <div className="px-3">
+      <div className={`px-3 ${fade(pages)}`}>
         {!pages.rows ? (
           <ActivityStatus pages={pages} />
         ) : pages.rows.length ? (
@@ -2053,6 +2054,7 @@ export const ModerationMobile = ({
   const {
     view,
     setView,
+    prefetchOtherView,
     pages: reportPages,
   } = useReportPages(store, tab === 'reports');
   const actionedPages = useActivityPages(
@@ -2060,17 +2062,20 @@ export const ModerationMobile = ({
     tab === 'users',
     store.revision,
     'actioned',
+    'actioned',
   );
   const logPages = useActivityPages(
     store.loadActivityLog,
     tab === 'log',
     store.revision,
     'log',
+    'log',
   );
   const flagPages = useActivityPages(
     store.loadSuspicious,
     tab === 'suspicious',
     store.revision,
+    'suspicious',
     'suspicious',
   );
   const prefetch: Partial<Record<ModTab, () => void>> = {
@@ -2079,10 +2084,16 @@ export const ModerationMobile = ({
     log: logPages.prefetch,
     suspicious: flagPages.prefetch,
   };
-  useTabPrefetch(reportPages.rows !== undefined, [
-    ...Object.values(prefetch),
-    () => prefetchRecentMonths(ACTIVITY_KINDS),
-  ]);
+  useTabPrefetch(
+    [reportPages, actionedPages, logPages, flagPages].some(
+      ({ rows }) => rows !== undefined,
+    ),
+    [
+      ...Object.values(prefetch),
+      prefetchOtherView,
+      () => prefetchRecentMonths(ACTIVITY_KINDS),
+    ],
+  );
   const [page, setPage] = useState<Page | null>(null);
   const [closing, setClosing] = useState(false);
   const [dismissEntry, setDismissEntry] = useState<ReportGroup | null>(null);

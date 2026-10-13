@@ -1,14 +1,23 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
-import { DatePicker } from '@/components/DatePicker';
+import { DatePicker, dayKey } from '@/components/DatePicker';
 import {
   type CachedPage,
   loadDayCounts,
   pageCache,
   peekDayCounts,
+  peekFreshDayCounts,
   prefetchDayCounts,
   reportViewCache,
   viewCache,
@@ -19,6 +28,7 @@ import type {
   ActivityKind,
   ActivityPage,
   ActivityRange,
+  FirstPage,
   ReportView,
 } from './types';
 import type { ModerationStore } from './useModeration';
@@ -36,7 +46,7 @@ const rangeOf = (day: Date) => ({
   to: addDays(day, 1).toISOString(),
 });
 
-const keyFor = (
+const pageKey = (
   scope: string,
   range: ActivityRange,
   cursor: string | undefined,
@@ -45,6 +55,41 @@ const keyFor = (
 
 const FRESH_MS = 15000;
 const CACHE_LIMIT = 120;
+
+const knownEmpty = (kind: ActivityKind | undefined, day: Date) => {
+  if (!kind || toInputValue(day) === toInputValue(today())) return false;
+  const counts = peekFreshDayCounts(
+    kind,
+    new Date(day.getFullYear(), day.getMonth(), 1),
+  );
+  return counts !== undefined && !counts[dayKey(day)];
+};
+
+export const FirstPageContext = createContext<FirstPage | null>(null);
+
+const track = <T,>(key: string, request: Promise<ActivityPage<T>>) => {
+  const cache = pageCache as Map<string, CachedPage<T>>;
+  const entry: CachedPage<T> = {
+    at: Date.now(),
+    request,
+    page: cache.get(key)?.page,
+  };
+  request.then(
+    (result) => {
+      entry.page = result;
+    },
+    () => {
+      if (cache.get(key) === entry) cache.delete(key);
+    },
+  );
+  cache.set(key, entry);
+  if (cache.size > CACHE_LIMIT)
+    cache.delete(cache.keys().next().value as string);
+  return entry;
+};
+
+export const fade = ({ stale }: { stale: boolean }) =>
+  `transition-opacity duration-150 ${stale ? 'opacity-50' : ''}`;
 
 export const useActivityPages = <T,>(
   load: (
@@ -55,51 +100,71 @@ export const useActivityPages = <T,>(
   active: boolean,
   revision: number,
   scope: string,
+  kind?: ActivityKind,
 ) => {
-  const [day, setDay] = useState(() => viewCache.get(scope)?.day ?? today());
+  const first = useContext(FirstPageContext);
+  const seed = first?.scope === scope && !viewCache.has(scope) ? first : null;
+  const [day, setDay] = useState(
+    () =>
+      viewCache.get(scope)?.day ?? (seed ? new Date(seed.range.from) : today()),
+  );
   const [filters, setFilters] = useState<ActivityFilters>(
     () => viewCache.get(scope)?.filters ?? {},
   );
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
-  const [page, setPage] = useState<ActivityPage<T> | null>(
-    () =>
-      (
-        pageCache.get(keyFor(scope, rangeOf(day), undefined, filters)) as
-          | CachedPage<T>
-          | undefined
-      )?.page ?? null,
-  );
+  const [loaded, setLoaded] = useState<{
+    key: string;
+    page: ActivityPage<T>;
+  } | null>(() => {
+    if (seed) {
+      const seededKey = pageKey(scope, seed.range, undefined, {});
+      if (typeof window !== 'undefined' && !pageCache.has(seededKey))
+        track(seededKey, Promise.resolve(seed.page));
+      return { key: seededKey, page: seed.page as unknown as ActivityPage<T> };
+    }
+    const key = pageKey(scope, rangeOf(day), undefined, filters);
+    const page = (pageCache.get(key) as CachedPage<T> | undefined)?.page;
+    return page ? { key, page } : null;
+  });
   const [failed, setFailed] = useState(false);
   const cache = useRef(pageCache as Map<string, CachedPage<T>>);
   const seenRevision = useRef(revision);
-  const range = useMemo(() => rangeOf(day), [day]);
-  const keyOf = useCallback(
-    (cursor?: string) => keyFor(scope, range, cursor, filters),
-    [scope, range, filters],
+  const range = useMemo(
+    () =>
+      first?.range.from === day.toISOString() ? first.range : rangeOf(day),
+    [day, first],
   );
+  const keyFor = useCallback(
+    (target: ActivityRange, cursor?: string) =>
+      pageKey(scope, target, cursor, filters),
+    [scope, filters],
+  );
+  const key = keyFor(range, cursors.at(-1));
+  const page = loaded?.page ?? null;
+  const stale = loaded !== null && loaded.key !== key;
 
   const start = useCallback(
-    (cursor?: string) => {
-      const key = keyOf(cursor);
-      const entry: CachedPage<T> = {
-        at: Date.now(),
-        request: load(range, cursor, filters),
-        page: cache.current.get(key)?.page,
-      };
-      entry.request.then(
-        (result) => {
-          entry.page = result;
-        },
-        () => {
-          if (cache.current.get(key) === entry) cache.current.delete(key);
-        },
-      );
-      cache.current.set(key, entry);
-      if (cache.current.size > CACHE_LIMIT)
-        cache.current.delete(cache.current.keys().next().value as string);
-      return entry;
+    (target: ActivityRange, cursor?: string) =>
+      track(keyFor(target, cursor), load(target, cursor, filters)),
+    [keyFor, load, filters],
+  );
+
+  const prefetchDay = useCallback(
+    (target: Date) => {
+      const targetRange = rangeOf(target);
+      if (cache.current.has(keyFor(targetRange))) return;
+      if (knownEmpty(kind, target)) {
+        const empty = { rows: [] };
+        cache.current.set(keyFor(targetRange), {
+          at: Date.now(),
+          request: Promise.resolve(empty),
+          page: empty,
+        });
+        return;
+      }
+      start(targetRange).request.catch(() => {});
     },
-    [keyOf, load, range, filters],
+    [keyFor, kind, start],
   );
 
   useEffect(() => {
@@ -109,27 +174,38 @@ export const useActivityPages = <T,>(
     seenRevision.current = revision;
     if (refreshed) cache.current.clear();
     const cursor = cursors.at(-1);
-    const hit = cache.current.get(keyOf(cursor));
-    if (!refreshed) setPage(hit?.page ?? null);
+    if (!cursor) prefetchDay(day);
+    const hit = cache.current.get(keyFor(range, cursor));
+    if (!refreshed && hit?.page) setLoaded({ key, page: hit.page });
     setFailed(false);
-    const entry = hit && Date.now() - hit.at < FRESH_MS ? hit : start(cursor);
+    const entry =
+      hit && Date.now() - hit.at < FRESH_MS ? hit : start(range, cursor);
     entry.request.then(
-      (result) => current && setPage(result),
+      (result) => {
+        if (!current) return;
+        setLoaded({ key, page: result });
+        if (cursor) return;
+        prefetchDay(addDays(day, -1));
+        if (toInputValue(day) !== toInputValue(today()))
+          prefetchDay(addDays(day, 1));
+      },
       () => current && setFailed(true),
     );
     return () => {
       current = false;
     };
-  }, [active, cursors, keyOf, start, revision]);
+  }, [active, cursors, day, key, keyFor, prefetchDay, range, start, revision]);
+
+  useEffect(() => {
+    viewCache.set(scope, { day, filters });
+  }, [scope, day, filters]);
 
   const chooseDay = (next: Date) => {
-    viewCache.set(scope, { day: next, filters });
     setDay(next);
     setCursors([undefined]);
   };
 
   const chooseFilters = (next: ActivityFilters) => {
-    viewCache.set(scope, { day, filters: next });
     setFilters(next);
     setCursors([undefined]);
   };
@@ -140,24 +216,24 @@ export const useActivityPages = <T,>(
     filters,
     filtered: Object.values(filters).some(Boolean),
     isToday: toInputValue(day) === toInputValue(today()),
-    rows: page?.rows,
+    rows: stale && failed ? undefined : page?.rows,
+    stale,
     pageNumber: cursors.length,
-    hasNext: Boolean(page?.nextCursor),
+    hasNext: !stale && Boolean(page?.nextCursor),
     loading: !page && !failed,
     failed,
     chooseDay,
     shiftDay: (days: number) => chooseDay(addDays(day, days)),
     goToday: () => chooseDay(today()),
-    setFilter: (key: string, value: string) =>
-      chooseFilters({ ...filters, [key]: value }),
+    setFilter: (filterKey: string, value: string) =>
+      chooseFilters({ ...filters, [filterKey]: value }),
     clearFilters: () => chooseFilters({}),
     resetPages: () => setCursors([undefined]),
-    prefetch: () => {
-      if (!cache.current.has(keyOf())) start();
-    },
+    prefetch: () => prefetchDay(day),
+    prefetchDay,
     retry: () => setCursors([...cursors]),
     nextPage: () =>
-      page?.nextCursor && setCursors([...cursors, page.nextCursor]),
+      !stale && page?.nextCursor && setCursors([...cursors, page.nextCursor]),
     previousPage: () => setCursors(cursors.slice(0, -1)),
   };
 };
@@ -190,11 +266,27 @@ export const useReportPages = (store: ModerationStore, active: boolean) => {
     active,
     store.revision,
     `reports:${view}`,
+    'reports',
   );
+
+  const prefetchOtherView = () => {
+    const other = view === 'pending' ? 'resolved' : 'pending';
+    const otherScope = `reports:${other}`;
+    const saved = viewCache.get(otherScope);
+    const otherRange = rangeOf(saved?.day ?? today());
+    const otherFilters = saved?.filters ?? {};
+    const otherKey = pageKey(otherScope, otherRange, undefined, otherFilters);
+    if (pageCache.has(otherKey)) return;
+    track(
+      otherKey,
+      loadReports(otherRange, undefined, { ...otherFilters, status: other }),
+    ).request.catch(() => {});
+  };
 
   return {
     view,
     pages,
+    prefetchOtherView,
     setView: (next: ReportView) => {
       reportViewCache.view = next;
       setView(next);
@@ -243,6 +335,7 @@ export const ActivityDayBar = ({
           load,
           peek,
           prefetch,
+          prefetchDay: pages.prefetchDay,
           tone: kind === 'suspicious' ? 'danger' : 'primary',
           unit: (count) => t(`calendarUnit_${kind}`, { count }),
           monthLabel: t(`calendarMonth_${kind}`),

@@ -142,8 +142,11 @@ test.describe('admin tab switching', () => {
       '/api/admin/actioned',
       '/api/admin/activity-log',
       '/api/admin/suspicious-activity',
-    ])
-      expect(count(path)).toBe(1);
+    ]) {
+      const urls = requests.filter((url) => url.startsWith(path));
+      expect(urls.length).toBeGreaterThan(0);
+      expect(new Set(urls).size).toBe(urls.length);
+    }
 
     await queue
       .getByRole('button', { name: new RegExp(`${prefix} Reported 01`) })
@@ -160,6 +163,131 @@ test.describe('admin tab switching', () => {
     await page.getByRole('tab', { name: 'Activity log' }).click();
     await expect(page.getByText('Dismissed report')).toBeVisible();
     expect(await sawSpinner()).toBe(false);
+    await context.close();
+  });
+
+  test('Reports arrives with the page and every other view is warmed', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    const payload = Buffer.from(
+      JSON.stringify({
+        user: {
+          id: owner.discordUserId,
+          accountId: owner.id,
+          name: owner.discordUserId,
+          username: owner.discordUserId,
+        },
+        issuedAt: Date.now(),
+        expiresAt: Date.now() + 3600000,
+      }),
+    ).toString('base64url');
+    const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+      .update(payload)
+      .digest('base64url');
+    await context.addCookies([
+      {
+        name: 'polycord_session',
+        value: `${payload}.${signature}`,
+        domain: 'localhost',
+        path: '/',
+      },
+      { name: 'polycord_tz', value: 'UTC', domain: 'localhost', path: '/' },
+    ]);
+    const html = await (await context.request.get('/en/admin')).text();
+    expect(html).toContain(`${prefix} Reported 05`);
+    expect(html).not.toContain('Loading activity…</output>');
+
+    const page = await context.newPage();
+    const finished: string[] = [];
+    page.on('requestfinished', (request) => {
+      const { pathname, search } = new URL(request.url());
+      if (pathname.startsWith('/api/admin/'))
+        finished.push(`${pathname}${search}`);
+    });
+    await page.goto('/en/admin');
+    const queue = page.getByRole('region', { name: 'Reports', exact: true });
+    await expect(
+      queue.getByRole('button', { name: new RegExp(`${prefix} Reported`) }),
+    ).toHaveCount(4);
+    expect(finished.some((url) => url.startsWith('/api/admin/reports'))).toBe(
+      false,
+    );
+    await expect
+      .poll(() =>
+        [
+          'status=resolved',
+          '/api/admin/actioned',
+          '/api/admin/activity-log',
+          '/api/admin/suspicious-activity',
+        ].map((part) => finished.some((url) => url.includes(part))),
+      )
+      .toEqual([true, true, true, true]);
+    await context.close();
+  });
+
+  test('staff who arrive without the time zone cookie still get the seeded Reports', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:3119',
+      viewport: { width: 1400, height: 900 },
+      timezoneId: 'UTC',
+    });
+    const payload = Buffer.from(
+      JSON.stringify({
+        user: {
+          id: owner.discordUserId,
+          accountId: owner.id,
+          name: owner.discordUserId,
+          username: owner.discordUserId,
+        },
+        issuedAt: Date.now(),
+        expiresAt: Date.now() + 3600000,
+      }),
+    ).toString('base64url');
+    const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+      .update(payload)
+      .digest('base64url');
+    await context.addCookies([
+      {
+        name: 'polycord_session',
+        value: `${payload}.${signature}`,
+        domain: 'localhost',
+        path: '/',
+      },
+    ]);
+    const page = await context.newPage();
+    const finished: string[] = [];
+    page.on('requestfinished', (request) => {
+      const { pathname, search } = new URL(request.url());
+      finished.push(`${pathname}${search}`);
+    });
+    await page.goto('/en');
+    await expect
+      .poll(async () =>
+        (await context.cookies()).some(({ name }) => name === 'polycord_tz'),
+      )
+      .toBe(true);
+    finished.length = 0;
+    await page.getByRole('link', { name: 'Admin' }).click();
+    await expect(page).toHaveURL(/\/en\/admin$/);
+    await expect(
+      page
+        .getByRole('region', { name: 'Reports', exact: true })
+        .getByRole('button', { name: new RegExp(`${prefix} Reported`) }),
+    ).toHaveCount(4);
+    expect(
+      finished.some(
+        (url) =>
+          url.startsWith('/api/admin/reports') &&
+          !url.includes('status=resolved'),
+      ),
+    ).toBe(false);
     await context.close();
   });
 });

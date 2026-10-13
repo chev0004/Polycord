@@ -142,11 +142,18 @@ export type ModData = {
   log: ModLogEntry[];
 };
 
+export type FirstPage = {
+  scope: string;
+  range: ActivityRange;
+  page: ActivityPage<ModReport>;
+};
+
 export type ModSnapshot = ModData & {
   pendingCases: number;
   staff: string[];
   meId: string;
   meRole: StaffRole;
+  firstPage?: FirstPage;
 };
 
 export type ModState = {
