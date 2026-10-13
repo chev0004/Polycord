@@ -7,8 +7,10 @@ import { MdDeleteOutline, MdMic, MdStop } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { FormGroup } from '@/components/Form';
 import { clearClips } from '@/features/Discovery/voiceClips';
+import { VoiceIntroPlayer } from './VoiceIntroPlayer';
 
 const MAX_INTRO_SECONDS = 20;
+const DOWNLOAD_NAME = 'polycord-voice-intro';
 
 type PendingClip = {
   url: string;
@@ -21,6 +23,7 @@ export type PendingVoiceClip = { url: string; seconds: number };
 
 type VoiceIntroEditorProps = {
   premium: boolean;
+  profileId?: string;
   voiceSeconds: number;
   onChange: (seconds: number) => void;
   onPendingChange?: (clip: PendingVoiceClip | null) => void;
@@ -36,6 +39,7 @@ const blobToDataUrl = (blob: Blob): Promise<string> =>
 
 export const VoiceIntroEditor = ({
   premium,
+  profileId,
   voiceSeconds,
   onChange,
   onPendingChange,
@@ -45,6 +49,7 @@ export const VoiceIntroEditor = ({
   const [recording, setRecording] = useState(false);
   const [pending, setPending] = useState<PendingClip | null>(null);
   const [busy, setBusy] = useState(false);
+  const [revision, setRevision] = useState(0);
   const [error, setError] = useState<'mic' | 'save' | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -164,6 +169,7 @@ export const VoiceIntroEditor = ({
       clearClips();
       const saved = (await response.json()) as { durationSeconds: number };
       onChange(saved.durationSeconds);
+      setRevision((current) => current + 1);
       URL.revokeObjectURL(pending.url);
       setPending(null);
     } catch {
@@ -262,10 +268,22 @@ export const VoiceIntroEditor = ({
           ) : null}
         </div>
 
+        {premium && profileId && voiceSeconds && !recording && !pending ? (
+          <VoiceIntroPlayer
+            src={`/api/voice/${profileId}?rev=${revision}`}
+            seconds={voiceSeconds}
+            filename={DOWNLOAD_NAME}
+          />
+        ) : null}
+
         {pending ? (
           <div className="flex flex-col gap-2.5">
-            {/* biome-ignore lint/a11y/useMediaCaption: short voice recording preview has no transcript */}
-            <audio controls src={pending.url} className="h-9 w-full" />
+            <VoiceIntroPlayer
+              src={pending.url}
+              seconds={pending.seconds}
+              mimeType={pending.mimeType}
+              filename={DOWNLOAD_NAME}
+            />
             <div className="flex gap-2">
               <Button
                 onClick={saveClip}

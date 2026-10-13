@@ -683,6 +683,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       render={({ field }) => (
         <VoiceIntroEditor
           premium={premium}
+          profileId={profileId}
           voiceSeconds={field.value ?? 0}
           onChange={(seconds) =>
             resetField('voiceIntroSeconds', { defaultValue: seconds })
