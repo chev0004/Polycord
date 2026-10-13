@@ -1012,7 +1012,9 @@ const serverRenderedCachedVisitPlay: Story['play'] = async ({
   await waitFor(() =>
     expect(discoveryCache.get(CACHED_URL)).toEqual(freshSnapshot),
   );
-  await expect(canvas.getAllByText('Fresh card').length).toBeGreaterThan(0);
+  await expect(
+    (await canvas.findAllByText('Fresh card')).length,
+  ).toBeGreaterThan(0);
   await expect(canvas.queryAllByText('Stale card')).toHaveLength(0);
 };
 
