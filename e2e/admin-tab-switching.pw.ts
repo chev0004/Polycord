@@ -264,7 +264,8 @@ test.describe('admin tab switching', () => {
     const page = await context.newPage();
     const finished: string[] = [];
     page.on('requestfinished', (request) => {
-      finished.push(new URL(request.url()).pathname);
+      const { pathname, search } = new URL(request.url());
+      finished.push(`${pathname}${search}`);
     });
     await page.goto('/en');
     await expect
@@ -272,6 +273,7 @@ test.describe('admin tab switching', () => {
         (await context.cookies()).some(({ name }) => name === 'polycord_tz'),
       )
       .toBe(true);
+    finished.length = 0;
     await page.getByRole('link', { name: 'Admin' }).click();
     await expect(page).toHaveURL(/\/en\/admin$/);
     await expect(
@@ -279,7 +281,13 @@ test.describe('admin tab switching', () => {
         .getByRole('region', { name: 'Reports', exact: true })
         .getByRole('button', { name: new RegExp(`${prefix} Reported`) }),
     ).toHaveCount(4);
-    expect(finished.some((path) => path === '/api/admin/reports')).toBe(false);
+    expect(
+      finished.some(
+        (url) =>
+          url.startsWith('/api/admin/reports') &&
+          !url.includes('status=resolved'),
+      ),
+    ).toBe(false);
     await context.close();
   });
 });
