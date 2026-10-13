@@ -963,9 +963,16 @@ const CachedVisit = (args: React.ComponentProps<typeof DiscoveryPage>) => {
       discoveryCache.begin(CACHED_URL),
     );
     freshSnapshot = snapshot('Fresh card');
+    discoveryCache.expire();
   });
 
-  return <DiscoveryPage {...args} fetchOnMount />;
+  return (
+    <DiscoveryPage
+      {...args}
+      profiles={freshSnapshot.profiles}
+      discoveryData={args.fetchOnMount ? undefined : freshSnapshot}
+    />
+  );
 };
 
 const cachedVisitPlay: Story['play'] = async ({ canvasElement }) => {
@@ -984,14 +991,44 @@ const cachedVisitPlay: Story['play'] = async ({ canvasElement }) => {
 };
 
 export const CachedVisitRefreshes: Story = {
+  args: { fetchOnMount: true },
   beforeEach: heldRefresh,
   render: (args) => <CachedVisit {...args} />,
   play: cachedVisitPlay,
 };
 
 export const MobileCachedVisitRefreshes: Story = {
+  args: { fetchOnMount: true },
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   beforeEach: heldRefresh,
   render: (args) => <CachedVisit {...args} />,
   play: cachedVisitPlay,
+};
+
+const serverRenderedCachedVisitPlay: Story['play'] = async ({
+  canvasElement,
+}) => {
+  const canvas = within(canvasElement);
+  await waitFor(() =>
+    expect(discoveryCache.get(CACHED_URL)).toEqual(freshSnapshot),
+  );
+  await expect(canvas.getAllByText('Fresh card').length).toBeGreaterThan(0);
+  await expect(canvas.queryAllByText('Stale card')).toHaveLength(0);
+};
+
+export const ServerRenderedCachedVisit: Story = {
+  parameters: { skeleton: false },
+  beforeEach: heldRefresh,
+  render: (args) => <CachedVisit {...args} />,
+  play: serverRenderedCachedVisitPlay,
+};
+
+export const MobileServerRenderedCachedVisit: Story = {
+  parameters: {
+    skeleton: false,
+    viewport: { defaultViewport: 'mobile1' },
+  },
+  beforeEach: heldRefresh,
+  render: (args) => <CachedVisit {...args} />,
+  play: serverRenderedCachedVisitPlay,
 };

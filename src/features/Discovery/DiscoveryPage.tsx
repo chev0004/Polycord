@@ -630,6 +630,15 @@ export const DiscoveryPage = ({
   useLayoutEffect(() => {
     if (!remote || urlQuery === null || appliedUrl.current === requestUrl)
       return;
+    if (skipInitialRefresh.current && discoveryData) {
+      appliedUrl.current = requestUrl;
+      discoveryCache.set(
+        requestUrl,
+        discoveryData,
+        discoveryCache.begin(requestUrl),
+      );
+      return;
+    }
     const cached = discoveryCache.get(requestUrl);
     if (!cached) return;
     appliedUrl.current = requestUrl;
@@ -637,7 +646,7 @@ export const DiscoveryPage = ({
     setProfileItems(withoutBlocked(cached.profiles));
     setPage(cached.page);
     setLoadedUrl(requestUrl);
-  }, [remote, urlQuery, requestUrl]);
+  }, [remote, urlQuery, requestUrl, discoveryData]);
 
   const criteriaKey = buildDiscoveryQuery({
     filterValues,
