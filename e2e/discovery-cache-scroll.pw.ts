@@ -147,7 +147,7 @@ for (const [width, restore] of [
           );
         }, url);
       if (width < 768) {
-        await page.keyboard.press('Escape');
+        await sheet.getByRole('button', { name: 'Close' }).click();
         await expect(sheet).toHaveCount(0);
       } else {
         await page
