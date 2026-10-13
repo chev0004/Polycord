@@ -14,6 +14,10 @@ const catalog = [
   { tag: 'Rugby', count: 9 },
   { tag: 'Running', count: 7 },
   { tag: 'Ruby', count: 3 },
+  ...Array.from({ length: 8 }, (_, index) => ({
+    tag: `Scroll ${index + 1}`,
+    count: 1,
+  })),
 ];
 
 type ApiOptions = {
@@ -172,6 +176,42 @@ export const SelectWithClick: Story = {
 
     await waitFor(() =>
       expect(selectedTags(canvasElement)).toEqual(['Anime', 'Ruby']),
+    );
+  },
+};
+
+export const KeyboardSelectionStaysVisible: Story = {
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole('combobox');
+    await userEvent.type(input, 'Scroll');
+    await waitFor(() =>
+      expect(body(canvasElement).getAllByRole('option')).toHaveLength(9),
+    );
+    const list = body(canvasElement).getByRole('listbox');
+    const create = body(canvasElement).getByRole('option', {
+      name: 'Create tag "Scroll"',
+    });
+
+    await userEvent.keyboard('{ArrowDown}'.repeat(8));
+    await waitFor(() => {
+      expect(create).toHaveAttribute('aria-selected', 'true');
+      expect(create.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        list.getBoundingClientRect().bottom,
+      );
+      expect(list.scrollTop).toBeGreaterThan(0);
+    });
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => {
+      expect(body(canvasElement).getAllByRole('option')[0]).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(list.scrollTop).toBe(0);
+    });
+    await userEvent.keyboard('{ArrowUp}{Enter}');
+    await waitFor(() =>
+      expect(selectedTags(canvasElement)).toEqual(['Anime', 'Scroll']),
     );
   },
 };

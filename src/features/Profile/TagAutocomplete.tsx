@@ -92,6 +92,12 @@ export const TagAutocomplete = ({
     ...(creatable ? [{ tag: query, count: 0, create: true }] : []),
   ];
   const activeOption = options[highlighted];
+  useEffect(() => {
+    if (open && activeOption)
+      document
+        .getElementById(`${listboxId}-${highlighted}`)
+        ?.scrollIntoView({ block: 'nearest' });
+  }, [open, activeOption, highlighted, listboxId]);
   const statusMessage =
     suggestions.status === 'loading'
       ? t('tagSuggestionsLoading')
