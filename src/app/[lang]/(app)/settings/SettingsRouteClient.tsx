@@ -1,5 +1,6 @@
 'use client';
 
+import { discoveryCache } from '@/features/Discovery/discoveryCache';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { BlockedUsers } from '@/features/Settings/BlockedUsers';
 import {
@@ -50,6 +51,8 @@ const saveSettings = async (data: SettingsFormValues) => {
     if (response.status === 401) throw new SessionExpiredError();
     throw new Error('Settings save failed');
   }
+
+  discoveryCache.expire();
 };
 
 const downloadAccountData = async () => {

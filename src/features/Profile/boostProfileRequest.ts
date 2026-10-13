@@ -1,3 +1,5 @@
+import { discoveryCache } from '@/features/Discovery/discoveryCache';
+
 export type BoostResult = {
   boostedUntil: string;
   remaining: number;
@@ -30,6 +32,7 @@ export const boostProfileRequest = async (): Promise<BoostResult> => {
     );
   }
 
+  discoveryCache.expire();
   return data as BoostResult;
 };
 

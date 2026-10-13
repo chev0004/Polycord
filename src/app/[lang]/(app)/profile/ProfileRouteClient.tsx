@@ -1,6 +1,7 @@
 'use client';
 
 import { bumpProfileRequest } from '@/features/Discovery/bumpProfileRequest';
+import { discoveryCache } from '@/features/Discovery/discoveryCache';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
 import { ProfilePage } from '@/features/Profile';
 import { boostProfileRequest } from '@/features/Profile/boostProfileRequest';
@@ -102,6 +103,7 @@ export const ProfileRouteClient = ({
           throw await saveResponseError(response, 'Profile save failed');
         }
 
+        discoveryCache.expire();
         router.refresh();
       }}
       onDeleteProfile={
@@ -114,6 +116,8 @@ export const ProfileRouteClient = ({
               if (!response.ok) {
                 throw new Error('Profile delete failed');
               }
+
+              discoveryCache.expire();
 
               router.push(`/${locale}/onboarding`);
               router.refresh();

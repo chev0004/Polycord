@@ -489,10 +489,11 @@ export const DiscoveryPage = ({
       const controller = new AbortController();
       requestRef.current = controller;
       const generation = discoveryCache.begin(requestUrl);
+      const cachedVisit =
+        !hasLoaded.current && appliedUrl.current === requestUrl;
       if (
-        !skeleton &&
         trigger &&
-        hasLoaded.current &&
+        (hasLoaded.current ? !skeleton : cachedVisit) &&
         !settleRequest.current &&
         !barSettle.current
       )
@@ -629,6 +630,15 @@ export const DiscoveryPage = ({
   useLayoutEffect(() => {
     if (!remote || urlQuery === null || appliedUrl.current === requestUrl)
       return;
+    if (skipInitialRefresh.current && discoveryData) {
+      appliedUrl.current = requestUrl;
+      discoveryCache.set(
+        requestUrl,
+        discoveryData,
+        discoveryCache.begin(requestUrl),
+      );
+      return;
+    }
     const cached = discoveryCache.get(requestUrl);
     if (!cached) return;
     appliedUrl.current = requestUrl;
@@ -636,7 +646,7 @@ export const DiscoveryPage = ({
     setProfileItems(withoutBlocked(cached.profiles));
     setPage(cached.page);
     setLoadedUrl(requestUrl);
-  }, [remote, urlQuery, requestUrl]);
+  }, [remote, urlQuery, requestUrl, discoveryData]);
 
   const criteriaKey = buildDiscoveryQuery({
     filterValues,
@@ -647,8 +657,8 @@ export const DiscoveryPage = ({
   });
 
   useEffect(() => {
-    discoveryCache.setCriteria(criteriaKey);
-  }, [criteriaKey]);
+    if (urlQuery !== null) discoveryCache.setCriteria(criteriaKey);
+  }, [criteriaKey, urlQuery]);
 
   const lastPage = stacked ? Math.min(totalPages, MAX_STACK_PAGES) : totalPages;
   const canPrefetch =

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MdDeleteOutline, MdMic, MdStop } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { FormGroup } from '@/components/Form';
+import { discoveryCache } from '@/features/Discovery/discoveryCache';
 import { clearClips } from '@/features/Discovery/voiceClips';
 import { VoiceIntroPlayer } from './VoiceIntroPlayer';
 
@@ -167,6 +168,7 @@ export const VoiceIntroEditor = ({
       }
 
       clearClips();
+      discoveryCache.expire();
       const saved = (await response.json()) as { durationSeconds: number };
       onChange(saved.durationSeconds);
       setRevision((current) => current + 1);
@@ -199,6 +201,7 @@ export const VoiceIntroEditor = ({
       }
 
       clearClips();
+      discoveryCache.expire();
       onChange(0);
     } catch {
       setError('save');
