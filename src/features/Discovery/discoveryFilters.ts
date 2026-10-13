@@ -4,6 +4,7 @@ import {
   MdAccessTime,
   MdLanguage,
   MdLocationOn,
+  MdMic,
   MdSchedule,
   MdSchool,
 } from 'react-icons/md';
@@ -26,6 +27,7 @@ export type DiscoveryFilterValues = Record<string, string | string[]>;
 
 export const AVAILABILITY_AVAILABLE_NOW = 'available-now';
 export const AVAILABILITY_OVERLAPS = 'overlaps';
+export const VOICE_INTRO_ONLY = 'yes';
 
 const toAvailabilityContext = (
   profile: DiscoveryProfile,
@@ -121,6 +123,13 @@ export const useDiscoveryFilterDefs = (options?: {
             : []),
         ],
       },
+      {
+        id: 'voiceIntro',
+        icon: MdMic,
+        labelKey: 'filterVoiceIntro',
+        placeholderKey: 'filterSelectVoiceIntro',
+        options: [{ value: VOICE_INTRO_ONLY, label: t('filterHasVoiceIntro') }],
+      },
     ],
     [locale, t, viewerHasAvailability],
   );
@@ -144,6 +153,7 @@ export const applyDiscoveryFilters = (
   const proficiency = toSelection(values.proficiency);
   const timezone = toSelection(values.timezone);
   const availability = toSelection(values.availability)[0];
+  const voiceIntro = toSelection(values.voiceIntro)[0];
 
   return profiles.filter((profile) => {
     if (
@@ -182,6 +192,10 @@ export const applyDiscoveryFilters = (
       timezone.length &&
       !(profile.timezone && timezone.includes(profile.timezone))
     ) {
+      return false;
+    }
+
+    if (voiceIntro === VOICE_INTRO_ONLY && !profile.voiceIntroSeconds) {
       return false;
     }
 

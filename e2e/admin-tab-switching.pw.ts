@@ -8,6 +8,20 @@ test.describe('admin tab switching', () => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const prefix = randomUUID().slice(0, 8);
   const utcToday = sql`(date_trunc('day', now() at time zone 'utc') at time zone 'utc')`;
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const todayStart = today.toISOString();
+  const yesterday = new Date(today);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  const yesterdayStart = yesterday.toISOString();
+  const pendingReportsOn = (url: string, from: string) => {
+    const request = new URL(url, 'http://localhost');
+    return (
+      request.pathname === '/api/admin/reports' &&
+      request.searchParams.get('status') === 'pending' &&
+      request.searchParams.get('from') === from
+    );
+  };
   let owner: Account;
   let reporter: Account;
   let reported: Account[];
@@ -31,6 +45,8 @@ test.describe('admin tab switching', () => {
     await sql`insert into reports (reporter_user_id, reported_user_id, reason, status, created_at)
       select ${reporter.id}, id, 'spam', 'pending', ${utcToday} + interval '1 minute'
       from users where discord_user_id like ${`${prefix}-rep-%`}`;
+    await sql`insert into reports (reporter_user_id, reported_user_id, reason, status, created_at)
+      values (${reporter.id}, ${reported[0].id}, 'spam', 'pending', ${utcToday} - interval '1 minute')`;
     await sql`insert into moderation_actions (admin_user_id, target_user_id, action, note, created_at)
       select ${owner.id}, ${reported[0].id}, 'warn', 'today-' || n, ${utcToday} + n * interval '1 minute'
       from generate_series(1, 5) n`;
@@ -214,7 +230,7 @@ test.describe('admin tab switching', () => {
     await expect(
       queue.getByRole('button', { name: new RegExp(`${prefix} Reported`) }),
     ).toHaveCount(4);
-    expect(finished.some((url) => url.startsWith('/api/admin/reports'))).toBe(
+    expect(finished.some((url) => pendingReportsOn(url, todayStart))).toBe(
       false,
     );
     await expect
@@ -281,13 +297,12 @@ test.describe('admin tab switching', () => {
         .getByRole('region', { name: 'Reports', exact: true })
         .getByRole('button', { name: new RegExp(`${prefix} Reported`) }),
     ).toHaveCount(4);
-    expect(
-      finished.some(
-        (url) =>
-          url.startsWith('/api/admin/reports') &&
-          !url.includes('status=resolved'),
-      ),
-    ).toBe(false);
+    await expect
+      .poll(() => finished.some((url) => pendingReportsOn(url, yesterdayStart)))
+      .toBe(true);
+    expect(finished.some((url) => pendingReportsOn(url, todayStart))).toBe(
+      false,
+    );
     await context.close();
   });
 });

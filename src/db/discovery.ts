@@ -40,6 +40,26 @@ const SEARCH_TAG_SUGGESTIONS = 8;
 const TAG_CACHE_SIZE = 64;
 const TAG_CACHE_MS = 60000;
 
+const premiumDiscordIds = () =>
+  (process.env.POLYCORD_PREMIUM_USER_IDS ?? '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+
+const playableVoiceIntro = () => {
+  const ids = premiumDiscordIds();
+  return and(
+    sql`${profiles.voiceIntroSeconds} > 0`,
+    sql`exists (select 1 from voice_intros where user_id = ${profiles.userId})`,
+    or(
+      ids.length ? inArray(users.discordUserId, ids) : undefined,
+      sql`${users.premiumGrantedUntil} > now()`,
+      sql`exists (select 1 from subscriptions where user_id = ${profiles.userId}
+        and status in ('active', 'trialing') and current_period_end > now())`,
+    ),
+  );
+};
+
 const discoverable = () =>
   and(publiclyVisible(), isNotNull(profiles.lastBumpedAt));
 
@@ -216,6 +236,8 @@ const discoveryWhere = async (
     conditions.push(availability.availableNow);
   if (selection('availability')[0] === 'overlaps')
     conditions.push(sql`${availability.overlap} >= 30`);
+  if (selection('voiceIntro')[0] === 'yes')
+    conditions.push(playableVoiceIntro());
   return { where: and(...conditions), overlap: availability.overlap };
 };
 
@@ -247,10 +269,7 @@ export const listDiscoveryPage = async (
     viewer,
     viewerUserId,
   );
-  const premiumIds = (process.env.POLYCORD_PREMIUM_USER_IDS ?? '')
-    .split(',')
-    .map((id) => id.trim())
-    .filter(Boolean);
+  const premiumIds = premiumDiscordIds();
   const premium = or(
     premiumIds.length ? inArray(users.discordUserId, premiumIds) : undefined,
     sql`${users.premiumGrantedUntil} > now()`,

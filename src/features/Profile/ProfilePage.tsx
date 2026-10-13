@@ -53,6 +53,7 @@ import { type DiscoveryProfile, ProfileCard } from '@/features/Discovery';
 import { BumpProfileError } from '@/features/Discovery/bumpProfileRequest';
 import {
   CUSTOM_CARD_THEME_ID,
+  type CustomGradient,
   DEFAULT_CARD_COLOR,
   DEFAULT_CUSTOM_GRADIENT,
   findCardTheme,
@@ -263,6 +264,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     DEFAULT_AVAILABILITY_PATTERN,
   );
   const [tease, setTease] = useState<string | null>(null);
+  const [previewGradient, setPreviewGradient] = useState<CustomGradient | null>(
+    null,
+  );
+  const [previewAccent, setPreviewAccent] = useState<string | null>(null);
   const [cardTease, setCardTease] = useState<DiscordCardLayout | null>(null);
   const [bumpStatus, setBumpStatus] = useState<
     'idle' | 'bumping' | 'success' | 'cooldown' | 'error'
@@ -360,16 +365,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   );
 
   const effectiveCardColor = premium ? cardColor : (tease ?? cardColor);
+  const activeGradient = premium
+    ? customGradient
+    : (previewGradient ?? customGradient);
+  const activeAccent = premium ? accentOverride : previewAccent;
   const basePreviewTheme =
-    premium && effectiveCardColor === CUSTOM_CARD_THEME_ID
-      ? getCustomCardTheme(customGradient)
+    (premium || tease) && effectiveCardColor === CUSTOM_CARD_THEME_ID
+      ? getCustomCardTheme(activeGradient)
       : (findCardTheme(effectiveCardColor) ?? getFreeCardTheme(0));
-  const previewTheme =
-    premium && accentOverride
-      ? { ...basePreviewTheme, accent: accentOverride }
-      : basePreviewTheme;
+  const previewTheme = activeAccent
+    ? { ...basePreviewTheme, accent: activeAccent }
+    : basePreviewTheme;
   const autoAccent = basePreviewTheme.accent;
-  const previewIsPremiumLook = premium || Boolean(tease);
+  const previewIsPremiumLook = premium || Boolean(tease || previewAccent);
 
   const initialTimezone = initialValues?.timezone;
   useEffect(() => {
@@ -431,6 +439,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     }
   };
 
+  const clearColourPreviews = () => {
+    setTease(null);
+    setPreviewGradient(null);
+    setPreviewAccent(null);
+  };
+
   const handleDiscard = () => {
     reset();
     draft.clear();
@@ -438,8 +452,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     setTagError(null);
     setSaveFailed(false);
     setDeleteFailed(false);
-    setTease(null);
     setCardTease(null);
+    clearColourPreviews();
     setBumpStatus('idle');
   };
 
@@ -706,20 +720,24 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           premium={premium}
           tease={tease}
           onTease={setTease}
-          customGradient={customGradient}
-          accentOverride={accentOverride}
+          customGradient={activeGradient}
+          accentOverride={activeAccent}
           autoAccent={autoAccent}
           onCustomGradient={(gradient) =>
-            setValue('customGradient', gradient, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
+            premium
+              ? setValue('customGradient', gradient, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              : setPreviewGradient(gradient)
           }
           onAccentOverride={(color) =>
-            setValue('accentOverride', color, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
+            premium
+              ? setValue('accentOverride', color, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              : setPreviewAccent(color)
           }
         />
       )}
@@ -820,7 +838,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           form={form}
           onSubmit={onSubmit}
           onDiscard={handleDiscard}
-          onStyleClose={() => setTease(null)}
+          onStyleClose={clearColourPreviews}
           premium={premium}
           premiumLook={previewIsPremiumLook}
           theme={previewTheme}
