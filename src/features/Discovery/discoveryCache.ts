@@ -65,6 +65,7 @@ export const discoveryCache = {
     viewer = next;
   },
   setSaved: (profileId: string, saved: boolean) => {
+    profileSheetStore.invalidate();
     for (const [url, data] of entries)
       entries.set(url, {
         ...data,
