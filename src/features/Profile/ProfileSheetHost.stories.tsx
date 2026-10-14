@@ -88,3 +88,41 @@ export const WaitingForDiscovery: Story = {
 export const InlineProfile: Story = {
   render: () => <ProfileSheet data={profile} portal={false} />,
 };
+
+export const ReportAndBlockClosesProfile: Story = {
+  beforeEach: () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        ['/api/report', '/api/block'].includes(String(args[0]))
+          ? Promise.resolve(Response.json({}))
+          : original(...args),
+      { preconnect: original.preconnect },
+    );
+    profileSheetStore.open({
+      ...profile,
+      isLoggedIn: true,
+      waitForDiscovery: false,
+    });
+    return () => {
+      globalThis.fetch = original;
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+    await userEvent.click(
+      await body.findByRole('button', { name: 'More actions' }),
+    );
+    await userEvent.click(
+      await body.findByRole('button', { name: 'Report profile' }),
+    );
+    await userEvent.click(
+      await body.findByRole('radio', { name: 'Spam or scam' }),
+    );
+    await userEvent.click(
+      body.getByRole('checkbox', { name: /Also block this account/ }),
+    );
+    await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+    await waitFor(() => expect(profileSheetStore.get()).toBeNull());
+  },
+};

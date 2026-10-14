@@ -46,7 +46,9 @@ export const ProfileSheet = ({
   const [blockOpen, setBlockOpen] = useState(false);
   const [moderateOpen, setModerateOpen] = useState(false);
   const returnFocus = useRef<HTMLElement>(null);
-  const actions = useProfileActions(locale, isLoggedIn, () => setOpen(false));
+  const actions = useProfileActions(locale, isLoggedIn, () =>
+    handleOpenChange(false),
+  );
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => setIsSaved(data.isSaved), [data.isSaved]);
@@ -69,6 +71,9 @@ export const ProfileSheet = ({
     setOpen(next);
     if (!next) {
       const closing = profileSheetStore.get();
+      const closingId =
+        typeof closing === 'string' ? closing : closing?.profile.id;
+      if (closingId !== profile.id) return;
       closeTimer.current = setTimeout(() => {
         if (profileSheetStore.get() === closing) profileSheetStore.close();
       }, CLOSE_ANIMATION_MS);
