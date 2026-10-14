@@ -186,7 +186,7 @@ export const VoiceIntroPlayer = ({
           className="relative flex h-6 min-w-4 flex-1 touch-none select-none items-center"
         >
           <Slider.Track className={trackClass}>
-            <Slider.Range className="absolute h-full rounded-full bg-[#12b5e5]" />
+            <Slider.Range className="absolute h-full rounded-full bg-[var(--ct-accent,var(--color-primary))]" />
           </Slider.Track>
           <Slider.Thumb
             aria-label={t('voicePlayerSeek')}
