@@ -78,7 +78,39 @@ test('profile tags suggest existing tags and create new ones explicitly', async 
 
     await page.goto('/en/profile');
     const input = page.getByPlaceholder('Type a tag and press Enter');
-    await input.fill(rugby.slice(0, -2).toLowerCase());
+    const searches: string[] = [];
+    page.on('request', (request) => {
+      const url = new URL(request.url());
+      if (url.pathname === '/api/tags') searches.push(url.search);
+    });
+    await input.click();
+    await expect(page.getByRole('listbox')).toBeVisible();
+    const popularRequests = searches.length;
+    await page.keyboard.press('Escape');
+    await input.click();
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await page.waitForTimeout(300);
+    expect(searches.length).toBe(popularRequests);
+
+    const query = rugby.slice(0, -2).toLowerCase();
+    await input.fill(query);
+    await expect(
+      page.getByRole('option', { name: new RegExp(`^${rugby}`) }),
+    ).toBeVisible();
+    const searchedRequests = searches.length;
+    await input.fill(query.toUpperCase());
+    await page.keyboard.press('Escape');
+    await input.click();
+    await expect(
+      page.getByRole('option', { name: new RegExp(`^${rugby}`) }),
+    ).toBeVisible();
+    await page.waitForTimeout(300);
+    expect(searches.length).toBe(searchedRequests);
+    await input.fill(`${query}x`);
+    await input.fill(`${query}xy`);
+    await input.fill(query);
+    await page.waitForTimeout(300);
+    expect(searches.length).toBe(searchedRequests);
     await page.getByRole('option', { name: new RegExp(`^${rugby}`) }).click();
     await expect(
       page.getByRole('button', { name: `Remove ${rugby}` }),

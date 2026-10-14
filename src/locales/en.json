@@ -1089,7 +1089,6 @@
     "reportReasonInappropriate": "Inappropriate content",
     "reportReasonImpersonation": "Impersonation or fake profile",
     "reportReasonDisruptive": "Disruptive profile content",
-    "reportReasonDisruptiveDescription": "Objectionable or nuisance avatars, descriptions or tags, and voice intros that are deliberately loud or distorted, contain sexual sounds, or are racist or hateful.",
     "reportReasonOther": "Something else",
     "reportDetailsLabel": "Additional details (optional)",
     "reportDetailsPlaceholder": "Add any context that will help us review this report.",
