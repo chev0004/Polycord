@@ -140,6 +140,15 @@ test('every product route shares navigation and returns to discovery', async ({
       await page.setViewportSize({ width, height: 900 });
       for (const route of ['', ...routes]) {
         await page.goto(`/en/${route}`);
+        if (width < 768 && route.startsWith('u/')) {
+          const profile = page.getByRole('dialog', { name, exact: true });
+          await expect(profile).toBeVisible();
+          const close = profile.getByRole('button', { name: 'Close' });
+          await expect(close).toBeEnabled();
+          await close.click();
+          await expect(profile).toHaveCount(0);
+          await expect(page).toHaveURL('/en');
+        }
         await expect(page.locator('.skeleton-shimmer')).toHaveCount(0);
         await expectShell(page);
         await page.screenshot({
