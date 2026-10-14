@@ -380,6 +380,7 @@ export const GradientColorPicker = ({
   previewOnly = false,
 }: GradientColorPickerProps) => {
   const t = useTranslations('Profile');
+  const ring = previewOnly ? TEASE_RING : SELECTED_RING;
   const gradientCss = `linear-gradient(115deg, ${gradient.from}, ${gradient.to})`;
 
   return (
@@ -392,11 +393,7 @@ export const GradientColorPicker = ({
           className={`${swatchClasses} ${previewOnly && !isActive ? 'opacity-40 hover:opacity-75 data-[state=open]:opacity-100' : ''}`}
           style={{
             background: gradientCss,
-            boxShadow: isActive
-              ? previewOnly
-                ? TEASE_RING
-                : SELECTED_RING
-              : undefined,
+            boxShadow: isActive ? ring : undefined,
           }}
         >
           <MdPalette
@@ -430,6 +427,7 @@ export const AccentPicker = ({
   previewOnly = false,
 }: AccentPickerProps) => {
   const t = useTranslations('Profile');
+  const ring = previewOnly ? TEASE_RING : SELECTED_RING;
   const display = value && isValidHex(value) ? value : autoColor;
   const [draftHex, setDraftHex] = useState(display);
   const activeHsv = safeHexToHsv(isValidHex(draftHex) ? draftHex : display);
@@ -455,11 +453,7 @@ export const AccentPicker = ({
             className={`${swatchClasses} ${previewOnly && !value ? 'opacity-40 hover:opacity-75 data-[state=open]:opacity-100' : ''}`}
             style={{
               background: display,
-              boxShadow: value
-                ? previewOnly
-                  ? TEASE_RING
-                  : SELECTED_RING
-                : undefined,
+              boxShadow: value ? ring : undefined,
             }}
           />
         </Popover.Trigger>
