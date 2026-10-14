@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
+import { expect, fn, userEvent, within } from '@storybook/test';
 import { ReportDialog } from './ReportDialog';
 import 'src/app/globals.css';
 
@@ -103,10 +103,8 @@ const submitDisruptiveReport: Story['play'] = async ({
 }) => {
   const body = within(canvasElement.ownerDocument.body);
 
-  const hint = await body.findByText(/deliberately loud or distorted/);
-  await waitFor(() => expect(hint).toBeVisible());
   await userEvent.click(
-    body.getByRole('radio', { name: /Disruptive profile content/ }),
+    await body.findByRole('radio', { name: 'Disruptive profile content' }),
   );
   await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
   await expect(args.onSubmit).toHaveBeenCalledWith(

@@ -104,11 +104,6 @@ export const ReportDialog = ({
               key={value}
               value={value}
               label={t(reasonLabelKeys[value])}
-              description={
-                value === 'disruptive_profile'
-                  ? t('reportReasonDisruptiveDescription')
-                  : undefined
-              }
             />
           ))}
         </RadioGroup>
