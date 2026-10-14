@@ -31,7 +31,13 @@ const MobileTakeAction = dynamic(() =>
 
 const CLOSE_ANIMATION_MS = 300;
 
-const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
+export const ProfileSheet = ({
+  data,
+  portal,
+}: {
+  data: ProfileSheetData;
+  portal?: boolean;
+}) => {
   const { profile, isLoggedIn, isOwn, viewerTimezone, staff } = data;
   const t = useTranslations('Discovery');
   const locale = useLocale();
@@ -41,10 +47,32 @@ const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
   const [moderateOpen, setModerateOpen] = useState(false);
   const returnFocus = useRef<HTMLElement>(null);
   const actions = useProfileActions(locale, isLoggedIn, () => setOpen(false));
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => setIsSaved(data.isSaved), [data.isSaved]);
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    },
+    [],
+  );
+  useEffect(() => {
+    if (!data.waitForDiscovery) return;
+    const preventNavigation = (event: Event) => event.preventDefault();
+    window.addEventListener('polycord:navigate', preventNavigation);
+    return () =>
+      window.removeEventListener('polycord:navigate', preventNavigation);
+  }, [data.waitForDiscovery]);
 
   const handleOpenChange = (next: boolean) => {
+    if (!next && data.waitForDiscovery) return;
     setOpen(next);
-    if (!next) setTimeout(profileSheetStore.close, CLOSE_ANIMATION_MS);
+    if (!next) {
+      const closing = profileSheetStore.get();
+      closeTimer.current = setTimeout(() => {
+        if (profileSheetStore.get() === closing) profileSheetStore.close();
+      }, CLOSE_ANIMATION_MS);
+    }
   };
 
   const toggleSave = async () => {
@@ -129,8 +157,10 @@ const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
           if (copiedToClipboard && !isOwn)
             notifyUsernameCopied(profile.id).catch(() => {});
         }}
-        menuItems={menuItems}
+        menuItems={data.waitForDiscovery ? [] : menuItems}
         pointerReturnFocus={false}
+        portal={portal}
+        dismissible={!data.waitForDiscovery}
       />
       <BlockDialog
         open={blockOpen}

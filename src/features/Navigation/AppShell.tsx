@@ -94,6 +94,7 @@ export const AppShell = ({
     });
   }, [staff]);
   const pathname = usePathname();
+  const onPublicProfileRoute = pathname.split('/')[2] === 'u';
   const mobile = useIsMobile();
   const staffArea = pathname.split('/')[2] === 'admin';
   const dockable =
@@ -104,7 +105,7 @@ export const AppShell = ({
     <BumpContext.Provider value={setBump}>
       <PendingCasesContext.Provider value={setLiveCases}>
         <div
-          className="flex min-h-screen flex-col bg-background-main pb-[var(--dock-space,0px)] text-foreground"
+          className={`flex min-h-screen flex-col bg-background-main pb-[var(--dock-space,0px)] text-foreground ${onPublicProfileRoute ? 'max-md:[&:not(:has(main))]:invisible' : ''}`}
           style={
             docked
               ? ({

@@ -150,3 +150,129 @@ test('an unavailable profile has no public API payload', async ({
   const response = await request.get(`/api/profile/public/${randomUUID()}`);
   expect(response.status()).toBe(404);
 });
+
+for (const width of [320, 375, 390]) {
+  test(`a ${width}px shared profile is visible and locked before Discovery is ready`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 812 });
+    const data = await fixture();
+    let releaseRoute = () => {};
+    let releaseDiscovery = () => {};
+    const routeGate = new Promise<void>((resolve) => {
+      releaseRoute = resolve;
+    });
+    const discoveryGate = new Promise<void>((resolve) => {
+      releaseDiscovery = resolve;
+    });
+    let bootstrapStarted = false;
+    let profileLookups = 0;
+    try {
+      await page.route('**/en?*', async (route) => {
+        if (route.request().headers().rsc === '1') await routeGate;
+        await route.continue();
+      });
+      await page.route('**/api/discovery/bootstrap?*', async (route) => {
+        bootstrapStarted = true;
+        await discoveryGate;
+        await route.continue();
+      });
+      page.on('request', (request) => {
+        if (new URL(request.url()).pathname.startsWith('/api/profile/public/'))
+          profileLookups++;
+      });
+      await page.goto(`/en/u/${data.actorProfile}`);
+      const profile = page.getByRole('dialog', { name: 'Sheet actor' });
+      await expect(profile).toBeVisible();
+      await expect(
+        profile.getByRole('button', { name: 'Close' }),
+      ).toBeDisabled();
+      await page.keyboard.press('Escape');
+      await page
+        .locator('.SheetOverlay')
+        .last()
+        .click({ position: { x: 5, y: 5 }, force: true });
+      await expect(profile).toBeVisible();
+      const handle = await profile
+        .locator('.cursor-grab')
+        .first()
+        .boundingBox();
+      if (!handle) throw new Error('Missing profile sheet handle');
+      await page.mouse.move(handle.x + handle.width / 2, handle.y + 10);
+      await page.mouse.down();
+      await page.mouse.move(handle.x + handle.width / 2, handle.y + 170, {
+        steps: 5,
+      });
+      await page.mouse.up();
+      await expect(
+        profile.getByRole('button', { name: 'Close' }),
+      ).toBeDisabled();
+      await page.screenshot({
+        path: test.info().outputPath(`profile-first-${width}.png`),
+      });
+      releaseRoute();
+      await expect(page).toHaveURL(/\/en$/);
+      if (process.env.NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED !== 'false') {
+        await expect.poll(() => bootstrapStarted).toBe(true);
+        await expect(
+          profile.getByRole('button', { name: 'Close' }),
+        ).toBeDisabled();
+      }
+      releaseDiscovery();
+      await expect(
+        profile.getByRole('button', { name: 'Close' }),
+      ).toBeEnabled();
+      expect(profileLookups).toBe(0);
+      expect(new URL(page.url()).search).toBe('');
+      await profile.getByRole('button', { name: 'Close' }).click();
+      await expect(profile).toHaveCount(0);
+      await expect(page.locator('article:visible').first()).toBeVisible();
+    } finally {
+      releaseRoute();
+      releaseDiscovery();
+      await data.cleanup();
+    }
+  });
+}
+
+test('a failed background Discovery load releases the shared-profile sheet', async ({
+  page,
+}) => {
+  test.skip(process.env.NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED === 'false');
+  const data = await fixture();
+  try {
+    await page.route('**/api/discovery/bootstrap?*', (route) =>
+      route.fulfill({ status: 503, body: '{}' }),
+    );
+    await page.goto(`/en/u/${data.actorProfile}`);
+    await expect(page).toHaveURL(/\/en$/);
+    const profile = page.getByRole('dialog', { name: 'Sheet actor' });
+    await expect(profile.getByRole('button', { name: 'Close' })).toBeEnabled();
+    await profile.getByRole('button', { name: 'Close' }).click();
+    await expect(profile).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  } finally {
+    await data.cleanup();
+  }
+});
+
+test('the mobile profile sheet is present before JavaScript runs', async ({
+  browser,
+}) => {
+  const data = await fixture();
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 375, height: 812 },
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto(`http://localhost:3119/en/u/${data.actorProfile}`);
+    await expect(
+      page.getByRole('dialog', { name: 'Sheet actor' }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Close' })).toBeDisabled();
+  } finally {
+    await context.close();
+    await data.cleanup();
+  }
+});

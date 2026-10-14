@@ -1,8 +1,23 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
-import { ProfileSheetHost } from './ProfileSheetHost';
-import { profileSheetStore } from './profileSheetStore';
+import { ProfileSheet, ProfileSheetHost } from './ProfileSheetHost';
+import { type ProfileSheetData, profileSheetStore } from './profileSheetStore';
+
+const profile: ProfileSheetData = {
+  profile: {
+    id: 'shared-profile',
+    displayName: 'Shared profile',
+    primaryLanguage: 'ja',
+    targetLanguages: [{ language: 'en' }],
+    tags: ['Anime'],
+    about: 'A shared language partner profile.',
+  },
+  isLoggedIn: false,
+  isSaved: false,
+  isOwn: false,
+  waitForDiscovery: true,
+};
 
 const meta: Meta<typeof ProfileSheetHost> = {
   title: 'Features/Profile/ProfileSheetHost',
@@ -52,4 +67,24 @@ export const Loading: Story = {
     );
     await expect(profileSheetStore.get()).toBeNull();
   },
+};
+
+export const WaitingForDiscovery: Story = {
+  beforeEach: () => profileSheetStore.open(profile),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+    const dialog = await body.findByRole('dialog', { name: 'Shared profile' });
+    const close = within(dialog).getByRole('button', { name: 'Close' });
+    await expect(close).toBeDisabled();
+    await userEvent.keyboard('{Escape}');
+    await expect(profileSheetStore.get()).toBe(profile);
+    profileSheetStore.open({ ...profile, waitForDiscovery: false });
+    await waitFor(() => expect(close).toBeEnabled());
+    await userEvent.click(close);
+    await waitFor(() => expect(profileSheetStore.get()).toBeNull());
+  },
+};
+
+export const InlineProfile: Story = {
+  render: () => <ProfileSheet data={profile} portal={false} />,
 };

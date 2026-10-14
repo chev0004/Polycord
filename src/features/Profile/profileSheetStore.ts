@@ -8,6 +8,7 @@ export type ProfileSheetData = {
   isOwn: boolean;
   viewerTimezone?: string;
   staff?: { meId: string; role: StaffRole };
+  waitForDiscovery?: boolean;
 };
 
 export type ProfileSheetTarget = string | ProfileSheetData;
