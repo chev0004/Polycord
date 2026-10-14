@@ -633,6 +633,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             )}
             <div className="flex gap-2">
               <TagAutocomplete
+                key={userId}
                 id={tagsInputId}
                 value={tagInput}
                 onValueChange={setTagInput}

@@ -19,6 +19,12 @@ type Suggestions =
   | { status: 'error' }
   | { status: 'ready'; tags: TagSuggestion[] };
 
+type CachedSuggestions = {
+  at: number;
+  request: Promise<TagSuggestion[]>;
+  tags?: TagSuggestion[];
+};
+
 type TagOption = { tag: string; count: number; create: boolean };
 
 type TagAutocompleteProps = {
@@ -50,34 +56,62 @@ export const TagAutocomplete = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
-  const [suggestions, setSuggestions] = useState<Suggestions>({
-    status: 'loading',
-  });
-  const query = value.trim();
+  const cache = useRef(new Map<string, CachedSuggestions>());
+  const [result, setResult] = useState<{ key: string; value: Suggestions }>();
+  const query = value.trim().toLowerCase();
+  const excluded = JSON.stringify(
+    [...new Set(selected.map((tag) => tag.toLowerCase()))].sort(),
+  );
+  const key = JSON.stringify([query, excluded]);
+  const entry = cache.current.get(key);
+  const cached =
+    entry && (!entry.tags || Date.now() - entry.at < 60_000)
+      ? entry
+      : undefined;
+  const suggestions: Suggestions = cached?.tags
+    ? { status: 'ready', tags: cached.tags }
+    : result?.key === key
+      ? result.value
+      : { status: 'loading' };
 
   useEffect(() => {
     if (!open) return;
-    const controller = new AbortController();
-    setSuggestions({ status: 'loading' });
+    let cancelled = false;
     const timer = setTimeout(
       () => {
-        fetchTagSuggestions(query, selected, controller.signal)
+        let entry = cache.current.get(key);
+        if (entry?.tags && Date.now() - entry.at >= 60_000) entry = undefined;
+        if (!entry) {
+          if (cache.current.size >= 64)
+            cache.current.delete(cache.current.keys().next().value as string);
+          const request = fetchTagSuggestions(query, JSON.parse(excluded));
+          entry = { at: Date.now(), request };
+          cache.current.set(key, entry);
+          const stored = entry;
+          request
+            .then((tags) => {
+              stored.tags = tags;
+              stored.at = Date.now();
+            })
+            .catch(() => cache.current.delete(key));
+        }
+        entry.request
           .then((tags) => {
-            if (controller.signal.aborted) return;
-            setSuggestions({ status: 'ready', tags });
+            if (cancelled) return;
+            setResult({ key, value: { status: 'ready', tags } });
             setHighlighted(0);
           })
           .catch(() => {
-            if (!controller.signal.aborted) setSuggestions({ status: 'error' });
+            if (!cancelled) setResult({ key, value: { status: 'error' } });
           });
       },
-      query ? SEARCH_DELAY_MS : 0,
+      cache.current.has(key) || !query ? 0 : SEARCH_DELAY_MS,
     );
     return () => {
+      cancelled = true;
       clearTimeout(timer);
-      controller.abort();
     };
-  }, [open, query, selected]);
+  }, [open, query, excluded, key]);
 
   const lowered = query.toLowerCase();
   const tags = suggestions.status === 'ready' ? suggestions.tags : [];
@@ -89,7 +123,7 @@ export const TagAutocomplete = ({
     !selected.some((tag) => tag.toLowerCase() === lowered);
   const options: TagOption[] = [
     ...tags.map(({ tag, count }) => ({ tag, count, create: false })),
-    ...(creatable ? [{ tag: query, count: 0, create: true }] : []),
+    ...(creatable ? [{ tag: value.trim(), count: 0, create: true }] : []),
   ];
   const activeOption = options[highlighted];
   useEffect(() => {
@@ -149,6 +183,7 @@ export const TagAutocomplete = ({
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
+          onClick={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
