@@ -34,17 +34,17 @@ const TakeActionPanel = dynamic(() =>
 
 type PublicProfileContext = {
   isSaved: boolean;
-  currentProfileId?: string;
   viewerTimezone?: string;
   viewerAvailability?: AvailabilityPattern;
   staff?: { meId: string; role: StaffRole };
 };
 
-type PublicProfileClientProps = PublicProfileContext & {
+type PublicProfileClientProps = {
   locale: string;
   profile: DiscoveryProfile;
   isLoggedIn: boolean;
-  context?: Promise<PublicProfileContext>;
+  isOwnProfile: boolean;
+  context: Promise<PublicProfileContext>;
 };
 
 const ResolveContext = ({
@@ -63,21 +63,16 @@ export const PublicProfileClient = ({
   locale,
   profile,
   isLoggedIn,
-  isSaved: savedOnEntry,
-  currentProfileId,
-  viewerTimezone: initialTimezone,
-  viewerAvailability: initialAvailability,
-  staff: initialStaff,
+  isOwnProfile,
   context,
 }: PublicProfileClientProps) => {
   const router = useRouteProgressRouter();
   const route = useRouter();
   const [resolved, setResolved] = useState<PublicProfileContext | null>(null);
-  const initialSaved = resolved?.isSaved ?? savedOnEntry;
-  const viewerTimezone = resolved?.viewerTimezone ?? initialTimezone;
-  const viewerAvailability =
-    resolved?.viewerAvailability ?? initialAvailability;
-  const staff = resolved?.staff ?? initialStaff;
+  const initialSaved = resolved?.isSaved ?? false;
+  const viewerTimezone = resolved?.viewerTimezone;
+  const viewerAvailability = resolved?.viewerAvailability;
+  const staff = resolved?.staff;
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
   const searchParams = useSearchParams();
@@ -90,8 +85,6 @@ export const PublicProfileClient = ({
     HTMLElement | null | undefined
   >();
   const mobile = useIsMobile();
-  const isOwnProfile =
-    profile.id === (resolved?.currentProfileId ?? currentProfileId);
   const { refresh } = router;
   const signIn = () => window.location.assign(signInHref(locale));
 
@@ -100,13 +93,13 @@ export const PublicProfileClient = ({
     () => ({
       profile,
       isLoggedIn,
-      isSaved: initialSaved,
+      isSaved,
       isOwn: isOwnProfile,
       viewerTimezone,
       staff,
       waitForDiscovery: true,
     }),
-    [profile, isLoggedIn, initialSaved, isOwnProfile, viewerTimezone, staff],
+    [profile, isLoggedIn, isSaved, isOwnProfile, viewerTimezone, staff],
   );
 
   useEffect(() => setIsSaved(initialSaved), [initialSaved]);
@@ -166,9 +159,7 @@ export const PublicProfileClient = ({
   return (
     <>
       <Suspense fallback={null}>
-        {context ? (
-          <ResolveContext value={context} onReady={setResolved} />
-        ) : null}
+        <ResolveContext value={context} onReady={setResolved} />
       </Suspense>
       {mobile !== false ? (
         <div className="md:hidden">
@@ -187,9 +178,7 @@ export const PublicProfileClient = ({
             isSaving={isSaving}
             viewerTimezone={viewerTimezone}
             viewerAvailability={viewerAvailability}
-            onToggleSave={
-              isOwnProfile || (context && !resolved) ? undefined : toggleSave
-            }
+            onToggleSave={isOwnProfile || !resolved ? undefined : toggleSave}
             onCopyUsername={() => actions.copyUsername(profile, isOwnProfile)}
             onShare={() => actions.share(profile)}
             onReport={isOwnProfile ? undefined : () => actions.report(profile)}

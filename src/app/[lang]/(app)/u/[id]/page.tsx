@@ -74,7 +74,6 @@ async function PublicProfileRoute({
 
   const context = (async () => {
     let savedProfileIds: string[] = [];
-    let currentProfileId: string | undefined;
     let viewerContext: ViewerAvailabilityContext = {};
     let staff: { meId: string; role: StaffRole } | undefined;
     if (user) {
@@ -84,14 +83,12 @@ async function PublicProfileRoute({
         getStaffRole(user),
       ]);
       if (role) staff = { meId: user.accountId, role };
-      currentProfileId = viewerProfile?.profile.id;
       savedProfileIds = savedIds;
       if (viewerProfile)
         viewerContext = toViewerAvailabilityContext(viewerProfile.profile);
     }
     return {
       isSaved: savedProfileIds.includes(profile.id),
-      currentProfileId,
       viewerTimezone: viewerContext.timezone,
       viewerAvailability: viewerContext.availability,
       staff,
@@ -118,10 +115,7 @@ async function PublicProfileRoute({
       locale={lang}
       profile={profile}
       isLoggedIn={Boolean(user)}
-      isSaved={false}
-      currentProfileId={
-        row.profile.userId === user?.accountId ? profile.id : undefined
-      }
+      isOwnProfile={row.profile.userId === user?.accountId}
       context={context}
     />
   );
