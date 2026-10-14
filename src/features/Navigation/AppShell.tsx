@@ -15,7 +15,10 @@ import { Footer } from '@/features/Footer';
 import { WarningNoticeHost } from '@/features/Inbox/WarningNoticeHost';
 import { Navbar } from '@/features/Navbar';
 import { ProfileSheetHost } from '@/features/Profile/ProfileSheetHost';
+import { useProfileSheetLayout } from '@/features/Profile/ProfileSheetLayout';
 import { profileSheetStore } from '@/features/Profile/profileSheetStore';
+import { useLanguageDisplay } from '@/features/Settings/LanguageDisplay';
+import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { MobileNavigation } from './MobileNavigation';
 import { useRouteProgressRouter } from './RouteProgress';
@@ -74,9 +77,15 @@ export const AppShell = ({
   children,
 }: AppShellProps) => {
   const router = useRouteProgressRouter();
+  const persistentProfileSheet = useProfileSheetLayout();
+  const languageDisplay = useLanguageDisplay();
+  const timeFormat = useTimeFormat();
   useLayoutEffect(() => {
-    if (!viewerLoading) profileSheetStore.setViewer(viewerUserId ?? null);
-  }, [viewerLoading, viewerUserId]);
+    if (!viewerLoading) {
+      profileSheetStore.setViewer(viewerUserId ?? null);
+      profileSheetStore.setPreferences({ languageDisplay, timeFormat });
+    }
+  }, [viewerLoading, viewerUserId, languageDisplay, timeFormat]);
   const [bump, setBump] = useState<BumpAction | null>(null);
   const [liveCases, setLiveCases] = useState(pendingCases);
 
@@ -135,7 +144,7 @@ export const AppShell = ({
           />
           <div className="flex flex-1 flex-col">{children}</div>
           <Footer locale={locale} />
-          <ProfileSheetHost />
+          {persistentProfileSheet ? null : <ProfileSheetHost />}
           {docked ? (
             <MobileNavigation
               locale={locale}

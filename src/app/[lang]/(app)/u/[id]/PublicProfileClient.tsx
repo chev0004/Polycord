@@ -3,7 +3,15 @@
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Suspense,
+  use,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { AvailabilityPattern } from '@/constants/availability';
 import type { StaffRole } from '@/features/Admin/types';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
@@ -89,6 +97,7 @@ export const PublicProfileClient = ({
   const signIn = () => window.location.assign(signInHref(locale));
 
   const redirected = useRef<string | null>(null);
+  const [hosted, setHosted] = useState<string | null>(null);
   const sheetData = useMemo(
     () => ({
       profile,
@@ -104,12 +113,17 @@ export const PublicProfileClient = ({
 
   useEffect(() => setIsSaved(initialSaved), [initialSaved]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!mobile || redirected.current === profile.id) return;
     redirected.current = profile.id;
     profileSheetStore.open(sheetData);
+    setHosted(profile.id);
+  }, [mobile, profile.id, sheetData]);
+
+  useEffect(() => {
+    if (hosted !== profile.id) return;
     route.replace(`/${locale}`);
-  }, [mobile, profile.id, sheetData, route, locale]);
+  }, [hosted, route, locale, profile.id]);
 
   useEffect(() => {
     if (!resolved) return;
@@ -161,7 +175,7 @@ export const PublicProfileClient = ({
       <Suspense fallback={null}>
         <ResolveContext value={context} onReady={setResolved} />
       </Suspense>
-      {mobile !== false ? (
+      {mobile !== false && hosted !== profile.id ? (
         <div className="md:hidden">
           <ProfileSheet key={profile.id} data={sheetData} portal={false} />
         </div>

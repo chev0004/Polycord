@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
@@ -19,6 +18,8 @@ import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
 import { recordProfileView } from '@/features/Discovery/profileViewRequest';
 import { saveProfileRequest } from '@/features/Discovery/saveProfileRequest';
 import { notifyUsernameCopied } from '@/features/Inbox/notificationRequests';
+import { LanguageDisplayProvider } from '@/features/Settings/LanguageDisplay';
+import { TimeFormatProvider } from '@/features/Settings/TimeFormat';
 import { useToastStack } from '@/hooks/useToast';
 import { type ProfileSheetData, profileSheetStore } from './profileSheetStore';
 import { useProfileActions } from './useProfileActions';
@@ -42,6 +43,7 @@ export const ProfileSheet = ({
   const t = useTranslations('Discovery');
   const locale = useLocale();
   const [open, setOpen] = useState(true);
+  const [animateEntry] = useState(!data.waitForDiscovery);
   const [isSaved, setIsSaved] = useState(data.isSaved);
   const [blockOpen, setBlockOpen] = useState(false);
   const [moderateOpen, setModerateOpen] = useState(false);
@@ -165,6 +167,7 @@ export const ProfileSheet = ({
         menuItems={data.waitForDiscovery ? [] : menuItems}
         pointerReturnFocus={false}
         portal={portal}
+        animateEntry={animateEntry}
         dismissible={!data.waitForDiscovery}
       />
       <BlockDialog
@@ -195,11 +198,15 @@ export const ProfileSheet = ({
 export const ProfileSheetHost = () => {
   const t = useTranslations('Inbox');
   const tPublic = useTranslations('PublicProfile');
-  const onPublicProfileRoute = usePathname().split('/')[2] === 'u';
   const target = useSyncExternalStore(
     profileSheetStore.subscribe,
     profileSheetStore.get,
     () => null,
+  );
+  const preferences = useSyncExternalStore(
+    profileSheetStore.subscribe,
+    profileSheetStore.preferences,
+    profileSheetStore.preferences,
   );
   const [loaded, setLoaded] = useState<{
     id: string;
@@ -243,25 +250,29 @@ export const ProfileSheetHost = () => {
       : target;
 
   return (
-    <>
-      {target && !onPublicProfileRoute ? (
-        data ? (
-          <ProfileSheet key={data.profile.id} data={data} />
-        ) : (
-          <Sheet
-            open
-            onOpenChange={(open) => {
-              if (!open) profileSheetStore.close();
-            }}
-            title={tPublic('loading')}
-            full
-            pointerReturnFocus={false}
-          >
-            <output className="text-muted text-sm">{tPublic('loading')}</output>
-          </Sheet>
-        )
-      ) : null}
-      <ToastStack toasts={toasts} onDismiss={dismissToast} />
-    </>
+    <LanguageDisplayProvider value={preferences.languageDisplay}>
+      <TimeFormatProvider value={preferences.timeFormat}>
+        {target ? (
+          data ? (
+            <ProfileSheet key={data.profile.id} data={data} />
+          ) : (
+            <Sheet
+              open
+              onOpenChange={(open) => {
+                if (!open) profileSheetStore.close();
+              }}
+              title={tPublic('loading')}
+              full
+              pointerReturnFocus={false}
+            >
+              <output className="text-muted text-sm">
+                {tPublic('loading')}
+              </output>
+            </Sheet>
+          )
+        ) : null}
+        <ToastStack toasts={toasts} onDismiss={dismissToast} />
+      </TimeFormatProvider>
+    </LanguageDisplayProvider>
   );
 };

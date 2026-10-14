@@ -31,6 +31,7 @@ type SheetProps = {
   pointerReturnFocus?: boolean;
   portal?: boolean;
   dismissible?: boolean;
+  animateEntry?: boolean;
   children: ReactNode;
 };
 
@@ -49,6 +50,7 @@ export const Sheet = ({
   pointerReturnFocus = true,
   portal = true,
   dismissible = true,
+  animateEntry = true,
   children,
 }: SheetProps) => {
   const t = useTranslations('Sheet');
@@ -122,7 +124,7 @@ export const Sheet = ({
           style={{ ...style, '--sheet-drag': `${drag}px` } as CSSProperties}
           className={`SheetContent fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100dvh-60px)] translate-y-[var(--sheet-drag)] flex-col overflow-hidden rounded-t-3xl bg-background-dark font-figtree text-foreground shadow-[0_-1px_0_var(--color-line),0_-12px_32px_rgba(0,0,0,0.5)] ${
             full ? 'h-[calc(100dvh-60px)]' : ''
-          } ${start === null ? 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]' : ''}`}
+          } ${start === null ? 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]' : ''} ${animateEntry ? '' : 'data-[state=open]:!animate-none'}`}
         >
           <div
             {...dragHandlers}

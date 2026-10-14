@@ -104,6 +104,7 @@ type MobileProfileSheetProps = {
   pointerReturnFocus?: boolean;
   portal?: boolean;
   dismissible?: boolean;
+  animateEntry?: boolean;
 };
 
 export const MobileProfileSheet = ({
@@ -117,6 +118,7 @@ export const MobileProfileSheet = ({
   pointerReturnFocus,
   portal,
   dismissible = true,
+  animateEntry = true,
 }: MobileProfileSheetProps) => {
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
@@ -164,6 +166,7 @@ export const MobileProfileSheet = ({
       pointerReturnFocus={pointerReturnFocus}
       portal={portal}
       dismissible={dismissible}
+      animateEntry={animateEntry}
     >
       <div
         className="h-full overflow-y-auto overscroll-contain [scrollbar-width:none]"

@@ -166,10 +166,14 @@ for (const width of [320, 375, 390]) {
       releaseDiscovery = resolve;
     });
     let bootstrapStarted = false;
+    let handoffStarted = false;
     let profileLookups = 0;
     try {
       await page.route('**/en?*', async (route) => {
-        if (route.request().headers().rsc === '1') await routeGate;
+        if (route.request().headers().rsc === '1') {
+          handoffStarted = true;
+          await routeGate;
+        }
         await route.continue();
       });
       await page.route('**/api/discovery/bootstrap?*', async (route) => {
@@ -184,6 +188,8 @@ for (const width of [320, 375, 390]) {
       await page.goto(`/en/u/${data.actorProfile}`);
       const profile = page.getByRole('dialog', { name: 'Sheet actor' });
       await expect(profile).toBeVisible();
+      await expect.poll(() => handoffStarted).toBe(true);
+      const initialSheet = await profile.elementHandle();
       await expect(
         profile.getByRole('button', { name: 'Close' }),
       ).toBeDisabled();
@@ -212,6 +218,17 @@ for (const width of [320, 375, 390]) {
       });
       releaseRoute();
       await expect(page).toHaveURL(/\/en$/);
+      expect(
+        await initialSheet?.evaluate(
+          (node) =>
+            node.isConnected &&
+            node === document.querySelector('.SheetContent'),
+        ),
+      ).toBe(true);
+      await expect(profile).toHaveCSS('animation-name', 'none');
+      await page.screenshot({
+        path: test.info().outputPath(`profile-handoff-${width}.png`),
+      });
       if (process.env.NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED !== 'false') {
         await expect.poll(() => bootstrapStarted).toBe(true);
         await expect(

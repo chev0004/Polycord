@@ -76,10 +76,12 @@ export const WaitingForDiscovery: Story = {
     const dialog = await body.findByRole('dialog', { name: 'Shared profile' });
     const close = within(dialog).getByRole('button', { name: 'Close' });
     await expect(close).toBeDisabled();
+    await expect(dialog).toHaveStyle({ animationName: 'none' });
     await userEvent.keyboard('{Escape}');
     await expect(profileSheetStore.get()).toBe(profile);
     profileSheetStore.open({ ...profile, waitForDiscovery: false });
     await waitFor(() => expect(close).toBeEnabled());
+    await expect(dialog).toHaveStyle({ animationName: 'none' });
     await userEvent.click(close);
     await waitFor(() => expect(profileSheetStore.get()).toBeNull());
   },
