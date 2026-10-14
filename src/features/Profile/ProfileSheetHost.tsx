@@ -12,7 +12,7 @@ import {
   MdOutlineShield,
   MdShare,
 } from 'react-icons/md';
-import type { ActionSheetItem } from '@/components/Sheet';
+import { type ActionSheetItem, Sheet } from '@/components/Sheet';
 import { ToastStack } from '@/components/Toast';
 import { BlockDialog } from '@/features/Discovery/BlockDialog';
 import { MobileProfileSheet } from '@/features/Discovery/MobileProfileSheet';
@@ -59,6 +59,7 @@ const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
     try {
       await saveProfileRequest(profile.id, !isSaved);
       setIsSaved(!isSaved);
+      profileSheetStore.remember({ ...data, isSaved: !isSaved });
     } catch {
       actions.addToast({
         title: t('saveError'),
@@ -158,6 +159,7 @@ const ProfileSheet = ({ data }: { data: ProfileSheetData }) => {
 
 export const ProfileSheetHost = () => {
   const t = useTranslations('Inbox');
+  const tPublic = useTranslations('PublicProfile');
   const onPublicProfileRoute = usePathname().split('/')[2] === 'u';
   const target = useSyncExternalStore(
     profileSheetStore.subscribe,
@@ -174,21 +176,16 @@ export const ProfileSheetHost = () => {
 
   useEffect(() => {
     if (typeof target !== 'string') return;
-    const controller = new AbortController();
-    fetch(`/api/profile/public/${target}`, {
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error('Profile unavailable');
-        return response.json() as Promise<ProfileSheetData>;
-      })
+    let cancelled = false;
+    profileSheetStore
+      .load(target)
       .then((data) => {
+        if (cancelled) return;
         if (!data.isOwn) recordProfileView(target);
         setLoaded({ id: target, data });
       })
       .catch(() => {
-        if (controller.signal.aborted) return;
+        if (cancelled) return;
         addToast({
           title: unavailableTitle,
           description: unavailableDescription,
@@ -198,7 +195,7 @@ export const ProfileSheetHost = () => {
         profileSheetStore.close();
       });
     return () => {
-      controller.abort();
+      cancelled = true;
       setLoaded(null);
     };
   }, [target, addToast, unavailableTitle, unavailableDescription]);
@@ -207,13 +204,27 @@ export const ProfileSheetHost = () => {
     typeof target === 'string'
       ? loaded?.id === target
         ? loaded.data
-        : null
+        : profileSheetStore.peek(target)
       : target;
 
   return (
     <>
-      {data && !onPublicProfileRoute ? (
-        <ProfileSheet key={data.profile.id} data={data} />
+      {target && !onPublicProfileRoute ? (
+        data ? (
+          <ProfileSheet key={data.profile.id} data={data} />
+        ) : (
+          <Sheet
+            open
+            onOpenChange={(open) => {
+              if (!open) profileSheetStore.close();
+            }}
+            title={tPublic('loading')}
+            full
+            pointerReturnFocus={false}
+          >
+            <output className="text-muted text-sm">{tPublic('loading')}</output>
+          </Sheet>
+        )
       ) : null}
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </>

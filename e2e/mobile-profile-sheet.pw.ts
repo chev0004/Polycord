@@ -71,7 +71,17 @@ test('the mobile inbox opens a profile sheet over the current page', async ({
   context,
 }) => {
   const data = await fixture();
+  let releaseProfile = () => {};
+  const profileGate = new Promise<void>((resolve) => {
+    releaseProfile = resolve;
+  });
+  let profileRequests = 0;
   try {
+    await page.route('**/api/profile/public/*', async (route) => {
+      profileRequests++;
+      await profileGate;
+      await route.continue();
+    });
     await context.addCookies([
       {
         name: 'polycord_session',
@@ -82,6 +92,27 @@ test('the mobile inbox opens a profile sheet over the current page', async ({
     ]);
     await page.goto('/en/saved');
     await page.getByRole('button', { name: /^Inbox/ }).click();
+    await page
+      .getByRole('button', { name: /Sheet actor copied your username/ })
+      .click();
+    await page.getByRole('button', { name: 'View profile' }).click();
+    const loading = page.getByRole('dialog', { name: 'Loading profile...' });
+    await expect(loading).toBeVisible({
+      timeout: 1000,
+    });
+    expect(profileRequests).toBe(1);
+    await loading.getByRole('button', { name: 'Close' }).click();
+    await expect(loading).toHaveCount(0);
+    const loaded = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+        `/api/profile/public/${data.actorProfile}`,
+    );
+    releaseProfile();
+    await loaded;
+    await expect(page.getByRole('dialog', { name: 'Sheet actor' })).toHaveCount(
+      0,
+    );
     await page
       .getByRole('button', { name: /Sheet actor copied your username/ })
       .click();
@@ -99,7 +130,16 @@ test('the mobile inbox opens a profile sheet over the current page', async ({
     );
     await expect(page.getByRole('dialog', { name: 'Inbox' })).toBeVisible();
     await expect(page).toHaveURL(/\/en\/saved$/);
+    await page
+      .getByRole('button', { name: /Sheet actor copied your username/ })
+      .click();
+    await page.getByRole('button', { name: 'View profile' }).click();
+    await expect(page.getByRole('dialog', { name: 'Sheet actor' })).toBeVisible(
+      { timeout: 1000 },
+    );
+    expect(profileRequests).toBe(1);
   } finally {
+    releaseProfile();
     await data.cleanup();
   }
 });

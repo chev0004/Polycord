@@ -37,6 +37,7 @@ export const DiscoveryShell = ({ locale }: { locale: string }) => {
               locale={locale}
               isLoggedIn={viewer?.isLoggedIn ?? false}
               viewerLoading={viewer === null}
+              viewerUserId={viewer?.viewerUserId}
               userAvatarUrl={viewer?.userAvatarUrl}
               pendingCases={viewer?.pendingCases}
             >
