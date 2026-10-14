@@ -1,8 +1,23 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
-import { ProfileSheetHost } from './ProfileSheetHost';
-import { profileSheetStore } from './profileSheetStore';
+import { ProfileSheet, ProfileSheetHost } from './ProfileSheetHost';
+import { type ProfileSheetData, profileSheetStore } from './profileSheetStore';
+
+const profile: ProfileSheetData = {
+  profile: {
+    id: 'shared-profile',
+    displayName: 'Shared profile',
+    primaryLanguage: 'ja',
+    targetLanguages: [{ language: 'en' }],
+    tags: ['Anime'],
+    about: 'A shared language partner profile.',
+  },
+  isLoggedIn: false,
+  isSaved: false,
+  isOwn: false,
+  waitForDiscovery: true,
+};
 
 const meta: Meta<typeof ProfileSheetHost> = {
   title: 'Features/Profile/ProfileSheetHost',
@@ -51,5 +66,65 @@ export const Loading: Story = {
       within(dialog).getByRole('button', { name: 'Close' }),
     );
     await expect(profileSheetStore.get()).toBeNull();
+  },
+};
+
+export const WaitingForDiscovery: Story = {
+  beforeEach: () => profileSheetStore.open(profile),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+    const dialog = await body.findByRole('dialog', { name: 'Shared profile' });
+    const close = within(dialog).getByRole('button', { name: 'Close' });
+    await expect(close).toBeDisabled();
+    await expect(dialog).toHaveStyle({ animationName: 'none' });
+    await userEvent.keyboard('{Escape}');
+    await expect(profileSheetStore.get()).toBe(profile);
+    profileSheetStore.open({ ...profile, waitForDiscovery: false });
+    await waitFor(() => expect(close).toBeEnabled());
+    await expect(dialog).toHaveStyle({ animationName: 'none' });
+    await userEvent.click(close);
+    await waitFor(() => expect(profileSheetStore.get()).toBeNull());
+  },
+};
+
+export const InlineProfile: Story = {
+  render: () => <ProfileSheet data={profile} portal={false} />,
+};
+
+export const ReportAndBlockClosesProfile: Story = {
+  beforeEach: () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        ['/api/report', '/api/block'].includes(String(args[0]))
+          ? Promise.resolve(Response.json({}))
+          : original(...args),
+      { preconnect: original.preconnect },
+    );
+    profileSheetStore.open({
+      ...profile,
+      isLoggedIn: true,
+      waitForDiscovery: false,
+    });
+    return () => {
+      globalThis.fetch = original;
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+    await userEvent.click(
+      await body.findByRole('button', { name: 'More actions' }),
+    );
+    await userEvent.click(
+      await body.findByRole('button', { name: 'Report profile' }),
+    );
+    await userEvent.click(
+      await body.findByRole('radio', { name: 'Spam or scam' }),
+    );
+    await userEvent.click(
+      body.getByRole('checkbox', { name: /Also block this account/ }),
+    );
+    await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+    await waitFor(() => expect(profileSheetStore.get()).toBeNull());
   },
 };

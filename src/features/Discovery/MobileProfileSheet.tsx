@@ -42,7 +42,7 @@ import { type CopyUsernameHandler, useUsernameCopy } from './useUsernameCopy';
 import { ProfileVoiceChip } from './VoiceChip';
 
 export const bannerButton =
-  'flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50';
+  'flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50 disabled:opacity-40';
 
 export const MobileNameCopy = ({
   name,
@@ -102,6 +102,9 @@ type MobileProfileSheetProps = {
   onCopyUsername?: CopyUsernameHandler;
   menuItems?: ActionSheetItem[];
   pointerReturnFocus?: boolean;
+  portal?: boolean;
+  dismissible?: boolean;
+  animateEntry?: boolean;
 };
 
 export const MobileProfileSheet = ({
@@ -113,6 +116,9 @@ export const MobileProfileSheet = ({
   onCopyUsername,
   menuItems = [],
   pointerReturnFocus,
+  portal,
+  dismissible = true,
+  animateEntry = true,
 }: MobileProfileSheetProps) => {
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
@@ -158,6 +164,9 @@ export const MobileProfileSheet = ({
           : undefined
       }
       pointerReturnFocus={pointerReturnFocus}
+      portal={portal}
+      dismissible={dismissible}
+      animateEntry={animateEntry}
     >
       <div
         className="h-full overflow-y-auto overscroll-contain [scrollbar-width:none]"
@@ -181,6 +190,7 @@ export const MobileProfileSheet = ({
             <button
               type="button"
               aria-label={tSheet('close')}
+              disabled={!dismissible}
               className={bannerButton}
             >
               <MdClose size={20} />

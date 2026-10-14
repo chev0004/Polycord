@@ -4,6 +4,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
 import {
   type CSSProperties,
+  Fragment,
   type PointerEvent,
   type ReactNode,
   useRef,
@@ -28,6 +29,9 @@ type SheetProps = {
   onCloseAutoFocus?: () => void;
   style?: CSSProperties;
   pointerReturnFocus?: boolean;
+  portal?: boolean;
+  dismissible?: boolean;
+  animateEntry?: boolean;
   children: ReactNode;
 };
 
@@ -44,6 +48,9 @@ export const Sheet = ({
   onCloseAutoFocus,
   style,
   pointerReturnFocus = true,
+  portal = true,
+  dismissible = true,
+  animateEntry = true,
   children,
 }: SheetProps) => {
   const t = useTranslations('Sheet');
@@ -51,16 +58,21 @@ export const Sheet = ({
   const [start, setStart] = useState<number | null>(null);
   const returnFocus = useRef<Element | null>(null);
   const pointerClose = useRef(false);
+  const Portal = portal ? Dialog.Portal : Fragment;
 
   const release = () => {
     if (start === null) return;
     setStart(null);
-    if (drag > DISMISS_DISTANCE) onOpenChange(false);
+    if (dismissible && drag > DISMISS_DISTANCE) onOpenChange(false);
     else setDrag(0);
   };
 
   const dragHandlers = {
     onPointerDown: (event: PointerEvent<HTMLElement>) => {
+      if (!dismissible) {
+        event.preventDefault();
+        return;
+      }
       setStart(event.clientY);
       event.currentTarget.setPointerCapture(event.pointerId);
     },
@@ -72,19 +84,28 @@ export const Sheet = ({
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (next || dismissible) onOpenChange(next);
+      }}
+    >
+      <Portal>
         <Dialog.Overlay className="SheetOverlay fixed inset-0 z-50 bg-black/60" />
         <Dialog.Content
           aria-describedby={undefined}
           onPointerDownCapture={() => {
             pointerClose.current = true;
           }}
-          onPointerDownOutside={() => {
+          onPointerDownOutside={(event) => {
+            if (!dismissible) event.preventDefault();
             pointerClose.current = true;
           }}
           onKeyDownCapture={() => {
             pointerClose.current = false;
+          }}
+          onEscapeKeyDown={(event) => {
+            if (!dismissible) event.preventDefault();
           }}
           onOpenAutoFocus={() => {
             returnFocus.current = document.activeElement;
@@ -103,7 +124,7 @@ export const Sheet = ({
           style={{ ...style, '--sheet-drag': `${drag}px` } as CSSProperties}
           className={`SheetContent fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100dvh-60px)] translate-y-[var(--sheet-drag)] flex-col overflow-hidden rounded-t-3xl bg-background-dark font-figtree text-foreground shadow-[0_-1px_0_var(--color-line),0_-12px_32px_rgba(0,0,0,0.5)] ${
             full ? 'h-[calc(100dvh-60px)]' : ''
-          } ${start === null ? 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]' : ''}`}
+          } ${start === null ? 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]' : ''} ${animateEntry ? '' : 'data-[state=open]:!animate-none'}`}
         >
           <div
             {...dragHandlers}
@@ -126,7 +147,7 @@ export const Sheet = ({
               </Dialog.Title>
               {trailing}
               <Dialog.Close asChild>
-                <SheetIconButton label={t('close')}>
+                <SheetIconButton label={t('close')} disabled={!dismissible}>
                   <MdClose size={24} />
                 </SheetIconButton>
               </Dialog.Close>
@@ -149,7 +170,7 @@ export const Sheet = ({
             <div className="h-[calc(env(safe-area-inset-bottom)+20px)] flex-shrink-0" />
           )}
         </Dialog.Content>
-      </Dialog.Portal>
+      </Portal>
     </Dialog.Root>
   );
 };
@@ -162,7 +183,7 @@ export const SheetIconButton = ({
   <button
     type="button"
     aria-label={label}
-    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-foreground transition-colors duration-200 hover:bg-overlay focus-visible:bg-overlay active:bg-overlay"
+    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-foreground transition-colors duration-200 hover:bg-overlay focus-visible:bg-overlay active:bg-overlay disabled:opacity-40"
     {...props}
   >
     {children}

@@ -72,27 +72,28 @@ async function PublicProfileRoute({
 
   const profile = mapProfileToDiscoveryProfile(row, Boolean(user));
 
-  let isLoggedIn = false;
-  let savedProfileIds: string[] = [];
-  let currentProfileId: string | undefined;
-  let viewerContext: ViewerAvailabilityContext = {};
-  let staff: { meId: string; role: StaffRole } | undefined;
-
-  if (user) {
-    isLoggedIn = true;
-    const [viewerProfile, savedIds, role] = await Promise.all([
-      getProfileByUserId(user.accountId),
-      listSavedProfileIds(user.accountId),
-      getStaffRole(user),
-    ]);
-    if (role) staff = { meId: user.accountId, role };
-    currentProfileId = viewerProfile?.profile.id;
-    savedProfileIds = savedIds;
-
-    if (viewerProfile) {
-      viewerContext = toViewerAvailabilityContext(viewerProfile.profile);
+  const context = (async () => {
+    let savedProfileIds: string[] = [];
+    let viewerContext: ViewerAvailabilityContext = {};
+    let staff: { meId: string; role: StaffRole } | undefined;
+    if (user) {
+      const [viewerProfile, savedIds, role] = await Promise.all([
+        getProfileByUserId(user.accountId),
+        listSavedProfileIds(user.accountId),
+        getStaffRole(user),
+      ]);
+      if (role) staff = { meId: user.accountId, role };
+      savedProfileIds = savedIds;
+      if (viewerProfile)
+        viewerContext = toViewerAvailabilityContext(viewerProfile.profile);
     }
-  }
+    return {
+      isSaved: savedProfileIds.includes(profile.id),
+      viewerTimezone: viewerContext.timezone,
+      viewerAvailability: viewerContext.availability,
+      staff,
+    };
+  })();
 
   after(async () => {
     if (row.user.isSynthetic) return;
@@ -113,12 +114,9 @@ async function PublicProfileRoute({
     <PublicProfileClient
       locale={lang}
       profile={profile}
-      isLoggedIn={isLoggedIn}
-      isSaved={savedProfileIds.includes(profile.id)}
-      currentProfileId={currentProfileId}
-      viewerTimezone={viewerContext.timezone}
-      viewerAvailability={viewerContext.availability}
-      staff={staff}
+      isLoggedIn={Boolean(user)}
+      isOwnProfile={row.profile.userId === user?.accountId}
+      context={context}
     />
   );
 }

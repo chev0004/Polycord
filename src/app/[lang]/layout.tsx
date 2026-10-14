@@ -8,6 +8,7 @@ import {
 } from 'next-intl/server';
 import { DeploymentWatcher } from '@/features/Navigation/DeploymentWatcher';
 import { PageLoadTrace } from '@/features/Navigation/PageLoadTrace';
+import { ProfileSheetLayout } from '@/features/Profile/ProfileSheetLayout';
 import { locales } from '@/utils/locales';
 import { fontVariables } from '../fonts';
 import '../globals.css';
@@ -59,7 +60,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={lang} messages={messages}>
-          {children}
+          <ProfileSheetLayout>{children}</ProfileSheetLayout>
           <PageLoadTrace />
           <DeploymentWatcher />
         </NextIntlClientProvider>

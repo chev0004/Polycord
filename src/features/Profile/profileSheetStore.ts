@@ -1,3 +1,4 @@
+import type { TimeFormat } from '@/constants/languages';
 import type { StaffRole } from '@/features/Admin/types';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 
@@ -8,6 +9,7 @@ export type ProfileSheetData = {
   isOwn: boolean;
   viewerTimezone?: string;
   staff?: { meId: string; role: StaffRole };
+  waitForDiscovery?: boolean;
 };
 
 export type ProfileSheetTarget = string | ProfileSheetData;
@@ -18,9 +20,24 @@ const cached = new Map<string, { data: ProfileSheetData; at: number }>();
 const requests = new Map<string, Promise<ProfileSheetData>>();
 let viewer: string | null | undefined;
 let generation = 0;
+let preferences: { timeFormat: TimeFormat; languageDisplay: 'long' | 'short' } =
+  {
+    timeFormat: '24hr',
+    languageDisplay: 'long',
+  };
 
 export const profileSheetStore = {
   get: () => target,
+  preferences: () => preferences,
+  setPreferences: (next: typeof preferences) => {
+    if (
+      next.timeFormat === preferences.timeFormat &&
+      next.languageDisplay === preferences.languageDisplay
+    )
+      return;
+    preferences = next;
+    for (const listener of listeners) listener();
+  },
   peek: (id: string) => {
     const entry = cached.get(id);
     return entry && Date.now() - entry.at < 15_000 ? entry.data : null;

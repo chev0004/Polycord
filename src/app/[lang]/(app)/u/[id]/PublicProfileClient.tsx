@@ -1,9 +1,17 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import {
+  Suspense,
+  use,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { AvailabilityPattern } from '@/constants/availability';
 import type { StaffRole } from '@/features/Admin/types';
 import { buildDiscoveryFilterHref } from '@/features/Discovery/discoveryUrlState';
@@ -15,6 +23,7 @@ import { signInHref } from '@/features/Navigation/signIn';
 import { useHistoryRefresh } from '@/features/Navigation/useHistoryRefresh';
 import { MemberEmptyState } from '@/features/Profile/MemberEmptyState';
 import { ProfileDetail } from '@/features/Profile/ProfileDetail';
+import { ProfileSheet } from '@/features/Profile/ProfileSheetHost';
 import { profileReturn } from '@/features/Profile/profileReturn';
 import { profileSheetStore } from '@/features/Profile/profileSheetStore';
 import { useProfileActions } from '@/features/Profile/useProfileActions';
@@ -31,28 +40,47 @@ const TakeActionPanel = dynamic(() =>
   ),
 );
 
+type PublicProfileContext = {
+  isSaved: boolean;
+  viewerTimezone?: string;
+  viewerAvailability?: AvailabilityPattern;
+  staff?: { meId: string; role: StaffRole };
+};
+
 type PublicProfileClientProps = {
   locale: string;
   profile: DiscoveryProfile;
   isLoggedIn: boolean;
-  isSaved: boolean;
-  currentProfileId?: string;
-  viewerTimezone?: string;
-  viewerAvailability?: AvailabilityPattern;
-  staff?: { meId: string; role: StaffRole };
+  isOwnProfile: boolean;
+  context: Promise<PublicProfileContext>;
+};
+
+const ResolveContext = ({
+  value,
+  onReady,
+}: {
+  value: Promise<PublicProfileContext>;
+  onReady: (value: PublicProfileContext) => void;
+}) => {
+  const context = use(value);
+  useEffect(() => onReady(context), [context, onReady]);
+  return null;
 };
 
 export const PublicProfileClient = ({
   locale,
   profile,
   isLoggedIn,
-  isSaved: initialSaved,
-  currentProfileId,
-  viewerTimezone,
-  viewerAvailability,
-  staff,
+  isOwnProfile,
+  context,
 }: PublicProfileClientProps) => {
   const router = useRouteProgressRouter();
+  const route = useRouter();
+  const [resolved, setResolved] = useState<PublicProfileContext | null>(null);
+  const initialSaved = resolved?.isSaved ?? false;
+  const viewerTimezone = resolved?.viewerTimezone;
+  const viewerAvailability = resolved?.viewerAvailability;
+  const staff = resolved?.staff;
   const t = useTranslations('Discovery');
   const tPublic = useTranslations('PublicProfile');
   const searchParams = useSearchParams();
@@ -65,37 +93,54 @@ export const PublicProfileClient = ({
     HTMLElement | null | undefined
   >();
   const mobile = useIsMobile();
-  const isOwnProfile = profile.id === currentProfileId;
   const { refresh } = router;
   const signIn = () => window.location.assign(signInHref(locale));
 
-  const redirected = useRef(false);
-
-  useEffect(() => setIsSaved(initialSaved), [initialSaved]);
-
-  useEffect(() => {
-    if (!mobile || redirected.current) return;
-    redirected.current = true;
-    profileSheetStore.open({
+  const redirected = useRef<string | null>(null);
+  const [hosted, setHosted] = useState<string | null>(null);
+  const sheetData = useMemo(
+    () => ({
       profile,
       isLoggedIn,
-      isSaved: initialSaved,
+      isSaved,
       isOwn: isOwnProfile,
       viewerTimezone,
       staff,
-    });
-    router.replace(`/${locale}`);
-  }, [
-    mobile,
-    profile,
-    isLoggedIn,
-    initialSaved,
-    isOwnProfile,
-    viewerTimezone,
-    staff,
-    router,
-    locale,
-  ]);
+      waitForDiscovery: true,
+    }),
+    [profile, isLoggedIn, isSaved, isOwnProfile, viewerTimezone, staff],
+  );
+
+  useEffect(() => setIsSaved(initialSaved), [initialSaved]);
+
+  useLayoutEffect(() => {
+    if (!mobile || redirected.current === profile.id) return;
+    redirected.current = profile.id;
+    profileSheetStore.open(sheetData);
+    setHosted(profile.id);
+  }, [mobile, profile.id, sheetData]);
+
+  useEffect(() => {
+    if (hosted !== profile.id) return;
+    route.replace(`/${locale}`);
+  }, [hosted, route, locale, profile.id]);
+
+  useEffect(() => {
+    if (!resolved) return;
+    const target = profileSheetStore.get();
+    if (
+      target &&
+      typeof target !== 'string' &&
+      target.profile.id === profile.id &&
+      target.waitForDiscovery
+    )
+      profileSheetStore.open({
+        ...target,
+        isSaved: resolved.isSaved,
+        viewerTimezone: resolved.viewerTimezone,
+        staff: resolved.staff,
+      });
+  }, [resolved, profile.id]);
 
   useHistoryRefresh(refresh);
 
@@ -127,6 +172,14 @@ export const PublicProfileClient = ({
 
   return (
     <>
+      <Suspense fallback={null}>
+        <ResolveContext value={context} onReady={setResolved} />
+      </Suspense>
+      {mobile !== false && hosted !== profile.id ? (
+        <div className="md:hidden">
+          <ProfileSheet key={profile.id} data={sheetData} portal={false} />
+        </div>
+      ) : null}
       <main className="mx-auto w-full max-w-[1080px] px-4 py-8 max-md:hidden sm:px-6">
         <BackButton href={back.href} label={tPublic(back.label)} />
         {blocked ? (
@@ -139,7 +192,7 @@ export const PublicProfileClient = ({
             isSaving={isSaving}
             viewerTimezone={viewerTimezone}
             viewerAvailability={viewerAvailability}
-            onToggleSave={isOwnProfile ? undefined : toggleSave}
+            onToggleSave={isOwnProfile || !resolved ? undefined : toggleSave}
             onCopyUsername={() => actions.copyUsername(profile, isOwnProfile)}
             onShare={() => actions.share(profile)}
             onReport={isOwnProfile ? undefined : () => actions.report(profile)}

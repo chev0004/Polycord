@@ -26,6 +26,7 @@ import {
   useRouteProgressRouter,
 } from '@/features/Navigation/RouteProgress';
 import { UrlObserver } from '@/features/Navigation/UrlObserver';
+import { profileSheetStore } from '@/features/Profile/profileSheetStore';
 import { profileDraftSchema } from '@/features/Profile/schema';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useToastStack } from '@/hooks/useToast';
@@ -770,9 +771,40 @@ export const DiscoveryPage = ({
       !isRefreshing &&
       loadedUrl === requestUrl &&
       hasLoaded.current
-    )
+    ) {
       finishLoadTrace();
-  }, [restoreScroll, isLoading, isRefreshing, loadedUrl, requestUrl]);
+      const target = profileSheetStore.get();
+      if (target && typeof target !== 'string' && target.waitForDiscovery)
+        profileSheetStore.open({
+          ...target,
+          isSaved: (
+            remoteData?.savedProfileIds ??
+            savedProfileIds ??
+            []
+          ).includes(target.profile.id),
+          viewerTimezone,
+          staff,
+          waitForDiscovery: false,
+        });
+    }
+  }, [
+    restoreScroll,
+    isLoading,
+    isRefreshing,
+    loadedUrl,
+    requestUrl,
+    remoteData,
+    savedProfileIds,
+    viewerTimezone,
+    staff,
+  ]);
+
+  useEffect(() => {
+    if (!refreshFailed || isRefreshing) return;
+    const target = profileSheetStore.get();
+    if (target && typeof target !== 'string' && target.waitForDiscovery)
+      profileSheetStore.open({ ...target, waitForDiscovery: false });
+  }, [refreshFailed, isRefreshing]);
 
   const trackRequest = () => {
     requestRef.current?.abort();
