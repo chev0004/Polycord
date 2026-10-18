@@ -42,15 +42,16 @@
 }
 .dc-pills {
   display: flex;
-  flex-wrap: wrap;
   gap: 10px;
   margin-top: 14px;
 }
 .dc-pill {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 8px;
   height: 38px;
+  white-space: nowrap;
   padding: 0 14px;
   border-radius: 9999px;
   background: var(--color-primary-darker);
@@ -59,8 +60,15 @@
   font-weight: 600;
 }
 .dc-pill.dc-pri {
+  flex-shrink: 1;
+  min-width: 0;
   background: var(--cf);
   color: var(--ci);
+}
+.dc-pill.dc-pri > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .dc-pill small {
   font-size: 15px;

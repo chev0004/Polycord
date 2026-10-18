@@ -776,3 +776,43 @@ export const ClassicPillFitsActiveLanguage: Story = {
     await expect(widths[3]).toBeCloseTo(widths[0], 0);
   },
 };
+
+export const ClassicPillsStayOnOneRow: Story = {
+  args: {
+    data: build({
+      primaryLanguage: 'to',
+      targetLanguages: [{ language: 'cu', level: Proficiency.ADVANCED }],
+    }),
+  },
+  render: ({ data, theme }) => (
+    <div className="max-w-md p-6">
+      <ScaledDiscordCard
+        layout={DISCORD_CARD_LAYOUTS[0]}
+        data={data}
+        vars={themes[theme]}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await canvasElement.ownerDocument.fonts.ready;
+    const card = canvasElement.querySelector('.dc-a') as HTMLElement;
+    const native = card.querySelector('.dc-pill.dc-pri') as HTMLElement;
+    const target = card.querySelector('.dc-pill:not(.dc-pri)') as HTMLElement;
+
+    await expect(
+      Math.abs(
+        native.getBoundingClientRect().top - target.getBoundingClientRect().top,
+      ),
+    ).toBeLessThan(1);
+    await expect(target.getBoundingClientRect().bottom).toBeLessThan(
+      card.getBoundingClientRect().bottom,
+    );
+    await expect(target.getBoundingClientRect().right).toBeLessThanOrEqual(
+      (card.querySelector('.dc-pills') as HTMLElement).getBoundingClientRect()
+        .right + 0.5,
+    );
+    await expect(target.querySelector('.dc-on')).toHaveTextContent(
+      'Old Church Slavonic· Advanced',
+    );
+  },
+};
