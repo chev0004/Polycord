@@ -10,6 +10,7 @@ import {
 import { BAN_CHECK_PATH, findBan } from './lib/banGate';
 import { isGatedPath } from './lib/gatedPaths';
 import { createLoadTrace, type LoadMeasure } from './lib/loadTrace';
+import { isSameOrigin } from './lib/sameOrigin';
 import { locales } from './utils/locales';
 
 export { locales };
@@ -41,6 +42,12 @@ const serviceRoutes = new Set([
   BAN_CHECK_PATH,
 ]);
 const nonPageRoute = /^\/(api|_next)(\/|$)|\./;
+
+const isCrossOriginWrite = (request: NextRequest) =>
+  request.nextUrl.pathname.startsWith('/api/') &&
+  !['GET', 'HEAD', 'OPTIONS'].includes(request.method) &&
+  request.headers.has('origin') &&
+  !isSameOrigin(request);
 
 const denyBanned = (
   request: NextRequest,
@@ -78,6 +85,13 @@ const denyBanned = (
 };
 
 async function routeMiddleware(request: NextRequest, measure: LoadMeasure) {
+  if (isCrossOriginWrite(request)) {
+    return NextResponse.json(
+      { error: 'Forbidden' },
+      { status: 403, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
   if (
     !serviceRoutes.has(request.nextUrl.pathname) &&
     !isGatedPath(request.nextUrl.pathname)
