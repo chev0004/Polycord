@@ -199,9 +199,10 @@ export const createSessionCookieValue = async (
     return null;
   }
 
+  const { email: _email, ...identity } = user;
   const issuedAt = Date.now();
   const session: SessionPayload = {
-    user: { ...user, accountId },
+    user: { ...identity, accountId },
     issuedAt,
     expiresAt: issuedAt + SESSION_DURATION_SECONDS * 1000,
   };

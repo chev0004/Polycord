@@ -25,9 +25,10 @@ describe('session cookies', () => {
     expect(value).not.toBeNull();
 
     const restored = await readSessionFromCookieValue(value as string);
+    const { email: _email, ...identity } = user;
 
     expect(restored).toEqual({
-      ...user,
+      ...identity,
       accountId: 'account-1',
       issuedAt: expect.any(Number),
     });
