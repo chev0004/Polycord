@@ -14,7 +14,9 @@ export const languageCodeField = (messages: {
   const base = messages.required
     ? z.string().min(1, { message: messages.required })
     : z.string();
-  return base.refine(isValidLanguageCode, { message: messages.invalid });
+  return base.refine((code): boolean => isValidLanguageCode(code), {
+    message: messages.invalid,
+  });
 };
 
 export const optionalCountryField = (message: string) =>

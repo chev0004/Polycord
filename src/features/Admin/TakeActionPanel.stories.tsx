@@ -203,6 +203,9 @@ export const OwnerModeratesModerator: Story = {
     await expect(
       panel.getByRole('button', { name: 'Ban' }),
     ).toBeInTheDocument();
+    await expect(
+      panel.getByRole('button', { name: /^Dismiss/ }),
+    ).toBeInTheDocument();
   },
 };
 
@@ -216,6 +219,9 @@ export const ModeratorProtectedFromModerator: Story = {
     ).toBeInTheDocument();
     await expect(
       panel.queryByRole('button', { name: 'Warn' }),
+    ).not.toBeInTheDocument();
+    await expect(
+      panel.queryByRole('button', { name: /^Dismiss/ }),
     ).not.toBeInTheDocument();
   },
 };

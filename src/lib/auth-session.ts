@@ -31,8 +31,7 @@ export const STATE_DURATION_SECONDS = 60 * 10;
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
-export const getAuthSecret = () =>
-  process.env.AUTH_SECRET ?? process.env.DISCORD_CLIENT_SECRET;
+export const getAuthSecret = () => process.env.AUTH_SECRET;
 
 const base64UrlEncode = (bytes: Uint8Array) => {
   let binary = '';
@@ -199,9 +198,10 @@ export const createSessionCookieValue = async (
     return null;
   }
 
+  const { email: _email, ...identity } = user;
   const issuedAt = Date.now();
   const session: SessionPayload = {
-    user: { ...user, accountId },
+    user: { ...identity, accountId },
     issuedAt,
     expiresAt: issuedAt + SESSION_DURATION_SECONDS * 1000,
   };
