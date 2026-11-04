@@ -11,7 +11,7 @@ import {
   setUserSuspendedUntil,
 } from '@/db';
 import { scopedRoute } from '@/db/client';
-import { canModerate } from '@/features/Admin/permissions';
+import { canDismissReports, protectionOf } from '@/features/Admin/permissions';
 import { OWNER_ACTIONS } from '@/features/Admin/types';
 import { getStaffRole, isSameOrigin, needsReauth } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
@@ -79,10 +79,13 @@ export const POST = scopedRoute(async (request: Request) => {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
+  const me = { meId: currentUser.accountId, meRole: role };
+  const subject = { id: target.user.id, role: staffRoleOf(target) };
+
   if (
-    action !== 'dismiss' &&
-    (target.user.id === currentUser.accountId ||
-      !canModerate(role, staffRoleOf(target)))
+    action === 'dismiss'
+      ? !canDismissReports(me, subject)
+      : protectionOf(me, subject) !== null
   ) {
     return NextResponse.json(
       { error: 'Staff cannot be actioned' },
