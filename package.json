@@ -16,6 +16,7 @@
     "check:i18n": "bun scripts/check-i18n.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "test:security": "bun test security admin-permissions",
     "db:generate": "bun --env-file=.env.local drizzle-kit generate",
     "db:migrate": "bun --env-file=.env.local drizzle-kit migrate",
     "db:studio": "bun --env-file=.env.local drizzle-kit studio",

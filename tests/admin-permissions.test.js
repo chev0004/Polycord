@@ -1,5 +1,9 @@
 import { expect, test } from 'bun:test';
-import { canModerate, protectionOf } from '../src/features/Admin/permissions';
+import {
+  canDismissReports,
+  canModerate,
+  protectionOf,
+} from '../src/features/Admin/permissions';
 
 test('owners can moderate moderators and members but not owners', () => {
   expect(canModerate('owner')).toBe(true);
@@ -24,4 +28,20 @@ test('protection names why a target cannot be actioned', () => {
   expect(protectionOf(moderator, { id: 'c', role: 'moderator' })).toBe('staff');
   expect(protectionOf(owner, { id: 'c', role: 'moderator' })).toBeNull();
   expect(protectionOf(moderator, { id: 'c' })).toBeNull();
+});
+
+test('moderators cannot dismiss reports against themselves or other staff', () => {
+  const owner = { meId: 'a', meRole: 'owner' };
+  const moderator = { meId: 'b', meRole: 'moderator' };
+
+  expect(canDismissReports(moderator, { id: 'c' })).toBe(true);
+  expect(canDismissReports(moderator, { id: 'b', role: 'moderator' })).toBe(
+    false,
+  );
+  expect(canDismissReports(moderator, { id: 'c', role: 'moderator' })).toBe(
+    false,
+  );
+  expect(canDismissReports(moderator, { id: 'a', role: 'owner' })).toBe(false);
+  expect(canDismissReports(owner, { id: 'c', role: 'moderator' })).toBe(true);
+  expect(canDismissReports(owner, { id: 'a', role: 'owner' })).toBe(true);
 });
