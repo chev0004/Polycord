@@ -27,7 +27,7 @@ An identity ban is detected from the signed session cookie. A banned person who 
 
 ## Trusted client IP
 
-`src/lib/clientIp.ts` reads exactly one header, `x-nf-client-connection-ip`, which Netlify sets at its edge and overwrites if a client sends it. `POLYCORD_CLIENT_IP_HEADER` overrides the header name for another proxy. `X-Forwarded-For` and `X-Real-IP` are never read, so a client cannot spoof an unblocked address or cause the proxy address to be recorded. The same helper feeds the rate limits.
+`src/lib/clientIp.ts` prefers the client IP from the Netlify function context, then `x-nf-client-connection-ip`, which Netlify sets at its edge and overwrites if a client sends it. `POLYCORD_CLIENT_IP_HEADER` overrides the header name for another proxy. Only when neither Netlify value exists does it fall back to the last `X-Forwarded-For` hop, which a client can forge if no trusted proxy appends to that header. `X-Real-IP` is never read. The same helper feeds the rate limits.
 
 Addresses are normalized before they are stored or compared: IPv6 is compressed and lower-cased, zone ids are dropped, and IPv4-mapped IPv6 collapses to IPv4.
 
