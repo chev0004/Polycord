@@ -8,6 +8,7 @@ import {
 import { localeFromPath } from '@/lib/analytics/locale';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
+import { requestIp, withinRateLimit } from '@/lib/rateLimit';
 
 const noContent = () => new NextResponse(null, { status: 204 });
 
@@ -36,6 +37,15 @@ export const POST = scopedRoute(async (request: Request) => {
   if (currentUser) {
     const user = await getUserByDiscordId(currentUser.id);
     userId = user?.id ?? null;
+  }
+
+  if (
+    !(await withinRateLimit('analytics', {
+      userId: userId ?? undefined,
+      ip: requestIp(request),
+    }))
+  ) {
+    return noContent();
   }
 
   if (name === ANALYTICS_EVENTS.profileUsernameCopy) {
