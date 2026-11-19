@@ -52,7 +52,8 @@ fails, the job fails instead of skipping.
 Every Tests run ends with the `CI result` job. It passes only when the gate
 succeeded and every job the gate planned succeeded, and staging requires it.
 Use `CI result` as the single required status check for `develop` where the
-plan supports branch protection.
+plan supports branch protection. Docs-only PRs still run the gate, skip
+validation and report a passing `CI result`.
 
 For a validated PR from this repository, `CI result` sets a `ci/result` commit
 status on the PR head with the checked-out merge tree

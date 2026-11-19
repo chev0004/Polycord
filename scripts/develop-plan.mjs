@@ -17,6 +17,7 @@ const activeStates = [
   'pending',
   'requested',
 ];
+const docsOnly = /\.md$|^docs\/|^LICENSE$/;
 
 async function provenRun(sha, env, run, github, wait) {
   const tree = treeOf(sha, run);
@@ -85,12 +86,20 @@ export async function planDevelop(
 ) {
   const sha = env.GITHUB_SHA;
   const develop = env.GITHUB_REF === 'refs/heads/develop';
-  if (env.GITHUB_EVENT_NAME === 'pull_request')
-    return {
-      validate: true,
-      deploy: false,
-      reason: 'Validate the pull request.',
-    };
+  if (env.GITHUB_EVENT_NAME === 'pull_request') {
+    const diff = run(
+      'git',
+      ['diff', '--no-renames', '--name-only', 'HEAD^1', 'HEAD'],
+      {
+        encoding: 'utf8',
+      },
+    );
+    const files =
+      diff.status === 0 ? diff.stdout.split('\n').filter(Boolean) : [];
+    return files.length && files.every((path) => docsOnly.test(path))
+      ? { validate: false, deploy: false, reason: 'Docs-only pull request.' }
+      : { validate: true, deploy: false, reason: 'Validate the pull request.' };
+  }
   if (env.GITHUB_EVENT_NAME !== 'push')
     return {
       validate: true,

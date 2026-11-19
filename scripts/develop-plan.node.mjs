@@ -168,6 +168,24 @@ test('detects deployable files moved out of the app', async () => {
   ]);
 });
 
+test('pull requests validate unless they only change docs', async () => {
+  await commit({ 'src/app.ts': 'a' });
+  const docs = await commit({ 'README.md': 'a', 'docs/a.md': 'a' });
+  const docsPlan = await plan(docs, { GITHUB_EVENT_NAME: 'pull_request' });
+  assert.equal(docsPlan.validate, false);
+  assert.equal(docsPlan.deploy, false);
+  const code = await commit({ 'docs/b.md': 'b', 'src/app.ts': 'b' });
+  const codePlan = await plan(code, { GITHUB_EVENT_NAME: 'pull_request' });
+  assert.equal(codePlan.validate, true);
+  assert.equal(codePlan.deploy, false);
+});
+
+test('a pull request without a comparable parent validates', async () => {
+  const sha = await commit({ 'docs/a.md': 'a' });
+  const result = await plan(sha, { GITHUB_EVENT_NAME: 'pull_request' });
+  assert.equal(result.validate, true);
+});
+
 test('manual runs validate fully and deploy only from develop', async () => {
   const sha = await commit({ 'docs/a.md': 'a' });
   publish(sha);
