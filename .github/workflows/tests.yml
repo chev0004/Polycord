@@ -17,35 +17,19 @@ concurrency:
 jobs:
   gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: read
+      pull-requests: read
       statuses: read
     outputs:
       validate: ${{ steps.plan.outputs.validate }}
       deploy: ${{ steps.plan.outputs.deploy }}
     steps:
-      - id: tested
-        run: |
-          set +e
-          skip=false
-          if [ "$GITHUB_EVENT_NAME" = push ]; then
-            tree=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" --jq .commit.tree.sha)
-            for parent in $(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" --jq '.parents[].sha'); do
-              parent_tree=$(gh api "repos/$GITHUB_REPOSITORY/commits/$parent" --jq .commit.tree.sha)
-              passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/tests.yml/runs?head_sha=$parent&status=success" --jq .total_count)
-              if [ "$parent_tree" = "$tree" ] && [ "$passed" -gt 0 ]; then
-                skip=true
-              fi
-            done
-          fi
-          echo "skip=$skip" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ github.token }}
       - uses: actions/checkout@v4
         with:
-          fetch-depth: ${{ github.ref == 'refs/heads/develop' && 50 || 1 }}
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 50 }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -53,7 +37,6 @@ jobs:
         run: node scripts/develop-plan.mjs
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          TESTED_SKIP: ${{ steps.tested.outputs.skip }}
 
   unit:
     needs: gate

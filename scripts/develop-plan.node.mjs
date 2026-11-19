@@ -4,13 +4,17 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, test } from 'node:test';
+import { ciPolicy, evidence, treeOf } from './ci-evidence.mjs';
 import { deployableChanges, isDeployable } from './deploy-inputs.mjs';
 import { planDevelop } from './develop-plan.mjs';
 
 const originalCwd = process.cwd();
-let published;
+let statuses;
+let pulls;
+let ciRuns;
+let jobs;
 let runs;
-let requests;
+let waits;
 
 const git = (...args) =>
   spawnSync('git', args, { encoding: 'utf8' }).stdout.trim();
@@ -25,43 +29,100 @@ async function commit(files) {
   return git('rev-parse', 'HEAD');
 }
 
+async function mergedPull(feature, baseAdvance) {
+  await commit({ 'src/app.ts': 'a', '.github/workflows/tests.yml': 'v1' });
+  git('checkout', '-qb', 'feature');
+  const head = await commit(feature);
+  git('checkout', '-q', '-');
+  if (baseAdvance) await commit(baseAdvance);
+  git('merge', '-q', '--no-ff', '-m', 'merge', 'feature');
+  const merge = git('rev-parse', 'HEAD');
+  pulls[merge] = [
+    { merged_at: 'now', merge_commit_sha: merge, head: { sha: head } },
+  ];
+  return { head, merge };
+}
+
+function proveRun(head, description, attempt = 1) {
+  ciRuns[11] = {
+    id: 11,
+    path: '.github/workflows/tests.yml',
+    event: 'pull_request',
+    head_sha: head,
+    head_repository: { full_name: 'chev0004/Polycord' },
+    status: 'completed',
+    conclusion: 'success',
+    run_attempt: attempt,
+  };
+  jobs['11/1'] = [
+    'gate',
+    'unit',
+    'package',
+    'e2e (--shard=1/2, true)',
+    'e2e (--shard=2/2, true)',
+    'storybook',
+    'CI result',
+  ].map((name) => ({ name, conclusion: 'success' }));
+  statuses[head] = [
+    {
+      context: 'ci/result',
+      state: 'success',
+      description,
+      target_url:
+        'https://github.com/chev0004/Polycord/actions/runs/11/attempts/1',
+    },
+  ];
+}
+
 const env = (sha, overrides = {}) => ({
   GITHUB_REPOSITORY: 'chev0004/Polycord',
   GITHUB_REF: 'refs/heads/develop',
   GITHUB_EVENT_NAME: 'push',
   GITHUB_SHA: sha,
   GITHUB_TOKEN: 'synthetic',
-  TESTED_SKIP: 'false',
   ...overrides,
 });
 
 async function request(url) {
-  requests.push(url);
   const path = url.replace(
     'https://api.github.com/repos/chev0004/Polycord/',
     '',
   );
-  const statuses = path.match(/^commits\/(\w+)\/statuses/);
-  if (statuses)
-    return {
-      ok: true,
-      json: async () =>
-        statuses[1] === published
-          ? [{ context: 'staging/published', state: 'success' }]
-          : [{ context: 'other', state: 'success' }],
-    };
-  const sha = path.match(/head_sha=(\w+)/)?.[1];
-  return { ok: true, json: async () => ({ workflow_runs: runs[sha] ?? [] }) };
+  const reply = (data) => ({
+    ok: data !== undefined,
+    status: data === undefined ? 404 : 200,
+    json: async () => data,
+  });
+  let match = path.match(/^commits\/(\w+)\/statuses/);
+  if (match) return reply(statuses[match[1]] ?? []);
+  match = path.match(/^commits\/(\w+)\/pulls/);
+  if (match) return reply(pulls[match[1]] ?? []);
+  match = path.match(/^actions\/runs\/(\d+)\/attempts\/(\d+)\/jobs/);
+  if (match) return reply({ jobs: jobs[`${match[1]}/${match[2]}`] ?? [] });
+  match = path.match(/^actions\/runs\/(\d+)$/);
+  if (match) return reply(ciRuns[match[1]]);
+  match = path.match(/head_sha=(\w+)/);
+  if (match) return reply({ workflow_runs: runs[match[1]] ?? [] });
+  return reply(undefined);
 }
+
+const plan = (sha, overrides, wait = async () => waits++) =>
+  planDevelop(env(sha, overrides), spawnSync, request, wait);
+const publish = (sha) => {
+  statuses[sha] = [{ context: 'staging/published', state: 'success' }];
+};
 
 beforeEach(async () => {
   process.chdir(await mkdtemp(join(tmpdir(), 'polycord-plan-')));
   git('init', '-q');
   git('config', 'user.email', 'ci@example.invalid');
   git('config', 'user.name', 'ci');
-  published = undefined;
+  statuses = {};
+  pulls = {};
+  ciRuns = {};
+  jobs = {};
   runs = {};
-  requests = [];
+  waits = 0;
 });
 
 afterEach(() => process.chdir(originalCwd));
@@ -107,59 +168,43 @@ test('detects deployable files moved out of the app', async () => {
   ]);
 });
 
-test('pull requests and main pushes never deploy', async () => {
-  assert.deepEqual(
-    await planDevelop(
-      env('a', { GITHUB_EVENT_NAME: 'pull_request' }),
-      spawnSync,
-      request,
-    ),
-    { validate: true, deploy: false, reason: 'Not a develop push.' },
-  );
-  const main = await planDevelop(
-    env('a', { GITHUB_REF: 'refs/heads/main', TESTED_SKIP: 'true' }),
-    spawnSync,
-    request,
-  );
-  assert.equal(main.validate, false);
-  assert.equal(main.deploy, false);
-  assert.equal(requests.length, 0);
-});
-
-test('a manual develop run always validates and redeploys', async () => {
+test('manual runs validate fully and deploy only from develop', async () => {
   const sha = await commit({ 'docs/a.md': 'a' });
-  published = sha;
-  const plan = await planDevelop(
-    env(sha, { GITHUB_EVENT_NAME: 'workflow_dispatch' }),
-    spawnSync,
-    request,
-  );
-  assert.equal(plan.validate, true);
-  assert.equal(plan.deploy, true);
+  publish(sha);
+  const develop = await plan(sha, { GITHUB_EVENT_NAME: 'workflow_dispatch' });
+  assert.equal(develop.validate, true);
+  assert.equal(develop.deploy, true);
+  const main = await plan(sha, {
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    GITHUB_REF: 'refs/heads/main',
+  });
+  assert.equal(main.validate, true);
+  assert.equal(main.deploy, false);
 });
 
 test('skips validation and packaging after an equivalent publish', async () => {
-  published = await commit({ 'src/app.ts': 'a' });
+  const published = await commit({ 'src/app.ts': 'a' });
+  publish(published);
   await commit({ 'docs/a.md': 'a' });
   const tip = await commit({ 'e2e/a.pw.ts': 'a', 'src/a.test.ts': 'a' });
-  const plan = await planDevelop(env(tip), spawnSync, request);
-  assert.equal(plan.validate, false);
-  assert.equal(plan.deploy, false);
+  const result = await plan(tip);
+  assert.equal(result.validate, false);
+  assert.equal(result.deploy, false);
 });
 
 test('validates code that differs from the last publish', async () => {
-  published = await commit({ 'src/app.ts': 'a' });
+  publish(await commit({ 'src/app.ts': 'a' }));
   const tip = await commit({ 'src/app.ts': 'b', 'docs/a.md': 'a' });
-  const plan = await planDevelop(env(tip), spawnSync, request);
-  assert.equal(plan.validate, true);
-  assert.equal(plan.deploy, true);
+  const result = await plan(tip);
+  assert.equal(result.validate, true);
+  assert.equal(result.deploy, true);
 });
 
 test('missing publish metadata takes the validation path', async () => {
   const tip = await commit({ 'docs/a.md': 'a' });
-  const plan = await planDevelop(env(tip), spawnSync, request);
-  assert.equal(plan.validate, true);
-  assert.equal(plan.deploy, true);
+  const result = await plan(tip);
+  assert.equal(result.validate, true);
+  assert.equal(result.deploy, true);
   const offline = await planDevelop(env(tip), spawnSync, async () => {
     throw new Error('network');
   });
@@ -167,35 +212,98 @@ test('missing publish metadata takes the validation path', async () => {
   assert.equal(offline.deploy, true);
 });
 
-test('deploys without validation when an identical tree already passed', async () => {
-  const tip = await commit({ 'src/app.ts': 'a' });
-  const plan = await planDevelop(
-    env(tip, { TESTED_SKIP: 'true' }),
-    spawnSync,
-    request,
+test('reuses a green pull request run for the exact landed tree', async () => {
+  const { head, merge } = await mergedPull({ 'src/app.ts': 'b' });
+  proveRun(head, evidence(treeOf(merge), ciPolicy(merge)));
+  const develop = await plan(merge);
+  assert.equal(develop.validate, false);
+  assert.equal(develop.deploy, true);
+  assert.match(develop.reason, /Run 11/);
+  const main = await plan(merge, { GITHUB_REF: 'refs/heads/main' });
+  assert.equal(main.validate, false);
+  assert.equal(main.deploy, false);
+});
+
+test('validates when the base advanced after the pull request run', async () => {
+  const { head, merge } = await mergedPull(
+    { 'src/app.ts': 'b' },
+    { 'src/other.ts': 'a' },
   );
-  assert.equal(plan.validate, false);
-  assert.equal(plan.deploy, true);
+  proveRun(head, evidence(treeOf(head), ciPolicy(head)));
+  assert.notEqual(treeOf(head), treeOf(merge));
+  const result = await plan(merge);
+  assert.equal(result.validate, true);
+  assert.equal(result.deploy, true);
+});
+
+test('validates when the pull request changes CI policy', async () => {
+  const { head, merge } = await mergedPull({
+    'src/app.ts': 'b',
+    '.github/workflows/tests.yml': 'v2',
+  });
+  proveRun(head, evidence(treeOf(merge), ciPolicy(merge)));
+  assert.equal((await plan(merge)).validate, true);
+});
+
+test('validates when a required job did not pass', async () => {
+  const { head, merge } = await mergedPull({ 'src/app.ts': 'b' });
+  proveRun(head, evidence(treeOf(merge), ciPolicy(merge)));
+  jobs['11/1'][2].conclusion = 'cancelled';
+  assert.equal((await plan(merge)).validate, true);
+  proveRun(head, evidence(treeOf(merge), ciPolicy(merge)));
+  jobs['11/1'] = jobs['11/1'].filter(({ name }) => name !== 'storybook');
+  assert.equal((await plan(merge)).validate, true);
+});
+
+test('validates when a later attempt superseded the evidence', async () => {
+  const { head, merge } = await mergedPull({ 'src/app.ts': 'b' });
+  proveRun(head, evidence(treeOf(merge), ciPolicy(merge)), 2);
+  assert.equal((await plan(merge)).validate, true);
+});
+
+test('validates a direct push without a merged pull request', async () => {
+  await commit({ 'src/app.ts': 'a' });
+  const tip = await commit({ 'src/app.ts': 'b' });
+  assert.equal((await plan(tip)).validate, true);
+});
+
+test('waits for an in-progress pull request run on the same tree', async () => {
+  const { head, merge } = await mergedPull({ 'src/app.ts': 'b' });
+  runs[head] = [{ id: 11, status: 'in_progress' }];
+  const result = await plan(merge, {}, async () => {
+    waits++;
+    proveRun(head, evidence(treeOf(merge), ciPolicy(merge)));
+  });
+  assert.equal(waits, 1);
+  assert.equal(result.validate, false);
+  assert.equal(result.deploy, true);
+});
+
+test('does not wait when no pull request run is active', async () => {
+  const { head, merge } = await mergedPull({ 'src/app.ts': 'b' });
+  runs[head] = [{ id: 11, status: 'completed' }];
+  assert.equal((await plan(merge)).validate, true);
+  assert.equal(waits, 0);
 });
 
 test('a docs-only tip leaves an in-flight code run eligible', async () => {
-  published = await commit({ 'src/app.ts': 'a' });
+  publish(await commit({ 'src/app.ts': 'a' }));
   const code = await commit({ 'src/app.ts': 'b' });
   await commit({ 'docs/a.md': 'a' });
   const tip = await commit({ 'tests/a.test.js': 'a' });
   runs[code] = [{ id: 7, status: 'in_progress' }];
-  const plan = await planDevelop(env(tip), spawnSync, request);
-  assert.equal(plan.validate, false);
-  assert.equal(plan.deploy, false);
-  assert.match(plan.reason, /Run 7/);
+  const result = await plan(tip);
+  assert.equal(result.validate, false);
+  assert.equal(result.deploy, false);
+  assert.match(result.reason, /Run 7/);
 });
 
 test('a docs-only tip validates when the code run has finished without publishing', async () => {
-  published = await commit({ 'src/app.ts': 'a' });
+  publish(await commit({ 'src/app.ts': 'a' }));
   const code = await commit({ 'src/app.ts': 'b' });
   const tip = await commit({ 'docs/a.md': 'a' });
   runs[code] = [{ id: 7, status: 'completed' }];
-  const plan = await planDevelop(env(tip), spawnSync, request);
-  assert.equal(plan.validate, true);
-  assert.equal(plan.deploy, true);
+  const result = await plan(tip);
+  assert.equal(result.validate, true);
+  assert.equal(result.deploy, true);
 });

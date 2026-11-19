@@ -1,5 +1,13 @@
 import { spawnSync } from 'node:child_process';
 import { appendFile } from 'node:fs/promises';
+import { setTimeout } from 'node:timers/promises';
+import {
+  ciPolicy,
+  evidence,
+  requiredJobs,
+  resultContext,
+  treeOf,
+} from './ci-evidence.mjs';
 import { deployableChanges, publishedContext } from './deploy-inputs.mjs';
 
 const activeStates = [
@@ -10,26 +18,84 @@ const activeStates = [
   'requested',
 ];
 
+async function provenRun(sha, env, run, github, wait) {
+  const tree = treeOf(sha, run);
+  const policy = ciPolicy(sha, run);
+  if (!tree || !policy || policy !== ciPolicy(`${sha}^1`, run)) return null;
+  const pull = (await github(`commits/${sha}/pulls`))?.find(
+    (candidate) => candidate.merged_at && candidate.merge_commit_sha === sha,
+  );
+  if (!pull) return null;
+
+  for (let check = 0; check < 30; check++) {
+    const statuses =
+      (await github(`commits/${pull.head.sha}/statuses?per_page=100`)) ?? [];
+    for (const status of statuses) {
+      const [, id, attempt] =
+        status.target_url?.match(/\/actions\/runs\/(\d+)\/attempts\/(\d+)$/) ??
+        [];
+      if (
+        status.context !== resultContext ||
+        status.state !== 'success' ||
+        status.description !== evidence(tree, policy) ||
+        !id
+      )
+        continue;
+      const ciRun = await github(`actions/runs/${id}`);
+      if (
+        ciRun?.path !== '.github/workflows/tests.yml' ||
+        ciRun.event !== 'pull_request' ||
+        ciRun.head_sha !== pull.head.sha ||
+        ciRun.head_repository?.full_name !== env.GITHUB_REPOSITORY ||
+        ciRun.status !== 'completed' ||
+        ciRun.conclusion !== 'success' ||
+        String(ciRun.run_attempt) !== attempt
+      )
+        continue;
+      const jobs =
+        (
+          await github(
+            `actions/runs/${id}/attempts/${attempt}/jobs?per_page=100`,
+          )
+        )?.jobs ?? [];
+      const names = jobs.map(({ name }) => name.replace(/ \(.*\)$/, ''));
+      if (
+        jobs.every(({ conclusion }) => conclusion === 'success') &&
+        requiredJobs.every((name) => names.includes(name))
+      )
+        return ciRun.id;
+    }
+    const runs = await github(
+      `actions/workflows/tests.yml/runs?event=pull_request&head_sha=${pull.head.sha}&per_page=20`,
+    );
+    if (
+      !runs?.workflow_runs.some(({ status }) => activeStates.includes(status))
+    )
+      return null;
+    await wait(30000);
+  }
+  return null;
+}
+
 export async function planDevelop(
   env = process.env,
   run = spawnSync,
   request = fetch,
+  wait = setTimeout,
 ) {
   const sha = env.GITHUB_SHA;
-  if (
-    env.GITHUB_REF !== 'refs/heads/develop' ||
-    env.GITHUB_EVENT_NAME === 'pull_request'
-  )
-    return {
-      validate: env.TESTED_SKIP !== 'true',
-      deploy: false,
-      reason: 'Not a develop push.',
-    };
-  if (env.GITHUB_EVENT_NAME === 'workflow_dispatch')
+  const develop = env.GITHUB_REF === 'refs/heads/develop';
+  if (env.GITHUB_EVENT_NAME === 'pull_request')
     return {
       validate: true,
-      deploy: true,
-      reason: 'Manual run validates and redeploys.',
+      deploy: false,
+      reason: 'Validate the pull request.',
+    };
+  if (env.GITHUB_EVENT_NAME !== 'push')
+    return {
+      validate: true,
+      deploy: develop,
+      reason: 'Manual run validates fully.',
     };
 
   const github = async (path) => {
@@ -54,7 +120,7 @@ export async function planDevelop(
     { encoding: 'utf8' },
   );
   const history =
-    log.status === 0 ? log.stdout.split('\n').filter(Boolean) : [];
+    develop && log.status === 0 ? log.stdout.split('\n').filter(Boolean) : [];
 
   let published;
   for (const commit of history) {
@@ -75,11 +141,13 @@ export async function planDevelop(
       deploy: false,
       reason: `Staging already serves ${published} with the same deployable inputs.`,
     };
-  if (env.TESTED_SKIP === 'true')
+
+  const proven = await provenRun(sha, env, run, github, wait);
+  if (proven)
     return {
       validate: false,
-      deploy: true,
-      reason: 'An identical tree already passed validation.',
+      deploy: develop,
+      reason: `Run ${proven} validated the same tree under the same CI policy.`,
     };
 
   let source = sha;
@@ -101,7 +169,7 @@ export async function planDevelop(
         reason: `Run ${pending.id} for ${source} validates and deploys the same inputs.`,
       };
   }
-  return { validate: true, deploy: true, reason: 'Validate before staging.' };
+  return { validate: true, deploy: develop, reason: 'Validate fully.' };
 }
 
 if (import.meta.main) {

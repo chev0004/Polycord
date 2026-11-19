@@ -34,6 +34,8 @@ and deploy:
   the newest such status in the last 50 first-parent commits. When the only
   differences from it are docs, tests or stories (`scripts/deploy-inputs.mjs`),
   the run validates and builds nothing.
+- When the push is a merged PR whose Tests run passed on the exact landed tree,
+  the run deploys without repeating validation. See [CI result](#ci-result).
 - When the new commits only add docs, tests or stories on top of a code commit
   whose Tests run is still active, that run stays responsible for staging.
 - Otherwise, including when the status, history or GitHub API is unavailable,
@@ -44,6 +46,31 @@ push cancels older validation. The deployment job is not cancelled by newer
 runs. Before packaging and again before upload, it publishes only if `develop`
 has no newer deployable changes than its source. If the comparison itself
 fails, the job fails instead of skipping.
+
+## CI result
+
+Every Tests run ends with the `CI result` job. It passes only when the gate
+succeeded and every job the gate planned succeeded, and staging requires it.
+Use `CI result` as the single required status check for `develop` where the
+plan supports branch protection.
+
+For a validated PR from this repository, `CI result` sets a `ci/result` commit
+status on the PR head with the checked-out merge tree
+(`git rev-parse HEAD^{tree}`) and a hash of the CI policy files
+(`scripts/ci-evidence.mjs`). After the merge, the develop gate reuses that run
+only when:
+
+- the PR's merge commit is the pushed commit, and the status tree and policy
+  match the landed commit;
+- the merge changed none of the CI policy files, so the run used the reviewed
+  workflow;
+- GitHub's run record is the Tests workflow for that PR head in this
+  repository, its latest attempt completed successfully, and every job in that
+  attempt, including each required job, succeeded.
+
+If the PR run is still active, the gate waits up to 15 minutes for it. A base
+that advanced after the run, a canceled or incomplete job, a later attempt than
+the one that recorded the status, a fork PR, a direct push or any missing record takes full validation.
 
 ## Environment changes and manual deployment
 
