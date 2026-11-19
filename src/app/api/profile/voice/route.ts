@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { deleteVoiceIntroForUser, upsertVoiceIntroForUser } from '@/db';
 import { scopedRoute } from '@/db/client';
 import { getActiveUser } from '@/lib/auth';
-import { hasEntitlement } from '@/lib/entitlements';
+import { entitlementLimit } from '@/lib/entitlements';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { inspectVoiceMedia } from '@/lib/voiceMedia';
 
@@ -34,12 +34,6 @@ export const POST = scopedRoute(async (request: Request) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const premium = await isPremiumUser(currentUser);
-
-  if (!hasEntitlement('profile.voiceIntro', premium)) {
-    return NextResponse.json({ error: 'Supporter required' }, { status: 403 });
-  }
-
   let body: unknown;
 
   try {
@@ -67,9 +61,13 @@ export const POST = scopedRoute(async (request: Request) => {
     return NextResponse.json({ error: 'Audio too large' }, { status: 413 });
   }
 
+  const maxSeconds = entitlementLimit(
+    'profile.voiceIntroSeconds',
+    await isPremiumUser(currentUser),
+  );
   let media: Awaited<ReturnType<typeof inspectVoiceMedia>>;
   try {
-    media = await inspectVoiceMedia(Buffer.from(base64, 'base64'));
+    media = await inspectVoiceMedia(Buffer.from(base64, 'base64'), maxSeconds);
   } catch {
     return NextResponse.json(
       { error: 'Invalid audio content or duration' },

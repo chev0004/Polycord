@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { path as ffprobePath } from 'ffprobe-static';
 
-export const inspectVoiceMedia = async (bytes: Buffer) => {
+export const inspectVoiceMedia = async (bytes: Buffer, maxSeconds: number) => {
   const directory = await mkdtemp(join(tmpdir(), 'polycord-voice-'));
   const file = join(directory, 'clip');
   try {
@@ -61,13 +61,13 @@ export const inspectVoiceMedia = async (bytes: Buffer) => {
       media.streams[0].codec_type !== 'audio' ||
       !Number.isFinite(duration) ||
       duration <= 0 ||
-      duration > 20.1
+      duration > maxSeconds + 0.1
     ) {
       throw new Error('Invalid voice media');
     }
     return {
       mimeType,
-      durationSeconds: Math.max(1, Math.min(20, Math.round(duration))),
+      durationSeconds: Math.max(1, Math.min(maxSeconds, Math.round(duration))),
     };
   } finally {
     await unlink(file).catch(() => {});
