@@ -196,16 +196,33 @@ jobs:
           name: storybook-test-results
           path: test-results/
 
-  deploy-staging:
+  result:
+    name: CI result
     needs: [gate, unit, package, e2e, storybook]
+    if: ${{ !cancelled() && !contains(needs.*.result, 'cancelled') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/ci-result.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NEEDS: ${{ toJSON(needs) }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RECORD_EVIDENCE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+
+  deploy-staging:
+    needs: [gate, result]
     if: >-
       !cancelled() &&
       needs.gate.outputs.deploy == 'true' &&
-      (needs.gate.outputs.validate == 'false' ||
-        (needs.unit.result == 'success' &&
-          needs.package.result == 'success' &&
-          needs.e2e.result == 'success' &&
-          needs.storybook.result == 'success')) &&
+      needs.result.result == 'success' &&
       github.repository == 'chev0004/Polycord' &&
       github.ref == 'refs/heads/develop' &&
       github.event_name != 'pull_request' &&
