@@ -61,7 +61,7 @@ Synthetic cases only. No real member data, and no contact with real authorities.
 
 | Case | Path exercised | Expected result | Evidence | Status |
 | --- | --- | --- | --- | --- |
-| Harassment report from a signed-in member | Report action, Reports queue, warn, close | Report reaches the queue and moves to resolved after the action; reporter hidden from the reported member | Automated: `e2e/admin-report-pages.pw.ts`, `e2e/safety.pw.ts`, `tests/integration/moderation.mjs` | Verified 2026-11-19: the four suites above plus `e2e/account.pw.ts` and `e2e/ip-bans.pw.ts`, 19 tests, passed on a disposable database |
+| Harassment report from a signed-in member | Report action, Reports queue, warn, close | Report reaches the queue and moves to resolved after the action; reporter hidden from the reported member | Automated: `e2e/admin-report-pages.pw.ts`, `e2e/safety.pw.ts`, `tests/integration/moderation.mjs` | Verified 2026-11-19: `e2e/admin-report-pages.pw.ts`, `e2e/safety.pw.ts`, `e2e/account.pw.ts` and `e2e/ip-bans.pw.ts` (19 tests) passed on a disposable database. `tests/integration/moderation.mjs` runs in CI |
 | Urgent child-safety report | Report as `other` with details, hide, suspend, escalate | Profile hidden and account suspended at once; responder identified | Moderator walkthrough | Pending: owner names the responder and urgent channel |
 | Signed-out support question | Footer Discord link | Reaches the moderator channel | Synthetic Discord message | Pending: invite URL and moderators |
 | Privacy deletion request | Discord, Settings deletion | Self-service deletion succeeds; leftover request goes to the owner | Automated deletion: `e2e/account.pw.ts`; Discord step pending | Partly verified |
