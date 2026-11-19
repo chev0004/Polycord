@@ -62,3 +62,15 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
     expect(output).toContain('discovery tag suggestions passed');
   },
 );
+
+test.skipIf(!process.env.TEST_DATABASE_URL)(
+  'discovery only matches the active languages and tags of lapsed profiles',
+  () => {
+    const output = execFileSync(
+      process.execPath,
+      ['run', 'tests/integration/discovery-limits.mjs'],
+      { encoding: 'utf8', timeout: 30000 },
+    );
+    expect(output).toContain('discovery free limits passed');
+  },
+);
