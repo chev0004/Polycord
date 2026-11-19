@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { appendFile } from 'node:fs/promises';
 import { checkNetlifyPackage } from './check-netlify-package.mjs';
-import { deployableChanges } from './deploy-inputs.mjs';
+import { deployableChanges, publishedContext } from './deploy-inputs.mjs';
 
 const siteId = '694f7324-d2b5-43b5-9de4-ae33e0b927ee';
 
@@ -14,6 +14,7 @@ export async function deployStaging(run = spawnSync, request = fetch) {
   );
   assert.ok(process.env.NETLIFY_AUTH_TOKEN, 'Netlify credential is required');
   assert.ok(process.env.DATABASE_URL, 'Staging database URL is required');
+  assert.ok(process.env.GITHUB_TOKEN, 'GitHub token is required');
   assert.ok(process.version.startsWith('v22.'), 'Node 22 is required');
 
   const execute = (command, args, env = process.env, inherit = false) => {
@@ -151,6 +152,26 @@ export async function deployStaging(run = spawnSync, request = fetch) {
     }
     throw error;
   }
+  const recorded = await request(
+    `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/statuses/${process.env.GITHUB_SHA}`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+      },
+      body: JSON.stringify({
+        state: 'success',
+        context: publishedContext,
+        target_url: 'https://polycord.chev.dev',
+        description: `Netlify deploy ${uploaded.deploy_id}`,
+      }),
+    },
+  );
+  assert.ok(
+    recorded.ok,
+    `Recording the published source failed (${recorded.status})`,
+  );
 }
 
 if (import.meta.main) {

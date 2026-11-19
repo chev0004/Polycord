@@ -1,5 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
+export const publishedContext = 'staging/published';
+
 const nonDeployable = [
   /\.md$/,
   /^docs\//,

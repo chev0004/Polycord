@@ -18,6 +18,7 @@ let buildHead;
 let buildId;
 let publishedDigest;
 let diff;
+let recordOk;
 
 beforeEach(async () => {
   process.env = {
@@ -30,6 +31,7 @@ beforeEach(async () => {
     GITHUB_STEP_SUMMARY: '',
     NETLIFY_AUTH_TOKEN: 'synthetic-token',
     DATABASE_URL: 'postgresql://synthetic/actions',
+    GITHUB_TOKEN: 'synthetic-github-token',
   };
   process.chdir(await mkdtemp(join(tmpdir(), 'polycord-deploy-')));
   await mkdir('.netlify/static/_next/static', { recursive: true });
@@ -68,6 +70,7 @@ beforeEach(async () => {
   buildId = null;
   publishedDigest = digest;
   diff = 'src/app/page.tsx\n';
+  recordOk = true;
 });
 
 afterEach(() => {
@@ -96,6 +99,10 @@ function run(command, args, options) {
 }
 
 async function request(url, options) {
+  if (url.startsWith('https://api.github.com/')) {
+    calls.push({ url, method: options.method, body: JSON.parse(options.body) });
+    return { ok: recordOk, status: recordOk ? 201 : 500 };
+  }
   const path = url.replace('https://api.netlify.com/api/v1/', '');
   calls.push({ path, method: options.method });
   let data;
@@ -210,4 +217,34 @@ test('publishes an older source when develop only adds docs or tests', async () 
       ({ args }) => args?.[0] === 'fetch' && args.includes('b'.repeat(40)),
     ),
   );
+});
+
+test('records the published source only after verification', async () => {
+  await deployStaging(run, request);
+  const record = calls.find(({ url }) => url);
+  assert.equal(
+    record.url,
+    `https://api.github.com/repos/chev0004/Polycord/statuses/${sha}`,
+  );
+  assert.equal(record.body.context, 'staging/published');
+  assert.equal(record.body.state, 'success');
+  assert.equal(
+    calls.findIndex(({ url }) => url),
+    calls.length - 1,
+  );
+});
+
+test('does not record a source that failed verification', async () => {
+  publishedDigest = 'unexpected-digest';
+  await assert.rejects(deployStaging(run, request));
+  assert.equal(
+    calls.some(({ url }) => url),
+    false,
+  );
+});
+
+test('keeps a verified publish when recording its source fails', async () => {
+  recordOk = false;
+  await assert.rejects(deployStaging(run, request), /Recording the published/);
+  assert.equal(site.published_deploy.id, 'uploaded');
 });

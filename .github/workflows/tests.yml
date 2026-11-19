@@ -188,6 +188,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      statuses: write
     environment:
       name: staging
       url: https://polycord.chev.dev
@@ -197,6 +198,7 @@ jobs:
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
