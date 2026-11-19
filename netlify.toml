@@ -20,8 +20,3 @@
 
 [[plugins]]
   package = "./plugins/discovery-shell"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
