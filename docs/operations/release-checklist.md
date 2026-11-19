@@ -1,6 +1,6 @@
 # Public Release Checklist
 
-Everything that must change between the current staging deployment and a public production site. Staging stays `noindex` permanently; indexing is only ever enabled on production.
+Everything that must change between the current staging deployment and a public production site. Staging stays `noindex` permanently; indexing is only ever enabled on production. Setup and the deploy procedure are in [production deployment](production.md).
 
 ## Environment
 
@@ -16,15 +16,15 @@ Everything that must change between the current staging deployment and a public 
 
 | Item | Staging (`polycord.chev.dev`) | Production |
 | --- | --- | --- |
-| `POLYCORD_PUBLIC_URL` | Unset | Production origin, e.g. `https://polycord.app` |
-| `/robots.txt` | `Disallow: /` | Allows public routes, disallows `/api/` and signed-in routes, links the sitemap |
+| `POLYCORD_PUBLIC_URL` | Unset | `https://polycord.net` once ownership is confirmed |
+| `/robots.txt` | `Disallow: /` | Allows public routes, disallows `/api/`, `/banned`, profile routes and signed-in routes including the inbox, links the sitemap |
 | `/sitemap.xml` | Empty | Discovery and legal pages in both locales, with hreflang alternates |
-| `X-Robots-Tag` from `next.config.ts` | `noindex, nofollow` (host-matched) | Not sent (host does not match) |
-| `X-Robots-Tag` from `netlify.toml` | `noindex, nofollow` | **Must be removed or scoped.** The header applies to every host built from this repository. |
+| `X-Robots-Tag` from `next.config.ts` | `noindex, nofollow` on every response | Sent on every host except the `POLYCORD_PUBLIC_URL` host |
 
 - [ ] Set `POLYCORD_PUBLIC_URL` in the production build environment. `robots.txt` and `sitemap.xml` are generated at build time, so rebuild after changing it.
-- [ ] Scope or remove the `netlify.toml` `X-Robots-Tag` header so production does not inherit it, and confirm staging still returns it.
-- [ ] Confirm the production domain matches the contact addresses in the legal pages (`polycord.app`).
+- [x] Scope the `X-Robots-Tag` header by environment. `netlify.toml` no longer sends it; `next.config.ts` does, based on `POLYCORD_PUBLIC_URL`.
+- [ ] Confirm staging still returns `X-Robots-Tag` on pages and static files after the first deploy without the `netlify.toml` header.
+- [ ] Confirm `polycord.net` and `www.polycord.net` serve HTTPS and `www` redirects to the apex domain.
 - [ ] Verify the domain with the search console of choice after launch.
 
 ## Page metadata
