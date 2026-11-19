@@ -5,13 +5,13 @@ import {
   createSessionCookieValue,
   readOAuthStateFromCookieValue,
   readSessionFromCookieValue,
+  reissueLegacySessionCookieValue,
 } from './auth-session';
 
 const user = {
   id: '123456789',
   name: 'Test User',
   username: 'testuser',
-  email: 'test@example.com',
 };
 
 beforeAll(() => {
@@ -31,6 +31,35 @@ describe('session cookies', () => {
       accountId: 'account-1',
       issuedAt: expect.any(Number),
     });
+  });
+
+  it('drops the email from legacy sessions and reissues them without it', async () => {
+    const legacy = (await createSessionCookieValue(
+      { ...user, email: 'test@example.com' } as typeof user,
+      'account-1',
+    )) as string;
+    const legacyExpiry = JSON.parse(atob(legacy.split('.')[0])).expiresAt;
+
+    expect(await readSessionFromCookieValue(legacy)).not.toHaveProperty(
+      'email',
+    );
+
+    const reissued = await reissueLegacySessionCookieValue(legacy);
+    expect(reissued?.expiresAt).toBe(legacyExpiry);
+    expect(atob((reissued?.value as string).split('.')[0])).not.toContain(
+      'email',
+    );
+    expect(await readSessionFromCookieValue(reissued?.value as string)).toEqual(
+      { ...user, accountId: 'account-1', issuedAt: expect.any(Number) },
+    );
+    expect(
+      await reissueLegacySessionCookieValue(reissued?.value as string),
+    ).toBeNull();
+    expect(
+      await reissueLegacySessionCookieValue(
+        (await createSessionCookieValue(user, 'account-1')) as string,
+      ),
+    ).toBeNull();
   });
 
   it('rejects a tampered payload', async () => {

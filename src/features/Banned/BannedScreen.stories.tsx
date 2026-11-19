@@ -13,6 +13,7 @@ const meta = {
     locale: 'en',
     date: new Date('2026-10-04T12:00:00Z'),
     reference: 'PC-7K2M-41QX',
+    inviteUrl: 'https://discord.gg/polycord',
   },
 } satisfies Meta<typeof BannedScreen>;
 
@@ -28,16 +29,13 @@ export const Default: Story = {
     await expect(canvas.getByText('Oct 4, 2026')).toBeInTheDocument();
     await expect(canvas.getByText('PC-7K2M-41QX')).toBeInTheDocument();
     await expect(
-      canvas.getByRole('link', { name: 'Email Support' }),
-    ).toHaveAttribute(
-      'href',
-      'mailto:support@polycord.app?subject=Ban%20appeal%20PC-7K2M-41QX',
-    );
+      canvas.getByRole('link', { name: 'Open Discord Server' }),
+    ).toHaveAttribute('href', 'https://discord.gg/polycord');
     await expect(canvasElement.querySelector('nav')).toBeNull();
     await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
       window.innerWidth,
     );
-    const appeal = canvas.getByRole('link', { name: 'Email Support' });
+    const appeal = canvas.getByRole('link', { name: 'Open Discord Server' });
     const rect = appeal.getBoundingClientRect();
     if (window.innerWidth < 768) {
       await expect(rect.width).toBeGreaterThan(window.innerWidth - 48);
