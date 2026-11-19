@@ -110,12 +110,6 @@ try {
     .insert(schema.notifications)
     .values({ userId: other.id, kind: 'copy', actorName: identity.name })
     .returning();
-  await db.insert(schema.subscriptions).values({
-    userId: user.id,
-    stripeCustomerId: `cus_${randomUUID()}`,
-    stripeSubscriptionId: 'sub_isolated',
-    status: 'canceled',
-  });
   await db.insert(schema.profileBoosts).values({ userId: user.id });
   await db.insert(schema.pushSubscriptions).values({
     userId: user.id,
@@ -189,7 +183,7 @@ try {
   assert.equal(exported.reportsFiled[0].details, 'My submitted report');
   assert.equal(exported.reportsFiled.length, 1);
   assert.equal(exported.notifications[0].kind, 'copy');
-  assert.equal(exported.subscription.stripeSubscriptionId, 'sub_isolated');
+  assert.equal('subscription' in exported, false);
   for (const key of ['profileBoosts', 'pushSubscriptions', 'analyticsEvents'])
     assert.equal(exported[key].length, 1);
   for (const secret of [
@@ -238,7 +232,6 @@ try {
     schema.voiceIntros,
     schema.savedProfiles,
     schema.notifications,
-    schema.subscriptions,
     schema.profileBoosts,
     schema.pushSubscriptions,
   ]) {

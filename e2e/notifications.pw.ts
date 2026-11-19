@@ -59,7 +59,7 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
   try {
     await page.clock.install();
     await sql`insert into notifications (user_id, kind, actor_user_id, actor_name) values (${data.owner.id}, 'copy', ${data.actor.id}, 'Inbox actor')`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${data.owner.id}, ${randomUUID()}, 'active', ${new Date(Date.now() + 3600000)})`;
+    await sql`update users set premium_granted_until = ${new Date(Date.now() + 3600000)} where id = ${data.owner.id}`;
     await sql`update user_settings set hide_profile_visits = true where user_id = ${data.owner.id}`;
     await sql`insert into user_settings (user_id, profile_view_alert) values (${data.actor.id}, true)`;
     for (const route of [
@@ -102,7 +102,7 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
       path: testInfo.outputPath('premium-inbox.png'),
       animations: 'disabled',
     });
-    await sql`update subscriptions set status = 'canceled', current_period_end = ${new Date(0)} where user_id = ${data.owner.id}`;
+    await sql`update users set premium_granted_until = ${new Date(0)} where id = ${data.owner.id}`;
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
     await expect(page.getByRole('dialog')).not.toContainText(
       'Inbox actor viewed your profile',
