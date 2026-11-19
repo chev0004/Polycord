@@ -689,19 +689,10 @@ export const MobileCardEditor = ({
               </label>
               <ListRow
                 label={t('voiceIntroTitle')}
-                meta={
-                  premium ? null : (
-                    <span className="rounded bg-primary-darker px-1.5 py-0.5 font-bold text-[10px] text-primary-light uppercase tracking-[0.04em]">
-                      {t('voiceIntroPremiumTag')}
-                    </span>
-                  )
-                }
                 value={
-                  premium
-                    ? voiceSeconds > 0
-                      ? `0:${String(voiceSeconds).padStart(2, '0')}`
-                      : t('voiceRecord')
-                    : null
+                  voiceSeconds > 0
+                    ? `0:${String(voiceSeconds).padStart(2, '0')}`
+                    : t('voiceRecord')
                 }
                 flash={flash === 'voice'}
                 onClick={() => openSheet('voice')}
