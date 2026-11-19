@@ -493,7 +493,7 @@ export const SupporterTabFree: Story = {
     );
     expect(canvas.getByText('Every 1 h 30 m')).toBeInTheDocument();
     expect(canvas.getByText('See who viewed you')).toBeInTheDocument();
-    expect(canvas.getAllByText('No')).toHaveLength(5);
+    expect(canvas.getAllByText('No')).toHaveLength(4);
 
     expect(
       canvas.getByText('$2.99 / month · cancel anytime'),

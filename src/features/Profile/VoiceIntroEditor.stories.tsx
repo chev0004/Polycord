@@ -61,22 +61,6 @@ const meta: Meta<typeof EditorHarness> = {
 export default meta;
 type Story = StoryObj<typeof EditorHarness>;
 
-export const FreeLocked: Story = {
-  args: { premium: false },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await expect(canvas.getByText('Voice Intro')).toBeInTheDocument();
-    await expect(
-      canvas.queryByRole('button', { name: 'Record voice intro' }),
-    ).not.toBeInTheDocument();
-    await expect(
-      canvas.getByRole('link', { name: 'Supporter' }),
-    ).toBeInTheDocument();
-    await expect(canvas.getAllByText('Supporter')).toHaveLength(2);
-  },
-};
-
 export const SupporterIdle: Story = {
   args: { premium: true },
   play: async ({ canvasElement }) => {
@@ -84,6 +68,11 @@ export const SupporterIdle: Story = {
 
     await expect(
       canvas.getByRole('button', { name: 'Record voice intro' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByText(
+        'Record up to 20 seconds so partners can hear your accent before they reach out.',
+      ),
     ).toBeInTheDocument();
     await expect(canvas.queryByText('Supporter')).not.toBeInTheDocument();
   },
@@ -141,6 +130,86 @@ const routeVoiceToTone = () => {
     Object.defineProperty(HTMLMediaElement.prototype, 'src', descriptor);
     URL.revokeObjectURL(tone);
   };
+};
+
+export const FreeIdle: Story = {
+  args: { premium: false },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByRole('button', { name: 'Record voice intro' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByText(
+        'Record up to 8 seconds so partners can hear your accent before they reach out.',
+      ),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('link', { name: 'Supporter' }).parentElement,
+    ).toHaveTextContent('Record up to 20 seconds with Supporter.');
+  },
+};
+
+export const FreeRecording: Story = {
+  args: { premium: false },
+  beforeEach: mockRecordingApis,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Record voice intro' }),
+    );
+    await expect(
+      await canvas.findByText(
+        "Recording… tap stop when you're done (max 8 seconds).",
+      ),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Stop recording' }),
+    );
+    await expect(
+      await canvas.findByRole('button', { name: 'Save clip' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const FreeSavedIntro: Story = {
+  args: { premium: false, initialSeconds: 8, profileId: 'profile-1' },
+  beforeEach: routeVoiceToTone,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByText('Your 8-second intro is live on your card.'),
+    ).toBeInTheDocument();
+    await expect(
+      await canvas.findByRole('button', { name: 'Play your voice intro' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Remove voice intro' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const FreeOverLimitIntro: Story = {
+  args: { premium: false, initialSeconds: 15, profileId: 'profile-1' },
+  beforeEach: routeVoiceToTone,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      canvas.getByText(
+        'Your 15-second intro is hidden because Free intros can be up to 8 seconds. Renew Supporter to show it again, or record a shorter one.',
+      ),
+    ).toBeInTheDocument();
+    await expect(
+      await canvas.findByRole('button', { name: 'Play your voice intro' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Remove voice intro' }),
+    ).toBeInTheDocument();
+  },
 };
 
 export const SavedIntroPlays: Story = {
