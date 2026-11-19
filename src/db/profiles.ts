@@ -10,6 +10,7 @@ import {
   lt,
   notInArray,
   or,
+  type SQL,
   type SQLWrapper,
   sql,
 } from 'drizzle-orm';
@@ -30,7 +31,8 @@ import {
 } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
-import { isPremiumAccount } from './billing';
+import { entitlementLimit } from '@/lib/entitlements';
+import { isPremiumAccount, premiumAccountSql } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
 import { isBlockedEitherWay } from './safety';
@@ -167,6 +169,13 @@ const toAvailabilityColumns = (pattern: AvailabilityPattern | null) => {
   };
 };
 
+export const activeTagsSql = () =>
+  sql`case when ${premiumAccountSql()} then ${profiles.tags}
+    else (${profiles.tags})[1:${sql.raw(String(entitlementLimit('profile.tags', false)))}] end`;
+
+export const activeTargetSql = (position: SQL) =>
+  sql`(${position} < ${sql.raw(String(entitlementLimit('profile.targetLanguages', false)))} or ${premiumAccountSql()})`;
+
 const toDiscoveryProfile = (
   { profile, targetLanguages, user, subscription }: ProfileWithUser,
   isLoggedIn = false,
@@ -188,9 +197,18 @@ const toDiscoveryProfile = (
     isLoggedIn || profile.allowAnonymousCopy ? user.discordUsername : undefined,
   avatarUrl: user.avatarUrl ?? undefined,
   primaryLanguage: profile.primaryLanguage,
-  targetLanguages,
+  targetLanguages: targetLanguages.slice(
+    0,
+    entitlementLimit(
+      'profile.targetLanguages',
+      isPremiumOwner(user, subscription),
+    ),
+  ),
   about: profile.bio,
-  tags: profile.tags,
+  tags: profile.tags.slice(
+    0,
+    entitlementLimit('profile.tags', isPremiumOwner(user, subscription)),
+  ),
   country: profile.country ?? undefined,
   timezone: profile.displayTimezone
     ? (profile.timezone ?? undefined)

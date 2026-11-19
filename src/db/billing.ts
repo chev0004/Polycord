@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { eq, inArray, or, type SQL, sql } from 'drizzle-orm';
 import { isPremiumDiscordId } from '@/lib/entitlements';
 import { type GrantUnit, grantExpiry } from '@/lib/premiumGrant';
 import { db } from './client';
@@ -95,6 +95,19 @@ export const getPremiumSource = (
       !['canceled', 'incomplete_expired'].includes(subscription.status));
   if (purchased) return granted ? 'both' : 'purchased';
   return granted ? 'granted' : 'free';
+};
+
+export const premiumAccountSql = () => {
+  const ids = (process.env.POLYCORD_PREMIUM_USER_IDS ?? '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  return or(
+    ids.length ? inArray(users.discordUserId, ids) : undefined,
+    sql`${users.premiumGrantedUntil} > now()`,
+    sql`exists (select 1 from ${subscriptions} where ${subscriptions.userId} = ${users.id}
+      and ${subscriptions.status} in ('active', 'trialing') and ${subscriptions.currentPeriodEnd} > now())`,
+  ) as SQL;
 };
 
 export const isPremiumAccount = (
