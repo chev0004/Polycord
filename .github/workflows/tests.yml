@@ -58,6 +58,9 @@ jobs:
   unit:
     needs: gate
     if: needs.gate.outputs.validate == 'true'
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-unit' || format('unit-{0}', github.run_id) }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -87,6 +90,9 @@ jobs:
   package:
     needs: gate
     if: needs.gate.outputs.validate == 'true'
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-package' || format('package-{0}', github.run_id) }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -121,6 +127,9 @@ jobs:
   e2e:
     needs: gate
     if: needs.gate.outputs.validate == 'true'
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && format('develop-e2e-{0}', strategy.job-index) || format('e2e-{0}-{1}', github.run_id, strategy.job-index) }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -166,6 +175,9 @@ jobs:
   storybook:
     needs: gate
     if: needs.gate.outputs.validate == 'true'
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-storybook' || format('storybook-{0}', github.run_id) }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
