@@ -1,0 +1,11 @@
+{
+  "recordedAs": {
+    "0001_onboarding_profile_fields": "fb1269ea1b2b334976c572160913ae235cc60f7bce48d968682aab99c7799c85",
+    "0009_ambitious_landau": "f9cf7441335969cab67bdd95e8fbb88396e28ab58ddc59504c526164f6f1cff0",
+    "0010_curvy_shard": "ee20afe31834cb565ca1464ac6e4faaedd5980b1324bc51d76230db6bb8ddcd0"
+  },
+  "superseded": {
+    "5be0a9488134fb5c49797dc41c3c103f5594504cd89a8a731319136ff4ac69e1": "0018_plain_loki",
+    "ccbb69599fa27935972b6eebe90a44d04ac1a04daee12d5b7d92af798069fc5c": "0019_watery_the_anarchist"
+  }
+}
