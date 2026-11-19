@@ -6,6 +6,7 @@ import {
   BAN_LOCALE_HEADER,
   BAN_REFERENCE_HEADER,
   readSessionFromCookieValue,
+  reissueLegacySessionCookieValue,
 } from './lib/auth-session';
 import { BAN_CHECK_PATH, findBan } from './lib/banGate';
 import { isGatedPath } from './lib/gatedPaths';
@@ -153,6 +154,18 @@ export default async function middleware(request: NextRequest) {
     request,
     trace?.measure ?? (async (_name, run) => run()),
   );
+  const sessionCookie = request.cookies.get(AUTH_SESSION_COOKIE)?.value;
+  const reissued =
+    sessionCookie && (await reissueLegacySessionCookieValue(sessionCookie));
+  if (reissued) {
+    response.cookies.set(AUTH_SESSION_COOKIE, reissued.value, {
+      httpOnly: true,
+      maxAge: Math.floor((reissued.expiresAt - Date.now()) / 1000),
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+  }
   if (trace) {
     const serverTiming = trace.headers('gate')['Server-Timing'];
     response.headers.set('x-polycord-load-gate', serverTiming);
