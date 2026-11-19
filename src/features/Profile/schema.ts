@@ -19,6 +19,15 @@ export const PREMIUM_LANGUAGE_CAP = entitlementLimit(
   true,
 );
 
+export const showHiddenEntry = <T>(list: T[], index: number, cap: number) =>
+  list.map((entry, position) =>
+    position === cap - 1
+      ? list[index]
+      : position === index
+        ? list[cap - 1]
+        : entry,
+  );
+
 const hexColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
 
 export const profileSchema = z.object({
