@@ -26,7 +26,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
     lastUpdated: LAST_UPDATED,
     intro:
-      'These terms explain the deal between you and Polycord when you use the service to discover language partners. By signing in or browsing public profiles you agree to them. We have kept the language plain on purpose, but it is still a binding agreement.',
+      'These terms are an agreement between you and the individual who operates Polycord, called "we" or "us" here. Polycord is a language-exchange service for discovering language partners, made up of this website and the Polycord Discord app. Polycord Supporter is its optional paid subscription. These terms cover all three. By signing in or browsing public profiles you agree to them. We have kept the language plain on purpose, but it is still a binding agreement.',
     sections: [
       {
         heading: 'Who can use Polycord',
@@ -81,19 +81,19 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Supporter and payments',
         paragraphs: [
-          'Some features are part of Polycord Supporter, and Settings shows what it includes. Supporter is not currently available to buy. If Supporter has been granted to your account, Settings shows when it ends.',
+          'Polycord Supporter is an optional paid subscription that adds the features listed in Settings. It is not currently available to buy, and Polycord does not take payments. If Supporter has been granted to your account, Settings shows when it ends.',
         ],
       },
       {
         heading: 'Changes and availability',
         paragraphs: [
-          'Polycord is a product that keeps evolving, so features may change, pause, or be removed. We may update these terms as the service grows; when we make a material change we will update the date at the top of this page.',
+          'Polycord keeps evolving, so features may change, pause, or be removed. We may update these terms as the service grows; when we make a material change we will update the date at the top of this page.',
         ],
       },
       {
         heading: 'Disclaimers and liability',
         paragraphs: [
-          'Polycord helps you find people, but we cannot vet every member, so use your own judgement before sharing personal details or meeting anyone. The service is provided "as is" without warranties, and to the extent the law allows, Polycord is not liable for indirect or incidental damages arising from your use of it.',
+          'Polycord helps you find people, but we cannot vet every member, so use your own judgement before sharing personal details or meeting anyone. The service is provided "as is" without warranties, and to the extent the law allows, we are not liable for indirect or incidental damages arising from your use of it.',
         ],
       },
       {
@@ -107,7 +107,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
   privacy: {
     lastUpdated: LAST_UPDATED,
     intro:
-      'This policy explains what Polycord collects, why, and the control you have over it. We try to collect as little as we need to run a language-partner discovery service, and we never sell your personal data.',
+      'Polycord is run by an individual operator, called "we" in this policy. It explains what we collect, why, and the control you have over it. We try to collect as little as we need to run a language-partner discovery service, and we never sell your personal data.',
     sections: [
       {
         heading: 'Minors',
@@ -158,7 +158,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'How we share information',
         paragraphs: [
-          'We share data with providers that host and operate Polycord, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
+          'We share data with providers that host Polycord and run its infrastructure, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
         ],
       },
       {
