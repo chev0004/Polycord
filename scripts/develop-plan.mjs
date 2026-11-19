@@ -1,13 +1,9 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { appendFile } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
-import {
-  ciPolicy,
-  evidence,
-  requiredJobs,
-  resultContext,
-  treeOf,
-} from './ci-evidence.mjs';
+import { ciPolicy, evidence, resultContext, treeOf } from './ci-evidence.mjs';
+import { fullPlan, jobNames, planChanges } from './ci-plan.mjs';
 import { deployableChanges, publishedContext } from './deploy-inputs.mjs';
 
 const activeStates = [
@@ -17,7 +13,10 @@ const activeStates = [
   'pending',
   'requested',
 ];
-const docsOnly = /\.md$|^docs\/|^LICENSE$/;
+const noJobs = (reason) => ({
+  jobs: Object.fromEntries(jobNames.map((job) => [job, false])),
+  reasons: [reason],
+});
 
 async function provenRun(sha, env, run, github, wait) {
   const tree = treeOf(sha, run);
@@ -27,6 +26,8 @@ async function provenRun(sha, env, run, github, wait) {
     (candidate) => candidate.merged_at && candidate.merge_commit_sha === sha,
   );
   if (!pull) return null;
+  const { jobs: landed } = planChanges(`${sha}^1`, sha, run);
+  const required = jobNames.filter((job) => landed[job]);
 
   for (let check = 0; check < 30; check++) {
     const statuses =
@@ -59,10 +60,20 @@ async function provenRun(sha, env, run, github, wait) {
             `actions/runs/${id}/attempts/${attempt}/jobs?per_page=100`,
           )
         )?.jobs ?? [];
-      const names = jobs.map(({ name }) => name.replace(/ \(.*\)$/, ''));
+      const passed = (name) => {
+        const matching = jobs.filter(
+          (job) => job.name.replace(/ \(.*\)$/, '') === name,
+        );
+        return (
+          matching.length > 0 &&
+          matching.every(({ conclusion }) => conclusion === 'success')
+        );
+      };
       if (
-        jobs.every(({ conclusion }) => conclusion === 'success') &&
-        requiredJobs.every((name) => names.includes(name))
+        jobs.every(({ conclusion }) =>
+          ['success', 'skipped'].includes(conclusion),
+        ) &&
+        ['gate', 'CI result', ...required].every(passed)
       )
         return ciRun.id;
     }
@@ -83,30 +94,10 @@ export async function planDevelop(
   run = spawnSync,
   request = fetch,
   wait = setTimeout,
+  read = (file) => readFileSync(file, 'utf8'),
 ) {
   const sha = env.GITHUB_SHA;
   const develop = env.GITHUB_REF === 'refs/heads/develop';
-  if (env.GITHUB_EVENT_NAME === 'pull_request') {
-    const diff = run(
-      'git',
-      ['diff', '--no-renames', '--name-only', 'HEAD^1', 'HEAD'],
-      {
-        encoding: 'utf8',
-      },
-    );
-    const files =
-      diff.status === 0 ? diff.stdout.split('\n').filter(Boolean) : [];
-    return files.length && files.every((path) => docsOnly.test(path))
-      ? { validate: false, deploy: false, reason: 'Docs-only pull request.' }
-      : { validate: true, deploy: false, reason: 'Validate the pull request.' };
-  }
-  if (env.GITHUB_EVENT_NAME !== 'push')
-    return {
-      validate: true,
-      deploy: develop,
-      reason: 'Manual run validates fully.',
-    };
-
   const github = async (path) => {
     try {
       const response = await request(
@@ -123,6 +114,33 @@ export async function planDevelop(
       return null;
     }
   };
+  if (env.GITHUB_EVENT_NAME === 'pull_request') {
+    const labels = (await github(`pulls/${env.PR_NUMBER}`))?.labels ?? [];
+    if (labels.some(({ name }) => name === 'full-ci'))
+      return {
+        ...fullPlan('The full-ci label requests the full suite.'),
+        deploy: false,
+      };
+    const scoped = planChanges('HEAD^1', 'HEAD', run, read);
+    const skipped = jobNames.filter((job) => !scoped.jobs[job]);
+    if (
+      env.SCOPED_PLANS === 'true' ||
+      skipped.length === 0 ||
+      skipped.length === jobNames.length
+    )
+      return { ...scoped, deploy: false };
+    return {
+      jobs: fullPlan().jobs,
+      reasons: [
+        `Scoped plans are off. The scoped plan would skip ${skipped.join(', ')}.`,
+        ...scoped.reasons,
+      ],
+      deploy: false,
+    };
+  }
+  if (env.GITHUB_EVENT_NAME !== 'push')
+    return { ...fullPlan('Manual run validates fully.'), deploy: develop };
+
   const log = run(
     'git',
     ['rev-list', '--first-parent', '--max-count=50', sha],
@@ -146,17 +164,19 @@ export async function planDevelop(
   }
   if (published && deployableChanges(published, sha, run)?.length === 0)
     return {
-      validate: false,
+      ...noJobs(
+        `Staging already serves ${published} with the same deployable inputs.`,
+      ),
       deploy: false,
-      reason: `Staging already serves ${published} with the same deployable inputs.`,
     };
 
   const proven = await provenRun(sha, env, run, github, wait);
   if (proven)
     return {
-      validate: false,
+      ...noJobs(
+        `Run ${proven} validated the same tree under the same CI policy.`,
+      ),
       deploy: develop,
-      reason: `Run ${proven} validated the same tree under the same CI policy.`,
     };
 
   let source = sha;
@@ -173,22 +193,27 @@ export async function planDevelop(
     );
     if (pending)
       return {
-        validate: false,
+        ...noJobs(
+          `Run ${pending.id} for ${source} validates and deploys the same inputs.`,
+        ),
         deploy: false,
-        reason: `Run ${pending.id} for ${source} validates and deploys the same inputs.`,
       };
   }
-  return { validate: true, deploy: develop, reason: 'Validate fully.' };
+  return { ...fullPlan('Validate fully.'), deploy: develop };
 }
 
 if (import.meta.main) {
   const plan = await planDevelop();
-  console.log(plan.reason);
+  const summary = [
+    ...plan.reasons,
+    ...jobNames.map((job) => `${job}: ${plan.jobs[job] ? 'runs' : 'skipped'}`),
+  ].join('\n');
+  console.log(summary);
   if (process.env.GITHUB_OUTPUT)
     await appendFile(
       process.env.GITHUB_OUTPUT,
-      `validate=${plan.validate}\ndeploy=${plan.deploy}\n`,
+      `${jobNames.map((job) => `${job}=${plan.jobs[job]}\n`).join('')}validate=${Object.values(plan.jobs).some(Boolean)}\ndeploy=${plan.deploy}\n`,
     );
   if (process.env.GITHUB_STEP_SUMMARY)
-    await appendFile(process.env.GITHUB_STEP_SUMMARY, `${plan.reason}\n`);
+    await appendFile(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);
 }

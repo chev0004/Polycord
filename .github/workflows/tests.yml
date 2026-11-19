@@ -21,6 +21,11 @@ jobs:
       statuses: read
     outputs:
       validate: ${{ steps.plan.outputs.validate }}
+      static: ${{ steps.plan.outputs.static }}
+      unit: ${{ steps.plan.outputs.unit }}
+      package: ${{ steps.plan.outputs.package }}
+      e2e: ${{ steps.plan.outputs.e2e }}
+      storybook: ${{ steps.plan.outputs.storybook }}
       deploy: ${{ steps.plan.outputs.deploy }}
     steps:
       - uses: actions/checkout@v4
@@ -33,10 +38,25 @@ jobs:
         run: node scripts/develop-plan.mjs
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SCOPED_PLANS: ${{ vars.CI_SCOPED_PLANS }}
+
+  static:
+    needs: gate
+    if: needs.gate.outputs.static == 'true'
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-static' || format('static-{0}', github.run_id) }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: bun run check:all
 
   unit:
-    needs: gate
-    if: needs.gate.outputs.validate == 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.unit == 'true'
     concurrency:
       group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-unit' || format('unit-{0}', github.run_id) }}
       cancel-in-progress: true
@@ -62,13 +82,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: bun run db:migrate
-      - run: bun run check:all
       - run: node --test scripts/*.node.mjs
       - run: bun test
 
   package:
-    needs: gate
-    if: needs.gate.outputs.validate == 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.package == 'true'
     concurrency:
       group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-package' || format('package-{0}', github.run_id) }}
       cancel-in-progress: true
@@ -104,8 +123,8 @@ jobs:
       - run: node scripts/check-netlify-package.mjs
 
   e2e:
-    needs: gate
-    if: needs.gate.outputs.validate == 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.e2e == 'true'
     concurrency:
       group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && format('develop-e2e-{0}', strategy.job-index) || format('e2e-{0}-{1}', github.run_id, strategy.job-index) }}
       cancel-in-progress: true
@@ -152,8 +171,8 @@ jobs:
           path: test-results/
 
   storybook:
-    needs: gate
-    if: needs.gate.outputs.validate == 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.storybook == 'true'
     concurrency:
       group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-storybook' || format('storybook-{0}', github.run_id) }}
       cancel-in-progress: true
@@ -177,7 +196,7 @@ jobs:
 
   result:
     name: CI result
-    needs: [gate, unit, package, e2e, storybook]
+    needs: [gate, static, unit, package, e2e, storybook]
     if: ${{ !cancelled() && !contains(needs.*.result, 'cancelled') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5

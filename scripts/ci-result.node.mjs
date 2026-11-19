@@ -13,11 +13,30 @@ let accept;
 
 const git = (...args) => spawnSync('git', args, { encoding: 'utf8' });
 
-const needs = (validate, results = {}) =>
+const needs = (
+  validate,
+  results = {},
+  planned = ['unit', 'e2e', 'storybook'],
+) =>
   JSON.stringify({
-    gate: { result: 'success', outputs: { validate: String(validate) } },
-    unit: { result: validate ? 'success' : 'skipped' },
-    e2e: { result: validate ? 'success' : 'skipped' },
+    gate: {
+      result: 'success',
+      outputs: {
+        validate: String(validate),
+        ...Object.fromEntries(
+          ['unit', 'e2e', 'storybook'].map((job) => [
+            job,
+            String(validate && planned.includes(job)),
+          ]),
+        ),
+      },
+    },
+    ...Object.fromEntries(
+      ['unit', 'e2e', 'storybook'].map((job) => [
+        job,
+        { result: validate && planned.includes(job) ? 'success' : 'skipped' },
+      ]),
+    ),
     ...Object.fromEntries(
       Object.entries(results).map(([name, result]) => [name, { result }]),
     ),
@@ -135,4 +154,19 @@ test('fails when the evidence cannot be recorded', async () => {
   const result = await reportResult(env(), spawnSync, request);
   assert.equal(result.passed, false);
   assert.match(result.reason, /403/);
+});
+
+test('a scoped plan passes with its skipped jobs and fails if one ran', async () => {
+  const scoped = await reportResult(
+    env({ NEEDS: needs(true, {}, ['storybook']) }),
+    spawnSync,
+    request,
+  );
+  assert.equal(scoped.passed, true);
+  const unplanned = await reportResult(
+    env({ NEEDS: needs(true, { unit: 'success' }, ['storybook']) }),
+    spawnSync,
+    request,
+  );
+  assert.equal(unplanned.passed, false);
 });

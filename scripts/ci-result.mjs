@@ -9,7 +9,10 @@ export async function reportResult(
   const { gate, ...jobs } = JSON.parse(env.NEEDS);
   const validated = gate.outputs.validate === 'true';
   const failed = Object.entries(jobs)
-    .filter(([, job]) => job.result !== (validated ? 'success' : 'skipped'))
+    .filter(
+      ([name, job]) =>
+        job.result !== (gate.outputs[name] === 'true' ? 'success' : 'skipped'),
+    )
     .map(([name, job]) => `${name} ${job.result}`);
   if (gate.result !== 'success') failed.unshift(`gate ${gate.result}`);
   if (failed.length) return { passed: false, reason: failed.join(', ') };

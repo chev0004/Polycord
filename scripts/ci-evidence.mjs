@@ -2,17 +2,10 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 export const resultContext = 'ci/result';
-export const requiredJobs = [
-  'gate',
-  'unit',
-  'package',
-  'e2e',
-  'storybook',
-  'CI result',
-];
 const policyPaths = [
   '.github',
   'scripts/ci-evidence.mjs',
+  'scripts/ci-plan.mjs',
   'scripts/ci-result.mjs',
   'scripts/deploy-inputs.mjs',
   'scripts/develop-plan.mjs',
