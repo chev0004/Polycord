@@ -270,6 +270,9 @@ bunx tsc --noEmit
 bun run build
 ```
 
+The pre-push hook (`scripts/pre-push.mjs`) runs `bun run check:all` for every
+push except one whose new commits only change docs.
+
 For database changes, also run:
 
 ```bash
