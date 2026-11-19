@@ -9,14 +9,7 @@ import { FaDiscord } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight, MdRefresh } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import {
-  FieldError,
-  FormGroup,
-  Label,
-  Select,
-  TextInput,
-  Toggle,
-} from '@/components/Form';
+import { FormGroup, Label, Select, TextInput, Toggle } from '@/components/Form';
 import { DraftNotice } from '@/components/Form/DraftNotice';
 import { languageOptions } from '@/constants/languages';
 import { ReturnLink } from '@/features/Navigation/ReturnLink';
@@ -174,7 +167,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     control,
     reset,
     resetField,
-    watch,
     formState: { isSubmitting, isDirty, errors },
   } = form;
   const draft = useFormDraft(
@@ -255,12 +247,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     }
   };
 
-  const onInvalid = (formErrors: typeof errors) => {
-    if (formErrors.email) {
-      jumpToSection('account');
-    }
-  };
-
   const handleDiscard = () => {
     reset();
     draft.clear();
@@ -320,8 +306,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     { label: t('languageDisplayShort'), value: 'short' },
   ];
 
-  const emailValue = watch('email');
-
   if (mobile) {
     return (
       <MobileSettings
@@ -363,7 +347,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   return (
     <form
       noValidate
-      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      onSubmit={handleSubmit(onSubmit)}
       className={`mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24 ${
         mobile === null ? 'max-md:invisible' : ''
       }`}
@@ -397,7 +381,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <p className="truncate font-semibold text-[14px] text-foreground">
                   {userDisplayName}
                 </p>
-                <p className="truncate text-[12px] text-muted">{emailValue}</p>
               </div>
             </div>
             <div className="flex flex-row flex-wrap gap-1 lg:flex-col">
@@ -429,30 +412,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               title={t('accountTitle')}
               description={t('accountDescription')}
             >
-              <FormGroup>
-                <Label htmlFor="email" required>
-                  {t('emailLabel')}
-                </Label>
-                <TextInput
-                  id="email"
-                  inputMode="email"
-                  autoCapitalize="off"
-                  autoComplete="email"
-                  spellCheck={false}
-                  {...register('email')}
-                  placeholder={t('emailPlaceholder')}
-                  error={!!errors.email}
-                />
-                <p className="text-[12px] text-subtle">
-                  {t('emailDescription')}
-                </p>
-                {errors.email && (
-                  <FieldError id="email-error">
-                    {t(errors.email.message as string)}
-                  </FieldError>
-                )}
-              </FormGroup>
-
               <SettingRow
                 label={t('updateDiscordConnectionLabel')}
                 description={t('updateDiscordConnectionDescription')}
