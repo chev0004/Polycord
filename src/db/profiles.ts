@@ -30,6 +30,7 @@ import {
 } from '@/features/Discovery/cardTheme';
 import type { DiscoveryProfile } from '@/features/Discovery/ProfileCard';
 import type { CurrentUser } from '@/lib/auth-session';
+import { entitlementLimit } from '@/lib/entitlements';
 import { isPremiumAccount } from './billing';
 import { db } from './client';
 import { getModerationRestrictionByDiscordId } from './moderation';
@@ -179,7 +180,12 @@ const toDiscoveryProfile = (
     profile.boostedUntil.getTime() > Date.now(),
   boostedUntil: profile.boostedUntil?.toISOString(),
   voiceIntroSeconds:
-    isPremiumOwner(user, subscription) && profile.voiceIntroSeconds
+    profile.voiceIntroSeconds &&
+    profile.voiceIntroSeconds <=
+      entitlementLimit(
+        'profile.voiceIntroSeconds',
+        isPremiumOwner(user, subscription),
+      )
       ? profile.voiceIntroSeconds
       : undefined,
   id: profile.id,

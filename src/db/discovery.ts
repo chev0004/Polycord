@@ -6,6 +6,7 @@ import {
   eq,
   inArray,
   isNotNull,
+  lte,
   or,
   type SQL,
   sql,
@@ -24,6 +25,7 @@ import {
   type DiscoveryUrlState,
   MAX_STACK_PAGES,
 } from '@/features/Discovery/discoveryUrlState';
+import { entitlementLimit } from '@/lib/entitlements';
 import { db } from './client';
 import { discoveryAvailability } from './discoveryAvailability';
 import { discoverySearch } from './discoverySearch';
@@ -52,6 +54,10 @@ const playableVoiceIntro = () => {
     sql`${profiles.voiceIntroSeconds} > 0`,
     sql`exists (select 1 from voice_intros where user_id = ${profiles.userId})`,
     or(
+      lte(
+        profiles.voiceIntroSeconds,
+        entitlementLimit('profile.voiceIntroSeconds', false),
+      ),
       ids.length ? inArray(users.discordUserId, ids) : undefined,
       sql`${users.premiumGrantedUntil} > now()`,
       sql`exists (select 1 from subscriptions where user_id = ${profiles.userId}
