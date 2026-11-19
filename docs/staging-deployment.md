@@ -18,10 +18,32 @@ repository is needed.
 4. Merge the deployment PR into `develop`. Its successful Tests workflow can
    publish staging after both the browser/unit and Storybook jobs pass.
 
-The deployment job accepts only `develop` in `chev0004/Polycord`, serializes
-uploads and skips commits superseded before or during packaging. PRs and forks
-cannot invoke the deployment job. The deployment secret is restricted to the
-staging environment. Keep fork PR tests separate from privileged deployment.
+The deployment job accepts only `develop` in `chev0004/Polycord` and serializes
+uploads. PRs and forks cannot invoke the deployment job. The deployment secret
+is restricted to the staging environment. Keep fork PR tests separate from
+privileged deployment.
+
+## Develop runs
+
+Every push to `develop` starts the Tests workflow, including docs-only pushes.
+Its gate job runs `scripts/develop-plan.mjs`, which decides whether to validate
+and deploy:
+
+- After each verified publish, the deployment job sets the
+  `staging/published` commit status on the source commit. The gate looks for
+  the newest such status in the last 50 first-parent commits. When the only
+  differences from it are docs, tests or stories (`scripts/deploy-inputs.mjs`),
+  the run validates and builds nothing.
+- When the new commits only add docs, tests or stories on top of a code commit
+  whose Tests run is still active, that run stays responsible for staging.
+- Otherwise, including when the status, history or GitHub API is unavailable,
+  the run validates fully and then deploys.
+
+Validation jobs on `develop` share one cancellation group per job, so a newer
+push cancels older validation. The deployment job is not cancelled by newer
+runs. Before packaging and again before upload, it publishes only if `develop`
+has no newer deployable changes than its source. If the comparison itself
+fails, the job fails instead of skipping.
 
 ## Environment changes and manual deployment
 
@@ -32,8 +54,11 @@ at every run, masks them before printing build output and uses an offline local
 Netlify build. Do not print raw environment responses or upload them as artifacts.
 
 After changing a variable, open **GitHub > Polycord > Actions > Tests > Run
-workflow**, choose **develop**, and run it. No code commit is required. Both
-checks run before rebuilding and uploading the latest configuration.
+workflow**, choose **develop**, and run it. No code commit is required. A manual
+run always validates fully before rebuilding and uploading the latest
+configuration, even when staging already serves the same code. Use the same
+path to republish after restoring an older deploy in Netlify, because the gate
+trusts the newest `staging/published` status.
 
 The build retains `scripts/check-migrations.ts`. Pending migrations fail the
 job; deployment never applies migrations automatically. Node 22, Bun 1.3.14,
