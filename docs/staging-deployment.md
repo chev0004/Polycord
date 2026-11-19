@@ -47,13 +47,35 @@ runs. Before packaging and again before upload, it publishes only if `develop`
 has no newer deployable changes than its source. If the comparison itself
 fails, the job fails instead of skipping.
 
+## PR job plans
+
+The gate runs `scripts/ci-plan.mjs` on the PR merge diff. Static checks
+(Biome, locale checks and TypeScript) run in their own job before any unit,
+package, browser or Storybook job starts, so a failing static check starts
+nothing expensive. The gate summary lists the reason for every planned and
+skipped job.
+
+| Changed files | Jobs |
+| --- | --- |
+| Docs only (`*.md`, `docs/`, `LICENSE`) | none |
+| Story files (`src/**/*.stories.tsx`) | static, Storybook |
+| Locale JSON with the same keys and placeholders | static, Storybook, plus e2e or unit tests when they assert the removed text |
+| `scripts/tickets.ts`, Husky hooks, `commitlint.config.mjs` | static |
+| Anything else, including a mix with anything else, or an unavailable diff | everything |
+
+Scoped plans apply only when the repository variable `CI_SCOPED_PLANS` is
+`true`. Until then every non-docs PR runs everything, and the gate summary
+records which jobs the scoped plan would have skipped, so plans can be compared
+with full runs before skips are enabled. Docs-only PRs skip validation either
+way. To force the full suite on a scoped PR, add the `full-ci` label and re-run
+the workflow.
+
 ## CI result
 
 Every Tests run ends with the `CI result` job. It passes only when the gate
 succeeded and every job the gate planned succeeded, and staging requires it.
 Use `CI result` as the single required status check for `develop` where the
-plan supports branch protection. Docs-only PRs still run the gate, skip
-validation and report a passing `CI result`.
+plan supports branch protection.
 
 For a validated PR from this repository, `CI result` sets a `ci/result` commit
 status on the PR head with the checked-out merge tree
@@ -66,8 +88,10 @@ only when:
 - the merge changed none of the CI policy files, so the run used the reviewed
   workflow;
 - GitHub's run record is the Tests workflow for that PR head in this
-  repository, its latest attempt completed successfully, and every job in that
-  attempt, including each required job, succeeded.
+  repository, and its latest attempt completed successfully;
+- every job in that attempt succeeded or was skipped, and every job the landed
+  diff's plan requires succeeded. A scoped run is reused only when its jobs
+  cover that plan.
 
 If the PR run is still active, the gate waits up to 15 minutes for it. A base
 that advanced after the run, a canceled or incomplete job, a later attempt than
