@@ -22,7 +22,10 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'bun run build && bun run next start -p 3119',
+    command:
+      process.env.E2E_PREBUILT === 'true'
+        ? 'bun run next start -p 3119'
+        : 'bun run build && bun run next start -p 3119',
     url: 'http://localhost:3119/en',
     timeout: 240000,
     reuseExistingServer: false,

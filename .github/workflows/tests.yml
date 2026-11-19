@@ -49,10 +49,24 @@ jobs:
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/polycord_test
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: bun run check:all
+      - if: needs.gate.outputs.e2e == 'true'
+        run: bun scripts/build-e2e.ts
+      - if: needs.gate.outputs.e2e == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-build-${{ github.sha }}
+          path: |
+            .next
+            !.next/cache
+          include-hidden-files: true
+          retention-days: 1
+          overwrite: true
 
   unit:
     needs: [gate, static]
@@ -161,9 +175,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: bun run db:migrate
+      - id: prebuilt
+        if: matrix.skeleton == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-build-${{ github.sha }}
+          path: .next
       - uses: ./.github/actions/playwright
         timeout-minutes: 8
       - run: bun run test:e2e ${{ matrix.args }}
+        env:
+          E2E_PREBUILT: ${{ steps.prebuilt.outcome == 'success' }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
