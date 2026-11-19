@@ -90,13 +90,6 @@ export const upsertUserSettings = async (
   return settings;
 };
 
-export const updateUserEmail = async (userId: string, email: string) => {
-  await db
-    .update(users)
-    .set({ email, updatedAt: new Date() })
-    .where(eq(users.id, userId));
-};
-
 export const updateProfilePrivacyForUser = async (
   userId: string,
   privacy: ProfilePrivacyValues,
