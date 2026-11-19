@@ -17,6 +17,7 @@ let head;
 let buildHead;
 let buildId;
 let publishedDigest;
+let diff;
 
 beforeEach(async () => {
   process.env = {
@@ -66,6 +67,7 @@ beforeEach(async () => {
   buildHead = sha;
   buildId = null;
   publishedDigest = digest;
+  diff = 'src/app/page.tsx\n';
 });
 
 afterEach(() => {
@@ -78,6 +80,7 @@ function run(command, args, options) {
   let stdout = '';
   if (args[0] === 'rev-parse') stdout = sha;
   if (args[0] === 'ls-remote') stdout = `${head}\trefs/heads/develop\n`;
+  if (args[0] === 'diff') stdout = diff;
   if (args[1] === 'env:list')
     stdout = JSON.stringify({
       DATABASE_URL: '****************uire',
@@ -195,4 +198,16 @@ test('rejects a hosted build job and restores the previous deployment', async ()
     /Unexpected hosted Netlify build/,
   );
   assert.equal(site.published_deploy.id, 'previous');
+});
+
+test('publishes an older source when develop only adds docs or tests', async () => {
+  head = 'b'.repeat(40);
+  diff = 'docs/operations/readiness.md\ne2e/profile.pw.ts\n';
+  await deployStaging(run, request);
+  assert.equal(site.published_deploy.id, 'uploaded');
+  assert.ok(
+    calls.some(
+      ({ args }) => args?.[0] === 'fetch' && args.includes('b'.repeat(40)),
+    ),
+  );
 });

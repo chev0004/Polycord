@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { appendFile } from 'node:fs/promises';
 import { checkNetlifyPackage } from './check-netlify-package.mjs';
+import { deployableChanges } from './deploy-inputs.mjs';
 
 const siteId = '694f7324-d2b5-43b5-9de4-ae33e0b927ee';
 
@@ -39,16 +40,24 @@ export async function deployStaging(run = spawnSync, request = fetch) {
     assert.ok(response.ok, `Netlify request failed (${response.status})`);
     return response.json();
   };
-  const current = () =>
-    execute('git', ['ls-remote', 'origin', 'refs/heads/develop']).split(
-      /\s/,
-    )[0] === process.env.GITHUB_SHA;
+  const current = () => {
+    const tip = execute('git', [
+      'ls-remote',
+      'origin',
+      'refs/heads/develop',
+    ]).split(/\s/)[0];
+    if (tip === process.env.GITHUB_SHA) return true;
+    execute('git', ['fetch', '--depth=1', 'origin', tip]);
+    const changes = deployableChanges(process.env.GITHUB_SHA, tip, run);
+    assert.ok(changes, 'Cannot compare with the develop tip');
+    return changes.length === 0;
+  };
   assert.equal(
     execute('git', ['rev-parse', 'HEAD']).trim(),
     process.env.GITHUB_SHA,
   );
   if (!current())
-    return console.log('Skip staging: develop has a newer commit.');
+    return console.log('Skip staging: develop has newer deployable changes.');
 
   const site = await api(`sites/${siteId}`);
   assert.equal(site.id, siteId);
