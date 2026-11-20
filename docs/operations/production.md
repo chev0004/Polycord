@@ -28,7 +28,8 @@ The owner does these steps. None of them is automated.
 | `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` | Same value as staging |
 | `POLYCORD_ENVIRONMENT`, `POLYCORD_SEED_ENABLED` | Leave unset |
 
-6. Prepare the [owner deploy environment](../staging-deployment.md#owner-run-deployment) once. Production uses the same environment with its own values.
+6. In the Netlify site's **production** context, set `DATABASE_URL` with **Functions** scope to the runtime connection URL from the approved production Supabase project. The offline build uses the owner's local `DATABASE_URL` separately. Confirm both URLs identify the same approved project and that the runtime credentials belong to that project. The deploy reads the resolved Functions value from Netlify and stops before building if that value is absent, masked or points elsewhere. Run with an owner credential that can read it, and keep the value out of logs and evidence.
+7. Prepare the [owner deploy environment](../staging-deployment.md#owner-run-deployment). Set `POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF` to the project reference from the approved Supabase project dashboard. Record the site ID and project reference, and verify the deployed candidate's database-backed health and sign-in before launch.
 
 ## Free plan limits
 
@@ -48,6 +49,7 @@ The owner does these steps. None of them is automated.
 git fetch origin && git switch --detach origin/main
 export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$PRODUCTION_DATABASE_URL" \
   NETLIFY_PRODUCTION_SITE_ID=<site ID> POLYCORD_PRODUCTION_DOMAIN=polycord.net \
+  POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF=<approved project ref> \
   NODE_OPTIONS=--max-old-space-size=8192
 unset POLYCORD_GITHUB_TOKEN STAGING_DATABASE_URL PRODUCTION_DATABASE_URL
 node scripts/deploy-production.mjs

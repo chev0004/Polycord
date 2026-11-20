@@ -7,6 +7,8 @@ import { afterEach, beforeEach, test } from 'node:test';
 import { deployProduction } from './deploy-production.mjs';
 
 const siteId = 'production-site';
+const project = 'abcdefghijklmnopqrst';
+const runtimeUrl = `postgresql://postgres.${project}:test@aws-1-us-west-2.pooler.supabase.com:6543/postgres`;
 const sha = 'c'.repeat(40);
 const origin = 'https://polycord.example';
 const digest = createHash('sha256').update('server archive').digest('hex');
@@ -14,6 +16,7 @@ const originalCwd = process.cwd();
 const originalEnv = { ...process.env };
 let calls;
 let values;
+let functionValues;
 let ciRuns;
 let seedRows;
 let site;
@@ -25,7 +28,8 @@ beforeEach(async () => {
     GITHUB_ACTIONS: 'false',
     GITHUB_STEP_SUMMARY: '',
     NETLIFY_AUTH_TOKEN: 'synthetic-token',
-    DATABASE_URL: 'postgresql://synthetic/production',
+    DATABASE_URL: `postgresql://postgres:test@db.${project}.supabase.co:5432/postgres`,
+    POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF: project,
     GITHUB_TOKEN: 'synthetic-github-token',
     NETLIFY_PRODUCTION_SITE_ID: siteId,
     POLYCORD_PRODUCTION_DOMAIN: 'polycord.example',
@@ -67,6 +71,7 @@ beforeEach(async () => {
     NEXT_PUBLIC_DISCORD_INVITE_URL: 'https://discord.gg/example',
     POLYCORD_ANALYTICS_DISABLED: 'true',
   };
+  functionValues = { DATABASE_URL: runtimeUrl };
   ciRuns = [{ conclusion: 'success' }];
   seedRows = 0;
   site = {
@@ -87,7 +92,10 @@ function run(command, args, options) {
   let stdout = '';
   if (args[0] === 'rev-parse') stdout = sha;
   if (args[0] === 'ls-remote') stdout = `${sha}\trefs/heads/main\n`;
-  if (args[1] === 'env:list') stdout = JSON.stringify(values);
+  if (args[1] === 'env:list')
+    stdout = JSON.stringify(
+      args.includes('functions') ? functionValues : values,
+    );
   if (args[1] === 'deploy') {
     site = { ...site, published_deploy: { id: 'uploaded' } };
     stdout = JSON.stringify({ deploy_id: 'uploaded' });
@@ -168,5 +176,21 @@ test('refuses staging or seeding configuration before building', async () => {
 test('refuses a database marked for seeding', async () => {
   seedRows = 1;
   await assert.rejects(deploy(), /seed database/);
+  assert.equal(built(), false);
+});
+
+test('refuses an unapproved database in either runtime or local configuration', async () => {
+  for (const url of [
+    undefined,
+    '********',
+    runtimeUrl.replace(project, 'zzzzzzzzzzzzzzzzzzzz'),
+    runtimeUrl + '?host=other',
+  ]) {
+    functionValues.DATABASE_URL = url;
+    await assert.rejects(deploy(), /Netlify Functions DATABASE_URL/);
+  }
+  functionValues.DATABASE_URL = runtimeUrl;
+  process.env.DATABASE_URL = 'postgresql://localhost/postgres';
+  await assert.rejects(deploy(), /Local DATABASE_URL/);
   assert.equal(built(), false);
 });
