@@ -139,7 +139,7 @@ test('voice intro limits follow the owner plan and keep longer clips after Suppo
     const ownClip = async () =>
       (await context.request.get(`/api/voice/${owner.profile_id}`)).status();
 
-    expect((await upload('voice-9s')).status()).toBe(400);
+    expect((await upload('voice-8s-over')).status()).toBe(400);
     const saved = await upload('voice-8s');
     expect(saved.status()).toBe(200);
     expect(await saved.json()).toEqual({ durationSeconds: 8 });
