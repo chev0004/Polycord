@@ -912,6 +912,9 @@ export const LapsedOverLimit: Story = {
     await expect(canvas.getByText(/5\/5 tags/)).toBeInTheDocument();
     await expect(canvas.getByText(/2\/2 languages/)).toBeInTheDocument();
     await expect(canvas.getAllByText('Hidden on Free')).toHaveLength(2);
+    await expect(
+      canvas.queryByRole('combobox', { name: 'Target Languages 3' }),
+    ).toBeNull();
 
     fireEvent.click(
       canvas.getByRole('button', { name: 'Show Hiking on your profile' }),

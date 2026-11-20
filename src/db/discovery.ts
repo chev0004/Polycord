@@ -196,12 +196,10 @@ const discoveryWhere = async (
       values.map((value) => sql`${value}`),
       sql`,`,
     );
-    return sql`(${profiles.id} in (
-    select profile_id from profile_target_languages where ${sql.identifier(column)}::text in (${list})
-  ) and exists (
+    return sql`exists (
     select 1 from profile_target_languages where profile_id = ${profiles.id}
       and ${sql.identifier(column)}::text in (${list}) and ${activeTargetSql(sql`position`)}
-  )) or (not exists (select 1 from profile_target_languages where profile_id = ${profiles.id}) and
+  ) or (not exists (select 1 from profile_target_languages where profile_id = ${profiles.id}) and
     ${column === 'language' ? profiles.targetLanguage : profiles.proficiencyLevel}::text in (${list}))`;
   };
   for (const [key, column] of [

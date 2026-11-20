@@ -98,6 +98,10 @@ export const TargetLanguagesEditor = ({
       <div className="flex flex-col gap-2.5">
         {fields.map((rowField, index) => {
           const currentLanguage = rows[index]?.language ?? '';
+          const hidden = index >= cap;
+          const languageLabel =
+            allLanguageOptions.find(({ value }) => value === currentLanguage)
+              ?.label ?? currentLanguage;
           const options = allLanguageOptions.filter(
             (option) =>
               option.value === currentLanguage ||
@@ -117,38 +121,46 @@ export const TargetLanguagesEditor = ({
                 </div>
               ) : null}
               <div className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_170px_40px]">
-                <Controller
-                  control={control}
-                  name={`targetLanguages.${index}.language`}
-                  render={({ field }) => (
-                    <Combobox
-                      {...field}
-                      id={`target-language-${index}`}
-                      ariaLabel={`${t('targetLanguagesLabel')} ${index + 1}`}
-                      className="col-span-2 sm:col-span-1"
-                      value={field.value || ''}
-                      onValueChange={field.onChange}
-                      options={options}
-                      placeholder={t('languageSelectPlaceholder')}
-                      error={Boolean(errorMessage) && !currentLanguage}
-                      errorId="target-languages-error"
+                {hidden ? (
+                  <p className="col-span-2 text-sm text-muted">
+                    {languageLabel}
+                  </p>
+                ) : (
+                  <>
+                    <Controller
+                      control={control}
+                      name={`targetLanguages.${index}.language`}
+                      render={({ field }) => (
+                        <Combobox
+                          {...field}
+                          id={`target-language-${index}`}
+                          ariaLabel={`${t('targetLanguagesLabel')} ${index + 1}`}
+                          className="col-span-2 sm:col-span-1"
+                          value={field.value || ''}
+                          onValueChange={field.onChange}
+                          options={options}
+                          placeholder={t('languageSelectPlaceholder')}
+                          error={Boolean(errorMessage) && !currentLanguage}
+                          errorId="target-languages-error"
+                        />
+                      )}
                     />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name={`targetLanguages.${index}.level`}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      options={levelOptions}
-                      placeholder={t('levelPlaceholder')}
-                      ariaLabel={t('levelSelectLabel')}
+                    <Controller
+                      control={control}
+                      name={`targetLanguages.${index}.level`}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          options={levelOptions}
+                          placeholder={t('levelPlaceholder')}
+                          ariaLabel={t('levelSelectLabel')}
+                        />
+                      )}
                     />
-                  )}
-                />
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={() => remove(index)}
@@ -158,15 +170,12 @@ export const TargetLanguagesEditor = ({
                 >
                   <MdClose size={18} />
                 </button>
-                {index >= cap ? (
+                {hidden ? (
                   <button
                     type="button"
                     onClick={() => swap(index, cap - 1)}
                     aria-label={t('showLanguageOnProfile', {
-                      language:
-                        allLanguageOptions.find(
-                          (option) => option.value === currentLanguage,
-                        )?.label ?? currentLanguage,
+                      language: languageLabel,
                     })}
                     className="col-span-full justify-self-start font-semibold text-[12px] text-primary-light focus:outline-none focus-visible:text-primary-lighter"
                   >

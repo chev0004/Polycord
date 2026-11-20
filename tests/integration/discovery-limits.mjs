@@ -8,6 +8,7 @@ process.env.DATABASE_URL = url.href;
 process.env.POLYCORD_PREMIUM_USER_IDS = '';
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
+const { revokePremiumGrant } = await import('../../src/db/billing');
 const { users, profiles, profileTargetLanguages } = await import(
   '../../src/db/schema'
 );
@@ -144,6 +145,19 @@ try {
     ).tags.length,
     8,
   );
+
+  process.env.POLYCORD_PREMIUM_USER_IDS = lapsed.discordUserId;
+  await revokePremiumGrant(lapsed.id);
+  assert.deepEqual(
+    names(await load([['tag', tags[6]]])).sort(),
+    named('granted', 'lapsed'),
+  );
+  assert.deepEqual(
+    names(await load([['target', 'es']])).sort(),
+    named('granted', 'lapsed'),
+  );
+  process.env.POLYCORD_PREMIUM_USER_IDS = '';
+  assert.deepEqual(names(await load([['tag', tags[6]]])), named('granted'));
 
   console.log('discovery free limits passed');
 } finally {
