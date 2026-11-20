@@ -851,7 +851,7 @@ export const MobileSettings = ({
         }
       >
         <div className="flex flex-col gap-3">
-          <p className="text-[13px] text-muted leading-snug">
+          <p className="text-[13px] text-danger leading-snug">
             {t('deleteAccountDescription')}
           </p>
           <Label htmlFor="deleteAccountConfirmationMobile">
