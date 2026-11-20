@@ -34,16 +34,15 @@ and deploy:
   the newest such status in the last 50 first-parent commits. When the only
   differences from it are docs, tests or stories (`scripts/deploy-inputs.mjs`),
   the run validates and builds nothing.
-- When the new commits only add docs, tests or stories on top of a code commit
-  whose Tests run is still active, that run stays responsible for staging.
+- A push whose gate opens after `develop` has advanced skips validation and publish.
+  The latest push owns validation until staging records an equivalent publish.
+  An in-flight predecessor never counts as a publish.
 - Otherwise, including when the status, history or GitHub API is unavailable,
   the run validates fully and then deploys.
 
-Validation jobs on `develop` share one cancellation group per job, so a newer
-push cancels older validation. The deployment job is not cancelled by newer
-runs. Before packaging and again before upload, it publishes only if `develop`
-has no newer deployable changes than its source. If the comparison itself
-fails, the job fails instead of skipping.
+Validation jobs that already started can finish independently. Staging deploy
+jobs queue without replacing pending jobs. Each deploy rechecks freshness before
+packaging and before upload and fails if it cannot compare with the tip.
 
 ## Environment changes and manual deployment
 
