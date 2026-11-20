@@ -20,6 +20,8 @@ export async function snapshot(url) {
   await client.connect();
   try {
     await client.query('begin isolation level repeatable read read only');
+    await client.query("set local time zone 'UTC'");
+    await client.query('set local search_path = public, pg_catalog');
     const { rows } = await client.query(
       "select tablename from pg_tables where schemaname = 'public' order by tablename",
     );
