@@ -18,6 +18,8 @@ const needs = (validate, results = {}) =>
     gate: { result: 'success', outputs: { validate: String(validate) } },
     unit: { result: validate ? 'success' : 'skipped' },
     e2e: { result: validate ? 'success' : 'skipped' },
+    package: { result: validate ? 'success' : 'skipped' },
+    storybook: { result: validate ? 'success' : 'skipped' },
     ...Object.fromEntries(
       Object.entries(results).map(([name, result]) => [name, { result }]),
     ),
@@ -75,9 +77,14 @@ test('records the checked-out tree and CI policy for a validated pull request', 
 });
 
 test('fails when a planned job did not succeed', async () => {
-  for (const state of ['failure', 'skipped', 'cancelled']) {
+  for (const state of ['failure', 'skipped', 'cancelled', 'missing']) {
     const result = await reportResult(
-      env({ NEEDS: needs(true, { storybook: state }) }),
+      env({
+        NEEDS:
+          state === 'missing'
+            ? needs(true).replace(/,"storybook":\{"result":"success"\}/, '')
+            : needs(true, { storybook: state }),
+      }),
       spawnSync,
       request,
     );

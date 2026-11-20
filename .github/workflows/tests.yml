@@ -178,7 +178,7 @@ jobs:
   result:
     name: CI result
     needs: [gate, unit, package, e2e, storybook]
-    if: ${{ !cancelled() && !contains(needs.*.result, 'cancelled') }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

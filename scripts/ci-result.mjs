@@ -7,11 +7,16 @@ export async function reportResult(
   request = fetch,
 ) {
   const { gate, ...jobs } = JSON.parse(env.NEEDS);
-  const validated = gate.outputs.validate === 'true';
-  const failed = Object.entries(jobs)
-    .filter(([, job]) => job.result !== (validated ? 'success' : 'skipped'))
-    .map(([name, job]) => `${name} ${job.result}`);
-  if (gate.result !== 'success') failed.unshift(`gate ${gate.result}`);
+  const planned = gate?.outputs?.validate;
+  const validated = planned === 'true';
+  const expected = validated ? 'success' : 'skipped';
+  const failed = ['unit', 'package', 'e2e', 'storybook']
+    .filter((name) => jobs[name]?.result !== expected)
+    .map((name) => `${name} ${jobs[name]?.result ?? 'missing'}`);
+  if (gate?.result !== 'success')
+    failed.unshift(`gate ${gate?.result ?? 'missing'}`);
+  else if (planned !== 'true' && planned !== 'false')
+    failed.unshift('validation plan missing');
   if (failed.length) return { passed: false, reason: failed.join(', ') };
   if (!validated || env.RECORD_EVIDENCE !== 'true')
     return { passed: true, reason: 'No evidence recorded.' };
