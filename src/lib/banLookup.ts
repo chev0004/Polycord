@@ -5,7 +5,7 @@ import { createBanClient } from '@/db/connection';
 import type { BanNotice } from './banGate';
 import { type LoadMeasure, measureLoad } from './loadTrace';
 
-export const BAN_STATEMENT_TIMEOUT_MS = 2500;
+export const BAN_STATEMENT_TIMEOUT_MS = 2_500;
 
 const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
