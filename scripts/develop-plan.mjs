@@ -145,6 +145,16 @@ export async function planDevelop(
   if (env.GITHUB_EVENT_NAME !== 'push')
     return { ...fullPlan('Manual run validates fully.'), deploy: develop };
 
+  const tip = develop
+    ? (await github('git/ref/heads/develop'))?.object?.sha
+    : undefined;
+  if (tip && tip !== sha)
+    return {
+      ...noJobs(
+        `Develop has advanced to ${tip}; the latest push validates its own snapshot.`,
+      ),
+      deploy: false,
+    };
   const log = run(
     'git',
     ['rev-list', '--first-parent', '--max-count=50', sha],
@@ -183,26 +193,6 @@ export async function planDevelop(
       deploy: develop,
     };
 
-  let source = sha;
-  for (const commit of history.slice(1)) {
-    if (deployableChanges(commit, sha, run)?.length !== 0) break;
-    source = commit;
-  }
-  if (source !== sha) {
-    const runs = await github(
-      `actions/workflows/tests.yml/runs?head_sha=${source}&event=push&per_page=20`,
-    );
-    const pending = runs?.workflow_runs.find(({ status }) =>
-      activeStates.includes(status),
-    );
-    if (pending)
-      return {
-        ...noJobs(
-          `Run ${pending.id} for ${source} validates and deploys the same inputs.`,
-        ),
-        deploy: false,
-      };
-  }
   return { ...fullPlan('Validate fully.'), deploy: develop };
 }
 

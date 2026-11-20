@@ -15,6 +15,7 @@ let ciRuns;
 let jobs;
 let runs;
 let waits;
+let remoteTip;
 let pullLabels;
 
 const git = (...args) =>
@@ -95,6 +96,8 @@ async function request(url) {
     status: data === undefined ? 404 : 200,
     json: async () => data,
   });
+  if (path === 'git/ref/heads/develop')
+    return reply(remoteTip && { object: { sha: remoteTip } });
   let match = path.match(/^pulls\/(\d+)$/);
   if (match) return reply({ labels: pullLabels[match[1]] ?? [] });
   match = path.match(/^commits\/(\w+)\/statuses/);
@@ -128,6 +131,7 @@ beforeEach(async () => {
   jobs = {};
   runs = {};
   waits = 0;
+  remoteTip = undefined;
   pullLabels = {};
 });
 
@@ -308,18 +312,6 @@ test('does not wait when no pull request run is active', async () => {
   runs[head] = [{ id: 11, status: 'completed' }];
   assert.equal(validates(await plan(merge)), true);
   assert.equal(waits, 0);
-});
-
-test('a docs-only tip leaves an in-flight code run eligible', async () => {
-  publish(await commit({ 'src/app.ts': 'a' }));
-  const code = await commit({ 'src/app.ts': 'b' });
-  await commit({ 'docs/a.md': 'a' });
-  const tip = await commit({ 'tests/a.test.js': 'a' });
-  runs[code] = [{ id: 7, status: 'in_progress' }];
-  const result = await plan(tip);
-  assert.equal(validates(result), false);
-  assert.equal(result.deploy, false);
-  assert.match(result.reasons[0], /Run 7/);
 });
 
 test('a docs-only tip validates when the code run has finished without publishing', async () => {
