@@ -264,14 +264,13 @@ const owner = () => {
   for (const key of ['GITHUB_REF', 'GITHUB_EVENT_NAME', 'GITHUB_SHA'])
     delete process.env[key];
 };
-const ran = (script) =>
-  calls.find(({ args }) => args?.[0] === 'run' && args[1] === script);
+const ran = (script) => calls.filter(({ args }) => args?.includes(script));
 
 test('an owner deploys the clean develop tip on CI evidence', async () => {
   owner();
   await deployStaging(run, request);
   assert.equal(site.published_deploy.id, 'uploaded');
-  assert.equal(ran('test:e2e'), undefined);
+  assert.deepEqual(ran('test:e2e'), []);
   assert.equal(
     calls.find(({ body }) => body).body.context,
     'staging/published',
@@ -283,12 +282,15 @@ test('an owner without CI evidence runs the full suite on a disposable database 
   ciRuns = [];
   process.env.TEST_DATABASE_URL = 'postgresql://synthetic/test';
   await deployStaging(run, request);
-  const e2e = ran('test:e2e');
+  const [e2e, barOnly] = ran('test:e2e');
   assert.equal(e2e.env.DATABASE_URL, 'postgresql://synthetic/test');
+  assert.ok(
+    barOnly.args.includes('NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED=false'),
+  );
   assert.equal(e2e.env.NETLIFY_AUTH_TOKEN, undefined);
   assert.equal(e2e.env.GITHUB_TOKEN, undefined);
   assert.ok(
-    calls.indexOf(ran('test:storybook')) <
+    calls.indexOf(ran('test:storybook')[0]) <
       calls.findIndex(({ args }) => args?.[1] === 'env:list'),
   );
   assert.equal(site.published_deploy.id, 'uploaded');
