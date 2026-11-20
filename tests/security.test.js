@@ -43,6 +43,8 @@ describe('cross-origin API writes', () => {
   for (const origin of [
     'https://evil.example',
     'https://other.chev.dev',
+    'http://polycord.chev.dev',
+    'https://polycord.chev.dev:444',
     'null',
   ]) {
     for (const method of ['POST', 'PATCH', 'PUT', 'DELETE']) {
