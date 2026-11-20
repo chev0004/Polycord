@@ -33,6 +33,8 @@ export const Default: Story = {
     ).toBeInTheDocument();
     await expect(canvas.getByText('6 layouts')).toBeInTheDocument();
     await expect(canvas.getByText('15 layouts')).toBeInTheDocument();
-    await expect(canvas.getAllByText('No')).toHaveLength(5);
+    await expect(canvas.getByText('8-second recording')).toBeInTheDocument();
+    await expect(canvas.getByText('20-second recording')).toBeInTheDocument();
+    await expect(canvas.getAllByText('No')).toHaveLength(4);
   },
 };

@@ -209,6 +209,8 @@ test('clips follow replacement, deletion, Premium, blocks and bans immediately',
       (await context.request.get(`/api/voice/${first.profileId}`)).status(),
     ).toBe(404);
 
+    await sql`update profiles set voice_intro_seconds = 15 where user_id = ${second.id}`;
+    expect(second.profileId in (await batch())).toBe(true);
     await sql`update users set premium_granted_until = null where id = ${second.id}`;
     expect(second.profileId in (await batch())).toBe(false);
     expect(

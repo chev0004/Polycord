@@ -8,10 +8,11 @@ import { Button } from '@/components/Button';
 import { FormGroup } from '@/components/Form';
 import { discoveryCache } from '@/features/Discovery/discoveryCache';
 import { clearClips } from '@/features/Discovery/voiceClips';
+import { entitlementLimit } from '@/lib/entitlements';
 import { VoiceIntroPlayer } from './VoiceIntroPlayer';
 
-const MAX_INTRO_SECONDS = 20;
 const DOWNLOAD_NAME = 'polycord-voice-intro';
+const RECORDER_STOP_BUFFER_MS = 100;
 
 type PendingClip = {
   url: string;
@@ -47,6 +48,7 @@ export const VoiceIntroEditor = ({
 }: VoiceIntroEditorProps) => {
   const t = useTranslations('Profile');
   const locale = useLocale();
+  const maxSeconds = entitlementLimit('profile.voiceIntroSeconds', premium);
   const [recording, setRecording] = useState(false);
   const [pending, setPending] = useState<PendingClip | null>(null);
   const [busy, setBusy] = useState(false);
@@ -54,7 +56,7 @@ export const VoiceIntroEditor = ({
   const [error, setError] = useState<'mic' | 'save' | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const startedAtRef = useRef(0);
+  const stopRecordingRef = useRef<() => void>(() => {});
   const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -88,7 +90,12 @@ export const VoiceIntroEditor = ({
       });
       const recorder = new MediaRecorder(stream);
       chunksRef.current = [];
-      startedAtRef.current = Date.now();
+      const startedAt = performance.now();
+      let stoppedAt = startedAt;
+      const stop = () => {
+        stoppedAt = performance.now();
+        recorder.stop();
+      };
 
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
@@ -101,8 +108,8 @@ export const VoiceIntroEditor = ({
         const mimeType = recorder.mimeType || 'audio/webm';
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const seconds = Math.min(
-          MAX_INTRO_SECONDS,
-          Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000)),
+          maxSeconds,
+          Math.max(1, Math.round((stoppedAt - startedAt) / 1000)),
         );
 
         try {
@@ -121,11 +128,15 @@ export const VoiceIntroEditor = ({
       };
 
       recorderRef.current = recorder;
+      stopRecordingRef.current = stop;
       recorder.start();
       setRecording(true);
-      stopTimerRef.current = setTimeout(() => {
-        if (recorder.state === 'recording') recorder.stop();
-      }, MAX_INTRO_SECONDS * 1000);
+      stopTimerRef.current = setTimeout(
+        () => {
+          if (recorder.state === 'recording') stop();
+        },
+        maxSeconds * 1000 - RECORDER_STOP_BUFFER_MS,
+      );
     } catch {
       setError('mic');
     }
@@ -133,11 +144,11 @@ export const VoiceIntroEditor = ({
 
   const stopRecording = () => {
     if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
-    recorderRef.current?.stop();
+    if (recorderRef.current?.state === 'recording') stopRecordingRef.current();
   };
 
   const toggleRecording = () => {
-    if (!premium || busy) return;
+    if (busy) return;
 
     if (recording) {
       stopRecording();
@@ -158,7 +169,6 @@ export const VoiceIntroEditor = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mimeType: pending.mimeType,
-          durationSeconds: pending.seconds,
           audio: pending.dataUrl,
         }),
       });
@@ -210,55 +220,45 @@ export const VoiceIntroEditor = ({
     }
   };
 
-  const description = premium
-    ? recording
-      ? t('voiceIntroRecordingDescription')
-      : pending
-        ? t('voiceIntroPendingDescription', { seconds: pending.seconds })
+  const description = recording
+    ? t('voiceIntroRecordingDescription', { seconds: maxSeconds })
+    : pending
+      ? t('voiceIntroPendingDescription', { seconds: pending.seconds })
+      : voiceSeconds > maxSeconds
+        ? t('voiceIntroOverLimitDescription', {
+            seconds: voiceSeconds,
+            max: maxSeconds,
+          })
         : voiceSeconds
           ? t('voiceIntroLiveDescription', { seconds: voiceSeconds })
-          : t('voiceIntroEmptyDescription')
-    : t('voiceIntroFreeDescription');
+          : t('voiceIntroEmptyDescription', { seconds: maxSeconds });
 
   return (
     <FormGroup>
       <div className="flex flex-col gap-3 rounded-xl bg-background-darker px-4 py-3.5">
         <div className="flex items-center gap-3.5">
-          {premium ? (
-            <button
-              type="button"
-              onClick={toggleRecording}
-              disabled={busy}
-              aria-label={
-                recording
-                  ? t('voiceIntroStopLabel')
-                  : t('voiceIntroRecordLabel')
-              }
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.96] disabled:opacity-60 ${
-                recording
-                  ? 'bg-[#f87171] text-white'
-                  : 'bg-primary text-on-primary hover:bg-primary-light focus-visible:bg-primary-light'
-              }`}
-            >
-              {recording ? <MdStop size={22} /> : <MdMic size={22} />}
-            </button>
-          ) : null}
+          <button
+            type="button"
+            onClick={toggleRecording}
+            disabled={busy}
+            aria-label={
+              recording ? t('voiceIntroStopLabel') : t('voiceIntroRecordLabel')
+            }
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none active:scale-[0.96] disabled:opacity-60 ${
+              recording
+                ? 'bg-[#f87171] text-white'
+                : 'bg-primary text-on-primary hover:bg-primary-light focus-visible:bg-primary-light'
+            }`}
+          >
+            {recording ? <MdStop size={22} /> : <MdMic size={22} />}
+          </button>
           <div className="min-w-0 flex-1">
-            <div
-              className={`flex items-center gap-2 font-medium text-[15px] ${
-                premium ? 'text-foreground' : 'text-soft'
-              }`}
-            >
+            <div className="font-medium text-[15px] text-foreground">
               {t('voiceIntroTitle')}
-              {premium ? null : (
-                <span className="inline-flex items-center rounded-full bg-overlay px-[9px] py-0.5 font-bold text-[10.5px] text-soft uppercase tracking-[0.05em]">
-                  {t('voiceIntroPremiumTag')}
-                </span>
-              )}
             </div>
             <p className="mt-0.5 text-[12px] text-subtle">{description}</p>
           </div>
-          {premium && voiceSeconds && !recording && !pending ? (
+          {voiceSeconds && !recording && !pending ? (
             <button
               type="button"
               onClick={deleteClip}
@@ -271,7 +271,7 @@ export const VoiceIntroEditor = ({
           ) : null}
         </div>
 
-        {premium && profileId && voiceSeconds && !recording && !pending ? (
+        {profileId && voiceSeconds && !recording && !pending ? (
           <VoiceIntroPlayer
             src={`/api/voice/${profileId}?rev=${revision}`}
             seconds={voiceSeconds}
@@ -313,13 +313,13 @@ export const VoiceIntroEditor = ({
           </p>
         ) : null}
       </div>
-      {premium ? (
-        <p className="text-[13px] text-muted leading-relaxed">
-          {t('voiceIntroImmediate')}
-        </p>
-      ) : (
+      <p className="text-[13px] text-muted leading-relaxed">
+        {t('voiceIntroImmediate')}
+      </p>
+      {premium ? null : (
         <p className="text-[13px] text-muted leading-relaxed">
           {t.rich('voiceIntroUpsell', {
+            seconds: entitlementLimit('profile.voiceIntroSeconds', true),
             premiumLink: (chunks) => (
               <Link
                 href={`/${locale}/settings#supporter`}
