@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          SCOPED_PLANS: ${{ vars.CI_SCOPED_PLANS }}
+          SCOPED_PLANS: 'true'
 
   static:
     needs: gate
