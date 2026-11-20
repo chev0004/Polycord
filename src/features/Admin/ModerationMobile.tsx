@@ -86,7 +86,7 @@ import {
 } from './ModerationParts';
 import { GrantFields, useGrant } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
-import { protectionOf } from './permissions';
+import { canDismissReports, protectionOf } from './permissions';
 import { SeedPanel } from './SeedPanel';
 import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
@@ -362,7 +362,9 @@ const ReportsScreen = ({
                   <SwipeRow
                     key={entry.userId}
                     label={user.displayName}
-                    enabled={view === 'pending'}
+                    enabled={
+                      view === 'pending' && canDismissReports(store, user)
+                    }
                     onOpen={() => openCase(entry.userId)}
                     onDismiss={() => dismissCase(entry)}
                   >
@@ -1926,7 +1928,9 @@ const CasePage = ({
       )
     : all;
   const reportIds =
-    isCase && page.view === 'pending' ? reports.map((report) => report.id) : [];
+    isCase && page.view === 'pending' && canDismissReports(store, user)
+      ? reports.map((report) => report.id)
+      : [];
   const history = store.userLog(user.id);
   const protection = protectionOf(store, user);
   const protectedAccount = protection !== null;
