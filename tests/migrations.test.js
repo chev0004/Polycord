@@ -33,30 +33,49 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
       expect(check(url.href).stdout).toContain('database is current');
 
       const { rows: recorded } = await pool.query(
-        'select id, hash from drizzle.__drizzle_migrations order by created_at',
-      );
-      await pool.query(
-        'update drizzle.__drizzle_migrations set hash = $1, created_at = created_at - 500000 where id = $2',
-        [history.recordedAs['0001_onboarding_profile_fields'], recorded[1].id],
+        'select id, hash, created_at from drizzle.__drizzle_migrations order by created_at',
       );
       for (const [index, tag] of [
+        [1, '0001_onboarding_profile_fields'],
         [9, '0009_ambitious_landau'],
         [10, '0010_curvy_shard'],
-      ])
-        expect(
-          (
-            await pool.query(
-              'update drizzle.__drizzle_migrations set created_at = created_at - 600000000 where id = $1 and hash = $2',
-              [recorded[index].id, history.recordedAs[tag]],
-            )
-          ).rowCount,
-        ).toBe(1);
-      for (const hash of Object.keys(history.superseded))
+      ]) {
+        const { hash, createdAt } = history.recordedAs[tag];
         await pool.query(
-          'insert into drizzle.__drizzle_migrations (hash, created_at) values ($1, 1783532556609)',
-          [hash],
+          'update drizzle.__drizzle_migrations set hash = $1, created_at = $2 where id = $3',
+          [hash, createdAt, recorded[index].id],
+        );
+      }
+      for (const [hash, { createdAt }] of Object.entries(history.superseded))
+        await pool.query(
+          'insert into drizzle.__drizzle_migrations (hash, created_at) values ($1, $2)',
+          [hash, createdAt],
         );
       expect(check(url.href).stdout).toContain('database is current');
+
+      const insert =
+        'insert into drizzle.__drizzle_migrations (hash, created_at) values ($1, $2) returning id';
+      const latest = recorded.at(-1);
+      for (const [hash, when] of [
+        [latest.hash, Number(latest.created_at) + 1000],
+        [latest.hash, latest.created_at],
+        [
+          history.recordedAs['0001_onboarding_profile_fields'].hash,
+          1780767467907,
+        ],
+        [Object.keys(history.superseded)[0], 1783532556610],
+      ]) {
+        const {
+          rows: [row],
+        } = await pool.query(insert, [hash, when]);
+        const result = check(url.href);
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain(`${hash.slice(0, 12)} at ${when}`);
+        await pool.query(
+          'delete from drizzle.__drizzle_migrations where id = $1',
+          [row.id],
+        );
+      }
 
       await pool.query(
         'delete from drizzle.__drizzle_migrations where id = $1',

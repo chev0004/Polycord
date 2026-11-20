@@ -7,8 +7,8 @@ import history from './migration-history.json';
 type Migration = { tag: string; when: number; hash: string };
 type Recorded = { hash: string; createdAt: number };
 type History = {
-  recordedAs: Record<string, string>;
-  superseded: Record<string, string>;
+  recordedAs: Record<string, Recorded>;
+  superseded: Record<string, { tag: string; createdAt: number }>;
 };
 
 export const migrationProblems = (
@@ -17,18 +17,35 @@ export const migrationProblems = (
   { recordedAs, superseded }: History,
 ) => {
   const latest = Math.max(0, ...recorded.map(({ createdAt }) => createdAt));
-  const applied = (migration: Migration) =>
-    recorded.some(
-      ({ hash, createdAt }) =>
-        (hash === migration.hash && createdAt === migration.when) ||
-        hash === recordedAs[migration.tag],
-    );
-  const unapplied = migrations.filter((migration) => !applied(migration));
-  const known = new Set([
-    ...migrations.map(({ hash }) => hash),
-    ...Object.values(recordedAs),
-    ...Object.keys(superseded),
-  ]);
+  const canonical = new Map(
+    migrations.map((migration) => [migration.tag, migration]),
+  );
+  const allowed = new Map(
+    migrations.map(({ tag, hash, when }) => [`${hash}:${when}`, tag]),
+  );
+  for (const [tag, { hash, createdAt }] of Object.entries(recordedAs))
+    if (canonical.has(tag)) allowed.set(`${hash}:${createdAt}`, tag);
+
+  const applied = new Set<string>();
+  const unexpected: string[] = [];
+  const legacy: Recorded[] = [];
+  for (const row of recorded) {
+    const tag = allowed.get(`${row.hash}:${row.createdAt}`);
+    if (!tag || applied.has(tag)) legacy.push(row);
+    else applied.add(tag);
+  }
+  const seen = new Set<string>();
+  for (const { hash, createdAt } of legacy) {
+    const entry = superseded[hash];
+    if (
+      entry?.createdAt === createdAt &&
+      applied.has(entry.tag) &&
+      !seen.has(hash)
+    )
+      seen.add(hash);
+    else unexpected.push(`${hash.slice(0, 12)} at ${createdAt}`);
+  }
+  const unapplied = migrations.filter(({ tag }) => !applied.has(tag));
   return {
     pending: unapplied
       .filter(({ when }) => when > latest)
@@ -36,9 +53,7 @@ export const migrationProblems = (
     missing: unapplied
       .filter(({ when }) => when <= latest)
       .map(({ tag }) => tag),
-    unexpected: recorded
-      .filter(({ hash }) => !known.has(hash))
-      .map(({ hash, createdAt }) => `${hash.slice(0, 12)} at ${createdAt}`),
+    unexpected,
   };
 };
 
