@@ -36,7 +36,7 @@ const owners = await db
     })),
   )
   .returning();
-const [lapsed, granted] = owners;
+const [lapsed] = owners;
 const load = (params) =>
   listDiscoveryPage(
     parseDiscoveryState(new URLSearchParams([['q', prefix], ...params])),

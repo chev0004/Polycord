@@ -993,7 +993,7 @@ export const MobileCardEditor = ({
                     <div className="flex flex-col gap-1.5 rounded-xl bg-background-darker p-1.5 pb-2">
                       <div className="flex items-center gap-1.5">
                         {index >= languageCap ? (
-                          <p className="flex h-11 min-w-0 flex-1 items-center px-2.5 text-sm text-muted">
+                          <p className="flex h-11 min-w-0 flex-1 items-center px-2.5 text-muted text-sm">
                             {getLanguageName(row.language, locale)}
                           </p>
                         ) : (

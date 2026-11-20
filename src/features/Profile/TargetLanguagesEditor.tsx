@@ -122,7 +122,7 @@ export const TargetLanguagesEditor = ({
               ) : null}
               <div className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_170px_40px]">
                 {hidden ? (
-                  <p className="col-span-2 text-sm text-muted">
+                  <p className="col-span-2 text-muted text-sm">
                     {languageLabel}
                   </p>
                 ) : (
