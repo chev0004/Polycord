@@ -425,7 +425,7 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
         await context.request.post('/api/profile', {
           data: {
             ...values,
-            bio: 'Only the bio changes after my paid plan expires.',
+            bio: 'Only the bio changes after my Supporter grant expires.',
           },
         })
       ).status(),
@@ -473,7 +473,7 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
         })
       ).status(),
     ).toBe(400);
-    await sql`update subscriptions set status = 'active', current_period_end = now() + interval '1 day' where user_id = ${user.id}`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${user.id}`;
     expect((await publicProfile()).tags).toEqual(reordered);
     expect((await publicProfile()).targetLanguages).toHaveLength(3);
   } finally {
