@@ -15,6 +15,7 @@ let ciRuns;
 let jobs;
 let runs;
 let waits;
+let remoteTip;
 
 const git = (...args) =>
   spawnSync('git', args, { encoding: 'utf8' }).stdout.trim();
@@ -93,6 +94,8 @@ async function request(url) {
     status: data === undefined ? 404 : 200,
     json: async () => data,
   });
+  if (path === 'git/ref/heads/develop')
+    return reply(remoteTip && { object: { sha: remoteTip } });
   let match = path.match(/^commits\/(\w+)\/statuses/);
   if (match) return reply(statuses[match[1]] ?? []);
   match = path.match(/^commits\/(\w+)\/pulls/);
@@ -123,6 +126,7 @@ beforeEach(async () => {
   jobs = {};
   runs = {};
   waits = 0;
+  remoteTip = undefined;
 });
 
 afterEach(() => process.chdir(originalCwd));
@@ -304,24 +308,20 @@ test('does not wait when no pull request run is active', async () => {
   assert.equal(waits, 0);
 });
 
-test('a docs-only tip leaves an in-flight code run eligible', async () => {
-  publish(await commit({ 'src/app.ts': 'a' }));
-  const code = await commit({ 'src/app.ts': 'b' });
-  await commit({ 'docs/a.md': 'a' });
-  const tip = await commit({ 'tests/a.test.js': 'a' });
-  runs[code] = [{ id: 7, status: 'in_progress' }];
-  const result = await plan(tip);
+test('a late stale gate skips its run without impacting the latest tip', async () => {
+  const code = await commit({ 'src/app.ts': 'a' });
+  remoteTip = await commit({ 'src/app.ts': 'b' });
+  assert.equal((await plan(remoteTip)).validate, true);
+  const result = await plan(code);
   assert.equal(result.validate, false);
   assert.equal(result.deploy, false);
-  assert.match(result.reason, /Run 7/);
 });
 
-test('a docs-only tip validates when the code run has finished without publishing', async () => {
+test('a docs-only tip validates when its predecessor has not published', async () => {
   publish(await commit({ 'src/app.ts': 'a' }));
-  const code = await commit({ 'src/app.ts': 'b' });
-  const tip = await commit({ 'docs/a.md': 'a' });
-  runs[code] = [{ id: 7, status: 'completed' }];
-  const result = await plan(tip);
+  await commit({ 'src/app.ts': 'b' });
+  remoteTip = await commit({ 'docs/a.md': 'a' });
+  const result = await plan(remoteTip);
   assert.equal(result.validate, true);
   assert.equal(result.deploy, true);
 });
