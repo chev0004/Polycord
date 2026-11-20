@@ -11,3 +11,8 @@ export const protectionOf = (
   if (canModerate(store.meRole, user.role)) return null;
   return user.role === 'owner' ? 'owner' : 'staff';
 };
+
+export const canDismissReports = (
+  store: { meId: string; meRole: StaffRole },
+  user: Pick<ModUser, 'id' | 'role'>,
+) => store.meRole === 'owner' || protectionOf(store, user) === null;

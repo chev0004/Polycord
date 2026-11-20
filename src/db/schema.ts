@@ -118,7 +118,7 @@ export const users = pgTable(
       sql`lower(${table.discordUsername}) gin_trgm_ops`,
     ),
   ],
-);
+).enableRLS();
 
 export const seedDatabase = pgTable('seed_database', {
   label: text('label').primaryKey(),
@@ -126,14 +126,14 @@ export const seedDatabase = pgTable('seed_database', {
   approvedAt: timestamp('approved_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}).enableRLS();
 
 export const moderationRestrictions = pgTable('moderation_restrictions', {
   discordUserId: varchar('discord_user_id', { length: 32 }).primaryKey(),
   bannedAt: timestamp('banned_at', { withTimezone: true }),
   suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
   hiddenByModeration: boolean('hidden_by_moderation').default(false).notNull(),
-});
+}).enableRLS();
 
 export const profiles = pgTable(
   'profiles',
@@ -224,7 +224,7 @@ export const profiles = pgTable(
     ),
     check('profiles_tags_limit_check', sql`cardinality(${table.tags}) <= 8`),
   ],
-);
+).enableRLS();
 
 export const profileTargetLanguages = pgTable(
   'profile_target_languages',
@@ -253,7 +253,7 @@ export const profileTargetLanguages = pgTable(
       sql`${table.position} >= 0`,
     ),
   ],
-);
+).enableRLS();
 
 export const savedProfiles = pgTable(
   'saved_profiles',
@@ -277,7 +277,7 @@ export const savedProfiles = pgTable(
     index('saved_profiles_user_id_idx').on(table.userId),
     index('saved_profiles_profile_id_idx').on(table.profileId),
   ],
-);
+).enableRLS();
 
 export const userSettings = pgTable(
   'user_settings',
@@ -312,7 +312,7 @@ export const userSettings = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex('user_settings_user_id_idx').on(table.userId)],
-);
+).enableRLS();
 
 export const analyticsEvents = pgTable(
   'analytics_events',
@@ -334,7 +334,7 @@ export const analyticsEvents = pgTable(
     index('analytics_events_created_at_idx').on(table.createdAt),
     index('analytics_events_user_id_idx').on(table.userId),
   ],
-);
+).enableRLS();
 
 export const profileInteractions = pgTable(
   'profile_interactions',
@@ -355,7 +355,7 @@ export const profileInteractions = pgTable(
       table.createdAt,
     ),
   ],
-);
+).enableRLS();
 
 export const notifications = pgTable(
   'notifications',
@@ -386,7 +386,7 @@ export const notifications = pgTable(
     ),
     index('notifications_user_id_read_idx').on(table.userId, table.read),
   ],
-);
+).enableRLS();
 
 export const reports = pgTable(
   'reports',
@@ -423,7 +423,7 @@ export const reports = pgTable(
       sql`${table.reporterUserId} <> ${table.reportedUserId}`,
     ),
   ],
-);
+).enableRLS();
 
 export const userBlocks = pgTable(
   'user_blocks',
@@ -451,7 +451,7 @@ export const userBlocks = pgTable(
       sql`${table.blockerUserId} <> ${table.blockedUserId}`,
     ),
   ],
-);
+).enableRLS();
 
 export const moderationActions = pgTable(
   'moderation_actions',
@@ -493,7 +493,7 @@ export const moderationActions = pgTable(
       sql`${table.days} is null or ${table.days} between 1 and 90`,
     ),
   ],
-);
+).enableRLS();
 
 export const ipBans = pgTable(
   'ip_bans',
@@ -522,7 +522,7 @@ export const ipBans = pgTable(
       sql`${table.reason} is null or char_length(${table.reason}) <= 500`,
     ),
   ],
-);
+).enableRLS();
 
 export const ipObservations = pgTable(
   'ip_observations',
@@ -540,7 +540,7 @@ export const ipObservations = pgTable(
     primaryKey({ columns: [table.discordUserId, table.ip] }),
     index('ip_observations_last_seen_at_idx').on(table.lastSeenAt),
   ],
-);
+).enableRLS();
 
 export const staffRoles = pgTable('staff_roles', {
   userId: uuid('user_id')
@@ -553,7 +553,7 @@ export const staffRoles = pgTable('staff_roles', {
   grantedAt: timestamp('granted_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}).enableRLS();
 
 export const subscriptions = pgTable(
   'subscriptions',
@@ -580,7 +580,7 @@ export const subscriptions = pgTable(
       table.stripeCustomerId,
     ),
   ],
-);
+).enableRLS();
 
 export const voiceIntros = pgTable(
   'voice_intros',
@@ -604,7 +604,7 @@ export const voiceIntros = pgTable(
       sql`${table.durationSeconds} between 1 and 20`,
     ),
   ],
-);
+).enableRLS();
 
 export const profileBoosts = pgTable(
   'profile_boosts',
@@ -618,7 +618,7 @@ export const profileBoosts = pgTable(
   (table) => [
     index('profile_boosts_user_id_used_at_idx').on(table.userId, table.usedAt),
   ],
-);
+).enableRLS();
 
 export const pushSubscriptions = pgTable(
   'push_subscriptions',
@@ -638,7 +638,7 @@ export const pushSubscriptions = pgTable(
     uniqueIndex('push_subscriptions_endpoint_idx').on(table.endpoint),
     index('push_subscriptions_user_id_idx').on(table.userId),
   ],
-);
+).enableRLS();
 
 export const rateLimitCounters = pgTable(
   'rate_limit_counters',
@@ -649,7 +649,7 @@ export const rateLimitCounters = pgTable(
     count: integer('count').notNull(),
   },
   (table) => [primaryKey({ columns: [table.scope, table.subject] })],
-);
+).enableRLS();
 
 export const suspiciousActivity = pgTable(
   'suspicious_activity',
@@ -668,7 +668,7 @@ export const suspiciousActivity = pgTable(
     index('suspicious_activity_created_at_idx').on(table.createdAt),
     index('suspicious_activity_user_id_idx').on(table.userId),
   ],
-);
+).enableRLS();
 
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(profiles),
