@@ -94,7 +94,8 @@ docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=polycord
 git fetch origin && git switch --detach origin/develop
 bun install --frozen-lockfile && bunx playwright install --with-deps chromium
 export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$STAGING_DATABASE_URL" \
-  TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/polycord_test
+  TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/polycord_test \
+  NODE_OPTIONS=--max-old-space-size=8192
 unset POLYCORD_GITHUB_TOKEN STAGING_DATABASE_URL PRODUCTION_DATABASE_URL
 node scripts/deploy-staging.mjs
 ```
