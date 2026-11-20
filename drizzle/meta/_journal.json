@@ -278,15 +278,15 @@
     {
       "idx": 39,
       "version": "7",
-      "when": 1795110547047,
-      "tag": "0039_supporter_grants_from_subscriptions",
+      "when": 1793833261384,
+      "tag": "0039_enable_row_level_security",
       "breakpoints": true
     },
     {
       "idx": 40,
       "version": "7",
-      "when": 1795113016566,
-      "tag": "0040_purge_account_emails",
+      "when": 1795110547047,
+      "tag": "0040_supporter_grants_from_subscriptions",
       "breakpoints": true
     }
   ]
