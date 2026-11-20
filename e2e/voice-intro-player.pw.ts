@@ -59,7 +59,7 @@ test('a saved voice intro plays, downloads and stops when removed', async ({
     ).toBe(200);
     const [user] =
       await sql`select id from users where discord_user_id = ${id}`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${user.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${user.id}`;
     const audio = readFileSync('tests/fixtures/voice-short.webm').toString(
       'base64',
     );

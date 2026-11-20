@@ -5,7 +5,7 @@ import { BOOST_DURATION_MS, monthStart } from '@/lib/boostWindow';
 import { entitlementLimit } from '@/lib/entitlements';
 import { isPremiumAccount } from './billing';
 import { db } from './client';
-import { profileBoosts, profiles, subscriptions, users } from './schema';
+import { profileBoosts, profiles, users } from './schema';
 
 export type BoostStatus = {
   remaining: number;
@@ -57,11 +57,7 @@ export const boostProfileForUser = async (userId: string) => {
       (user.suspendedUntil && user.suspendedUntil > new Date())
     )
       return { error: 'Unauthorized', status: 403 };
-    const [subscription] = await tx
-      .select()
-      .from(subscriptions)
-      .where(eq(subscriptions.userId, userId));
-    const premium = isPremiumAccount(user, subscription ?? null);
+    const premium = isPremiumAccount(user);
     if (!premium) return { error: 'Supporter required', status: 403 };
     const [profile] = await tx
       .select()

@@ -8,9 +8,7 @@ process.env.DATABASE_URL = url.href;
 process.env.POLYCORD_PREMIUM_USER_IDS = '';
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
-const { users, profiles, subscriptions, profileBoosts } = await import(
-  '../../src/db/schema'
-);
+const { users, profiles, profileBoosts } = await import('../../src/db/schema');
 const { boostProfileForUser } = await import('../../src/db/boosts');
 const { eq } = await import('drizzle-orm');
 const [user] = await db
@@ -30,12 +28,10 @@ try {
     proficiencyLevel: 'beginner',
     bio: 'A profile for concurrent boost verification.',
   });
-  await db.insert(subscriptions).values({
-    userId: user.id,
-    stripeCustomerId: randomUUID(),
-    status: 'active',
-    currentPeriodEnd: new Date(Date.now() + 86400000),
-  });
+  await db
+    .update(users)
+    .set({ premiumGrantedUntil: new Date(Date.now() + 86400000) })
+    .where(eq(users.id, user.id));
   await db
     .insert(profileBoosts)
     .values([{ userId: user.id }, { userId: user.id }]);

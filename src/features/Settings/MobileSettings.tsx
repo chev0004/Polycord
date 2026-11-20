@@ -130,21 +130,16 @@ type MobileSettingsProps = {
   premium: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
-  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
   premiumGrantedUntil?: string;
-  subscriptionRenewsAt?: string;
-  subscriptionCancelAtPeriodEnd: boolean;
   options: Record<ChoiceField, { label: string; value: string }[]>;
   blockedUsers?: ReactNode;
   pushStatus: 'idle' | 'denied' | 'unsupported' | 'error';
   pushBusy: boolean;
   onPushToggle: (checked: boolean) => Promise<void>;
-  billingStatus: 'idle' | 'loading' | 'error';
-  onManageSubscription: () => Promise<void>;
   exportStatus: 'idle' | 'loading' | 'success' | 'error';
   onExportData: () => Promise<void>;
   onUpdateDiscordConnection: () => void;
-  deleteStatus: 'idle' | 'confirming' | 'loading' | 'error' | 'billing-error';
+  deleteStatus: 'idle' | 'confirming' | 'loading' | 'error';
   deleteConfirmation: string;
   onDeleteConfirmationChange: (value: string) => void;
   onDeleteStart: () => void;
@@ -162,17 +157,12 @@ export const MobileSettings = ({
   premium,
   userAvatarUrl,
   userDisplayName,
-  premiumSource,
   premiumGrantedUntil,
-  subscriptionRenewsAt,
-  subscriptionCancelAtPeriodEnd,
   options,
   blockedUsers,
   pushStatus,
   pushBusy,
   onPushToggle,
-  billingStatus,
-  onManageSubscription,
   exportStatus,
   onExportData,
   onUpdateDiscordConnection,
@@ -183,7 +173,6 @@ export const MobileSettings = ({
   onDeleteReset,
   onDeleteAccount,
 }: MobileSettingsProps) => {
-  const grantedOnly = premiumSource === 'granted';
   const t = useTranslations('Settings');
   const locale = useLocale();
   const { control, watch, getValues, setValue, resetField } = form;
@@ -561,16 +550,11 @@ export const MobileSettings = ({
               <span className="self-start rounded bg-primary-darker px-1.5 py-0.5 font-bold text-[10px] text-primary-light uppercase tracking-[0.04em]">
                 {premium ? t('premiumYourPlan') : t('premiumTag')}
               </span>
-              <p>
-                <span className="font-black text-[34px] tracking-[-0.02em]">
-                  {grantedOnly ? t('premiumGranted') : t('premiumPriceAmount')}
-                </span>{' '}
-                {grantedOnly ? null : (
-                  <span className="font-medium text-muted text-sm">
-                    {t('premiumPerMonth')}
-                  </span>
-                )}
-              </p>
+              {premium ? (
+                <p className="font-black text-[34px] tracking-[-0.02em]">
+                  {t('premiumGranted')}
+                </p>
+              ) : null}
               <p className="text-[13px] text-subtle leading-snug">
                 {premium
                   ? t('premiumTabDescriptionPremium')
@@ -585,45 +569,13 @@ export const MobileSettings = ({
                   })}
                 </p>
               ) : null}
-              {premium && !grantedOnly && subscriptionRenewsAt ? (
-                <p className="text-[13px] text-subtle">
-                  {t(
-                    subscriptionCancelAtPeriodEnd
-                      ? 'billingEnds'
-                      : 'billingRenews',
-                    {
-                      date: new Date(subscriptionRenewsAt).toLocaleDateString(
-                        locale,
-                      ),
-                    },
-                  )}
-                </p>
-              ) : null}
             </div>
             <CompareTable />
-            {grantedOnly ? null : (
-              <>
-                <Button
-                  variant={premium ? 'outline' : 'primary'}
-                  weight="semibold"
-                  onClick={onManageSubscription}
-                  disabled={billingStatus === 'loading'}
-                  className="h-[50px] rounded-full text-[15px]"
-                >
-                  {premium
-                    ? t('manageBillingButton')
-                    : t('premiumUpgradeButton')}
-                </Button>
-                <p className="text-center text-subtle text-xs">
-                  {premium ? t('premiumPlanNote') : t('premiumUpgradeNote')}
-                </p>
-              </>
-            )}
-            {billingStatus === 'error' ? (
-              <p role="alert" className="text-center text-[13px] text-danger">
-                {t('billingError')}
+            {premium ? null : (
+              <p className="text-center text-subtle text-xs">
+                {t('premiumUnavailableNote')}
               </p>
-            ) : null}
+            )}
           </SettingsPushPage>
         ) : (
           <div className="flex flex-col px-4">
@@ -867,13 +819,9 @@ export const MobileSettings = ({
           <p className="text-[12px] text-subtle leading-relaxed">
             {t('deleteAccountRetentionNote')}
           </p>
-          {deleteStatus === 'error' || deleteStatus === 'billing-error' ? (
+          {deleteStatus === 'error' ? (
             <p role="alert" className="text-danger text-xs">
-              {t(
-                deleteStatus === 'billing-error'
-                  ? 'deleteAccountBillingError'
-                  : 'deleteAccountError',
-              )}
+              {t('deleteAccountError')}
             </p>
           ) : null}
         </div>

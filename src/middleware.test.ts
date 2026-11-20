@@ -134,12 +134,8 @@ describe('ban gate', () => {
     }
   });
 
-  it('keeps health, the billing webhook and the ban check reachable', async () => {
-    for (const path of [
-      '/api/health',
-      '/api/billing/webhook',
-      '/api/internal/ban-check',
-    ]) {
+  it('keeps health and the ban check reachable', async () => {
+    for (const path of ['/api/health', '/api/internal/ban-check']) {
       const response = await middleware(requestFor(path, undefined, 'POST'));
 
       expect(response.status, path).toBe(200);

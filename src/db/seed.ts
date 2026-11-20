@@ -15,7 +15,6 @@ import {
   profiles,
   profileTargetLanguages,
   seedDatabase,
-  subscriptions,
   users,
   voiceIntros,
 } from './schema';
@@ -68,7 +67,12 @@ export const addDummies = async (amount: number) => {
   await db.transaction(async (tx) => {
     const created = await tx
       .insert(users)
-      .values(dummies.map(({ user }) => user))
+      .values(
+        dummies.map(({ user, premium }) => ({
+          ...user,
+          premiumGrantedUntil: premium ? premiumUntil : null,
+        })),
+      )
       .onConflictDoNothing({ target: users.discordUserId })
       .returning({ id: users.id, discordUserId: users.discordUserId });
     const userIds = new Map(
@@ -104,16 +108,6 @@ export const addDummies = async (amount: number) => {
         })),
       ),
     );
-    const premium = kept.filter((dummy) => dummy.premium);
-    if (premium.length)
-      await tx.insert(subscriptions).values(
-        premium.map(({ user }) => ({
-          userId: userIds.get(user.discordUserId) as string,
-          stripeCustomerId: user.discordUserId,
-          status: 'active',
-          currentPeriodEnd: premiumUntil,
-        })),
-      );
     const voiced = kept.flatMap(({ user, voice }) =>
       voice ? [{ user, voice, clip: clips.get(voice.file) as Buffer }] : [],
     );
