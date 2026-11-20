@@ -11,7 +11,22 @@ const fullValidation = [
   ['bun', 'run', 'check:all'],
   [process.execPath, '--test', 'scripts/*.node.mjs'],
   ['bun', 'test'],
-  ['bun', 'run', 'test:e2e'],
+  [
+    'env',
+    'NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED=true',
+    'bun',
+    'run',
+    'test:e2e',
+  ],
+  [
+    'env',
+    'NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED=false',
+    'bun',
+    'run',
+    'test:e2e',
+    'e2e/discovery-bar-only.pw.ts',
+    'e2e/dev-settings.pw.ts',
+  ],
   ['bun', 'run', 'build-storybook'],
   ['bun', 'run', 'test:storybook'],
 ];
