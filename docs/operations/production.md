@@ -48,6 +48,7 @@ The owner does these steps. None of them is automated.
 git fetch origin && git switch --detach origin/main
 export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$PRODUCTION_DATABASE_URL" \
   NETLIFY_PRODUCTION_SITE_ID=<site ID> POLYCORD_PRODUCTION_DOMAIN=polycord.net
+unset POLYCORD_GITHUB_TOKEN STAGING_DATABASE_URL PRODUCTION_DATABASE_URL
 node scripts/deploy-production.mjs
 ```
 
