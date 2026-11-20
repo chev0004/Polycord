@@ -2,14 +2,6 @@ import { spawnSync } from 'node:child_process';
 import { appendFile } from 'node:fs/promises';
 import { deployableChanges, publishedContext } from './deploy-inputs.mjs';
 
-const activeStates = [
-  'queued',
-  'in_progress',
-  'waiting',
-  'pending',
-  'requested',
-];
-
 export async function planDevelop(
   env = process.env,
   run = spawnSync,
@@ -48,6 +40,14 @@ export async function planDevelop(
       return null;
     }
   };
+  const tip = (await github('git/ref/heads/develop'))?.object?.sha;
+  if (tip && tip !== sha)
+    return {
+      validate: false,
+      deploy: false,
+      reason: `Develop has advanced to ${tip}; the latest push validates its own snapshot.`,
+    };
+
   const log = run(
     'git',
     ['rev-list', '--first-parent', '--max-count=50', sha],
@@ -82,25 +82,6 @@ export async function planDevelop(
       reason: 'An identical tree already passed validation.',
     };
 
-  let source = sha;
-  for (const commit of history.slice(1)) {
-    if (deployableChanges(commit, sha, run)?.length !== 0) break;
-    source = commit;
-  }
-  if (source !== sha) {
-    const runs = await github(
-      `actions/workflows/tests.yml/runs?head_sha=${source}&event=push&per_page=20`,
-    );
-    const pending = runs?.workflow_runs.find(({ status }) =>
-      activeStates.includes(status),
-    );
-    if (pending)
-      return {
-        validate: false,
-        deploy: false,
-        reason: `Run ${pending.id} for ${source} validates and deploys the same inputs.`,
-      };
-  }
   return { validate: true, deploy: true, reason: 'Validate before staging.' };
 }
 

@@ -17,6 +17,21 @@ async function seedRows() {
   }
 }
 
+function verifyDatabaseProject(value, project, kind) {
+  const url = URL.parse(value ?? '');
+  assert.ok(
+    url &&
+      ['postgresql:', 'postgres:'].includes(url.protocol) &&
+      url.pathname === '/postgres' &&
+      [...url.searchParams.keys()].every((key) => key === 'sslmode') &&
+      ((url.hostname === `db.${project}.supabase.co` &&
+        Boolean(url.username)) ||
+        (url.hostname.endsWith('.pooler.supabase.com') &&
+          new RegExp(`^[a-zA-Z0-9_-]+\\.${project}$`).test(url.username))),
+    `${kind} DATABASE_URL must point to the approved production Supabase project`,
+  );
+}
+
 export async function deployProduction(
   run = spawnSync,
   request = fetch,
@@ -30,6 +45,17 @@ export async function deployProduction(
     'Production cannot use the staging site',
   );
   const origin = `https://${domain}`;
+  const project = process.env.POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF;
+  assert.match(
+    project ?? '',
+    /^[a-z0-9]{20}$/,
+    'Set the approved production Supabase project ref',
+  );
+  assert.notEqual(
+    project,
+    'lqyekuxzhxkjsctdpybi',
+    'Production cannot use the staging Supabase project',
+  );
   return deployNetlify(
     {
       name: 'Production',
@@ -37,7 +63,13 @@ export async function deployProduction(
       domain,
       branch: 'main',
       events: [],
-      checkValues: async (values) => {
+      checkValues: async (values, readEnv) => {
+        verifyDatabaseProject(process.env.DATABASE_URL, project, 'Local');
+        verifyDatabaseProject(
+          readEnv('functions').DATABASE_URL,
+          project,
+          'Netlify Functions',
+        );
         assert.equal(
           values.POLYCORD_PUBLIC_URL,
           origin,
@@ -73,6 +105,7 @@ export async function deployProduction(
         );
         return [
           `Origin: ${origin}`,
+          `Supabase project: ${project} (local and Netlify Functions)`,
           `Administrators: ${values.POLYCORD_ADMIN_USER_IDS.split(',').filter(Boolean).length}`,
           `Analytics: ${values.POLYCORD_ANALYTICS_DISABLED === 'true' ? 'disabled' : 'enabled'}`,
           'Seeding: off, no seed database row',

@@ -34,16 +34,15 @@ and deploy:
   the newest such status in the last 50 first-parent commits. When the only
   differences from it are docs, tests or stories (`scripts/deploy-inputs.mjs`),
   the run validates and builds nothing.
-- When the new commits only add docs, tests or stories on top of a code commit
-  whose Tests run is still active, that run stays responsible for staging.
+- A push whose gate opens after `develop` has advanced skips validation and publish.
+  The latest push owns validation until staging records an equivalent publish.
+  An in-flight predecessor never counts as a publish.
 - Otherwise, including when the status, history or GitHub API is unavailable,
   the run validates fully and then deploys.
 
-Validation jobs on `develop` share one cancellation group per job, so a newer
-push cancels older validation. The deployment job is not cancelled by newer
-runs. Before packaging and again before upload, it publishes only if `develop`
-has no newer deployable changes than its source. If the comparison itself
-fails, the job fails instead of skipping.
+Validation jobs that already started can finish independently. Staging deploy
+jobs queue without replacing pending jobs. Each deploy rechecks freshness before
+packaging and before upload and fails if it cannot compare with the tip.
 
 ## Environment changes and manual deployment
 
@@ -82,7 +81,7 @@ Once, in GitHub, Settings, Codespaces, Secrets, add these user secrets with acce
 | --- | --- |
 | `NETLIFY_AUTH_TOKEN` | A Netlify personal access token with an expiry |
 | `POLYCORD_GITHUB_TOKEN` | A fine-grained token for this repository only: Checks read, Commit statuses read and write |
-| `STAGING_DATABASE_URL` | The staging database's direct URL |
+| `STAGING_DATABASE_URL` | The staging database's session pooler URL (Supabase, Connect, Session pooler), because codespaces cannot reach the IPv6-only direct URL |
 | `PRODUCTION_DATABASE_URL` | The production database's direct URL, once it exists |
 
 To publish, create a 4-core codespace on `develop` and run:
@@ -94,11 +93,13 @@ docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=polycord
 git fetch origin && git switch --detach origin/develop
 bun install --frozen-lockfile && bunx playwright install --with-deps chromium
 export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$STAGING_DATABASE_URL" \
-  TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/polycord_test
+  TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/polycord_test \
+  NODE_OPTIONS=--max-old-space-size=8192
+unset POLYCORD_GITHUB_TOKEN STAGING_DATABASE_URL PRODUCTION_DATABASE_URL
 node scripts/deploy-staging.mjs
 ```
 
-Stop the codespace afterwards. The Postgres container is the disposable test database; it never holds staging or production data.
+Codespaces puts every user secret into each shell, and the deploy script only strips the names it uses, so the `unset` keeps the original copies away from the test suite. Stop the codespace afterwards. The Postgres container is the disposable test database; it never holds staging or production data.
 
 The script refuses to run on another platform or Node version, from a checkout with local changes or from anything other than the current `develop` tip. When the commit has a passing `CI result` check, it relies on that. Otherwise, for example once Actions minutes run out, it runs the full suite against `TEST_DATABASE_URL` without the deployment tokens in the environment and stops on the first failure. Then it packages, checks migrations, uploads, verifies the digest, restores the previous deploy on failure and records `staging/published` exactly as the Actions job does. The summary says which validation it relied on.
 
