@@ -7,7 +7,7 @@ Baseline, budget and fallback for running Polycord CI from a private repository 
 | Item | Decision |
 | --- | --- |
 | GitHub plan | Free, staying on Free |
-| Netlify plan | Free, staying on Free |
+| Netlify plan | Legacy Free, staying on it |
 | Actions overage budget | $0 with a hard stop. Usage stops at the included allowance and nothing is ever billed |
 | Deployments | Owner-run from a Linux checkout, never from GitHub Actions once private. See [owner-run deployment](../staging-deployment.md#owner-run-deployment) |
 | Visibility | Private, after the owner-run staging deploy is proven. See [making the repository private](../staging-deployment.md#making-the-repository-private) |
@@ -73,18 +73,20 @@ Assumes the current per-run cost and that about 63% of develop pushes run full v
 
 ## Publish Cadence
 
-Owner-run deploys use no Actions minutes and no Netlify build minutes, but each one is a Netlify production deploy. Staging and production sit on the same free Netlify team, so they share its allowance:
+Owner-run deploys use no Actions minutes and no Netlify build minutes. The Netlify team `The Chevvy Archives` is on the legacy Free plan with no payment method, read from Usage and billing on Nov 19 2026:
 
-| Netlify team type | Allowance | Cadence |
+| Allowance | Limit | Used in November |
 | --- | --- | --- |
-| Credit-based Free (teams created from September 2025) | 300 credits a month. A deploy costs 15, bandwidth 20 per GB, compute 10 per GB-hour, requests 2 per 10,000. Every site on the team pauses when credits run out | Keep deploys to about 6 a month in total (90 credits), for example one staging publish a week plus a release, leaving the rest for production traffic. Check Usage before every deploy once production is live |
-| Legacy Free (created before September 2025) | 100 GB bandwidth, 300 build minutes, 125,000 function invocations per site a month. Deploys are not metered | Publish staging after each batch of merges, up to once a day |
+| Bandwidth | 100 GB a month, hard limit | 5 GB |
+| Build minutes | 300 a month, hard limit | 0 |
+| Edge Function invocations | 1M a month | |
+| Concurrent builds | 1 | |
 
-The team type for `The Chevvy Archives` has not been read yet: it is under Netlify, Team settings, Usage and billing. Record it here before choosing between the two rows.
+Legacy Free does not meter deploys, so publish staging after each batch of merges, up to once a day, and release production whenever a candidate is signed off. Bandwidth is the limit that matters: staging and production share the team's 100 GB, and usage resets on the first day of each month. Never switch the team to a credit-based plan, which is irreversible and would cap the whole team at 300 credits.
 
 ## Monitoring
 
-GitHub emails the owner at 90% and 100% of included usage. Review the Actions usage report at Settings, Billing and licensing, Usage weekly during active development and after any burst of merges. Review Netlify usage on the team's Usage page before each staging publish when the team is credit-based.
+GitHub emails the owner at 90% and 100% of included usage. Review the Actions usage report at Settings, Billing and licensing, Usage weekly during active development and after any burst of merges. Review Netlify bandwidth on the team's Usage page monthly, and weekly once production has traffic.
 
 ## Cutover Checks
 
