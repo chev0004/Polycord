@@ -9,7 +9,7 @@ import { planDevelop } from './develop-plan.mjs';
 
 const originalCwd = process.cwd();
 let published;
-let runs;
+let remoteTip;
 let requests;
 
 const git = (...args) =>
@@ -50,8 +50,11 @@ async function request(url) {
           ? [{ context: 'staging/published', state: 'success' }]
           : [{ context: 'other', state: 'success' }],
     };
-  const sha = path.match(/head_sha=(\w+)/)?.[1];
-  return { ok: true, json: async () => ({ workflow_runs: runs[sha] ?? [] }) };
+  assert.equal(path, 'git/ref/heads/develop');
+  return {
+    ok: Boolean(remoteTip),
+    json: async () => ({ object: { sha: remoteTip } }),
+  };
 }
 
 beforeEach(async () => {
@@ -60,7 +63,7 @@ beforeEach(async () => {
   git('config', 'user.email', 'ci@example.invalid');
   git('config', 'user.name', 'ci');
   published = undefined;
-  runs = {};
+  remoteTip = undefined;
   requests = [];
 });
 
@@ -178,24 +181,23 @@ test('deploys without validation when an identical tree already passed', async (
   assert.equal(plan.deploy, true);
 });
 
-test('a docs-only tip leaves an in-flight code run eligible', async () => {
-  published = await commit({ 'src/app.ts': 'a' });
-  const code = await commit({ 'src/app.ts': 'b' });
-  await commit({ 'docs/a.md': 'a' });
-  const tip = await commit({ 'tests/a.test.js': 'a' });
-  runs[code] = [{ id: 7, status: 'in_progress' }];
-  const plan = await planDevelop(env(tip), spawnSync, request);
-  assert.equal(plan.validate, false);
-  assert.equal(plan.deploy, false);
-  assert.match(plan.reason, /Run 7/);
+test('a stale gate that finishes late cannot schedule validation', async () => {
+  const old = await commit({ 'src/app.ts': 'a' });
+  remoteTip = await commit({ 'src/app.ts': 'b' });
+  const latest = await planDevelop(env(remoteTip), spawnSync, request);
+  const stale = await planDevelop(env(old), spawnSync, request);
+  assert.equal(latest.validate, true);
+  assert.equal(latest.deploy, true);
+  assert.equal(stale.validate, false);
+  assert.equal(stale.deploy, false);
 });
 
-test('a docs-only tip validates when the code run has finished without publishing', async () => {
+test('the latest docs-only push validates even if its code predecessor fails', async () => {
   published = await commit({ 'src/app.ts': 'a' });
-  const code = await commit({ 'src/app.ts': 'b' });
-  const tip = await commit({ 'docs/a.md': 'a' });
-  runs[code] = [{ id: 7, status: 'completed' }];
-  const plan = await planDevelop(env(tip), spawnSync, request);
+  await commit({ 'src/app.ts': 'b' });
+  remoteTip = await commit({ 'docs/a.md': 'a' });
+  const plan = await planDevelop(env(remoteTip), spawnSync, request);
   assert.equal(plan.validate, true);
   assert.equal(plan.deploy, true);
+  assert.ok(requests.every((url) => !url.includes('/runs?')));
 });
