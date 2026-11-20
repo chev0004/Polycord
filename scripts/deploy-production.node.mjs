@@ -30,6 +30,7 @@ beforeEach(async () => {
     NETLIFY_PRODUCTION_SITE_ID: siteId,
     POLYCORD_PRODUCTION_DOMAIN: 'polycord.example',
   };
+  delete process.env.TEST_DATABASE_URL;
   process.chdir(await mkdtemp(join(tmpdir(), 'polycord-production-')));
   await mkdir('.netlify/static/_next/static', { recursive: true });
   await mkdir('.netlify/functions', { recursive: true });
