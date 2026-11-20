@@ -33,7 +33,8 @@ Emulated widths and simulators do not count.
 | --- | --- | --- |
 | A | New member, not yet onboarded | Sign-in, onboarding, first bump, export, deletion |
 | B | Existing member with a public profile | Discovery, sharing, save, block, report target |
-| C | Moderator in `POLYCORD_ADMIN_USER_IDS` or staff | Report triage, moderation |
+| C | Moderator granted through Admin, with a `staff_roles` moderator entry and absent from `POLYCORD_ADMIN_USER_IDS` | Report triage and moderator permissions |
+| D | Separate owner listed in `POLYCORD_ADMIN_USER_IDS` | Owner actions and moderator restrictions |
 
 Record only the account letter in results, never Discord usernames or IDs.
 
@@ -50,6 +51,8 @@ Mark each cell Pass, Fail (with a finding number) or N/A with a reason.
 | Save and unsave a profile | | | | A |
 | Block and unblock, the profile disappears for both accounts while signed in | | | | A, B |
 | Report a profile, then triage and act on it in Admin | | | | A, C |
+| Moderator can act on an ordinary member and is denied owner-only actions and dismissals against staff | | | | C, D |
+| Owner can perform owner-only actions on a dedicated test member | | | | B, D |
 | Inbox shows the warning or notification | | | | B |
 | Push: allow, receive a notification, then deny or revoke and confirm none arrives | | | | B |
 | Account export downloads complete JSON | | | | A |
