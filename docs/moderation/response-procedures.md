@@ -69,5 +69,5 @@ Synthetic cases only. No real member data, and no contact with real authorities.
 
 ## Findings
 
-- Reports have no reason for child safety or imminent harm, so urgent reports can sit among routine `other` and `inappropriate` reports. Triage reads those first until a dedicated reason or priority exists.
-- Ban references cannot be looked up in Admin, so appeals rely on the Discord account to identify the person.
+- Reports have no reason for child safety or imminent harm, so urgent reports can sit among routine `other` and `inappropriate` reports. Triage reads those first until a dedicated reason or priority exists (SAFETY-013).
+- Ban references cannot be looked up in Admin, so appeals rely on the Discord account to identify the person (ADMIN-035).
