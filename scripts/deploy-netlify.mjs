@@ -146,18 +146,20 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
     true,
     'Stop Netlify builds before cutover',
   );
-  const values = JSON.parse(
-    cli([
-      'env:list',
-      '--site',
-      siteId,
-      '--context',
-      'production',
-      '--scope',
-      'builds',
-      '--json',
-    ]),
-  );
+  const readEnv = (scope) =>
+    JSON.parse(
+      cli([
+        'env:list',
+        '--site',
+        siteId,
+        '--context',
+        'production',
+        '--scope',
+        scope,
+        '--json',
+      ]),
+    );
+  const values = readEnv('builds');
   assert.ok(values.AUTH_SECRET, `${name} build variables are required`);
   if (actions) {
     for (const value of Object.values(values)) {
@@ -167,7 +169,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
         );
     }
   }
-  const checks = (await target.checkValues?.(values)) ?? [];
+  const checks = (await target.checkValues?.(values, readEnv)) ?? [];
   const env = {
     ...process.env,
     ...values,

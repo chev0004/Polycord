@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./next-intl.config.ts');
+const publicHost =
+  process.env.POLYCORD_PUBLIC_URL &&
+  new URL(process.env.POLYCORD_PUBLIC_URL).hostname;
 
 const nextConfig: NextConfig = {
   env: {
@@ -23,7 +26,9 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/:path*',
-        has: [{ type: 'host', value: 'polycord\\.chev\\.dev' }],
+        ...(publicHost && {
+          missing: [{ type: 'host', value: publicHost.replaceAll('.', '\\.') }],
+        }),
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
     ];

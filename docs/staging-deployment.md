@@ -108,6 +108,7 @@ Once, in GitHub, Settings, Codespaces, Secrets, add these user secrets with acce
 | `NETLIFY_AUTH_TOKEN` | A Netlify personal access token with an expiry |
 | `POLYCORD_GITHUB_TOKEN` | A fine-grained token for this repository only: Checks read, Commit statuses read and write |
 | `STAGING_DATABASE_URL` | The staging database's session pooler URL (Supabase, Connect, Session pooler), because codespaces cannot reach the IPv6-only direct URL |
+| `PRODUCTION_DATABASE_URL` | The production database's direct URL, once it exists |
 
 To publish, create a 4-core codespace on `develop` and run:
 
@@ -120,7 +121,7 @@ bun install --frozen-lockfile && bunx playwright install --with-deps chromium
 export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$STAGING_DATABASE_URL" \
   TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/polycord_test \
   NODE_OPTIONS=--max-old-space-size=8192
-unset POLYCORD_GITHUB_TOKEN STAGING_DATABASE_URL
+unset POLYCORD_GITHUB_TOKEN STAGING_DATABASE_URL PRODUCTION_DATABASE_URL
 node scripts/deploy-staging.mjs
 ```
 
@@ -132,15 +133,15 @@ The script refuses to run on another platform or Node version, from a checkout w
 
 Before switching visibility, while the Actions job still works:
 
-1. Run one owner-run deployment of the current `develop` tip and confirm the summary, `/api/build` and that `polycord.chev.dev` pages, `robots.txt` and CSS still send `X-Robots-Tag: noindex, nofollow`.
+1. Run one owner-run deployment of the current `develop` tip and confirm the summary, `/api/build` and the [indexing checks](operations/production.md#indexing) on `polycord.chev.dev`.
 2. Set `NETLIFY_STAGING_DEPLOY_ENABLED` to `false`, then delete the `staging` environment's secrets. Do not move them to repository secrets.
 3. Switch visibility. Pull request and `develop` validation keep running within the Free plan's Actions allowance and stop when it runs out; deploys continue through the owner path.
 
-If the domain is confirmed, staging moves to `staging.polycord.net`: add it as the staging site's custom domain, update the domain in `scripts/deploy-staging.mjs`, the `noindex` host in `next.config.ts`, `DISCORD_REDIRECT_URI` and the Discord redirect list.
+If the domain is confirmed, staging moves to `staging.polycord.net`: add it as the staging site's custom domain, update the domain in `scripts/deploy-staging.mjs`, `DISCORD_REDIRECT_URI` and the Discord redirect list, and keep `POLYCORD_PUBLIC_URL` unset so every staging host stays `noindex`.
 
 ## Access
 
-Netlify Free has no password protection, so staging is public to anyone who has its address: `polycord.chev.dev`, `polycord-staging.netlify.app` and each deploy permalink (`<deploy ID>--polycord-staging.netlify.app`) all answer without signing in. Netlify adds `noindex` to deploy permalinks and `netlify.toml` adds it to static files on every host. `next.config.ts` adds it to pages on `polycord.chev.dev` only, so `polycord-staging.netlify.app` pages are indexable until DEV-034 scopes indexing to the production origin. Treat it as public and never put production or real member data there. Set the staging site's deploy log visibility to private, because the deploy list, including permalinks and source commits, is otherwise readable through the Netlify API without a token.
+Netlify Free has no password protection, so staging is public to anyone who has its address: `polycord.chev.dev`, `polycord-staging.netlify.app` and each deploy permalink (`<deploy ID>--polycord-staging.netlify.app`) all answer without signing in. Netlify adds `noindex` to deploy permalinks, and the deployed `next.config.ts` adds it on every staging host, so none of them should appear in search. Treat it as public and never put production or real member data there. Set the staging site's deploy log visibility to private, because the deploy list, including permalinks and source commits, is otherwise readable through the Netlify API without a token.
 
 ## Reversal
 

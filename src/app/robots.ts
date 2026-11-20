@@ -4,11 +4,13 @@ import { locales } from '@/utils/locales';
 const privateSegments = [
   'admin',
   'analytics',
+  'inbox',
   'onboarding',
   'profile',
   'saved',
   'settings',
   'u',
+  'user',
 ];
 
 export default function robots(): MetadataRoute.Robots {
@@ -24,6 +26,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/api/',
+        '/banned',
         ...locales.flatMap((locale) =>
           privateSegments.map((segment) => `/${locale}/${segment}`),
         ),
