@@ -1,6 +1,6 @@
 # Production Monitoring and Recovery
 
-How production problems are found, and how the service is recovered. Launch relies on manual checks after every deploy plus verified backup, restore and rollback. Automated uptime monitoring follows after launch. Every item needs evidence from the real production setup, and the evidence table at the end stays Pending until someone records it.
+How production problems are found, and how the service is recovered. Launch relies on manual checks after every deploy plus verified backup, restore and rollback. A test alert must reach the assigned responder before launch. Every item needs evidence from the real production setup, and the evidence table at the end stays Pending until someone records it.
 
 Nothing here is purchased. No monitoring account is created and no alert is sent without the owner's approval.
 
@@ -41,7 +41,7 @@ Restore into an isolated target, never over the live database:
    `bun scripts/verify-restore.mjs snapshot "$PRODUCTION_DIRECT_URL" > snapshot.json`
 2. Take the backup with `pg_dump` as in [Backup](readiness.md#backup).
 3. Create a new empty database on a local server, never a third Supabase project, which the free plan does not allow alongside staging and production, and [restore](readiness.md#restore) into it.
-4. Verify integrity: `bun scripts/verify-restore.mjs verify "$RESTORE_URL" snapshot.json` compares every public table's row count and the full migration history, and exits non-zero on any difference. With live traffic between steps 1 and 2, small count differences on write-heavy tables are expected; the snapshot should then be taken at a quiet time.
+4. Verify integrity: `bun scripts/verify-restore.mjs verify "$RESTORE_URL" snapshot.json` compares every public table’s row count, the full migration history, row digests for critical tables and public constraint definitions. Quiesce writes between the snapshot and backup so both represent the same data. Investigate every difference before accepting the restore.
 5. Start a production build against the restored database locally and confirm `/api/health` returns `200`.
 6. Delete the restored database and the dump, which both contain personal data.
 
@@ -62,14 +62,14 @@ Netlify publishes deploys atomically. After a rollback, the next owner deploy pu
 
 Polycord has a single maintainer. The owner is the only responder for outages and receives every alert. See [Incidents](readiness.md#incidents).
 
-## Uptime monitoring after launch
+## Uptime monitoring and pre-launch test alert
 
 Once production is live, add an external uptime monitor, if the owner approves the account:
 
 - Service: Better Stack Uptime, free plan (10 monitors, email alerts).
 - Monitors: the homepage, `https://polycord.net/` with redirects followed, and `https://polycord.net/api/health`, which returns `503` when the database is unreachable and stays reachable for banned IPs.
 - Alerts: email to the owner's existing address, after two consecutive failures so one slow cold start does not alert. Alert payloads contain only the URL, status and time.
-- Test alert, with approval: point a temporary monitor at a URL that is guaranteed to fail, such as `https://polycord.net/api/health-test-alert`, record when the email arrives, then delete the monitor.
+- Test alert, with approval: point a temporary monitor at a URL that is guaranteed to fail, such as `https://polycord.net/api/health-test-alert`, record the assigned responder, send time and receipt time in UTC, then delete the temporary monitor.
 
 Monitor requests count toward Netlify usage. On a credit-based Netlify team, check how much a 3-minute interval adds before choosing it.
 
@@ -82,4 +82,4 @@ Monitor requests count toward Netlify usage. On a credit-based Netlify team, che
 | Backup | Time of the first production backup and where it is stored | Pending: production database |
 | Restore drill | Backup time, restore target, `verify-restore` output, health check result | Pending: production backup |
 | Application rollback | Deploy IDs before and after, check results, time taken | Pending: production site |
-| Uptime monitor and test alert | Monitor URLs, interval, time the test email arrived | After launch, with the owner's approval |
+| Uptime monitor and test alert | Monitor URLs, interval, time the test email arrived | Pending: pre-launch delivery to assigned responder |

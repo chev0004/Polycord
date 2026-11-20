@@ -4,7 +4,16 @@ import { differences } from './verify-restore.mjs';
 
 const backup = {
   tables: { users: 3, profiles: 2 },
-  migrations: ['a', 'b'],
+  migrations: ['a:1', 'b:2'],
+  contents: { users: 'digest' },
+  constraints: [
+    {
+      table: 'users',
+      name: 'users_pkey',
+      definition: 'PRIMARY KEY (id)',
+      validated: true,
+    },
+  ],
 };
 
 test('an identical restore has no differences', () => {
@@ -14,6 +23,7 @@ test('an identical restore has no differences', () => {
 test('reports changed counts, missing tables and migration history', () => {
   assert.deepEqual(
     differences(backup, {
+      ...backup,
       tables: { users: 2, reports: 0 },
       migrations: ['a'],
     }),
@@ -23,5 +33,16 @@ test('reports changed counts, missing tables and migration history', () => {
       'reports: expected no table, found 0',
       'migrations: expected 2, found 1 or a different history',
     ],
+  );
+});
+
+test('rejects damaged contents and constraints even when counts match', () => {
+  assert.deepEqual(
+    differences(backup, {
+      ...backup,
+      contents: { users: 'changed' },
+      constraints: [],
+    }),
+    ['users: row contents differ', 'Public constraints differ'],
   );
 });
