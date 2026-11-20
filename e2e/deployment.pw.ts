@@ -89,8 +89,10 @@ test('a page on the current build is left alone', async ({ page }) => {
 
 test('a failed lazy chunk recovers with a single reload', async ({ page }) => {
   const loads = countLoads(page);
-  await page.goto('/en/legal');
-  await failChunk(page);
+  const watcherReady = () =>
+    page.waitForResponse((response) => response.url().endsWith('/api/build'));
+  await Promise.all([watcherReady(), page.goto('/en/legal')]);
+  await Promise.all([watcherReady(), failChunk(page)]);
   await expect.poll(() => loads.count).toBe(2);
   await failChunk(page);
   await page.waitForTimeout(1500);
