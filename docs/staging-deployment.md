@@ -70,6 +70,42 @@ published server digest matches the prepared archive, and the runtime is Node
 22. If post-upload verification fails while that deployment is still serving,
 the job restores the previous immutable deployment.
 
+## Owner-run deployment
+
+The owner can publish staging without GitHub Actions, using the same script and checks. This is the only staging path once the repository is private on GitHub Free, because environment secrets then stop working and repository secrets would reach every pull request job from a branch in this repository. Deployment credentials stay with the owner and never go into GitHub.
+
+The Netlify Next adapter cannot package on Windows, so run it on Linux: a GitHub Codespace on this repository (billed against the separate Codespaces allowance, not Actions minutes) or WSL. Set it up once:
+
+1. Install Node 22 and Bun 1.3.14, then `bun install --frozen-lockfile` and `bunx playwright install --with-deps chromium`.
+2. Keep the credentials outside the repository, for example as Codespaces user secrets limited to this repository or a file in the home directory:
+   - `NETLIFY_AUTH_TOKEN`: a Netlify personal access token.
+   - `GITHUB_TOKEN`: a fine-grained token for this repository only, with read access to checks and write access to commit statuses.
+   - `DATABASE_URL`: the direct URL of the database behind the site being deployed.
+   - `TEST_DATABASE_URL`: a disposable Postgres 17 database for the full suite, for example `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:17` and `postgresql://postgres:postgres@localhost:5432/polycord_test`. Never the staging or production database.
+
+To publish:
+
+```sh
+git fetch origin && git switch --detach origin/develop
+node scripts/deploy-staging.mjs
+```
+
+The script refuses to run on another platform or Node version, from a checkout with local changes or from anything other than the current `develop` tip. When the commit has a passing `CI result` check, it relies on that. Otherwise, for example once Actions minutes run out, it runs the full suite against `TEST_DATABASE_URL` without the deployment tokens in the environment and stops on the first failure. Then it packages, checks migrations, uploads, verifies the digest, restores the previous deploy on failure and records `staging/published` exactly as the Actions job does. The summary says which validation it relied on.
+
+## Making the repository private
+
+Before switching visibility, while the Actions job still works:
+
+1. Run one owner-run deployment of the current `develop` tip and confirm the summary, `/api/build` and the [indexing checks](operations/production.md#indexing) on `polycord.chev.dev`.
+2. Set `NETLIFY_STAGING_DEPLOY_ENABLED` to `false`, then delete the `staging` environment's secrets. Do not move them to repository secrets.
+3. Switch visibility. Pull request and `develop` validation keep running within the Free plan's Actions allowance and stop when it runs out; deploys continue through the owner path.
+
+If the domain is confirmed, staging moves to `staging.polycord.net`: add it as the staging site's custom domain, update the domain in `scripts/deploy-staging.mjs`, `DISCORD_REDIRECT_URI` and the Discord redirect list, and keep `POLYCORD_PUBLIC_URL` unset so every staging host stays `noindex`.
+
+## Access
+
+Netlify Free has no password protection, so staging is public to anyone who has its address: `polycord.chev.dev`, `polycord-staging.netlify.app` and each deploy permalink (`<deploy ID>--polycord-staging.netlify.app`) all answer without signing in. Netlify adds `noindex` to deploy permalinks, and the deployed `next.config.ts` adds it on every staging host, so none of them should appear in search. Treat it as public and never put production or real member data there. Set the staging site's deploy log visibility to private, because the deploy list, including permalinks and source commits, is otherwise readable through the Netlify API without a token.
+
 ## Reversal
 
 Set `NETLIFY_STAGING_DEPLOY_ENABLED` to `false` and cancel any running deployment
