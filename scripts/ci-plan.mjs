@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { parse, TYPE } from '@formatjs/icu-messageformat-parser';
 
 import { jobNames } from './ci-evidence.mjs';
+
 const docs = /\.md$|^docs\/|^LICENSE$/;
 const story = /^src\/.+\.stories\.tsx?$/;
 const locale = /^src\/locales\/[\w-]+\.json$/;
