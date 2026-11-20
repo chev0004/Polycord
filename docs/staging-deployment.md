@@ -36,16 +36,13 @@ and deploy:
   the run validates and builds nothing.
 - When the push is a merged PR whose Tests run passed on the exact landed tree,
   the run deploys without repeating validation. See [CI result](#ci-result).
-- When the new commits only add docs, tests or stories on top of a code commit
-  whose Tests run is still active, that run stays responsible for staging.
+- A stale gate skips its push. The latest push owns validation until an equivalent
+  publish is recorded.
 - Otherwise, including when the status, history or GitHub API is unavailable,
   the run validates fully and then deploys.
 
-Validation jobs on `develop` share one cancellation group per job, so a newer
-push cancels older validation. The deployment job is not cancelled by newer
-runs. Before packaging and again before upload, it publishes only if `develop`
-has no newer deployable changes than its source. If the comparison itself
-fails, the job fails instead of skipping.
+Validation jobs that already started finish independently. Deploy jobs queue
+without replacing pending jobs and recheck freshness before packaging and upload.
 
 ## PR job plans
 

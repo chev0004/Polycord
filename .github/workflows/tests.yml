@@ -31,9 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 50 }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - uses: ./.github/actions/setup
       - id: plan
         run: node scripts/develop-plan.mjs
         env:
@@ -44,9 +42,6 @@ jobs:
   static:
     needs: gate
     if: needs.gate.outputs.static == 'true'
-    concurrency:
-      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-static' || format('static-{0}', github.run_id) }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -57,9 +52,6 @@ jobs:
   unit:
     needs: [gate, static]
     if: needs.gate.outputs.unit == 'true'
-    concurrency:
-      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-unit' || format('unit-{0}', github.run_id) }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -88,9 +80,6 @@ jobs:
   package:
     needs: [gate, static]
     if: needs.gate.outputs.package == 'true'
-    concurrency:
-      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-package' || format('package-{0}', github.run_id) }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -125,9 +114,6 @@ jobs:
   e2e:
     needs: [gate, static]
     if: needs.gate.outputs.e2e == 'true'
-    concurrency:
-      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && format('develop-e2e-{0}', strategy.job-index) || format('e2e-{0}-{1}', github.run_id, strategy.job-index) }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -173,9 +159,6 @@ jobs:
   storybook:
     needs: [gate, static]
     if: needs.gate.outputs.storybook == 'true'
-    concurrency:
-      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'develop-storybook' || format('storybook-{0}', github.run_id) }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -197,7 +180,7 @@ jobs:
   result:
     name: CI result
     needs: [gate, static, unit, package, e2e, storybook]
-    if: ${{ !cancelled() && !contains(needs.*.result, 'cancelled') }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -235,7 +218,7 @@ jobs:
       url: https://polycord.chev.dev
     concurrency:
       group: netlify-staging
-      cancel-in-progress: false
+      queue: max
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}

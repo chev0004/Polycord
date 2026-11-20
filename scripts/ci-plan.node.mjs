@@ -10,7 +10,7 @@ const originalCwd = process.cwd();
 const git = (...args) =>
   spawnSync('git', args, { encoding: 'utf8' }).stdout.trim();
 const locale = (profile, extra = {}) =>
-  `${JSON.stringify({ Settings: { profile, save: 'Save {count} items', ...extra } }, null, 2)}\n`;
+  `${JSON.stringify({ Settings: { profileViewAlertDescriptionFree: profile, save: 'Save {count} items', ...extra } }, null, 2)}\n`;
 
 async function commit(files) {
   for (const [path, content] of Object.entries(files)) {
@@ -70,20 +70,38 @@ test('value-only copy runs locale checks and Storybook', async () => {
   assert.match(plan.reasons[0], /copy only/);
 });
 
-test('copy asserted by a browser test also runs e2e', async () => {
-  await commit({
-    'e2e/settings.pw.ts':
-      "await page.getByText('Alert me when someone views');",
+test('mapped copy asserted in browser tests runs e2e', async () => {
+  const message = (title) => JSON.stringify({ Admin: { dismissTitle: title } });
+  const from = await commit({
+    'src/locales/en.json': message(
+      'Dismiss {count, plural, one {report} other {# reports}}?',
+    ),
   });
-  const from = git('rev-parse', 'HEAD');
   const head = await commit({
-    'src/locales/en.json': locale('Get profile view alerts with Supporter.'),
+    'src/locales/en.json': message(
+      'Dismiss {count, plural, one {this report} other {# reported profiles}}?',
+    ),
   });
   assert.deepEqual(running(planChanges(from, head)), [
     'static',
     'e2e',
     'storybook',
   ]);
+  const changedRule = await commit({
+    'src/locales/en.json': message(
+      'Dismiss {count, plural, =0 {this report} other {# reported profiles}}?',
+    ),
+  });
+  assert.deepEqual(running(planChanges(head, changedRule)), full);
+});
+
+test('copy without an explicit coverage mapping uses full CI', async () => {
+  const head = await commit({
+    'src/locales/en.json': locale('Alert me when someone views my profile.', {
+      save: 'Save all {count} items',
+    }),
+  });
+  assert.deepEqual(running(planChanges(base, head)), full);
 });
 
 test('copy with changed keys or placeholders runs the full suite', async () => {
@@ -94,7 +112,7 @@ test('copy with changed keys or placeholders runs the full suite', async () => {
   });
   assert.deepEqual(running(planChanges(base, keys)), full);
   const placeholder = await commit({
-    'src/locales/en.json': `${JSON.stringify({ Settings: { profile: 'Alert me when someone views my profile.', save: 'Save {total} items' } }, null, 2)}\n`,
+    'src/locales/en.json': `${JSON.stringify({ Settings: { profileViewAlertDescriptionFree: 'Alert me when someone views my profile.', save: 'Save {total} items' } }, null, 2)}\n`,
   });
   assert.deepEqual(running(planChanges(keys, placeholder)), full);
 });

@@ -1,9 +1,14 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { appendFile } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
-import { ciPolicy, evidence, resultContext, treeOf } from './ci-evidence.mjs';
-import { fullPlan, jobNames, planChanges } from './ci-plan.mjs';
+import {
+  ciPolicy,
+  evidence,
+  jobNames,
+  resultContext,
+  treeOf,
+} from './ci-evidence.mjs';
+import { fullPlan, planChanges } from './ci-plan.mjs';
 import { deployableChanges, publishedContext } from './deploy-inputs.mjs';
 
 const activeStates = [
@@ -94,7 +99,6 @@ export async function planDevelop(
   run = spawnSync,
   request = fetch,
   wait = setTimeout,
-  read = (file) => readFileSync(file, 'utf8'),
 ) {
   const sha = env.GITHUB_SHA;
   const develop = env.GITHUB_REF === 'refs/heads/develop';
@@ -121,7 +125,7 @@ export async function planDevelop(
         ...fullPlan('The full-ci label requests the full suite.'),
         deploy: false,
       };
-    const scoped = planChanges('HEAD^1', 'HEAD', run, read);
+    const scoped = planChanges('HEAD^1', 'HEAD', run);
     const skipped = jobNames.filter((job) => !scoped.jobs[job]);
     if (
       env.SCOPED_PLANS === 'true' ||
@@ -141,6 +145,16 @@ export async function planDevelop(
   if (env.GITHUB_EVENT_NAME !== 'push')
     return { ...fullPlan('Manual run validates fully.'), deploy: develop };
 
+  const tip = develop
+    ? (await github('git/ref/heads/develop'))?.object?.sha
+    : undefined;
+  if (tip && tip !== sha)
+    return {
+      ...noJobs(
+        `Develop has advanced to ${tip}; the latest push validates its own snapshot.`,
+      ),
+      deploy: false,
+    };
   const log = run(
     'git',
     ['rev-list', '--first-parent', '--max-count=50', sha],
@@ -179,26 +193,6 @@ export async function planDevelop(
       deploy: develop,
     };
 
-  let source = sha;
-  for (const commit of history.slice(1)) {
-    if (deployableChanges(commit, sha, run)?.length !== 0) break;
-    source = commit;
-  }
-  if (source !== sha) {
-    const runs = await github(
-      `actions/workflows/tests.yml/runs?head_sha=${source}&event=push&per_page=20`,
-    );
-    const pending = runs?.workflow_runs.find(({ status }) =>
-      activeStates.includes(status),
-    );
-    if (pending)
-      return {
-        ...noJobs(
-          `Run ${pending.id} for ${source} validates and deploys the same inputs.`,
-        ),
-        deploy: false,
-      };
-  }
   return { ...fullPlan('Validate fully.'), deploy: develop };
 }
 

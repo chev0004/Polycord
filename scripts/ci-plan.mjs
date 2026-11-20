@@ -1,7 +1,8 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { parse, TYPE } from '@formatjs/icu-messageformat-parser';
 
-export const jobNames = ['static', 'unit', 'package', 'e2e', 'storybook'];
+import { jobNames } from './ci-evidence.mjs';
+
 const docs = /\.md$|^docs\/|^LICENSE$/;
 const story = /^src\/.+\.stories\.tsx?$/;
 const locale = /^src\/locales\/[\w-]+\.json$/;
@@ -35,79 +36,44 @@ const flatten = (value, prefix = '', out = {}) => {
   return out;
 };
 
-const signature = (text) =>
-  JSON.stringify([
-    [...text.matchAll(/\{\s*(\w+)/g)].map(([, name]) => name).sort(),
-    [...text.matchAll(/<\/?(\w+)/g)].map(([, tag]) => tag).sort(),
-    text.split('{').length,
-    text.split('}').length,
-  ]);
+const copyCoverage = {
+  'Admin.dismissTitle': ['e2e', 'storybook'],
+  'Settings.profileViewAlertDescriptionFree': ['storybook'],
+};
+
+const signature = (message) =>
+  JSON.stringify(parse(message), (_, entry) =>
+    entry?.type === TYPE.literal ? { type: TYPE.literal } : entry,
+  );
 
 function copyChanges(base, head, path, run) {
   const before = git(['show', `${base}:${path}`], run);
   const after = git(['show', `${head}:${path}`], run);
   if (before === null || after === null) return null;
-  let old;
-  let next;
   try {
-    old = flatten(JSON.parse(before));
-    next = flatten(JSON.parse(after));
+    const old = flatten(JSON.parse(before));
+    const next = flatten(JSON.parse(after));
+    const keys = Object.keys(old);
+    if (keys.length !== Object.keys(next).length) return null;
+    const changed = [];
+    for (const key of keys) {
+      if (typeof old[key] !== 'string' || typeof next[key] !== 'string')
+        return null;
+      if (old[key] === next[key]) continue;
+      if (
+        !Object.hasOwn(copyCoverage, key) ||
+        signature(old[key]) !== signature(next[key])
+      )
+        return null;
+      changed.push(key);
+    }
+    return changed;
   } catch {
     return null;
   }
-  const keys = Object.keys(old);
-  if (
-    keys.length !== Object.keys(next).length ||
-    keys.some(
-      (key) =>
-        typeof old[key] !== 'string' ||
-        typeof next[key] !== 'string' ||
-        signature(old[key]) !== signature(next[key]),
-    )
-  )
-    return null;
-  return keys
-    .filter((key) => old[key] !== next[key])
-    .map((key) => [old[key].toLowerCase(), next[key].toLowerCase()]);
 }
 
-const literals = (text) =>
-  [
-    ...text.matchAll(
-      /'([^'\\\n]{4,})'|"([^"\\\n]{4,})"|`([^`\\$\n]{4,})`|\/((?:[^/\\\n]|\\.){4,})\/[a-z]*/g,
-    ),
-  ]
-    .flatMap(([, single, double, template, regex]) =>
-      regex === undefined
-        ? [single ?? double ?? template]
-        : regex.replace(/\\(.)/g, '$1').split(/\.\*|[|()^$?+[\]]/),
-    )
-    .map((literal) => literal.trim().toLowerCase())
-    .filter((literal) => literal.length >= 4);
-
-const distinctive = (fragment) =>
-  fragment.split(/\s+/).length >= 3 ||
-  (/[^\p{ASCII}]/u.test(fragment) && fragment.length >= 6);
-
-function asserts(files, changes, read) {
-  const found = files.flatMap((file) => literals(read(file)));
-  return changes.some(([before, after]) =>
-    found.some(
-      (literal) =>
-        literal.includes(before) ||
-        (before.includes(literal) &&
-          !after.includes(literal) &&
-          distinctive(literal)),
-    ),
-  );
-}
-
-export function planChanges(
-  base,
-  head,
-  run = spawnSync,
-  read = (file) => readFileSync(file, 'utf8'),
-) {
+export function planChanges(base, head, run = spawnSync) {
   const diff = git(
     ['diff', '--no-renames', '--name-only', base, head, '--'],
     run,
@@ -117,7 +83,6 @@ export function planChanges(
 
   const jobs = Object.fromEntries(jobNames.map((job) => [job, false]));
   const reasons = [];
-  const copy = [];
   for (const file of files) {
     if (docs.test(file)) continue;
     if (story.test(file)) {
@@ -129,39 +94,17 @@ export function planChanges(
     } else if (locale.test(file)) {
       const values = copyChanges(base, head, file, run);
       if (!values)
-        return fullPlan(`${file}: locale keys or placeholders changed.`);
-      jobs.static = jobs.storybook = true;
-      copy.push(...values);
-      reasons.push(`${file}: copy only, runs locale checks and Storybook.`);
+        return fullPlan(
+          `${file}: locale keys, message structure or coverage changed.`,
+        );
+      for (const key of values) {
+        jobs.static = true;
+        for (const job of copyCoverage[key]) jobs[job] = true;
+        reasons.push(
+          `${file}: copy only for ${key}, runs ${copyCoverage[key].join(' and ')}.`,
+        );
+      }
     } else return fullPlan(`${file}: shared or unclassified change.`);
-  }
-
-  if (copy.length) {
-    const tracked =
-      git(['ls-files', 'e2e', 'tests', 'src'], run)?.split('\n') ?? [];
-    if (
-      asserts(
-        tracked.filter((file) => file.startsWith('e2e/')),
-        copy,
-        read,
-      )
-    ) {
-      jobs.e2e = true;
-      reasons.push('Browser tests assert changed copy, runs e2e.');
-    }
-    if (
-      asserts(
-        tracked.filter(
-          (file) =>
-            file.startsWith('tests/') || /\.test\.[cm]?[jt]sx?$/.test(file),
-        ),
-        copy,
-        read,
-      )
-    ) {
-      jobs.unit = true;
-      reasons.push('Unit tests assert changed copy, runs unit tests.');
-    }
   }
   if (!Object.values(jobs).some(Boolean)) reasons.push('Docs only.');
   return { jobs, reasons };
