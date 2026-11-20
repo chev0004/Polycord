@@ -276,6 +276,13 @@
       "breakpoints": true
     },
     {
+      "idx": 39,
+      "version": "7",
+      "when": 1793833261384,
+      "tag": "0039_enable_row_level_security",
+      "breakpoints": true
+    },
+    {
       "idx": 40,
       "version": "7",
       "when": 1795110547047,
