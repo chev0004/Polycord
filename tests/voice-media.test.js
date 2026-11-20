@@ -24,7 +24,7 @@ test('voice validation accepts each plan limit and rejects longer recordings', a
     durationSeconds: 8,
   });
   await expect(
-    inspectVoiceMedia(await fixture('voice-9s'), 8),
+    inspectVoiceMedia(await fixture('voice-8s-over'), 8),
   ).rejects.toThrow();
   expect(await inspectVoiceMedia(await fixture('voice-9s'), 20)).toEqual({
     mimeType: 'audio/webm',

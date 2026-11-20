@@ -158,10 +158,12 @@ test('voice intro limits follow the owner plan and keep longer clips after Suppo
     ).toEqual([{ duration_seconds: 20 }]);
     await page.goto('/en/profile');
     await expect(
-      page.getByText(
-        'Your 20-second intro is hidden because Free intros can be up to 8 seconds.',
-        { exact: false },
-      ).first(),
+      page
+        .getByText(
+          'Your 20-second intro is hidden because Free intros can be up to 8 seconds.',
+          { exact: false },
+        )
+        .first(),
     ).toBeVisible();
 
     await sql`update subscriptions set current_period_end = now() + interval '1 day' where user_id = ${owner.id}`;

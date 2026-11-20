@@ -12,6 +12,7 @@ import { entitlementLimit } from '@/lib/entitlements';
 import { VoiceIntroPlayer } from './VoiceIntroPlayer';
 
 const DOWNLOAD_NAME = 'polycord-voice-intro';
+const RECORDER_STOP_BUFFER_MS = 100;
 
 type PendingClip = {
   url: string;
@@ -55,7 +56,7 @@ export const VoiceIntroEditor = ({
   const [error, setError] = useState<'mic' | 'save' | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const startedAtRef = useRef(0);
+  const stopRecordingRef = useRef<() => void>(() => {});
   const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -89,7 +90,12 @@ export const VoiceIntroEditor = ({
       });
       const recorder = new MediaRecorder(stream);
       chunksRef.current = [];
-      startedAtRef.current = Date.now();
+      const startedAt = performance.now();
+      let stoppedAt = startedAt;
+      const stop = () => {
+        stoppedAt = performance.now();
+        recorder.stop();
+      };
 
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
@@ -103,7 +109,7 @@ export const VoiceIntroEditor = ({
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const seconds = Math.min(
           maxSeconds,
-          Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000)),
+          Math.max(1, Math.round((stoppedAt - startedAt) / 1000)),
         );
 
         try {
@@ -122,11 +128,15 @@ export const VoiceIntroEditor = ({
       };
 
       recorderRef.current = recorder;
+      stopRecordingRef.current = stop;
       recorder.start();
       setRecording(true);
-      stopTimerRef.current = setTimeout(() => {
-        if (recorder.state === 'recording') recorder.stop();
-      }, maxSeconds * 1000);
+      stopTimerRef.current = setTimeout(
+        () => {
+          if (recorder.state === 'recording') stop();
+        },
+        maxSeconds * 1000 - RECORDER_STOP_BUFFER_MS,
+      );
     } catch {
       setError('mic');
     }
@@ -134,7 +144,7 @@ export const VoiceIntroEditor = ({
 
   const stopRecording = () => {
     if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
-    recorderRef.current?.stop();
+    if (recorderRef.current?.state === 'recording') stopRecordingRef.current();
   };
 
   const toggleRecording = () => {
@@ -159,7 +169,6 @@ export const VoiceIntroEditor = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mimeType: pending.mimeType,
-          durationSeconds: pending.seconds,
           audio: pending.dataUrl,
         }),
       });

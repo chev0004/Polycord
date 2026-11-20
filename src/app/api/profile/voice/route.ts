@@ -23,7 +23,6 @@ const voiceIntroSchema = z.object({
       (value) => ALLOWED_MIME_TYPES.includes(value.split(';')[0].trim()),
       { message: 'unsupported type' },
     ),
-  durationSeconds: z.number().int().min(1).max(20),
   audio: z.string().min(1).max(1400000),
 });
 
@@ -49,13 +48,8 @@ export const POST = scopedRoute(async (request: Request) => {
   }
 
   const base64 = payload.data.audio.replace(/^data:[^,]+,/, '');
-  let sizeBytes: number;
-
-  try {
-    sizeBytes = Buffer.from(base64, 'base64').byteLength;
-  } catch {
-    return NextResponse.json({ error: 'Invalid audio data' }, { status: 400 });
-  }
+  const audio = Buffer.from(base64, 'base64');
+  const sizeBytes = audio.byteLength;
 
   if (sizeBytes === 0 || sizeBytes > MAX_SIZE_BYTES) {
     return NextResponse.json({ error: 'Audio too large' }, { status: 413 });
@@ -67,7 +61,7 @@ export const POST = scopedRoute(async (request: Request) => {
   );
   let media: Awaited<ReturnType<typeof inspectVoiceMedia>>;
   try {
-    media = await inspectVoiceMedia(Buffer.from(base64, 'base64'), maxSeconds);
+    media = await inspectVoiceMedia(audio, maxSeconds);
   } catch {
     return NextResponse.json(
       { error: 'Invalid audio content or duration' },
