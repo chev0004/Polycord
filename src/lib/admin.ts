@@ -6,8 +6,10 @@ import { countPendingCases, hasStaffRole } from '@/db';
 import type { StaffRole } from '@/features/Admin/types';
 import { type CurrentUser, getCurrentUser, getSessionAccountId } from './auth';
 import { isOwnerDiscordId } from './ownerIds';
+import { isSameOrigin } from './sameOrigin';
 
 export { isOwnerDiscordId, ownerDiscordIds } from './ownerIds';
+export { isSameOrigin } from './sameOrigin';
 
 const REAUTH_WINDOW_MS = 12 * 60 * 60 * 1000;
 
@@ -44,15 +46,6 @@ export const loadStaffNav = async (
 
 export const needsReauth = (user: { issuedAt: number }) =>
   Date.now() - user.issuedAt > REAUTH_WINDOW_MS;
-
-export const isSameOrigin = (request: Request) => {
-  const origin = request.headers.get('origin');
-  return (
-    origin !== null &&
-    URL.canParse(origin) &&
-    new URL(origin).host === request.headers.get('host')
-  );
-};
 
 export const authorizeOwner = async (request: Request) => {
   const currentUser = await getCurrentUser();
