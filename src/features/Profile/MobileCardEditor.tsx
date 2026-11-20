@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import {
   type CSSProperties,
+  Fragment,
   type ReactNode,
   type RefObject,
   useLayoutEffect,
@@ -82,6 +83,7 @@ import {
   FREE_LANGUAGE_CAP,
   PREMIUM_LANGUAGE_CAP,
   type ProfileFormValues,
+  showHiddenEntry,
 } from './schema';
 import { createEmptyLanguageRow } from './TargetLanguagesEditor';
 import { timezoneOptions } from './timezoneOptions';
@@ -356,6 +358,11 @@ export const MobileCardEditor = ({
   const voiceSeconds = values.voiceIntroSeconds ?? 0;
   const languageCap = premium ? PREMIUM_LANGUAGE_CAP : FREE_LANGUAGE_CAP;
   const tagCap = entitlementLimit('profile.tags', premium);
+  const hiddenBadge = (
+    <span className="rounded bg-overlay px-1.5 py-0.5 font-bold text-[10px] text-soft uppercase tracking-[0.04em]">
+      {t('hiddenBadge')}
+    </span>
+  );
   const allLanguages = useMemo(() => languageOptions(locale), [locale]);
   const levels = useMemo(() => proficiencyOptions(locale), [locale]);
   const countries = useMemo(() => countryOptions(locale), [locale]);
@@ -605,7 +612,7 @@ export const MobileCardEditor = ({
 
             <EditGroup
               title={t('languagesTitle')}
-              count={`${targetLanguages.length}/${languageCap}`}
+              count={`${Math.min(targetLanguages.length, languageCap)}/${languageCap}`}
             >
               <ListRow
                 label={t('nativeLabel')}
@@ -619,10 +626,11 @@ export const MobileCardEditor = ({
               />
               {targetLanguages
                 .filter((row) => row.language)
-                .map((row) => (
+                .map((row, index) => (
                   <ListRow
                     key={row.language}
                     label={getLanguageName(row.language, locale)}
+                    meta={index >= languageCap ? hiddenBadge : null}
                     value={row.level ? <LevelMeter level={row.level} /> : null}
                     flash={flash === 'languages'}
                     onClick={() => openSheet('languages')}
@@ -701,7 +709,7 @@ export const MobileCardEditor = ({
 
             <EditGroup
               title={t('tagsLabel')}
-              count={`${tags.length}/${tagCap}`}
+              count={`${Math.min(tags.length, tagCap)}/${tagCap}`}
             >
               {tags.length > 0 ? (
                 <ListRow
@@ -711,8 +719,12 @@ export const MobileCardEditor = ({
                   onClick={() => openSheet('tags')}
                 >
                   <span className="flex flex-wrap gap-2">
-                    {tags.map((tag) => (
-                      <Chip key={tag} label={tag} />
+                    {tags.map((tag, index) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        className={index >= tagCap ? 'opacity-60' : undefined}
+                      />
                     ))}
                   </span>
                 </ListRow>
@@ -959,7 +971,7 @@ export const MobileCardEditor = ({
               ) : null}
               <SheetLabel
                 aside={t('languageCounterHint', {
-                  count: targetLanguages.length,
+                  count: Math.min(targetLanguages.length, languageCap),
                   cap: languageCap,
                 })}
               >
@@ -967,66 +979,103 @@ export const MobileCardEditor = ({
               </SheetLabel>
               <div className="flex flex-col gap-2.5">
                 {targetLanguages.map((row, index) => (
-                  <div
-                    key={row.language || `new-${index}`}
-                    className="flex flex-col gap-1.5 rounded-xl bg-background-darker p-1.5 pb-2"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setLanguagePick({ kind: 'target', index })
-                        }
-                        className={`flex h-11 min-w-0 flex-1 items-center rounded-lg px-2.5 text-left text-[15px] ${
-                          row.language
-                            ? 'font-semibold'
-                            : 'font-medium text-subtle'
-                        }`}
-                      >
-                        <span className="truncate">
-                          {row.language
-                            ? getLanguageName(row.language, locale)
-                            : t('chooseLanguage')}
-                        </span>
-                      </button>
-                      <SheetIconButton
-                        label={t('removeLanguage')}
-                        disabled={targetLanguages.length <= 1}
-                        onClick={() =>
-                          setTargets(
-                            targetLanguages.filter((_, i) => i !== index),
-                          )
-                        }
-                      >
-                        <MdDeleteOutline size={20} className="text-muted" />
-                      </SheetIconButton>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {levels.map((level) => (
-                        <button
-                          key={level.value}
-                          type="button"
-                          aria-pressed={row.level === level.value}
+                  <Fragment key={row.language || `new-${index}`}>
+                    {index === languageCap ? (
+                      <div className="mt-1 flex flex-col gap-0.5 px-1">
+                        <p className="font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
+                          {t('hiddenOnFreeTitle')}
+                        </p>
+                        <p className="text-[12px] text-subtle">
+                          {t('hiddenLanguagesNote', { cap: languageCap })}
+                        </p>
+                      </div>
+                    ) : null}
+                    <div className="flex flex-col gap-1.5 rounded-xl bg-background-darker p-1.5 pb-2">
+                      <div className="flex items-center gap-1.5">
+                        {index >= languageCap ? (
+                          <p className="flex h-11 min-w-0 flex-1 items-center px-2.5 text-muted text-sm">
+                            {getLanguageName(row.language, locale)}
+                          </p>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setLanguagePick({ kind: 'target', index })
+                            }
+                            className={`flex h-11 min-w-0 flex-1 items-center rounded-lg px-2.5 text-left text-[15px] ${
+                              row.language
+                                ? 'font-semibold'
+                                : 'font-medium text-subtle'
+                            }`}
+                          >
+                            <span className="truncate">
+                              {row.language
+                                ? getLanguageName(row.language, locale)
+                                : t('chooseLanguage')}
+                            </span>
+                          </button>
+                        )}
+                        <SheetIconButton
+                          label={t('removeLanguage')}
+                          disabled={targetLanguages.length <= 1}
                           onClick={() =>
                             setTargets(
-                              targetLanguages.map((entry, i) =>
-                                i === index
-                                  ? { ...entry, level: level.value }
-                                  : entry,
+                              targetLanguages.filter((_, i) => i !== index),
+                            )
+                          }
+                        >
+                          <MdDeleteOutline size={20} className="text-muted" />
+                        </SheetIconButton>
+                      </div>
+                      {index < languageCap ? (
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {levels.map((level) => (
+                            <button
+                              key={level.value}
+                              type="button"
+                              aria-pressed={row.level === level.value}
+                              onClick={() =>
+                                setTargets(
+                                  targetLanguages.map((entry, i) =>
+                                    i === index
+                                      ? { ...entry, level: level.value }
+                                      : entry,
+                                  ),
+                                )
+                              }
+                              className={`h-9 truncate rounded-full px-2 font-semibold text-[13px] transition-colors duration-200 ${
+                                row.level === level.value
+                                  ? 'bg-primary-dark text-foreground'
+                                  : 'bg-background-dark text-muted'
+                              }`}
+                            >
+                              {level.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                      {index >= languageCap ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTargets(
+                              showHiddenEntry(
+                                targetLanguages,
+                                index,
+                                languageCap,
                               ),
                             )
                           }
-                          className={`h-9 truncate rounded-full px-2 font-semibold text-[13px] transition-colors duration-200 ${
-                            row.level === level.value
-                              ? 'bg-primary-dark text-foreground'
-                              : 'bg-background-dark text-muted'
-                          }`}
+                          aria-label={t('showLanguageOnProfile', {
+                            language: getLanguageName(row.language, locale),
+                          })}
+                          className="h-9 rounded-full bg-primary-darker font-semibold text-[13px] text-primary-light"
                         >
-                          {level.label}
+                          {t('showOnProfile')}
                         </button>
-                      ))}
+                      ) : null}
                     </div>
-                  </div>
+                  </Fragment>
                 ))}
                 {targetError ? (
                   <FieldError id="mobile-targets-error">

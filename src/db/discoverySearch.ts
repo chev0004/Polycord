@@ -5,6 +5,7 @@ import {
   languages,
   proficiencyOptions,
 } from '@/constants/languages';
+import { activeTagsSql, activeTargetSql } from './profiles';
 import { profiles, users } from './schema';
 
 const MIN_INDEXED_TOKEN = 3;
@@ -100,7 +101,7 @@ const exactMatch = (query: string, locale: string, isLoggedIn: boolean) => {
   const targets = sql`coalesce((select string_agg(concat_ws(' ',
     coalesce(${languageLabels}::jsonb ->> language, language),
     coalesce(${levelLabels}::jsonb ->> proficiency_level::text, proficiency_level::text)), ' ' order by position)
-    from profile_target_languages where profile_id = ${profiles.id}),
+    from profile_target_languages where profile_id = ${profiles.id} and ${activeTargetSql(sql`position`)}),
     concat_ws(' ', coalesce(${languageLabels}::jsonb ->> ${profiles.targetLanguage}, ${profiles.targetLanguage}),
       coalesce(${levelLabels}::jsonb ->> ${profiles.proficiencyLevel}::text, ${profiles.proficiencyLevel}::text)))`;
   const timezone = sql`case when ${profiles.displayTimezone} then coalesce(${profiles.timezone}, '') else '' end`;
@@ -109,7 +110,7 @@ const exactMatch = (query: string, locale: string, isLoggedIn: boolean) => {
     : sql`case when ${profiles.allowAnonymousCopy} then ${users.discordUsername} else '' end`;
   return sql`strpos(lower(concat_ws(' ', ${users.displayName}, ${username}, ${primary}, '',
     coalesce(${profiles.country}, ''), ${timezone}, coalesce(${timezoneJson}::jsonb ->> (${timezone}), ${timezone}),
-    ${profiles.bio}, array_to_string(${profiles.tags}, ' '), ${targets})), ${query}) > 0`;
+    ${profiles.bio}, array_to_string(${activeTagsSql()}, ' '), ${targets})), ${query}) > 0`;
 };
 
 export const discoverySearch = (
@@ -118,7 +119,11 @@ export const discoverySearch = (
   isLoggedIn: boolean,
 ) => {
   const tokens = [...new Set(query.split(' ').filter(Boolean))];
-  if (tokens.length === 1) return tokenMatches(tokens[0], locale, isLoggedIn);
+  if (tokens.length === 1)
+    return and(
+      tokenMatches(tokens[0], locale, isLoggedIn),
+      exactMatch(query, locale, isLoggedIn),
+    );
   return and(
     ...tokens
       .filter((token) => token.length >= MIN_INDEXED_TOKEN)

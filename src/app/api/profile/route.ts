@@ -27,6 +27,11 @@ const isAllowedCardColor = (id: string, premiumThemes: boolean) =>
     (id === CUSTOM_CARD_THEME_ID ||
       PREMIUM_CARD_THEMES.some((theme) => theme.id === id)));
 
+const keepsStoredOverflow = (next: string[], stored: string[], cap: number) =>
+  next.length <= cap ||
+  (next.length <= stored.length &&
+    next.slice(cap).every((entry) => stored.includes(entry)));
+
 export const POST = scopedRoute(async (request: Request) => {
   const currentUser = await getActiveUser();
 
@@ -58,19 +63,15 @@ export const POST = scopedRoute(async (request: Request) => {
   const tagCap = entitlementLimit('profile.tags', premium);
   const existingLanguages = existing?.targetLanguages ?? [];
   const existingTags = existing?.profile.tags ?? [];
-  const unchangedLanguages =
-    values.targetLanguages.length === existingLanguages.length &&
-    values.targetLanguages.every(
-      ({ language, level }, index) =>
-        language === existingLanguages[index].language &&
-        level === existingLanguages[index].level,
-    );
   const tags = values.tags ?? [];
-  const unchangedTags =
-    tags.length === existingTags.length &&
-    tags.every((tag, index) => tag === existingTags[index]);
 
-  if (values.targetLanguages.length > languageCap && !unchangedLanguages) {
+  if (
+    !keepsStoredOverflow(
+      values.targetLanguages.map(({ language }) => language),
+      existingLanguages.map(({ language }) => language),
+      languageCap,
+    )
+  ) {
     return NextResponse.json(
       {
         error: 'Invalid profile',
@@ -87,7 +88,7 @@ export const POST = scopedRoute(async (request: Request) => {
     );
   }
 
-  if (tags.length > tagCap && !unchangedTags) {
+  if (!keepsStoredOverflow(tags, existingTags, tagCap)) {
     return NextResponse.json(
       {
         error: 'Invalid profile',

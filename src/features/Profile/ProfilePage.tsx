@@ -80,6 +80,7 @@ import {
   type ProfileFormValues,
   profileDraftSchema,
   profileSchema,
+  showHiddenEntry,
 } from './schema';
 import { TagAutocomplete } from './TagAutocomplete';
 import {
@@ -359,6 +360,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const customGradient = watch('customGradient') ?? DEFAULT_CUSTOM_GRADIENT;
   const accentOverride = watch('accentOverride') ?? null;
   const voiceIntroSeconds = watch('voiceIntroSeconds') ?? 0;
+  const activeTargetLanguages = useMemo(
+    () =>
+      targetLanguages.slice(
+        0,
+        entitlementLimit('profile.targetLanguages', premium),
+      ),
+    [targetLanguages, premium],
+  );
+  const activeTags = useMemo(() => tags.slice(0, tagCap), [tags, tagCap]);
   const [pendingVoice, setPendingVoice] = useState<PendingVoiceClip | null>(
     null,
   );
@@ -497,14 +507,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       discordUsername: userUsername,
       avatarUrl: userAvatarUrl,
       primaryLanguage: primaryLanguage || t('previewPrimaryFallback'),
-      targetLanguages: targetLanguages
+      targetLanguages: activeTargetLanguages
         .filter((row) => row.language)
         .map((row) => ({
           language: row.language,
           level: row.level || undefined,
         })),
       about: bio,
-      tags,
+      tags: activeTags,
       country: getLabel(localizedCountryOptions, country),
       timezone: displayTimezone ? timezone : '',
       allowAnonymousCopy,
@@ -541,8 +551,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     previewIsPremiumLook,
     previewTheme,
     t,
-    tags,
-    targetLanguages,
+    activeTags,
+    activeTargetLanguages,
     timezone,
     userAvatarUrl,
     userUsername,
@@ -556,8 +566,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     handle: userUsername,
     avatarUrl: userAvatarUrl,
     primaryLanguage,
-    targetLanguages,
-    tags,
+    targetLanguages: activeTargetLanguages,
+    tags: activeTags,
     availability: displayAvailability ? availability : undefined,
     country,
     timezone: displayTimezone ? timezone : undefined,
@@ -623,7 +633,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <Label htmlFor={tagsInputId}>{t('tagsLabel')}</Label>
             {currentTags.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-background-darker p-2.5">
-                {currentTags.map((tag, index) => (
+                {currentTags.slice(0, tagCap).map((tag, index) => (
                   <Chip
                     key={tag}
                     label={tag}
@@ -631,6 +641,44 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     removeLabel={t('removeTag', { tag })}
                   />
                 ))}
+              </div>
+            )}
+            {currentTags.length > tagCap && (
+              <div className="flex flex-col gap-2 rounded-xl border border-line border-dashed p-2.5">
+                <p className="font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
+                  {t('hiddenOnFreeTitle')}
+                </p>
+                <p className="text-[12px] text-subtle">
+                  {t('hiddenTagsNote', { cap: tagCap })}
+                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  {currentTags.slice(tagCap).map((tag, offset) => (
+                    <span key={tag} className="flex items-center gap-1.5">
+                      <Chip
+                        label={tag}
+                        onRemove={() => handleRemoveTag(tagCap + offset)}
+                        removeLabel={t('removeTag', { tag })}
+                        className="opacity-60"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          field.onChange(
+                            showHiddenEntry(
+                              currentTags,
+                              tagCap + offset,
+                              tagCap,
+                            ),
+                          )
+                        }
+                        aria-label={t('showTagOnProfile', { tag })}
+                        className="font-semibold text-[12px] text-primary-light focus:outline-none focus-visible:text-primary-lighter"
+                      >
+                        {t('showOnProfile')}
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
             <div className="flex gap-2">
@@ -656,7 +704,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <FieldError id={`${tagsInputId}-error`}>{tagsError}</FieldError>
             <p className="text-[12px] text-subtle">
               {t('tagCounterHint', {
-                count: currentTags.length,
+                count: Math.min(currentTags.length, tagCap),
                 cap: tagCap,
               })}
             </p>
