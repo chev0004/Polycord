@@ -1261,6 +1261,7 @@
     "referenceLabel": "Reference",
     "appealTitle": "Appeal This Decision",
     "appealBody": "If you think this was a mistake, message the moderators in the Polycord Discord server and include your reference number.",
+    "appealUnavailable": "The appeal link is unavailable right now. Keep your reference number for when the link is available.",
     "openDiscord": "Open Discord Server"
   },
   "Recovery": {

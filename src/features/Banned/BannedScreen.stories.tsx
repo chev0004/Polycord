@@ -56,3 +56,14 @@ export const Japanese: Story = {
     await expect(canvas.getByText('2026年10月4日')).toBeInTheDocument();
   },
 };
+
+export const MissingInvite: Story = {
+  args: { inviteUrl: '' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.queryByRole('link')).toBeNull();
+    await expect(
+      canvas.getByText(/keep your reference number/i),
+    ).toBeInTheDocument();
+  },
+};

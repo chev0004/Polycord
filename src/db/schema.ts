@@ -88,7 +88,6 @@ export const users = pgTable(
     discordUsername: varchar('discord_username', { length: 64 }).notNull(),
     displayName: text('display_name').notNull(),
     avatarUrl: text('avatar_url'),
-    email: text('email'),
     suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
     bannedAt: timestamp('banned_at', { withTimezone: true }),
     isSynthetic: boolean('is_synthetic').default(false).notNull(),
