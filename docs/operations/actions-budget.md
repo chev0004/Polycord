@@ -99,4 +99,7 @@ After visibility changes, confirm with real runs:
 
 1. A normal PR runs the Tests workflow.
 2. Ticket sync updates Notion from the PR.
-3. Record the first month of billed usage from the billing usage report here.
+3. After automated staging is disabled, run the owner staging deploy from the exact `develop` tip. Record the Netlify deploy ID, package digest, and `staging/published` status for that SHA.
+4. Record the first month of billed usage from the billing usage report here.
+
+If the monthly allowance stops Actions, rerun validation after the reset to restore CI evidence. Once automated staging is disabled, run the owner deploy separately to publish staging and record `staging/published`.
