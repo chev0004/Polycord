@@ -8,14 +8,8 @@ process.env.DATABASE_URL = url.href;
 process.env.POLYCORD_PREMIUM_USER_IDS = '';
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
-const {
-  users,
-  profiles,
-  profileTargetLanguages,
-  savedProfiles,
-  userBlocks,
-  subscriptions,
-} = await import('../../src/db/schema');
+const { users, profiles, profileTargetLanguages, savedProfiles, userBlocks } =
+  await import('../../src/db/schema');
 const { countDiscovery, listDiscoveryPage } = await import(
   '../../src/db/discovery'
 );
@@ -220,17 +214,15 @@ try {
     .update(profiles)
     .set({ boostedUntil: new Date(Date.now() + 3600000) })
     .where(eq(profiles.id, items[29].id));
-  await db.insert(subscriptions).values({
-    userId: owners[29].id,
-    stripeCustomerId: prefix,
-    status: 'active',
-    currentPeriodEnd: new Date(Date.now() + 3600000),
-  });
+  await db
+    .update(users)
+    .set({ premiumGrantedUntil: new Date(Date.now() + 3600000) })
+    .where(eq(users.id, owners[29].id));
   assert.equal((await load()).profiles[0].id, items[29].id);
   await db
-    .update(subscriptions)
-    .set({ status: 'canceled' })
-    .where(eq(subscriptions.userId, owners[29].id));
+    .update(users)
+    .set({ premiumGrantedUntil: new Date(Date.now() - 3600000) })
+    .where(eq(users.id, owners[29].id));
   assert.notEqual((await load()).profiles[0].id, items[29].id);
   for (const [index, pattern] of [
     {

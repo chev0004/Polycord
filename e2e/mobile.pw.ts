@@ -385,7 +385,7 @@ test('settings drill-in pages reach and save every setting on phones', async ({
     await expect(page).toHaveURL(/#supporter$/);
     await expect(page.getByRole('table')).toBeVisible();
     await expect(
-      main.getByRole('button', { name: 'Upgrade', exact: true }),
+      main.getByText("Supporter isn't available to buy right now."),
     ).toBeVisible();
     await main.getByRole('button', { name: 'Settings', exact: true }).click();
     await expect(page).toHaveURL(/#privacy$/);

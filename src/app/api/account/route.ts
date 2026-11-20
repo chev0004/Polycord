@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { deleteAccountByUserId, getSubscriptionByUserId } from '@/db';
+import { deleteAccountByUserId } from '@/db';
 import { scopedRoute } from '@/db/client';
 import { clearSessionCookie, getCurrentUser } from '@/lib/auth';
-import { cancelStripeSubscription } from '@/lib/stripe';
 
 export const DELETE = scopedRoute(async (request: Request) => {
   const currentUser = await getCurrentUser();
@@ -29,23 +28,6 @@ export const DELETE = scopedRoute(async (request: Request) => {
       { error: 'Confirmation required' },
       { status: 400 },
     );
-  }
-
-  const subscription = await getSubscriptionByUserId(currentUser.accountId);
-  if (
-    subscription?.stripeSubscriptionId &&
-    !['canceled', 'incomplete_expired'].includes(subscription.status)
-  ) {
-    try {
-      await cancelStripeSubscription(subscription.stripeSubscriptionId);
-    } catch {
-      return NextResponse.json(
-        {
-          error: 'Billing cancellation failed. Please retry account deletion.',
-        },
-        { status: 502 },
-      );
-    }
   }
 
   const deleted = await deleteAccountByUserId(currentUser.accountId);

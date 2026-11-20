@@ -59,7 +59,7 @@ test('a saved voice intro plays, downloads and stops when removed', async ({
     ).toBe(200);
     const [user] =
       await sql`select id from users where discord_user_id = ${id}`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${user.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${user.id}`;
     const audio = readFileSync('tests/fixtures/voice-short.webm').toString(
       'base64',
     );
@@ -145,12 +145,12 @@ test('voice intro limits follow the owner plan and keep longer clips after Suppo
     expect(await saved.json()).toEqual({ durationSeconds: 8 });
     expect(await publicClip()).toBe(200);
 
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owner.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${owner.id}`;
     expect((await upload('voice-long')).status()).toBe(400);
     expect((await upload('voice-20s')).status()).toBe(200);
     expect(await publicClip()).toBe(200);
 
-    await sql`update subscriptions set current_period_end = now() - interval '1 day' where user_id = ${owner.id}`;
+    await sql`update users set premium_granted_until = now() - interval '1 day' where id = ${owner.id}`;
     expect(await publicClip()).toBe(404);
     expect(await ownClip()).toBe(200);
     expect(
@@ -166,7 +166,7 @@ test('voice intro limits follow the owner plan and keep longer clips after Suppo
         .first(),
     ).toBeVisible();
 
-    await sql`update subscriptions set current_period_end = now() + interval '1 day' where user_id = ${owner.id}`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${owner.id}`;
     expect(await publicClip()).toBe(200);
   } finally {
     await sql`delete from users where discord_user_id = ${id}`;

@@ -34,7 +34,7 @@ import {
   publiclyVisible,
   type ViewerAvailabilityContext,
 } from './profiles';
-import { profiles, savedProfiles, subscriptions, users } from './schema';
+import { profiles, savedProfiles, users } from './schema';
 
 const TOP_TAGS = 32;
 const POPULAR_TAG_SUGGESTIONS = 5;
@@ -60,8 +60,6 @@ const playableVoiceIntro = () => {
       ),
       ids.length ? inArray(users.discordUserId, ids) : undefined,
       sql`${users.premiumGrantedUntil} > now()`,
-      sql`exists (select 1 from subscriptions where user_id = ${profiles.userId}
-        and status in ('active', 'trialing') and current_period_end > now())`,
     ),
   );
 };
@@ -279,7 +277,6 @@ export const listDiscoveryPage = async (
   const premium = or(
     premiumIds.length ? inArray(users.discordUserId, premiumIds) : undefined,
     sql`${users.premiumGrantedUntil} > now()`,
-    sql`(${subscriptions.status} in ('active', 'trialing') and ${subscriptions.currentPeriodEnd} > now())`,
   );
   const bumped = sql`${profiles.lastBumpedAt} desc nulls last, ${users.displayName} asc, ${profiles.id} asc`;
   const name = sql`${users.displayName} asc, ${profiles.id} asc`;
@@ -302,10 +299,9 @@ export const listDiscoveryPage = async (
     offset: number,
   ) =>
     db
-      .select({ profile: profiles, user: users, subscription: subscriptions })
+      .select({ profile: profiles, user: users })
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
-      .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
       .where(condition)
       .orderBy(ordering)
       .limit(limit)
@@ -321,7 +317,6 @@ export const listDiscoveryPage = async (
       .select({ id: profiles.id })
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
-      .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
       .where(and(where, condition))
       .orderBy(ordering)
       .limit(limit)
@@ -362,7 +357,6 @@ export const listDiscoveryPage = async (
       .select({ id: profiles.id })
       .from(profiles)
       .innerJoin(users, eq(profiles.userId, users.id))
-      .leftJoin(subscriptions, eq(profiles.userId, subscriptions.userId))
       .where(and(where, condition))
       .orderBy(ordering)
       .limit(limit)

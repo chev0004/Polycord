@@ -8,8 +8,9 @@ process.env.DATABASE_URL = url.href;
 process.env.POLYCORD_PREMIUM_USER_IDS = '';
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
-const { users, profiles, subscriptions, userBlocks, voiceIntros } =
-  await import('../../src/db/schema');
+const { users, profiles, userBlocks, voiceIntros } = await import(
+  '../../src/db/schema'
+);
 const { countDiscovery, listDiscoveryPage } = await import(
   '../../src/db/discovery'
 );
@@ -24,7 +25,7 @@ const future = new Date(Date.now() + 86400000);
 const past = new Date(Date.now() - 86400000);
 const names = [
   'granted',
-  'subscribed',
+  'longGrant',
   'removed',
   'noDuration',
   'free',
@@ -40,7 +41,9 @@ const owners = await db
       discordUserId: `${prefix}-${name}`,
       discordUsername: `${prefix}-${name}`,
       displayName: `Voice ${prefix} ${name}`,
-      premiumGrantedUntil: ['granted', 'boostedPlain'].includes(name)
+      premiumGrantedUntil: ['granted', 'longGrant', 'boostedPlain'].includes(
+        name,
+      )
         ? future
         : name === 'expired'
           ? past
@@ -72,7 +75,7 @@ try {
       tags: [prefix],
       voiceIntroSeconds: {
         granted: 15,
-        subscribed: 20,
+        longGrant: 20,
         removed: 5,
         free: 8,
         freeLong: 9,
@@ -81,14 +84,8 @@ try {
       boostedUntil: name === 'boostedPlain' ? future : null,
     })),
   );
-  await db.insert(subscriptions).values({
-    userId: owner.subscribed.id,
-    stripeCustomerId: `cus_${prefix}`,
-    status: 'active',
-    currentPeriodEnd: future,
-  });
   await db.insert(voiceIntros).values(
-    ['granted', 'subscribed', 'noDuration', 'free', 'freeLong', 'expired'].map(
+    ['granted', 'longGrant', 'noDuration', 'free', 'freeLong', 'expired'].map(
       (name) => ({
         userId: owner[name].id,
         mimeType: 'audio/webm',
@@ -112,14 +109,14 @@ try {
     Object.fromEntries(
       names.map((name) => [
         `Voice ${prefix} ${name}`,
-        { granted: 15, subscribed: 20, removed: 5, free: 8 }[name],
+        { granted: 15, longGrant: 20, removed: 5, free: 8 }[name],
       ]),
     ),
   );
 
   const voice = await load([['voice', 'yes']]);
   assert.equal(voice.total, 3);
-  assert.deepEqual(ids(voice).sort(), named('free', 'granted', 'subscribed'));
+  assert.deepEqual(ids(voice).sort(), named('free', 'granted', 'longGrant'));
   assert.equal(await countDiscovery(query([['voice', 'yes']]), 'en', {}), 3);
   assert.deepEqual(
     (await listPlayableVoiceIntros(everyone.profiles.map(({ id }) => id)))
@@ -162,7 +159,7 @@ try {
   });
   assert.deepEqual(
     ids(await load([['voice', 'yes']], owner.blocker.id)).sort(),
-    named('free', 'subscribed'),
+    named('free', 'longGrant'),
   );
 
   const state = query([['voice', 'yes']]);

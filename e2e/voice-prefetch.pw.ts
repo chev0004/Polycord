@@ -48,7 +48,7 @@ const setup = async () => {
     const [profile] =
       await sql`insert into profiles (last_bumped_at, user_id, is_public, allow_anonymous_copy, primary_language, target_language, proficiency_level, bio, voice_intro_seconds) values (now(), ${account.id}, true, false, 'en', 'ja', 'beginner', ${`${prefix} bio`}, ${index === 0 ? null : 1}) returning id`;
     if (index > 0) {
-      await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${account.id}, ${`test-${randomUUID()}`}, 'active', now() + interval '1 day')`;
+      await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${account.id}`;
       await sql`insert into voice_intros (user_id, mime_type, duration_seconds, size_bytes, data) values (${account.id}, 'audio/webm', 1, 3, ${clip})`;
     }
     members.push({ id: account.id, profileId: profile.id, identity });
@@ -211,7 +211,7 @@ test('clips follow replacement, deletion, Premium, blocks and bans immediately',
 
     await sql`update profiles set voice_intro_seconds = 15 where user_id = ${second.id}`;
     expect(second.profileId in (await batch())).toBe(true);
-    await sql`update subscriptions set status = 'canceled' where user_id = ${second.id}`;
+    await sql`update users set premium_granted_until = null where id = ${second.id}`;
     expect(second.profileId in (await batch())).toBe(false);
     expect(
       (await context.request.get(`/api/voice/${second.profileId}`)).status(),

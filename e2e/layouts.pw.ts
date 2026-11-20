@@ -17,7 +17,7 @@ const createUser = async (name: string, premium = false) => {
     await db`insert into users (discord_user_id, discord_username, display_name) values (${discordId}, ${discordId}, ${name}) returning id`;
   await db`insert into user_settings (user_id) values (${account.id})`;
   if (premium)
-    await db`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${account.id}, ${`cus_${discordId}`}, 'active', now() + interval '30 days')`;
+    await db`update users set premium_granted_until = now() + interval '30 days' where id = ${account.id}`;
   await db.end();
   return { discordId, accountId: account.id as string, name };
 };
