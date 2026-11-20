@@ -56,7 +56,7 @@ skipped job.
 | --- | --- |
 | Docs only (`*.md`, `docs/`, `LICENSE`) | none |
 | Story files (`src/**/*.stories.tsx`) | static, Storybook |
-| Locale JSON with the same keys and placeholders | static, Storybook, plus e2e or unit tests when they assert the removed text |
+| Locale copy with unchanged parsed message structure and a known coverage mapping | static and the jobs mapped to the changed keys |
 | `scripts/tickets.ts`, Husky hooks, `commitlint.config.mjs` | static |
 | Anything else, including a mix with anything else, or an unavailable diff | everything |
 

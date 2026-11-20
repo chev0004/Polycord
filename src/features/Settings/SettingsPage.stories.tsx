@@ -538,6 +538,9 @@ export const GatedProfileViewAlert: Story = {
     await waitFor(() =>
       expect(canvas.getByText('Profile View Alert')).toBeInTheDocument(),
     );
+    expect(
+      canvas.getByText('Get profile view alerts with Supporter.'),
+    ).toBeInTheDocument();
     expect(canvas.getAllByText('Supporter')).toHaveLength(2);
 
     fireEvent.click(canvas.getByRole('switch', { name: 'Profile View Alert' }));
