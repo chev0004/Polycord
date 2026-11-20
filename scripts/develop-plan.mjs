@@ -1,9 +1,14 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { appendFile } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
-import { ciPolicy, evidence, resultContext, treeOf } from './ci-evidence.mjs';
-import { fullPlan, jobNames, planChanges } from './ci-plan.mjs';
+import {
+  ciPolicy,
+  evidence,
+  jobNames,
+  resultContext,
+  treeOf,
+} from './ci-evidence.mjs';
+import { fullPlan, planChanges } from './ci-plan.mjs';
 import { deployableChanges, publishedContext } from './deploy-inputs.mjs';
 
 const activeStates = [
@@ -94,7 +99,6 @@ export async function planDevelop(
   run = spawnSync,
   request = fetch,
   wait = setTimeout,
-  read = (file) => readFileSync(file, 'utf8'),
 ) {
   const sha = env.GITHUB_SHA;
   const develop = env.GITHUB_REF === 'refs/heads/develop';
@@ -121,7 +125,7 @@ export async function planDevelop(
         ...fullPlan('The full-ci label requests the full suite.'),
         deploy: false,
       };
-    const scoped = planChanges('HEAD^1', 'HEAD', run, read);
+    const scoped = planChanges('HEAD^1', 'HEAD', run);
     const skipped = jobNames.filter((job) => !scoped.jobs[job]);
     if (
       env.SCOPED_PLANS === 'true' ||

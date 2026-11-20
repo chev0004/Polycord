@@ -31,9 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 50 }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - uses: ./.github/actions/setup
       - id: plan
         run: node scripts/develop-plan.mjs
         env:
@@ -197,7 +195,7 @@ jobs:
   result:
     name: CI result
     needs: [gate, static, unit, package, e2e, storybook]
-    if: ${{ !cancelled() && !contains(needs.*.result, 'cancelled') }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

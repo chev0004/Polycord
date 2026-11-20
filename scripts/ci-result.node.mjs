@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, test } from 'node:test';
-import { ciPolicy, evidence, treeOf } from './ci-evidence.mjs';
+import { ciPolicy, evidence, jobNames, treeOf } from './ci-evidence.mjs';
 import { reportResult } from './ci-result.mjs';
 
 const originalCwd = process.cwd();
@@ -13,18 +13,14 @@ let accept;
 
 const git = (...args) => spawnSync('git', args, { encoding: 'utf8' });
 
-const needs = (
-  validate,
-  results = {},
-  planned = ['unit', 'e2e', 'storybook'],
-) =>
+const needs = (validate, results = {}, planned = jobNames) =>
   JSON.stringify({
     gate: {
       result: 'success',
       outputs: {
         validate: String(validate),
         ...Object.fromEntries(
-          ['unit', 'e2e', 'storybook'].map((job) => [
+          jobNames.map((job) => [
             job,
             String(validate && planned.includes(job)),
           ]),
@@ -32,13 +28,16 @@ const needs = (
       },
     },
     ...Object.fromEntries(
-      ['unit', 'e2e', 'storybook'].map((job) => [
+      jobNames.map((job) => [
         job,
         { result: validate && planned.includes(job) ? 'success' : 'skipped' },
       ]),
     ),
     ...Object.fromEntries(
-      Object.entries(results).map(([name, result]) => [name, { result }]),
+      Object.entries(results).map(([name, result]) => [
+        name,
+        result === undefined ? undefined : { result },
+      ]),
     ),
   });
 
@@ -94,9 +93,13 @@ test('records the checked-out tree and CI policy for a validated pull request', 
 });
 
 test('fails when a planned job did not succeed', async () => {
-  for (const state of ['failure', 'skipped', 'cancelled']) {
+  for (const state of ['failure', 'skipped', 'cancelled', 'missing']) {
     const result = await reportResult(
-      env({ NEEDS: needs(true, { storybook: state }) }),
+      env({
+        NEEDS: needs(true, {
+          storybook: state === 'missing' ? undefined : state,
+        }),
+      }),
       spawnSync,
       request,
     );
