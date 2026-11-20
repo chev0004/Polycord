@@ -4,17 +4,33 @@ import { appendFile } from 'node:fs/promises';
 import { checkNetlifyPackage } from './check-netlify-package.mjs';
 import { deployableChanges } from './deploy-inputs.mjs';
 
+const repository = 'chev0004/Polycord';
+
+const fullValidation = [
+  ['bunx', 'drizzle-kit', 'migrate'],
+  ['bun', 'run', 'check:all'],
+  [process.execPath, '--test', 'scripts/*.node.mjs'],
+  ['bun', 'test'],
+  ['bun', 'run', 'test:e2e'],
+  ['bun', 'run', 'build-storybook'],
+  ['bun', 'run', 'test:storybook'],
+];
+
 export async function deployNetlify(target, run = spawnSync, request = fetch) {
   const { name, siteId, domain, branch, events } = target;
-  assert.equal(process.env.GITHUB_REPOSITORY, 'chev0004/Polycord');
-  assert.equal(process.env.GITHUB_REF, `refs/heads/${branch}`);
-  assert.ok(events.includes(process.env.GITHUB_EVENT_NAME));
+  const actions = process.env.GITHUB_ACTIONS === 'true';
+  if (actions) {
+    assert.equal(process.env.GITHUB_REPOSITORY, repository);
+    assert.equal(process.env.GITHUB_REF, `refs/heads/${branch}`);
+    assert.ok(events.includes(process.env.GITHUB_EVENT_NAME));
+  }
   assert.ok(siteId, 'Netlify site ID is required');
   assert.ok(domain, 'Site domain is required');
   assert.ok(process.env.NETLIFY_AUTH_TOKEN, 'Netlify credential is required');
   assert.ok(process.env.DATABASE_URL, `${name} database URL is required`);
   assert.ok(process.env.GITHUB_TOKEN, 'GitHub token is required');
   assert.ok(process.version.startsWith('v22.'), 'Node 22 is required');
+  assert.equal(process.platform, 'linux', 'Package on Linux');
 
   const execute = (command, args, env = process.env, inherit = false) => {
     const result = run(command, args, {
@@ -41,45 +57,62 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
     return response.json();
   };
   const github = (path, init = {}) =>
-    request(
-      `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/${path}`,
-      {
-        ...init,
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-          Accept: 'application/vnd.github+json',
-        },
+    request(`https://api.github.com/repos/${repository}/${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
       },
-    );
+    });
+  const sha = execute('git', ['rev-parse', 'HEAD']).trim();
+  const tip = () =>
+    execute('git', ['ls-remote', 'origin', `refs/heads/${branch}`]).split(
+      /\s/,
+    )[0];
   const current = () => {
-    const tip = execute('git', [
-      'ls-remote',
-      'origin',
-      `refs/heads/${branch}`,
-    ]).split(/\s/)[0];
-    if (tip === process.env.GITHUB_SHA) return true;
-    execute('git', ['fetch', '--depth=1', 'origin', tip]);
-    const changes = deployableChanges(process.env.GITHUB_SHA, tip, run);
+    const latest = tip();
+    if (latest === sha) return true;
+    execute('git', ['fetch', '--depth=1', 'origin', latest]);
+    const changes = deployableChanges(sha, latest, run);
     assert.ok(changes, `Cannot compare with the ${branch} tip`);
     return changes.length === 0;
   };
-  assert.equal(
-    execute('git', ['rev-parse', 'HEAD']).trim(),
-    process.env.GITHUB_SHA,
-  );
-  if (!current())
-    return console.log(`Skip ${name}: ${branch} has newer deployable changes.`);
-  if (target.requireCi) {
+  const validate = async () => {
+    if (actions) return 'Tests workflow';
     const response = await github(
-      `commits/${process.env.GITHUB_SHA}/check-runs?check_name=CI%20result`,
+      `commits/${sha}/check-runs?check_name=CI%20result`,
     );
     assert.ok(response.ok, `CI lookup failed (${response.status})`);
     const { check_runs } = await response.json();
+    if (check_runs.some(({ conclusion }) => conclusion === 'success'))
+      return 'CI result';
+    const database = process.env.TEST_DATABASE_URL;
     assert.ok(
-      check_runs.some(({ conclusion }) => conclusion === 'success'),
-      'The candidate has no passing CI result',
+      database && database !== process.env.DATABASE_URL,
+      'No passing CI result: set TEST_DATABASE_URL to a disposable database',
     );
+    const env = {
+      ...process.env,
+      DATABASE_URL: database,
+      NETLIFY_AUTH_TOKEN: undefined,
+      GITHUB_TOKEN: undefined,
+    };
+    for (const [command, ...args] of fullValidation)
+      execute(command, args, env, true);
+    return 'full local suite';
+  };
+  if (actions) assert.equal(sha, process.env.GITHUB_SHA);
+  else {
+    assert.equal(
+      execute('git', ['status', '--porcelain']),
+      '',
+      'Deploy from a clean checkout',
+    );
+    assert.equal(tip(), sha, `Check out the ${branch} tip`);
   }
+  if (!current())
+    return console.log(`Skip ${name}: ${branch} has newer deployable changes.`);
+  const validation = await validate();
 
   const site = await api(`sites/${siteId}`);
   assert.equal(site.id, siteId);
@@ -104,7 +137,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
     ]),
   );
   assert.ok(values.AUTH_SECRET, `${name} build variables are required`);
-  if (process.env.GITHUB_ACTIONS === 'true') {
+  if (actions) {
     for (const value of Object.values(values)) {
       if (value)
         console.log(
@@ -120,7 +153,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
     NETLIFY_SITE_ID: siteId,
     SITE_ID: siteId,
     BRANCH: branch,
-    COMMIT_REF: process.env.GITHUB_SHA,
+    COMMIT_REF: sha,
   };
   cli(['build', '--offline', '--context', 'production'], env, true);
   const digest = await checkNetlifyPackage(
@@ -159,7 +192,8 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
     assert.equal((await api(`sites/${siteId}`)).published_deploy.id, deploy.id);
     const summary = [
       `${name} deployed: ${deploy.id}`,
-      `Source: ${process.env.GITHUB_SHA}`,
+      `Source: ${sha}`,
+      `Validation: ${validation}`,
       `Server SHA-256: ${digest}`,
       'Netlify build job: none',
       ...checks,
@@ -183,7 +217,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
     throw error;
   }
   if (!target.statusContext) return;
-  const recorded = await github(`statuses/${process.env.GITHUB_SHA}`, {
+  const recorded = await github(`statuses/${sha}`, {
     method: 'POST',
     body: JSON.stringify({
       state: 'success',

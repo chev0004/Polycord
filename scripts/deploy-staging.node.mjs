@@ -19,6 +19,8 @@ let buildId;
 let publishedDigest;
 let diff;
 let recordOk;
+let ciRuns;
+let status;
 
 beforeEach(async () => {
   process.env = {
@@ -27,7 +29,7 @@ beforeEach(async () => {
     GITHUB_REF: 'refs/heads/develop',
     GITHUB_EVENT_NAME: 'push',
     GITHUB_SHA: sha,
-    GITHUB_ACTIONS: 'false',
+    GITHUB_ACTIONS: 'true',
     GITHUB_STEP_SUMMARY: '',
     NETLIFY_AUTH_TOKEN: 'synthetic-token',
     DATABASE_URL: 'postgresql://synthetic/actions',
@@ -71,6 +73,8 @@ beforeEach(async () => {
   publishedDigest = digest;
   diff = 'src/app/page.tsx\n';
   recordOk = true;
+  ciRuns = [{ conclusion: 'success' }];
+  status = '';
 });
 
 afterEach(() => {
@@ -84,6 +88,7 @@ function run(command, args, options) {
   if (args[0] === 'rev-parse') stdout = sha;
   if (args[0] === 'ls-remote') stdout = `${head}\trefs/heads/develop\n`;
   if (args[0] === 'diff') stdout = diff;
+  if (args[0] === 'status') stdout = status;
   if (args[1] === 'env:list')
     stdout = JSON.stringify({
       DATABASE_URL: '****************uire',
@@ -99,6 +104,10 @@ function run(command, args, options) {
 }
 
 async function request(url, options) {
+  if (url.includes('/check-runs')) {
+    calls.push({ url });
+    return { ok: true, json: async () => ({ check_runs: ciRuns }) };
+  }
   if (url.startsWith('https://api.github.com/')) {
     calls.push({ url, method: options.method, body: JSON.parse(options.body) });
     return { ok: recordOk, status: recordOk ? 201 : 500 };
@@ -247,4 +256,56 @@ test('keeps a verified publish when recording its source fails', async () => {
   recordOk = false;
   await assert.rejects(deployStaging(run, request), /Recording the published/);
   assert.equal(site.published_deploy.id, 'uploaded');
+});
+
+const owner = () => {
+  process.env.GITHUB_ACTIONS = 'false';
+  for (const key of ['GITHUB_REF', 'GITHUB_EVENT_NAME', 'GITHUB_SHA'])
+    delete process.env[key];
+};
+const ran = (script) =>
+  calls.find(({ args }) => args?.[0] === 'run' && args[1] === script);
+
+test('an owner deploys the clean develop tip on CI evidence', async () => {
+  owner();
+  await deployStaging(run, request);
+  assert.equal(site.published_deploy.id, 'uploaded');
+  assert.equal(ran('test:e2e'), undefined);
+  assert.equal(
+    calls.find(({ body }) => body).body.context,
+    'staging/published',
+  );
+});
+
+test('an owner without CI evidence runs the full suite on a disposable database first', async () => {
+  owner();
+  ciRuns = [];
+  process.env.TEST_DATABASE_URL = 'postgresql://synthetic/test';
+  await deployStaging(run, request);
+  const e2e = ran('test:e2e');
+  assert.equal(e2e.env.DATABASE_URL, 'postgresql://synthetic/test');
+  assert.equal(e2e.env.NETLIFY_AUTH_TOKEN, undefined);
+  assert.equal(e2e.env.GITHUB_TOKEN, undefined);
+  assert.ok(
+    calls.indexOf(ran('test:storybook')) <
+      calls.findIndex(({ args }) => args?.[1] === 'env:list'),
+  );
+  assert.equal(site.published_deploy.id, 'uploaded');
+});
+
+test('refuses an owner deploy without evidence, from a dirty checkout or off the tip', async () => {
+  owner();
+  ciRuns = [{ conclusion: 'failure' }];
+  await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
+  process.env.TEST_DATABASE_URL = process.env.DATABASE_URL;
+  await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
+  status = ' M src/app/page.tsx\n';
+  await assert.rejects(deployStaging(run, request), /clean checkout/);
+  status = '';
+  head = 'b'.repeat(40);
+  await assert.rejects(deployStaging(run, request), /develop tip/);
+  assert.equal(
+    calls.some(({ path }) => path),
+    false,
+  );
 });
