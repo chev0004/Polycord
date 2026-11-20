@@ -1,25 +1,23 @@
 # Production Monitoring and Recovery
 
-How production outages are detected, who is told, and how the service is recovered. Every item needs evidence from the real production setup before launch. The evidence table at the end stays Pending until someone records it.
+How production problems are found, and how the service is recovered. Launch relies on manual checks after every deploy plus verified backup, restore and rollback. Automated uptime monitoring follows after launch. Every item needs evidence from the real production setup, and the evidence table at the end stays Pending until someone records it.
 
-The owner chooses the monitoring and backup services and assigns responders. Nothing here is purchased, and no alert is sent without the owner's approval.
+Nothing here is purchased. No monitoring account is created and no alert is sent without the owner's approval.
 
-## Checks
+## Post-deploy checks
 
-Monitor two URLs on the production origin from outside Netlify:
+Run these by hand after every production deploy and every rollback, and paste the results into the release record with the deploy summary:
 
-| Check | URL | Healthy response | Why |
-| --- | --- | --- | --- |
-| Application and database | `https://polycord.net/api/health` | `200` with `{"status":"ok"}` | Runs a database round trip. Returns `503 {"status":"unavailable"}` when the database is unreachable. Stays reachable for banned IPs. |
-| Public page | `https://polycord.net/en/legal/terms` | `200` and the text `Terms of Service` | Proves the CDN, routing and page rendering, which the health route skips. |
+| Check | Command | Healthy result |
+| --- | --- | --- |
+| Build | `curl -s https://polycord.net/api/build` | `buildId` is the deployed commit |
+| Application and database | `curl -si https://polycord.net/api/health` | `200` with `{"status":"ok"}`. `503 {"status":"unavailable"}` means the database is unreachable |
+| Homepage | `curl -sIL https://polycord.net/` | Redirects to `/en`, then `200` |
+| Public page | `curl -s https://polycord.net/en/legal/terms` | `200` and the text `Terms of Service` |
+| Indexing | `curl -sI https://polycord.net/en` and the [indexing table](production.md#indexing) | No `X-Robots-Tag` on the production host |
+| Sign-in | Sign in with Discord on the production domain in a private window | Returns to the original page signed in |
 
-Check at least every five minutes and alert after two consecutive failures, so one slow cold start does not page anyone. Alert payloads must contain only the URL, status and time. Never include cookies, request bodies or user data.
-
-## Test alert
-
-1. With the owner's approval for a test alert, point a temporary check at a URL that is guaranteed to fail, such as `https://polycord.net/api/health-test-alert`.
-2. Confirm that the alert reaches the assigned responder through the chosen channel, and record the time it took.
-3. Delete the temporary check, and record the result in the evidence table.
+If any check fails, roll back first and investigate after. See [Application rollback](#application-rollback).
 
 ## Logs
 
@@ -27,7 +25,13 @@ Server errors are in Netlify, under the production site's Logs, Functions, `___n
 
 ## Backups
 
-Record the database provider's automatic backup schedule and retention for the production database, and whether point-in-time recovery is enabled. Before every production migration, also take a logical [backup](readiness.md#backup).
+Supabase Free takes no automatic backups and has no point-in-time recovery, so every backup is a manual logical [backup](readiness.md#backup) with `pg_dump`:
+
+- before every production migration;
+- weekly while the project holds member data, kept off the database host;
+- before any manual data fix.
+
+Each dump contains personal data. Store it encrypted, keep only as many as recovery needs, and delete older ones.
 
 ## Restore drill
 
@@ -36,7 +40,7 @@ Restore into an isolated target, never over the live database:
 1. Snapshot the expected contents right before taking the backup:
    `bun scripts/verify-restore.mjs snapshot "$PRODUCTION_DIRECT_URL" > snapshot.json`
 2. Take the backup with `pg_dump` as in [Backup](readiness.md#backup).
-3. Create a new empty database in an isolated project or on a local server, and [restore](readiness.md#restore) into it.
+3. Create a new empty database on a local server, never a third Supabase project, which the free plan does not allow alongside staging and production, and [restore](readiness.md#restore) into it.
 4. Verify integrity: `bun scripts/verify-restore.mjs verify "$RESTORE_URL" snapshot.json` compares every public table's row count and the full migration history, and exits non-zero on any difference. With live traffic between steps 1 and 2, small count differences on write-heavy tables are expected; the snapshot should then be taken at a quiet time.
 5. Start a production build against the restored database locally and confirm `/api/health` returns `200`.
 6. Delete the restored database and the dump, which both contain personal data.
@@ -49,25 +53,33 @@ Rehearse before launch, when no public users depend on the site, or on staging:
 
 1. Note the published deploy ID in Netlify.
 2. In the deploys list, publish the previous deploy, which must be compatible with the current schema.
-3. Confirm Netlify reports the previous deploy as published, and both checks pass.
-4. Publish the original deploy again, and confirm both checks once more.
+3. Confirm Netlify reports the previous deploy as published, and the post-deploy checks pass.
+4. Publish the original deploy again, and confirm the checks once more.
 
-Netlify publishes deploys atomically. After a rollback, the next run of the Production workflow publishes from `main` again. See [production deployment](production.md#rollback).
+Netlify publishes deploys atomically. After a rollback, the next owner deploy publishes from `main` again. See [production deployment](production.md#rollback).
 
 ## Responders
 
-| Role | Responsibility | Assigned |
-| --- | --- | --- |
-| Primary responder | Receives alerts, follows [Incidents](readiness.md#incidents) | Owner to assign |
-| Backup responder | Takes over when the primary does not acknowledge within the agreed time | Owner to assign |
+Polycord has a single maintainer. The owner is the only responder for outages and receives every alert. See [Incidents](readiness.md#incidents).
+
+## Uptime monitoring after launch
+
+Once production is live, add an external uptime monitor, if the owner approves the account:
+
+- Service: Better Stack Uptime, free plan (10 monitors, email alerts).
+- Monitors: the homepage, `https://polycord.net/` with redirects followed, and `https://polycord.net/api/health`, which returns `503` when the database is unreachable and stays reachable for banned IPs.
+- Alerts: email to the owner's existing address, after two consecutive failures so one slow cold start does not alert. Alert payloads contain only the URL, status and time.
+- Test alert, with approval: point a temporary monitor at a URL that is guaranteed to fail, such as `https://polycord.net/api/health-test-alert`, record when the email arrives, then delete the monitor.
+
+Monitor requests count toward Netlify usage. On a credit-based Netlify team, check how much a 3-minute interval adds before choosing it.
 
 ## Evidence
 
 | Item | Evidence needed | Status |
 | --- | --- | --- |
-| Health and public page checks | Monitor name, URLs, interval and a screenshot of both passing | Pending: owner selects the service |
-| Test alert | Time sent, time received, recipient role | Pending: needs owner approval and a responder |
+| Post-deploy checks | Output of every check for the launch candidate | Pending: production site |
 | Log access | Who can open production function logs, and the retention period | Pending: production site |
-| Backup schedule | Provider schedule, retention and point-in-time recovery setting | Pending: production database |
+| Backup | Time of the first production backup and where it is stored | Pending: production database |
 | Restore drill | Backup time, restore target, `verify-restore` output, health check result | Pending: production backup |
 | Application rollback | Deploy IDs before and after, check results, time taken | Pending: production site |
+| Uptime monitor and test alert | Monitor URLs, interval, time the test email arrived | After launch, with the owner's approval |
