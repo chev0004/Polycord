@@ -101,14 +101,21 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
     const { check_runs } = await response.json();
     if (check_runs.some(({ conclusion }) => conclusion === 'success'))
       return 'CI result';
-    const database = process.env.TEST_DATABASE_URL;
+    const database = URL.parse(process.env.TEST_DATABASE_URL ?? '');
+    const deployDatabase = new URL(process.env.DATABASE_URL);
     assert.ok(
-      database && database !== process.env.DATABASE_URL,
-      'No passing CI result: set TEST_DATABASE_URL to a disposable database',
+      database &&
+        ['postgresql:', 'postgres:'].includes(database.protocol) &&
+        ['localhost', '127.0.0.1'].includes(database.hostname) &&
+        database.pathname.startsWith('/polycord_test') &&
+        database.pathname.toLowerCase() !==
+          deployDatabase.pathname.toLowerCase() &&
+        !database.search,
+      'No passing CI result: set TEST_DATABASE_URL to a disposable local polycord_test database',
     );
     const env = {
       ...process.env,
-      DATABASE_URL: database,
+      DATABASE_URL: database.href,
       NETLIFY_AUTH_TOKEN: undefined,
       GITHUB_TOKEN: undefined,
     };
