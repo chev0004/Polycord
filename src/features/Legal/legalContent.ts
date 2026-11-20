@@ -121,7 +121,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'We collect information when you sign in and use Polycord:',
         ],
         list: [
-          'Discord account data you authorise at sign-in: your Discord ID, username, display name, and avatar. Polycord does not request or store your email address.',
+          'Discord account data you authorise at sign-in: your Discord ID, username, display name, and avatar. Polycord does not request or save your email address at sign-in.',
           'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, tags, card styling, and voice introductions.',
           'Usage data: product events, timestamps, locale, and limited feature metadata. Events from signed-in users can be linked to their account.',
           'Service data: saved profiles, blocks, reports, moderation records, notifications, preferences, and technical logs, including IP addresses for abuse prevention.',

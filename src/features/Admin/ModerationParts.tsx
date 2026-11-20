@@ -41,7 +41,7 @@ import { getLanguageName, proficiencyOptions } from '@/constants/languages';
 import { signInHref } from '@/features/Navigation/signIn';
 import { withoutGuidelinesTag } from '@/lib/warningPresets';
 import type { WarningCategory } from '@/types';
-import { protectionOf } from './permissions';
+import { canDismissReports, protectionOf } from './permissions';
 import type {
   LogAction,
   ModAction,
@@ -983,6 +983,7 @@ export const ActionBar = ({
   >(null);
   const protection = protectionOf(store, user);
   const protectedAccount = protection !== null;
+  const dismissible = canDismiss && canDismissReports(store, user);
   const suspended = isSuspended(user);
 
   const open = (next: NonNullable<typeof dialog>) => {
@@ -1025,7 +1026,7 @@ export const ActionBar = ({
   };
 
   useShortcut(shortcuts, (key) => {
-    if (key === 'd' && canDismiss && reportIds.length) open('dismiss');
+    if (key === 'd' && dismissible && reportIds.length) open('dismiss');
     if (protectedAccount) return;
     if (key === 'w') open('warn');
     if (key === 'h') open(user.hidden ? 'unhide_profile' : 'hide_profile');
@@ -1138,7 +1139,7 @@ export const ActionBar = ({
           />
         </div>
       ) : null}
-      {canDismiss && reportIds.length > 0 ? (
+      {dismissible && reportIds.length > 0 ? (
         <div className="mx-4 mb-3 flex items-center gap-2.5 rounded-xl bg-background-darker py-1.5 pr-1.5 pl-3 text-[13px] text-muted md:mx-5">
           <MdOutlineFlag size={18} className="shrink-0 text-discord-yellow" />
           <span className="flex-1">

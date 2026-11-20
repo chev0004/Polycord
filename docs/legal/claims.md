@@ -34,7 +34,7 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Claim | Behavior and evidence | Status |
 | --- | --- | --- |
 | Underage reports go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004) | Open: owner sets the invite URL and staffs moderator intake and a review process |
-| Discord ID, username, display name and avatar are collected, and email is not requested or stored | `normalizeDiscordUser` in `src/lib/auth.ts` and the `identify` scope. Migration 0040 cleared stored addresses | Verified |
+| Discord ID, username, display name and avatar are collected, and email is no longer requested or saved at sign-in | `normalizeDiscordUser` in `src/lib/auth.ts` and the `identify` scope. Retiring stored addresses requires the post-rollout column drop | Verified |
 | Profile, usage, service and billing data listed | Tables in `src/db/schema.ts`: `profiles`, `analytics_events`, `saved_profiles`, `user_blocks`, `reports`, `notifications`, `push_subscriptions`. Supporter grants are stored on `users` | Verified |
 | IP addresses are kept for abuse prevention | `suspicious_activity.ip` and IP-keyed `rate_limit_counters` | Verified |
 | Public profile details are visible to members and link holders | Also visible to signed-out visitors. Signed-in members always receive the Discord username; guests only with `allowAnonymousCopy` (`toDiscoveryProfile` in `src/db/profiles.ts`, `e2e/safety.pw.ts`) | Reworded |
