@@ -72,8 +72,12 @@ const CMP_ROWS: CompareRow[] = [
   {
     feature: 'compareVoiceFeature',
     sub: 'compareVoiceSub',
-    free: null,
+    free: 'compareVoiceFree',
     premium: 'compareVoicePremium',
+    values: {
+      free: entitlementLimit('profile.voiceIntroSeconds', false),
+      premium: entitlementLimit('profile.voiceIntroSeconds', true),
+    },
   },
   {
     feature: 'compareCopyFeature',

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { and, eq, gt, inArray, notExists, or } from 'drizzle-orm';
 import { z } from 'zod';
+import { entitlementLimit } from '@/lib/entitlements';
 import { isPremiumAccount } from './billing';
 import { db } from './client';
 import { publiclyVisible } from './profiles';
@@ -36,6 +37,7 @@ export const listPlayableVoiceIntros = async (
     .select({
       profileId: profiles.id,
       user: users,
+      seconds: profiles.voiceIntroSeconds,
       mimeType: voiceIntros.mimeType,
       data: voiceIntros.data,
     })
@@ -70,7 +72,11 @@ export const listPlayableVoiceIntros = async (
     );
 
   return rows
-    .filter(({ user }) => isPremiumAccount(user))
+    .filter(
+      ({ user, seconds }) =>
+        (seconds ?? 0) <=
+        entitlementLimit('profile.voiceIntroSeconds', isPremiumAccount(user)),
+    )
     .map(({ profileId, mimeType, data }) => ({ profileId, mimeType, data }));
 };
 

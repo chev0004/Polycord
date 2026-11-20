@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { path as ffprobePath } from 'ffprobe-static';
 
-export const inspectVoiceMedia = async (bytes: Buffer) => {
+export const inspectVoiceMedia = async (bytes: Buffer, maxSeconds: number) => {
   const directory = await mkdtemp(join(tmpdir(), 'polycord-voice-'));
   const file = join(directory, 'clip');
   try {
@@ -20,7 +20,7 @@ export const inspectVoiceMedia = async (bytes: Buffer) => {
         '-protocol_whitelist',
         'file',
         '-show_entries',
-        'format=format_name:stream=codec_type:frame=nb_samples,sample_rate,pkt_duration_time',
+        'format=format_name:stream=codec_type,sample_rate:frame=nb_samples',
         '-show_frames',
         '-of',
         'json',
@@ -30,12 +30,8 @@ export const inspectVoiceMedia = async (bytes: Buffer) => {
     );
     const media = JSON.parse(stdout) as {
       format?: { format_name?: string };
-      streams?: { codec_type?: string }[];
-      frames?: {
-        nb_samples?: number;
-        sample_rate?: string;
-        pkt_duration_time?: string;
-      }[];
+      streams?: { codec_type?: string; sample_rate?: string }[];
+      frames?: { nb_samples?: number }[];
     };
     const formats = media.format?.format_name?.split(',') ?? [];
     const mimeType = formats.includes('webm')
@@ -47,27 +43,25 @@ export const inspectVoiceMedia = async (bytes: Buffer) => {
           : formats.includes('mp3')
             ? 'audio/mpeg'
             : null;
-    const duration = (media.frames ?? []).reduce(
-      (seconds, frame) =>
-        seconds +
-        (frame.sample_rate && frame.nb_samples
-          ? frame.nb_samples / Number(frame.sample_rate)
-          : Number(frame.pkt_duration_time ?? 0)),
+    const sampleRate = Number(media.streams?.[0]?.sample_rate);
+    const samples = (media.frames ?? []).reduce(
+      (total, frame) => total + (frame.nb_samples ?? Number.NaN),
       0,
     );
+    const duration = samples / sampleRate;
     if (
       !mimeType ||
       media.streams?.length !== 1 ||
       media.streams[0].codec_type !== 'audio' ||
       !Number.isFinite(duration) ||
       duration <= 0 ||
-      duration > 20.1
+      duration > maxSeconds
     ) {
       throw new Error('Invalid voice media');
     }
     return {
       mimeType,
-      durationSeconds: Math.max(1, Math.min(20, Math.round(duration))),
+      durationSeconds: Math.max(1, Math.round(duration)),
     };
   } finally {
     await unlink(file).catch(() => {});

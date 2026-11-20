@@ -111,3 +111,65 @@ test('a saved voice intro plays, downloads and stops when removed', async ({
     await sql.end();
   }
 });
+
+test('voice intro limits follow the owner plan and keep longer clips after Supporter ends', async ({
+  page,
+  context,
+  request,
+}) => {
+  const id = randomUUID().replaceAll('-', '');
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const upload = (file: string) =>
+    context.request.post('/api/profile/voice', {
+      data: {
+        audio: `data:audio/webm;base64,${readFileSync(`tests/fixtures/${file}.webm`).toString('base64')}`,
+        mimeType: 'audio/webm',
+        durationSeconds: 1,
+      },
+    });
+  try {
+    await signIn(context, id);
+    expect(
+      (await context.request.post('/api/profile', { data: profile })).status(),
+    ).toBe(200);
+    const [owner] =
+      await sql`select users.id, profiles.id as profile_id from users join profiles on profiles.user_id = users.id where discord_user_id = ${id}`;
+    const publicClip = async () =>
+      (await request.get(`/api/voice/${owner.profile_id}`)).status();
+    const ownClip = async () =>
+      (await context.request.get(`/api/voice/${owner.profile_id}`)).status();
+
+    expect((await upload('voice-8s-over')).status()).toBe(400);
+    const saved = await upload('voice-8s');
+    expect(saved.status()).toBe(200);
+    expect(await saved.json()).toEqual({ durationSeconds: 8 });
+    expect(await publicClip()).toBe(200);
+
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${owner.id}`;
+    expect((await upload('voice-long')).status()).toBe(400);
+    expect((await upload('voice-20s')).status()).toBe(200);
+    expect(await publicClip()).toBe(200);
+
+    await sql`update users set premium_granted_until = now() - interval '1 day' where id = ${owner.id}`;
+    expect(await publicClip()).toBe(404);
+    expect(await ownClip()).toBe(200);
+    expect(
+      await sql`select duration_seconds from voice_intros where user_id = ${owner.id}`,
+    ).toEqual([{ duration_seconds: 20 }]);
+    await page.goto('/en/profile');
+    await expect(
+      page
+        .getByText(
+          'Your 20-second intro is hidden because Free intros can be up to 8 seconds.',
+          { exact: false },
+        )
+        .first(),
+    ).toBeVisible();
+
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${owner.id}`;
+    expect(await publicClip()).toBe(200);
+  } finally {
+    await sql`delete from users where discord_user_id = ${id}`;
+    await sql.end();
+  }
+});

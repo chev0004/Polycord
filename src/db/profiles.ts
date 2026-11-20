@@ -180,7 +180,9 @@ const toDiscoveryProfile = (
     profile.boostedUntil.getTime() > Date.now(),
   boostedUntil: profile.boostedUntil?.toISOString(),
   voiceIntroSeconds:
-    isPremiumAccount(user) && profile.voiceIntroSeconds
+    profile.voiceIntroSeconds &&
+    profile.voiceIntroSeconds <=
+      entitlementLimit('profile.voiceIntroSeconds', isPremiumAccount(user))
       ? profile.voiceIntroSeconds
       : undefined,
   id: profile.id,
