@@ -57,7 +57,12 @@ When a case passes to another moderator or to the owner, the moderation notes an
 
 ## Rehearsal
 
-Synthetic cases only. No real member data, and no contact with real authorities.
+Synthetic cases only. Use dedicated member, moderator and banned fixtures. Confirm the invite and assigned urgent channel with the owner before exercising them.
+
+1. Open the footer invite while signed out and submit a synthetic support case. From Discord, submit a separate synthetic privacy request and confirm that it reaches the owner through the private intake.
+2. Open the ban screen with a banned fixture. Follow the invite and submit a synthetic appeal with its reference. Confirm receipt and the owner’s decision in the moderation record.
+3. File a clearly labeled urgent exercise through the report form. Have the moderator triage the report and hand it off through the assigned urgent channel. Record the responder’s acknowledgment and next action. Keep the exercise within Polycord.
+4. Record the candidate SHA, UTC time, test case, queue or responder role, acknowledgment time, outcome, and a redacted evidence link for each exercise.
 
 | Case | Path exercised | Expected result | Evidence | Status |
 | --- | --- | --- | --- | --- |
