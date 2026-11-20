@@ -12,8 +12,9 @@ Fill these in before testing, and check them again before signing off. Every jou
 | --- | --- | --- |
 | Origin | | `https://polycord.net`, see [production deployment](../operations/production.md) |
 | Build ID | | `GET /api/build` on the origin returns the source commit |
-| Netlify deploy ID | | The Production workflow summary |
-| Server SHA-256 | | The Production workflow summary |
+| Netlify deploy ID | | The owner deploy summary from `scripts/deploy-production.mjs` |
+| Server SHA-256 | | The owner deploy summary |
+| Validation | | The owner deploy summary: `CI result` or full local suite |
 | Date and tester | | |
 
 ## Devices
