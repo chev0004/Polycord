@@ -39,7 +39,7 @@ let user = await upsertDiscordUser({
   ...identity,
   email: 'legacy-oauth@example.com',
 });
-assert.equal(user.email, null);
+assert.equal(Object.hasOwn(user, 'email'), false);
 const other = await upsertDiscordUser({
   id: randomUUID().replaceAll('-', ''),
   name: 'Confidential identity',
