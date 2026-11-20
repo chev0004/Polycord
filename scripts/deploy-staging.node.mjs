@@ -17,6 +17,8 @@ let head;
 let buildHead;
 let buildId;
 let publishedDigest;
+let diff;
+let recordOk;
 
 beforeEach(async () => {
   process.env = {
@@ -29,6 +31,7 @@ beforeEach(async () => {
     GITHUB_STEP_SUMMARY: '',
     NETLIFY_AUTH_TOKEN: 'synthetic-token',
     DATABASE_URL: 'postgresql://synthetic/actions',
+    GITHUB_TOKEN: 'synthetic-github-token',
   };
   process.chdir(await mkdtemp(join(tmpdir(), 'polycord-deploy-')));
   await mkdir('.netlify/static/_next/static', { recursive: true });
@@ -66,6 +69,8 @@ beforeEach(async () => {
   buildHead = sha;
   buildId = null;
   publishedDigest = digest;
+  diff = 'src/app/page.tsx\n';
+  recordOk = true;
 });
 
 afterEach(() => {
@@ -78,6 +83,7 @@ function run(command, args, options) {
   let stdout = '';
   if (args[0] === 'rev-parse') stdout = sha;
   if (args[0] === 'ls-remote') stdout = `${head}\trefs/heads/develop\n`;
+  if (args[0] === 'diff') stdout = diff;
   if (args[1] === 'env:list')
     stdout = JSON.stringify({
       DATABASE_URL: '****************uire',
@@ -93,6 +99,10 @@ function run(command, args, options) {
 }
 
 async function request(url, options) {
+  if (url.startsWith('https://api.github.com/')) {
+    calls.push({ url, method: options.method, body: JSON.parse(options.body) });
+    return { ok: recordOk, status: recordOk ? 201 : 500 };
+  }
   const path = url.replace('https://api.netlify.com/api/v1/', '');
   calls.push({ path, method: options.method });
   let data;
@@ -195,4 +205,46 @@ test('rejects a hosted build job and restores the previous deployment', async ()
     /Unexpected hosted Netlify build/,
   );
   assert.equal(site.published_deploy.id, 'previous');
+});
+
+test('publishes an older source when develop only adds docs or tests', async () => {
+  head = 'b'.repeat(40);
+  diff = 'docs/operations/readiness.md\ne2e/profile.pw.ts\n';
+  await deployStaging(run, request);
+  assert.equal(site.published_deploy.id, 'uploaded');
+  assert.ok(
+    calls.some(
+      ({ args }) => args?.[0] === 'fetch' && args.includes('b'.repeat(40)),
+    ),
+  );
+});
+
+test('records the published source only after verification', async () => {
+  await deployStaging(run, request);
+  const record = calls.find(({ url }) => url);
+  assert.equal(
+    record.url,
+    `https://api.github.com/repos/chev0004/Polycord/statuses/${sha}`,
+  );
+  assert.equal(record.body.context, 'staging/published');
+  assert.equal(record.body.state, 'success');
+  assert.equal(
+    calls.findIndex(({ url }) => url),
+    calls.length - 1,
+  );
+});
+
+test('does not record a source that failed verification', async () => {
+  publishedDigest = 'unexpected-digest';
+  await assert.rejects(deployStaging(run, request));
+  assert.equal(
+    calls.some(({ url }) => url),
+    false,
+  );
+});
+
+test('keeps a verified publish when recording its source fails', async () => {
+  recordOk = false;
+  await assert.rejects(deployStaging(run, request), /Recording the published/);
+  assert.equal(site.published_deploy.id, 'uploaded');
 });

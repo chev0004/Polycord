@@ -8,10 +8,6 @@ on:
       - LICENSE
   push:
     branches: [develop, main]
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - LICENSE
   workflow_dispatch:
 
 concurrency:
@@ -25,8 +21,10 @@ jobs:
     permissions:
       actions: read
       contents: read
+      statuses: read
     outputs:
-      skip: ${{ steps.tested.outputs.skip }}
+      validate: ${{ steps.plan.outputs.validate }}
+      deploy: ${{ steps.plan.outputs.deploy }}
     steps:
       - id: tested
         run: |
@@ -45,10 +43,21 @@ jobs:
           echo "skip=$skip" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.ref == 'refs/heads/develop' && 50 || 1 }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - id: plan
+        run: node scripts/develop-plan.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TESTED_SKIP: ${{ steps.tested.outputs.skip }}
 
   unit:
     needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    if: needs.gate.outputs.validate == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -72,12 +81,12 @@ jobs:
       - uses: ./.github/actions/setup
       - run: bun run db:migrate
       - run: bun run check:all
-      - run: node --test scripts/deploy-staging.node.mjs
+      - run: node --test scripts/*.node.mjs
       - run: bun test
 
   package:
     needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    if: needs.gate.outputs.validate == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -111,7 +120,7 @@ jobs:
 
   e2e:
     needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    if: needs.gate.outputs.validate == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -156,7 +165,7 @@ jobs:
 
   storybook:
     needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    if: needs.gate.outputs.validate == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -179,7 +188,12 @@ jobs:
     needs: [gate, unit, package, e2e, storybook]
     if: >-
       !cancelled() &&
-      !contains(needs.*.result, 'failure') &&
+      needs.gate.outputs.deploy == 'true' &&
+      (needs.gate.outputs.validate == 'false' ||
+        (needs.unit.result == 'success' &&
+          needs.package.result == 'success' &&
+          needs.e2e.result == 'success' &&
+          needs.storybook.result == 'success')) &&
       github.repository == 'chev0004/Polycord' &&
       github.ref == 'refs/heads/develop' &&
       github.event_name != 'pull_request' &&
@@ -188,15 +202,17 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      statuses: write
     environment:
       name: staging
       url: https://polycord.chev.dev
     concurrency:
       group: netlify-staging
-      cancel-in-progress: false
+      queue: max
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
