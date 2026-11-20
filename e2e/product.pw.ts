@@ -24,7 +24,7 @@ test('profile and settings persist through discovery and locale navigation', asy
   const accountId = randomUUID();
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const name = `Test ${id.slice(0, 8)}`;
-  await sql`insert into users (id, discord_user_id, discord_username, display_name, email) values (${accountId}, ${id}, ${id}, ${name}, 'original@example.com')`;
+  await sql`insert into users (id, discord_user_id, discord_username, display_name) values (${accountId}, ${id}, ${id}, ${name})`;
   const payload = Buffer.from(
     JSON.stringify({
       user: {
@@ -32,7 +32,6 @@ test('profile and settings persist through discovery and locale navigation', asy
         accountId,
         name,
         username: name,
-        email: 'original@example.com',
       },
       expiresAt: Date.now() + 3600000,
     }),
@@ -93,15 +92,18 @@ test('profile and settings persist through discovery and locale navigation', asy
     expect(rows[0].bio).toBe(bio);
 
     await page.goto('/en/settings');
-    await expect(page.getByLabel('Email Address')).toHaveValue(
-      'original@example.com',
-    );
+    await expect(page.getByText('Email Address')).toHaveCount(0);
     await page.getByRole('button', { name: 'Appearance', exact: true }).click();
     await expect(
       page.getByRole('heading', { name: 'Appearance', exact: true }),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'Account', exact: true }).click();
-    await page.getByLabel('Email Address').fill('saved@example.com');
+    await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    const timezone = page.getByRole('switch', {
+      name: 'Display timezone',
+      exact: true,
+    });
+    await timezone.click();
+    const visible = (await timezone.getAttribute('aria-checked')) as string;
     const settingsSaved = page.waitForResponse(
       (r) =>
         r.url().endsWith('/api/settings') && r.request().method() === 'POST',
@@ -111,14 +113,13 @@ test('profile and settings persist through discovery and locale navigation', asy
       .click();
     expect((await settingsSaved).status()).toBe(200);
     const invalid = await context.request.post('/api/settings', {
-      data: { email: 'invalid' },
+      data: { timeFormat: 'invalid' },
     });
     expect(invalid.status()).toBe(400);
     await page.goto('/en/profile');
     await page.goto('/en/settings');
-    await expect(page.getByLabel('Email Address')).toHaveValue(
-      'saved@example.com',
-    );
+    await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    await expect(timezone).toHaveAttribute('aria-checked', visible);
 
     await page.goto('/en');
     const search = page.getByRole('textbox', { name: 'Search profiles' });

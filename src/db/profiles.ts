@@ -114,7 +114,6 @@ const toUserValues = (user: CurrentUser): NewUser => ({
   discordUsername: user.username ?? user.name,
   displayName: user.name,
   avatarUrl: user.avatarUrl,
-  email: user.email,
 });
 
 const toAvailabilityPattern = (

@@ -35,7 +35,6 @@ async function SettingsRoute({
     <main>
       <SettingsRouteClient
         userId={user.id}
-        defaultEmail={user.email ?? ''}
         initialPrivacySettings={privacySettings}
         initialSettings={
           settings

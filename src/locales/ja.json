@@ -866,10 +866,6 @@
     "compareInsightsFeature": "プロフィールのインサイト",
     "compareInsightsSub": "直近30日間の閲覧・コピー・シェア数と、保存の合計数。",
     "compareInsightsPremium": "閲覧・コピー・シェア・保存",
-    "emailLabel": "メールアドレス",
-    "emailPlaceholder": "メールアドレスを入力",
-    "emailRequired": "メールアドレスを入力してください。",
-    "emailInvalid": "有効なメールアドレスを入力してください。",
     "applicationLanguageLabel": "アプリの言語",
     "applicationLanguageDescription": "Polycordのインターフェースで使用する言語を設定する。",
     "timeFormatLabel": "時刻表示形式",
@@ -926,7 +922,6 @@
     "deleteAccountConfirmationPlaceholder": "DELETE",
     "deleteAccountRetentionNote": "アカウント、プロフィール、設定、音声、保存済みリンク、ブロック、通報、受信トレイ、ローカルの請求情報、ブースト、プッシュ登録を削除します。分析、モデレーション、不正対策のログはアカウントへの参照を解除して残り、メタデータ、メモ、IPアドレスが残る場合があります。この操作ではレート制限、Discord IDに紐づく制限、他の受信トレイに記録済みの送信者情報、決済事業者の記録、バックアップは消去しません。",
     "deleteAccountError": "アカウントを削除できませんでした。もう一度お試しください。",
-    "emailDescription": "アカウントに保存され、新しくサポーターの購入を開始する際に使用されます。既存の請求用メールアドレスは変更されません。ログインにはDiscordを使用します。このメールアドレスの確認やアカウント復旧は行っていません。",
     "premiumGranted": "付与済み",
     "premiumGrantEnds": "付与期限: {date}"
   },
@@ -1265,9 +1260,9 @@
     "dateLabel": "日付",
     "referenceLabel": "参照番号",
     "appealTitle": "この決定に対する異議申し立て",
-    "appealBody": "誤りだと思われる場合は、参照番号を添えて support@polycord.app までメールでご連絡ください。",
-    "appealSubject": "異議申し立て",
-    "emailSupport": "サポートにメールする"
+    "appealBody": "誤りだと思われる場合は、参照番号を添えて Polycord の Discord サーバーでモデレーターにご連絡ください。",
+    "appealUnavailable": "現在、異議申し立てのリンクを利用できません。リンクが再び利用可能になるまで、参照番号を保管してください。",
+    "openDiscord": "Discord サーバーを開く"
   },
   "Recovery": {
     "missingTitle": "ページが見つかりません",

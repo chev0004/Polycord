@@ -12,7 +12,6 @@ import { isLocale, localizePath } from '@/utils/localePaths';
 
 type SettingsRouteClientProps = {
   userId: string;
-  defaultEmail: string;
   initialPrivacySettings?: Pick<
     SettingsFormValues,
     'allowAnonymousCopy' | 'displayTimezone' | 'isPublic'
@@ -72,7 +71,6 @@ const downloadAccountData = async () => {
 
 export const SettingsRouteClient = ({
   userId,
-  defaultEmail,
   initialPrivacySettings,
   initialSettings,
   locale,
@@ -99,7 +97,6 @@ export const SettingsRouteClient = ({
     applicationLanguage: isLocale(locale) ? locale : 'en',
     timeFormat: initialSettings?.timeFormat ?? '24hr',
     languageDisplay: initialSettings?.languageDisplay ?? 'long',
-    email: defaultEmail,
   };
 
   return (

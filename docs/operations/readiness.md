@@ -25,7 +25,7 @@ Status values:
 | Application deploy rollback | Chev | Netlify deploys list | Unverified | Merges to `develop` deploy automatically. Netlify can republish an earlier deploy, but this has not been exercised for Polycord. |
 | Secrets | Chev | Netlify environment variables | Unverified | README requires runtime secrets in Netlify, never Git, with separate staging `AUTH_SECRET` and VAPID keys. The values themselves have not been audited. |
 | Incident ownership | Chev | [Incidents](#incidents) | Verified | Single maintainer. No rotation or backup responder exists. |
-| Support, privacy and safety mailboxes | Chev | `src/features/Legal/legalContent.ts` | Blocking | `support@`, `privacy@` and `safety@polycord.app` are published. Only MX records exist. Delivery, ownership and staffing remain open in the [policy claims review](../legal/claims.md). |
+| Support, privacy, safety and appeal contact | Chev | `NEXT_PUBLIC_DISCORD_INVITE_URL`, `src/features/Legal/legalContent.ts`, `src/features/Banned/BannedScreen.tsx` | Blocking | Contact goes through the moderators in the Polycord Discord server. The invite URL must be set on every deploy, and moderator intake still needs an owner. |
 
 ## Backup
 
@@ -58,6 +58,13 @@ The hosting build does not run migrations. It runs `scripts/check-migrations.ts`
 3. Take a [backup](#backup).
 4. Apply additive migrations with `bun run db:migrate` before merging the code that uses them. Apply destructive migrations only after the deployed code no longer reads the affected columns.
 5. Check `/api/health` and the affected routes.
+
+### Account email retirement
+
+1. Confirm the Discord invite and private moderator intake with signed-out support, privacy and banned appeal cases before publishing the contact change.
+2. Deploy the version that requests only Discord `identify` and leaves `users.email` out of runtime queries. Confirm new and returning sign-ins. Retire all older instances and use only rollback builds compatible with the column drop.
+3. After the billing grant migration, create the next forward migration to purge stored email by dropping `users.email`. The compatibility rollout leaves the database column in place.
+4. Restore a pre-purge backup to an isolated database. Confirm it contains the old column, apply the forward migration and verify that the column is absent and the app still starts and signs in. Reapply the migration before any pre-purge restore can serve traffic. Treat retained pre-purge backups as containing email until they expire.
 
 ## Rollback
 
