@@ -68,7 +68,6 @@ export type ModUser = {
   warnings: number;
   premium: {
     grantedUntil?: string;
-    subscriptionUntil?: string;
     configured: boolean;
   };
   profile?: {

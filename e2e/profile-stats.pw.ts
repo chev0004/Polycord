@@ -51,7 +51,7 @@ test('mobile sheet views, copies, and shares reach Supporter profile insights', 
       values (now(), ${owner.id}, true, 'en', 'ja', 'beginner', 'A profile collecting received stats.'),
              (now(), ${viewer.id}, true, 'ja', 'en', 'beginner', 'A profile that views and copies.')`;
     await sql`insert into user_settings (user_id, profile_view_alert, product_analytics) values (${owner.id}, true, true), (${viewer.id}, false, false)`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owner.id}, ${randomUUID()}, 'active', ${new Date(Date.now() + 3600000)})`;
+    await sql`update users set premium_granted_until = ${new Date(Date.now() + 3600000)} where id = ${owner.id}`;
 
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },

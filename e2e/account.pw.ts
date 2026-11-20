@@ -68,7 +68,6 @@ test('deleted sessions cannot read, write, or recreate an account', async ({
         'profile/boost',
         'profile/voice',
         'push/subscription',
-        'billing/portal',
       ]) {
         expect(
           (
@@ -117,8 +116,8 @@ test('deleted sessions cannot read, write, or recreate an account', async ({
     await page.context().addCookies([cookie(replacementId)]);
     await page.route('**/api/account', (route) =>
       route.fulfill({
-        status: 502,
-        json: { error: 'Billing cancellation failed' },
+        status: 500,
+        json: { error: 'Account delete failed' },
       }),
     );
     for (const locale of ['en', 'ja']) {
@@ -137,11 +136,13 @@ test('deleted sessions cannot read, write, or recreate an account', async ({
         })
         .click();
       await expect(page.getByRole('main').getByRole('alert')).toContainText(
-        locale === 'en' ? 'subscription cancellation failed' : '解約に失敗',
+        locale === 'en'
+          ? 'Account could not be deleted.'
+          : 'アカウントを削除できませんでした。',
       );
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.screenshot({
-        path: testInfo.outputPath(`account-billing-error-${locale}.png`),
+        path: testInfo.outputPath(`account-delete-error-${locale}.png`),
         fullPage: true,
       });
     }

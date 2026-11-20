@@ -20,7 +20,7 @@ const fixture = async () => {
            (now(), ${actor.id}, true, 'ja', 'en', 'beginner', 'The sheet actor profile.')
     returning id, user_id`;
   await sql`insert into notifications (user_id, kind, acknowledged_at) values (${owner.id}, 'warning', now())`;
-  await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owner.id}, ${randomUUID()}, 'active', ${new Date(Date.now() + 3600000)})`;
+  await sql`update users set premium_granted_until = ${new Date(Date.now() + 3600000)} where id = ${owner.id}`;
   await sql`insert into notifications (user_id, kind, actor_user_id, actor_name) values (${owner.id}, 'copy', ${actor.id}, 'Sheet actor')`;
   const payload = Buffer.from(
     JSON.stringify({

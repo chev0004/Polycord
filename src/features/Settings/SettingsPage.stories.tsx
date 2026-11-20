@@ -59,7 +59,6 @@ const meta: Meta<typeof SettingsPage> = {
     onExportData: fn(),
     onSubmit: fn(),
     onUpdateDiscordConnection: fn(),
-    onManageSubscription: fn(),
   },
 };
 
@@ -208,30 +207,6 @@ export const RestoredDraft: Story = {
         'Your unsaved draft has been restored. Review it, then Save or Discard.',
       ),
     ).toBeInTheDocument();
-  },
-};
-
-export const AccountBillingError: Story = {
-  args: { onDeleteAccount: async () => 'billing-error' as const },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(
-      canvas.getByRole('button', { name: 'Delete account' }),
-    );
-    setFieldValue(
-      canvas.getByPlaceholderText('DELETE') as HTMLInputElement,
-      'DELETE',
-    );
-    const confirm = canvas.getByRole('button', {
-      name: 'Delete account',
-    });
-    await waitFor(() => expect(confirm).toBeEnabled());
-    await fireEvent.click(confirm);
-    await waitFor(() =>
-      expect(canvas.getByRole('alert')).toHaveTextContent(
-        'subscription cancellation failed',
-      ),
-    );
   },
 };
 
@@ -496,11 +471,10 @@ export const SupporterTabFree: Story = {
     expect(canvas.getAllByText('No')).toHaveLength(5);
 
     expect(
-      canvas.getByText('$2.99 / month · cancel anytime'),
+      canvas.getByText("Supporter isn't available to buy right now."),
     ).toBeInTheDocument();
-    expect(canvas.getByRole('button', { name: 'Upgrade' })).toBeInTheDocument();
     expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
+      canvas.queryByRole('button', { name: 'Upgrade' }),
     ).not.toBeInTheDocument();
   },
 };
@@ -517,13 +491,10 @@ export const SupporterTabSupporter: Story = {
         canvas.getByText('Your plan: everything below is included.'),
       ).toBeInTheDocument(),
     );
-    expect(canvas.getByText('$2.99')).toBeInTheDocument();
+    expect(canvas.getAllByText('Granted')).not.toHaveLength(0);
     expect(canvas.getByText('Bump cooldown')).toBeInTheDocument();
     expect(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    ).toBeInTheDocument();
-    expect(
-      canvas.queryByRole('button', { name: 'Upgrade' }),
+      canvas.queryByText("Supporter isn't available to buy right now."),
     ).not.toBeInTheDocument();
   },
 };
@@ -659,89 +630,22 @@ export const MobileSessionExpired: Story = {
 export const SupporterGranted: Story = {
   args: {
     premium: true,
-    premiumSource: 'granted',
     premiumGrantedUntil: '2099-12-31T12:00:00Z',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
-    ).not.toBeInTheDocument();
     await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
     await expect(await canvas.findByText('Granted')).toBeInTheDocument();
     expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
-    expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
-    ).not.toBeInTheDocument();
     expect(
       canvas.queryByRole('button', { name: 'Upgrade' }),
     ).not.toBeInTheDocument();
   },
 };
 
-export const SupporterPurchased: Story = {
-  ...SupporterTabSupporter,
-  args: {
-    premium: true,
-    premiumSource: 'purchased',
-    subscriptionRenewsAt: '2099-11-30T12:00:00Z',
-  },
-};
-
-export const SupporterBoth: Story = {
-  args: {
-    ...SupporterPurchased.args,
-    premiumSource: 'both',
-    premiumGrantedUntil: '2099-12-31T12:00:00Z',
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.getByText(/Renews/)).toBeInTheDocument();
-    expect(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    ).toBeInTheDocument();
-  },
-};
-
 export const SupporterExpired: Story = {
   ...SupporterTabFree,
-  args: { premium: false, premiumSource: 'free' },
-};
-
-export const SupporterOverdueWithGrant: Story = {
-  ...SupporterBoth,
-  args: {
-    ...SupporterBoth.args,
-    subscriptionRenewsAt: '2000-01-01T12:00:00Z',
-  },
-  play: async ({ args, canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    await fireEvent.click(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    );
-    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
-  },
-};
-
-export const MobileSupporterOverdueWithGrant: Story = {
-  ...SupporterOverdueWithGrant,
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
-  play: async ({ args, canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(
-      await canvas.findByRole('button', { name: /^Supporter/ }),
-    );
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    await fireEvent.click(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    );
-    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
-  },
+  args: { premium: false },
 };
 
 export const MobileSupporterGranted: Story = {
@@ -754,29 +658,9 @@ export const MobileSupporterGranted: Story = {
     );
     await expect(await canvas.findByText('Granted')).toBeInTheDocument();
     expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
-    expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
-    ).not.toBeInTheDocument();
     expect(
       canvas.queryByRole('button', { name: 'Upgrade' }),
     ).not.toBeInTheDocument();
-  },
-};
-
-export const MobileSupporterBoth: Story = {
-  ...SupporterBoth,
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(
-      await canvas.findByRole('button', { name: /^Supporter/ }),
-    );
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.getByText(/Renews/)).toBeInTheDocument();
-    expect(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    ).toBeInTheDocument();
   },
 };
 
@@ -790,7 +674,6 @@ export const SupporterGrantedJapanese: Story = {
       await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
     ).toBeInTheDocument();
     expect(canvas.getByText(/\u4ed8\u4e0e\u671f\u9650/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
   },
 };
 
@@ -806,7 +689,6 @@ export const MobileSupporterGrantedJapanese: Story = {
       await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
     ).toBeInTheDocument();
     expect(canvas.getByText(/\u4ed8\u4e0e\u671f\u9650/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
   },
 };
 
@@ -825,7 +707,9 @@ export const SupporterLegacyLink: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(await canvas.findByText('Bump cooldown')).toBeInTheDocument();
-    expect(canvas.getByRole('button', { name: 'Upgrade' })).toBeInTheDocument();
+    expect(
+      canvas.getByText("Supporter isn't available to buy right now."),
+    ).toBeInTheDocument();
   },
 };
 

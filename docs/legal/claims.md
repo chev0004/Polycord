@@ -22,8 +22,8 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Public profiles appear in discovery and on share links | `/[lang]/u/[id]` and discovery queries in `src/db/discovery.ts`; `e2e/safety.pw.ts` | Verified |
 | Enforcement: hide, remove content, suspend, ban | Admin actions are warn, hide or unhide, suspend or unsuspend, ban or unban (`src/app/api/admin/moderation/route.ts`, `tests/integration/moderation.mjs`). There is no content removal action. | Reworded |
 | Unlawful activity may be reported to Discord or authorities | No documented escalation process or contact route | Open: owner defines the escalation process |
-| Price, plan contents and renewal dates are shown before subscribing | Settings shows the price and plan table, and payment runs through Stripe Checkout (`createCheckoutSession`). Settings also shows a hardcoded "renews July 11, 2026" (`premiumPriceRenewal`, `premiumMembershipDescriptionPremium`), which is not a real renewal date. | Reworded to price and Stripe Checkout. Open: renewal copy belongs to BILLING-002 |
-| Subscriptions renew until cancelled and paid features last to period end | `isSubscriptionActive` checks status and `currentPeriodEnd`, and the webhook stores `cancelAtPeriodEnd` | Open: deployed Stripe lifecycle is verified under BILLING-002 |
+| Price, plan contents and renewal dates are shown before subscribing | BILLING-004 removed the payment integration. Settings shows the plan table and says Supporter is not available to buy | Removed from the Terms |
+| Subscriptions renew until cancelled and paid features last to period end | BILLING-004 converted active subscriptions into grants ending at their paid period end, and access now comes only from grants and the configured list | Removed from the Terms |
 | Questions go to support@polycord.app | The domain has MX records only. Delivery, ownership and staffing have no evidence. | Open: owner verifies the mailbox |
 
 ## Privacy Policy
@@ -41,7 +41,7 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Turning off Product analytics stops future account-linked events | `trackEvent` skips events for users with `productAnalytics` off; deletion clears the account link (`tests/integration/analytics.mjs`) | Verified |
 | Discord message content is not collected | Scopes are `identify email` only | Verified |
 | Cookies keep sign-in and language; browser storage keeps preferences and onboarding | Cookies: session, OAuth state, `NEXT_LOCALE`. Preferences are stored with the account. Session storage holds unsaved form drafts and the discovery return position (`src/hooks/useFormDraft.ts`). | Reworded |
-| Data is shared with hosts, Discord, Stripe and push services | Matches the integrations in `src/lib/stripe.ts`, `src/lib/push`, and the Discord routes. Voice intros are stored in the database. | Verified |
+| Data is shared with hosts, Discord and push services | Matches the integrations in `src/lib/push` and the Discord routes. Voice intros are stored in the database. BILLING-004 removed the payment provider | Verified |
 | Personal data is never sold | No code path sells data. This is an accountable business commitment. | Open: owner review |
 | Deletion removes listed data; some records remain | Matches the retention note in `getAccountExportByUserId` and Settings `deleteAccountRetentionNote` (`tests/integration/account.mjs`) | Reworded |
 | Export covers account, profile, settings and voice | Export also includes saved profiles, blocks, reports, inbox, billing, boosts, push registrations and analytics (`src/db/account.ts`) | Reworded |

@@ -33,7 +33,6 @@ import {
   type Report,
   reports,
   staffRoles,
-  subscriptions,
   suspiciousActivity,
   users,
 } from './schema';
@@ -283,13 +282,11 @@ const findModerationUsers = async (userIds: string[] | SQLWrapper) => {
         user: users,
         profile: profiles,
         staffRole: staffRoles.role,
-        subscription: subscriptions,
         warnings: warningCount,
       })
       .from(users)
       .leftJoin(profiles, eq(profiles.userId, users.id))
       .leftJoin(staffRoles, eq(staffRoles.userId, users.id))
-      .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
       .where(inArray(users.id, userIds)),
     listTargetLanguagesByProfileIds(
       db
@@ -299,10 +296,9 @@ const findModerationUsers = async (userIds: string[] | SQLWrapper) => {
     ),
   ]);
 
-  return rows.map(({ user, profile, staffRole, subscription, warnings }) => ({
+  return rows.map(({ user, profile, staffRole, warnings }) => ({
     user,
     staffRole,
-    subscription,
     profile: profile && {
       ...profile,
       targetLanguages: targetLanguagesForProfile(

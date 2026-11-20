@@ -43,8 +43,6 @@ import {
   type Profile,
   profiles,
   profileTargetLanguages,
-  type Subscription,
-  subscriptions,
   type User,
   userBlocks,
   users,
@@ -81,13 +79,7 @@ type ProfileWithUser = {
   profile: Profile;
   targetLanguages: ProfileTargetLanguageValue[];
   user: User;
-  subscription?: Subscription | null;
 };
-
-const isPremiumOwner = (
-  user: User,
-  subscription: Subscription | null | undefined,
-) => isPremiumAccount(user, subscription ?? null);
 
 const toCardTheme = (profile: Profile, premium: boolean): CardTheme => {
   let theme: CardTheme | undefined;
@@ -177,18 +169,18 @@ export const activeTargetSql = (position: SQL) =>
   sql`(${position} < ${sql.raw(String(entitlementLimit('profile.targetLanguages', false)))} or ${premiumAccountSql()})`;
 
 const toDiscoveryProfile = (
-  { profile, targetLanguages, user, subscription }: ProfileWithUser,
+  { profile, targetLanguages, user }: ProfileWithUser,
   isLoggedIn = false,
 ): DiscoveryProfile => ({
-  premium: isPremiumOwner(user, subscription),
-  cardTheme: toCardTheme(profile, isPremiumOwner(user, subscription)),
+  premium: isPremiumAccount(user),
+  cardTheme: toCardTheme(profile, isPremiumAccount(user)),
   boosted:
-    (isPremiumOwner(user, subscription) || user.isSynthetic) &&
+    (isPremiumAccount(user) || user.isSynthetic) &&
     profile.boostedUntil !== null &&
     profile.boostedUntil.getTime() > Date.now(),
   boostedUntil: profile.boostedUntil?.toISOString(),
   voiceIntroSeconds:
-    isPremiumOwner(user, subscription) && profile.voiceIntroSeconds
+    isPremiumAccount(user) && profile.voiceIntroSeconds
       ? profile.voiceIntroSeconds
       : undefined,
   id: profile.id,
@@ -339,11 +331,9 @@ export const getProfileById = async (profileId: string) => {
     .select({
       profile: profiles,
       user: users,
-      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.id, profileId))
     .limit(1);
 
@@ -355,11 +345,9 @@ export const getProfileByUserId = async (userId: string) => {
     .select({
       profile: profiles,
       user: users,
-      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(profiles.userId, userId))
     .limit(1);
 
@@ -371,11 +359,9 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
     .select({
       profile: profiles,
       user: users,
-      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(eq(users.discordUserId, discordUserId))
     .limit(1);
 
@@ -384,9 +370,7 @@ export const getProfileByDiscordUserId = async (discordUserId: string) => {
 
 export const getCardThemeByDiscordUserId = async (discordUserId: string) => {
   const row = await getProfileByDiscordUserId(discordUserId);
-  return row
-    ? toCardTheme(row.profile, isPremiumOwner(row.user, row.subscription))
-    : undefined;
+  return row ? toCardTheme(row.profile, isPremiumAccount(row.user)) : undefined;
 };
 
 export const publiclyVisible = () =>
@@ -427,11 +411,9 @@ export const listBlockedProfilePreviews = async (viewerUserId: string) => {
     .select({
       profile: profiles,
       user: users,
-      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(
       and(
         inArray(
@@ -523,11 +505,9 @@ export const listPublicProfilesByIds = async (
     .select({
       profile: profiles,
       user: users,
-      subscription: subscriptions,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
-    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(and(inArray(profiles.id, profileIds), publiclyVisible()));
 
   const items = await mapDiscoveryProfiles(rows, true);

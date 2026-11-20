@@ -7,7 +7,6 @@ import { db } from './client';
 import { publiclyVisible } from './profiles';
 import {
   profiles,
-  subscriptions,
   userBlocks,
   users,
   type VoiceIntro,
@@ -37,14 +36,12 @@ export const listPlayableVoiceIntros = async (
     .select({
       profileId: profiles.id,
       user: users,
-      subscription: subscriptions,
       mimeType: voiceIntros.mimeType,
       data: voiceIntros.data,
     })
     .from(profiles)
     .innerJoin(users, eq(profiles.userId, users.id))
     .innerJoin(voiceIntros, eq(voiceIntros.userId, profiles.userId))
-    .leftJoin(subscriptions, eq(subscriptions.userId, users.id))
     .where(
       and(
         inArray(profiles.id, ids),
@@ -73,7 +70,7 @@ export const listPlayableVoiceIntros = async (
     );
 
   return rows
-    .filter(({ user, subscription }) => isPremiumAccount(user, subscription))
+    .filter(({ user }) => isPremiumAccount(user))
     .map(({ profileId, mimeType, data }) => ({ profileId, mimeType, data }));
 };
 

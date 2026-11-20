@@ -99,7 +99,7 @@ test('discarding profile edits does not restore an immediately deleted voice int
     ).toBe(200);
     const [user] =
       await sql`select id from users where discord_user_id = ${id}`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${user.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${user.id}`;
     const audio = readFileSync('tests/fixtures/voice-short.webm').toString(
       'base64',
     );
@@ -404,7 +404,7 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
     ).toBe(200);
     const [user] =
       await sql`select id from users where discord_user_id = ${id}`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${user.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${user.id}`;
     const values = {
       ...profile,
       tags: ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'],
@@ -419,7 +419,7 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
     expect(
       (await context.request.post('/api/profile', { data: values })).status(),
     ).toBe(200);
-    await sql`update subscriptions set status = 'canceled', current_period_end = now() - interval '1 day' where user_id = ${user.id}`;
+    await sql`update users set premium_granted_until = now() - interval '1 day' where id = ${user.id}`;
     expect(
       (
         await context.request.post('/api/profile', {

@@ -45,7 +45,7 @@ test('guest payloads omit restricted usernames and mutual blocks survive navigat
       const [profile] =
         await sql`insert into profiles (last_bumped_at,user_id, is_public, allow_anonymous_copy, primary_language, target_language, proficiency_level, bio, voice_intro_seconds) values (now(),${account.id}, true, false, 'en', 'ja', 'beginner', 'Privacy test language partner profile.', 1) returning id`;
       accounts.push({ id: account.id, profileId: profile.id });
-      await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${account.id}, ${`test-${randomUUID()}`}, 'active', now() + interval '1 day')`;
+      await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${account.id}`;
       await sql`insert into voice_intros (user_id, mime_type, duration_seconds, size_bytes, data) values (${account.id}, 'audio/webm', 1, 3, 'YWJj')`;
     }
     const [viewer, target] = accounts;
@@ -204,7 +204,7 @@ test('blocked accounts show usernames and a restricted current preview', async (
     }
     const [viewer, target] = accounts;
     await sql`insert into user_blocks (blocker_user_id, blocked_user_id) values (${viewer}, ${target})`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${target}, ${`cus_${identities[1].id}`}, 'active', now() + interval '30 days')`;
+    await sql`update users set premium_granted_until = now() + interval '30 days' where id = ${target}`;
     await signIn(context, identities[0], viewer);
     const listBlocked = async () =>
       (await (await context.request.get('/api/block')).json()).users;

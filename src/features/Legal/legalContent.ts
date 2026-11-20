@@ -20,7 +20,7 @@ export const LEGAL_DOCUMENT_IDS: LegalDocumentId[] = [
 
 export const LEGAL_CANONICAL_LOCALE = 'en';
 
-const LAST_UPDATED = '2026-09-24';
+const LAST_UPDATED = '2026-11-19';
 
 const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
@@ -81,7 +81,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Supporter and payments',
         paragraphs: [
-          'Some features are part of Polycord Supporter. The price and what Supporter includes are shown in Settings, and Stripe Checkout shows the amount and billing period before you pay. Subscriptions renew until you cancel, and you keep paid features until the end of the period you already paid for.',
+          'Some features are part of Polycord Supporter, and Settings shows what it includes. Supporter is not currently available to buy. If Supporter has been granted to your account, Settings shows when it ends.',
         ],
       },
       {
@@ -125,7 +125,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, tags, card styling, and voice introductions.',
           'Usage data: product events, timestamps, locale, and limited feature metadata. Events from signed-in users can be linked to their account.',
           'Service data: saved profiles, blocks, reports, moderation records, notifications, preferences, and technical logs, including IP addresses for abuse prevention.',
-          'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Supporter, we store Stripe customer and subscription identifiers and billing status; Stripe processes payment details.',
+          'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Supporter, we store when your Supporter access ends.',
         ],
       },
       {
@@ -158,20 +158,20 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'How we share information',
         paragraphs: [
-          'We share data with providers that host and operate Polycord, Discord for sign-in, Stripe for payments, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
+          'We share data with providers that host and operate Polycord, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
         ],
       },
       {
         heading: 'Data retention',
         paragraphs: [
-          'Deleting your account removes your account, profile, settings, voice introduction, saved profiles, blocks, reports involving you, inbox notifications, local billing records, boosts, and push subscriptions, and stops your existing sessions.',
+          'Deleting your account removes your account, profile, settings, voice introduction, saved profiles, blocks, reports involving you, inbox notifications, boosts, and push subscriptions, and stops your existing sessions.',
           'Analytics events, moderation actions, and abuse-prevention logs remain with the link to your account cleared, and their metadata, notes, or IP addresses can remain. Rate-limit counters, your display name and avatar in notifications already delivered to other members, payment-provider records, and backups are not removed by deletion. If your account has a moderation restriction, your Discord ID and that restriction are kept to prevent ban evasion.',
         ],
       },
       {
         heading: 'Export and deletion',
         paragraphs: [
-          'You can download your account, complete profile, settings, voice introduction, saved profiles, blocks, submitted reports, inbox state, billing state, boosts, push registrations, and account-linked activity as JSON from Settings. The export leaves out other people’s private data and delivery credentials. You can also delete your account there. For access, correction, deletion, or restriction requests beyond those controls, contact privacy@polycord.app.',
+          'You can download your account, complete profile, settings, voice introduction, saved profiles, blocks, submitted reports, inbox state, boosts, push registrations, and account-linked activity as JSON from Settings. The export leaves out other people’s private data and delivery credentials. You can also delete your account there. For access, correction, deletion, or restriction requests beyond those controls, contact privacy@polycord.app.',
         ],
       },
       {
