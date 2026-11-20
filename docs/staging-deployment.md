@@ -101,7 +101,7 @@ node scripts/deploy-staging.mjs
 
 Codespaces puts every user secret into each shell, and the deploy script only strips the names it uses, so the `unset` keeps the original copies away from the test suite. Stop the codespace afterwards. The Postgres container is the disposable test database; it never holds staging or production data.
 
-The script refuses to run on another platform or Node version, from a checkout with local changes or from anything other than the current `develop` tip. When the commit has a passing `CI result` check, it relies on that. Otherwise, for example once Actions minutes run out, it runs the full suite against `TEST_DATABASE_URL` without the deployment tokens in the environment and stops on the first failure. Then it packages, checks migrations, uploads, verifies the digest, restores the previous deploy on failure and records `staging/published` exactly as the Actions job does. The summary says which validation it relied on.
+The script refuses to run on another platform or Node version, from a checkout with local changes or from anything other than the current `develop` tip. When the commit has a passing `CI result` check, it relies on that. Otherwise, for example once Actions minutes run out, it runs the full suite against a disposable local `TEST_DATABASE_URL` named `polycord_test` (or a database with that prefix) without the deployment tokens in the environment and stops on the first failure. Then it packages, checks migrations, uploads, verifies the digest, restores the previous deploy on failure and records `staging/published` exactly as the Actions job does. The summary says which validation it relied on.
 
 ## Making the repository private
 
