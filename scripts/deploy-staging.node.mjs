@@ -280,10 +280,10 @@ test('an owner deploys the clean develop tip on CI evidence', async () => {
 test('an owner without CI evidence runs the full suite on a disposable database first', async () => {
   owner();
   ciRuns = [];
-  process.env.TEST_DATABASE_URL = 'postgresql://synthetic/test';
+  process.env.TEST_DATABASE_URL = 'postgresql://localhost/polycord_test';
   await deployStaging(run, request);
   const [e2e, barOnly] = ran('test:e2e');
-  assert.equal(e2e.env.DATABASE_URL, 'postgresql://synthetic/test');
+  assert.equal(e2e.env.DATABASE_URL, 'postgresql://localhost/polycord_test');
   assert.ok(
     barOnly.args.includes('NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED=false'),
   );
@@ -300,8 +300,16 @@ test('refuses an owner deploy without evidence, from a dirty checkout or off the
   owner();
   ciRuns = [{ conclusion: 'failure' }];
   await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
-  process.env.TEST_DATABASE_URL = process.env.DATABASE_URL;
-  await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
+  for (const url of [
+    process.env.DATABASE_URL,
+    'postgresql://remote/polycord_test',
+    'postgresql://localhost/postgres',
+    'postgresql://localhost/polycord_test?host=remote',
+  ]) {
+    process.env.TEST_DATABASE_URL = url;
+    await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
+  }
+  assert.equal(ran('migrate').length, 0);
   status = ' M src/app/page.tsx\n';
   await assert.rejects(deployStaging(run, request), /clean checkout/);
   status = '';
