@@ -51,5 +51,5 @@ Direct entry, refresh, Back and Forward, locale changes and return journeys are 
 
 1. BILLING-002 has not started, so purchase, renewal, failure, cancellation and the hardcoded renewal dates in Settings Supporter are unverified.
 2. The Open rows in `docs/legal/claims.md` need owner evidence or decisions: mailbox delivery, eligibility and guardian acknowledgement, escalation, no-sale and security assertions.
-3. The Blocking rows in `docs/operations/readiness.md` remain: production database separation, uptime monitoring and alerting.
+3. The Blocking and Pending rows in `docs/operations/readiness.md` remain: production database separation and production backups. Uptime monitoring and alerting follow after launch (DEV-042).
 4. No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.
