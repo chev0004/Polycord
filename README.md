@@ -270,8 +270,11 @@ bunx tsc --noEmit
 bun run build
 ```
 
-The pre-push hook (`scripts/pre-push.mjs`) runs `bun run check:all` for every
-push except one whose new commits only change docs.
+The pre-push hook (`scripts/pre-push.mjs`) classifies every ref. Docs-only
+updates and deletions skip `check:all`. Push code updates from a clean checkout
+whose tree matches each such ref. If the code refs have different trees, push
+them separately from their corresponding worktrees. Unavailable comparisons
+require checks.
 
 For database changes, also run:
 

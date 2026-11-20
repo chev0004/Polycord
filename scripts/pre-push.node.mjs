@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, test } from 'node:test';
-import { needsChecks } from './pre-push.mjs';
+import { checkPush, needsChecks } from './pre-push.mjs';
 
 const originalCwd = process.cwd();
 const zero = '0'.repeat(40);
@@ -78,4 +78,31 @@ test('deletes need no check and multi-ref pushes check every ref', async () => {
 test('an unknown remote revision runs the full check', async () => {
   const head = await commit({ 'docs/a.md': 'a' });
   assert.equal(needsChecks(line(head, 'f'.repeat(40))), true);
+});
+
+test('checks the pushed tree and refuses a different checkout or tracked edits', async () => {
+  const code = await commit({ 'src/app.ts': 'b' });
+  const other = await commit({ 'src/app.ts': 'c' });
+  const calls = [];
+  const report = {
+    log() {},
+    error(...args) {
+      calls.push(args);
+    },
+  };
+  const run = (command, args, options) => {
+    if (command === 'bun') {
+      calls.push(args);
+      return { status: 0 };
+    }
+    return spawnSync(command, args, options);
+  };
+  assert.equal(checkPush(line(code, base), run, report), 1);
+  assert.equal(checkPush(line(code, base) + line(other, code), run, report), 1);
+  assert.ok(calls.every((args) => args[0] !== 'run'));
+  assert.equal(checkPush(line(other, code), run, report), 0);
+  assert.deepEqual(calls.at(-1), ['run', 'check:all']);
+  await writeFile('src/app.ts', 'dirty');
+  assert.equal(checkPush(line(other, code), run, report), 1);
+  assert.equal(calls.filter((args) => args[0] === 'run').length, 1);
 });
