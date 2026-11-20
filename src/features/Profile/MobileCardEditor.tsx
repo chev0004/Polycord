@@ -1001,23 +1001,29 @@ export const MobileCardEditor = ({
                     ) : null}
                     <div className="flex flex-col gap-1.5 rounded-xl bg-background-darker p-1.5 pb-2">
                       <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setLanguagePick({ kind: 'target', index })
-                          }
-                          className={`flex h-11 min-w-0 flex-1 items-center rounded-lg px-2.5 text-left text-[15px] ${
-                            row.language
-                              ? 'font-semibold'
-                              : 'font-medium text-subtle'
-                          }`}
-                        >
-                          <span className="truncate">
-                            {row.language
-                              ? getLanguageName(row.language, locale)
-                              : t('chooseLanguage')}
-                          </span>
-                        </button>
+                        {index >= languageCap ? (
+                          <p className="flex h-11 min-w-0 flex-1 items-center px-2.5 text-sm text-muted">
+                            {getLanguageName(row.language, locale)}
+                          </p>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setLanguagePick({ kind: 'target', index })
+                            }
+                            className={`flex h-11 min-w-0 flex-1 items-center rounded-lg px-2.5 text-left text-[15px] ${
+                              row.language
+                                ? 'font-semibold'
+                                : 'font-medium text-subtle'
+                            }`}
+                          >
+                            <span className="truncate">
+                              {row.language
+                                ? getLanguageName(row.language, locale)
+                                : t('chooseLanguage')}
+                            </span>
+                          </button>
+                        )}
                         <SheetIconButton
                           label={t('removeLanguage')}
                           disabled={targetLanguages.length <= 1}
@@ -1030,31 +1036,33 @@ export const MobileCardEditor = ({
                           <MdDeleteOutline size={20} className="text-muted" />
                         </SheetIconButton>
                       </div>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {levels.map((level) => (
-                          <button
-                            key={level.value}
-                            type="button"
-                            aria-pressed={row.level === level.value}
-                            onClick={() =>
-                              setTargets(
-                                targetLanguages.map((entry, i) =>
-                                  i === index
-                                    ? { ...entry, level: level.value }
-                                    : entry,
-                                ),
-                              )
-                            }
-                            className={`h-9 truncate rounded-full px-2 font-semibold text-[13px] transition-colors duration-200 ${
-                              row.level === level.value
-                                ? 'bg-primary-dark text-foreground'
-                                : 'bg-background-dark text-muted'
-                            }`}
-                          >
-                            {level.label}
-                          </button>
-                        ))}
-                      </div>
+                      {index < languageCap ? (
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {levels.map((level) => (
+                            <button
+                              key={level.value}
+                              type="button"
+                              aria-pressed={row.level === level.value}
+                              onClick={() =>
+                                setTargets(
+                                  targetLanguages.map((entry, i) =>
+                                    i === index
+                                      ? { ...entry, level: level.value }
+                                      : entry,
+                                  ),
+                                )
+                              }
+                              className={`h-9 truncate rounded-full px-2 font-semibold text-[13px] transition-colors duration-200 ${
+                                row.level === level.value
+                                  ? 'bg-primary-dark text-foreground'
+                                  : 'bg-background-dark text-muted'
+                              }`}
+                            >
+                              {level.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
                       {index >= languageCap ? (
                         <button
                           type="button"

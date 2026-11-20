@@ -971,6 +971,7 @@ export const MobileLapsedOverLimit: Story = {
 
     fireEvent.click(canvas.getByRole('button', { name: /^French/ }));
     const sheet = within(await screen.findByRole('dialog'));
+    await expect(sheet.queryByRole('button', { name: 'French' })).toBeNull();
     fireEvent.click(
       sheet.getByRole('button', { name: 'Show French on your profile' }),
     );

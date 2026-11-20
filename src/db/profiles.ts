@@ -191,15 +191,12 @@ const toDiscoveryProfile = (
   primaryLanguage: profile.primaryLanguage,
   targetLanguages: targetLanguages.slice(
     0,
-    entitlementLimit(
-      'profile.targetLanguages',
-      isPremiumOwner(user, subscription),
-    ),
+    entitlementLimit('profile.targetLanguages', isPremiumAccount(user)),
   ),
   about: profile.bio,
   tags: profile.tags.slice(
     0,
-    entitlementLimit('profile.tags', isPremiumOwner(user, subscription)),
+    entitlementLimit('profile.tags', isPremiumAccount(user)),
   ),
   country: profile.country ?? undefined,
   timezone: profile.displayTimezone
