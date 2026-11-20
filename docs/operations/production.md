@@ -34,8 +34,7 @@ The owner does these steps. None of them is automated.
 
 | Service | Limit that matters | What it means for releases |
 | --- | --- | --- |
-| Netlify Free (credit-based teams) | 300 credits a month for the whole team. A production deploy costs 15, bandwidth 20 per GB, compute 10 per GB-hour, requests 2 per 10,000. When credits run out, every site on the team is paused until the next cycle. | Staging and production share the allowance, so staging deploys and staging traffic can take production offline. Check the team's plan type and usage before choosing a publish cadence; see [Actions budget](actions-budget.md#publish-cadence). |
-| Netlify Free (legacy teams created before September 2025) | 100 GB bandwidth, 300 build minutes and 125,000 function invocations per site a month, all hard limits. | Owner deploys use no Netlify build minutes. |
+| Netlify legacy Free (team `The Chevvy Archives`, no payment method) | 100 GB bandwidth and 300 build minutes a month, hard limits, shared by every site on the team. Deploys are not metered. | Staging and production share the bandwidth, so heavy staging use can stop production serving until the month resets. Owner deploys use no build minutes. Never switch the team to a credit-based plan; see [Actions budget](actions-budget.md#publish-cadence). |
 | Supabase Free | 2 active projects, 500 MB database, 5 GB egress. Projects pause after a week without activity. No automatic backups. | Staging and production use both free projects. Take the [manual backup](readiness.md#backup) before every migration and on a schedule. |
 
 ## Releasing a candidate
@@ -43,12 +42,12 @@ The owner does these steps. None of them is automated.
 1. Choose a `develop` commit whose staging deploy is verified.
 2. Point `main` at it with `git push origin <sha>:refs/heads/main`. While Actions minutes remain, the push runs the Tests workflow on `main`, whose `CI result` check becomes the release evidence.
 3. Apply any pending migrations to the production database first, following [Migrations](readiness.md#migrations). The package build runs `scripts/check-migrations.ts` and fails if the database is behind.
-4. In the owner deploy environment, check out `main` and run:
+4. In a codespace set up as in [owner-run deployment](../staging-deployment.md#owner-run-deployment), run:
 
 ```sh
-git switch --detach origin/main
-NETLIFY_AUTH_TOKEN=... GITHUB_TOKEN=... DATABASE_URL=<production direct URL> \
-NETLIFY_PRODUCTION_SITE_ID=<site ID> POLYCORD_PRODUCTION_DOMAIN=polycord.net \
+git fetch origin && git switch --detach origin/main
+export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$PRODUCTION_DATABASE_URL" \
+  NETLIFY_PRODUCTION_SITE_ID=<site ID> POLYCORD_PRODUCTION_DOMAIN=polycord.net
 node scripts/deploy-production.mjs
 ```
 

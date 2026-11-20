@@ -74,21 +74,31 @@ the job restores the previous immutable deployment.
 
 The owner can publish staging without GitHub Actions, using the same script and checks. This is the only staging path once the repository is private on GitHub Free, because environment secrets then stop working and repository secrets would reach every pull request job from a branch in this repository. Deployment credentials stay with the owner and never go into GitHub.
 
-The Netlify Next adapter cannot package on Windows, so run it on Linux: a GitHub Codespace on this repository (billed against the separate Codespaces allowance, not Actions minutes) or WSL. Set it up once:
+The Netlify Next adapter cannot package on Windows, so run it on Linux. The supported environment is a GitHub Codespace on this repository, which uses the separate Codespaces allowance (120 core-hours a month on Free), not Actions minutes.
 
-1. Install Node 22 and Bun 1.3.14, then `bun install --frozen-lockfile` and `bunx playwright install --with-deps chromium`.
-2. Keep the credentials outside the repository, for example as Codespaces user secrets limited to this repository or a file in the home directory:
-   - `NETLIFY_AUTH_TOKEN`: a Netlify personal access token.
-   - `GITHUB_TOKEN`: a fine-grained token for this repository only, with read access to checks and write access to commit statuses.
-   - `DATABASE_URL`: the direct URL of the database behind the site being deployed.
-   - `TEST_DATABASE_URL`: a disposable Postgres 17 database for the full suite, for example `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:17` and `postgresql://postgres:postgres@localhost:5432/polycord_test`. Never the staging or production database.
+Once, in GitHub, Settings, Codespaces, Secrets, add these user secrets with access limited to `chev0004/Polycord`. Codespaces secret names cannot start with `GITHUB_`:
 
-To publish:
+| Secret | Value |
+| --- | --- |
+| `NETLIFY_AUTH_TOKEN` | A Netlify personal access token with an expiry |
+| `POLYCORD_GITHUB_TOKEN` | A fine-grained token for this repository only: Checks read, Commit statuses read and write |
+| `STAGING_DATABASE_URL` | The staging database's direct URL |
+| `PRODUCTION_DATABASE_URL` | The production database's direct URL, once it exists |
+
+To publish, create a 4-core codespace on `develop` and run:
 
 ```sh
+nvm install 22
+curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.14" && export PATH="$HOME/.bun/bin:$PATH"
+docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=polycord_test postgres:17
 git fetch origin && git switch --detach origin/develop
+bun install --frozen-lockfile && bunx playwright install --with-deps chromium
+export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$STAGING_DATABASE_URL" \
+  TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/polycord_test
 node scripts/deploy-staging.mjs
 ```
+
+Stop the codespace afterwards. The Postgres container is the disposable test database; it never holds staging or production data.
 
 The script refuses to run on another platform or Node version, from a checkout with local changes or from anything other than the current `develop` tip. When the commit has a passing `CI result` check, it relies on that. Otherwise, for example once Actions minutes run out, it runs the full suite against `TEST_DATABASE_URL` without the deployment tokens in the environment and stops on the first failure. Then it packages, checks migrations, uploads, verifies the digest, restores the previous deploy on failure and records `staging/published` exactly as the Actions job does. The summary says which validation it relied on.
 
