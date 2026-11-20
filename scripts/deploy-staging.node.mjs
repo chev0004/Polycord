@@ -35,6 +35,7 @@ beforeEach(async () => {
     DATABASE_URL: 'postgresql://synthetic/actions',
     GITHUB_TOKEN: 'synthetic-github-token',
   };
+  delete process.env.TEST_DATABASE_URL;
   process.chdir(await mkdtemp(join(tmpdir(), 'polycord-deploy-')));
   await mkdir('.netlify/static/_next/static', { recursive: true });
   await mkdir('.netlify/functions', { recursive: true });
