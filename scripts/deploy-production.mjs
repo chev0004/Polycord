@@ -36,8 +36,7 @@ export async function deployProduction(
       siteId,
       domain,
       branch: 'main',
-      events: ['workflow_dispatch'],
-      requireCi: true,
+      events: [],
       checkValues: async (values) => {
         assert.equal(
           values.POLYCORD_PUBLIC_URL,

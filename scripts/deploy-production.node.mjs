@@ -22,9 +22,6 @@ beforeEach(async () => {
   process.env = {
     ...originalEnv,
     GITHUB_REPOSITORY: 'chev0004/Polycord',
-    GITHUB_REF: 'refs/heads/main',
-    GITHUB_EVENT_NAME: 'workflow_dispatch',
-    GITHUB_SHA: sha,
     GITHUB_ACTIONS: 'false',
     GITHUB_STEP_SUMMARY: '',
     NETLIFY_AUTH_TOKEN: 'synthetic-token',
@@ -128,11 +125,13 @@ test('deploys a validated main commit with production configuration', async () =
   );
 });
 
-test('only a manual run from main can deploy production', async () => {
-  process.env.GITHUB_EVENT_NAME = 'push';
-  await assert.rejects(deploy());
-  process.env.GITHUB_EVENT_NAME = 'workflow_dispatch';
-  process.env.GITHUB_REF = 'refs/heads/develop';
+test('only the owner can deploy production, never GitHub Actions', async () => {
+  Object.assign(process.env, {
+    GITHUB_ACTIONS: 'true',
+    GITHUB_REF: 'refs/heads/main',
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    GITHUB_SHA: sha,
+  });
   await assert.rejects(deploy());
   assert.equal(calls.length, 0);
 });
@@ -144,9 +143,9 @@ test('refuses the staging site', async () => {
   assert.equal(calls.length, 0);
 });
 
-test('refuses a candidate without a passing CI result', async () => {
+test('refuses a candidate without a passing CI result or local validation', async () => {
   ciRuns = [{ conclusion: 'failure' }];
-  await assert.rejects(deploy(), /no passing CI result/);
+  await assert.rejects(deploy(), /No passing CI result/);
   assert.equal(built(), false);
 });
 
