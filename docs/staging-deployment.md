@@ -44,6 +44,32 @@ Validation jobs that already started can finish independently. Staging deploy
 jobs queue without replacing pending jobs. Each deploy rechecks freshness before
 packaging and before upload and fails if it cannot compare with the tip.
 
+## CI result
+
+Every Tests run ends with the `CI result` job. It passes only when the gate
+succeeded and every job the gate planned succeeded, and staging requires it.
+Use `CI result` as the single required status check for `develop` where the
+plan supports branch protection. Docs-only PRs still run the gate, skip
+validation and report a passing `CI result`.
+
+For a validated PR from this repository, `CI result` sets a `ci/result` commit
+status on the PR head with the checked-out merge tree
+(`git rev-parse HEAD^{tree}`) and a hash of the CI policy files
+(`scripts/ci-evidence.mjs`). After the merge, the develop gate reuses that run
+only when:
+
+- the PR's merge commit is the pushed commit, and the status tree and policy
+  match the landed commit;
+- the merge changed none of the CI policy files, so the run used the reviewed
+  workflow;
+- GitHub's run record is the Tests workflow for that PR head in this
+  repository, its latest attempt completed successfully, and every job in that
+  attempt, including each required job, succeeded.
+
+If the PR run is still active, the gate waits up to 15 minutes for it. A base
+that advanced after the run, a canceled or incomplete job, a later attempt than
+the one that recorded the status, a fork PR, a direct push or any missing record takes full validation.
+
 ## Environment changes and manual deployment
 
 Keep application variables on the Netlify staging site. This site's main
