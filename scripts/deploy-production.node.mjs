@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, test } from 'node:test';
+import { matchesSupabaseProject } from '../src/db/supabase-project.mjs';
 import { deployProduction } from './deploy-production.mjs';
 
 const siteId = 'production-site';
@@ -11,6 +12,7 @@ const project = 'abcdefghijklmnopqrst';
 const runtimeUrl = `postgresql://postgres.${project}:test@aws-1-us-west-2.pooler.supabase.com:6543/postgres`;
 const sha = 'c'.repeat(40);
 const origin = 'https://polycord.example';
+const deployUrl = 'https://uploaded--polycord-production.netlify.app';
 const digest = createHash('sha256').update('server archive').digest('hex');
 const originalCwd = process.cwd();
 const originalEnv = { ...process.env };
@@ -20,6 +22,7 @@ let functionValues;
 let ciRuns;
 let seedRows;
 let site;
+let healthy;
 
 beforeEach(async () => {
   process.env = {
@@ -71,9 +74,13 @@ beforeEach(async () => {
     NEXT_PUBLIC_DISCORD_INVITE_URL: 'https://discord.gg/example',
     POLYCORD_ANALYTICS_DISABLED: 'true',
   };
-  functionValues = { DATABASE_URL: runtimeUrl };
+  functionValues = {
+    DATABASE_URL: '********',
+    POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF: project,
+  };
   ciRuns = [{ conclusion: 'success' }];
   seedRows = 0;
+  healthy = true;
   site = {
     id: siteId,
     custom_domain: 'polycord.example',
@@ -103,15 +110,33 @@ function run(command, args, options) {
   return { status: 0, stdout, env: options.env };
 }
 
-async function request(url) {
-  calls.push({ url });
+async function request(url, { method = 'GET' } = {}) {
+  calls.push({ url, method });
   if (url.includes('/check-runs'))
     return { ok: true, json: async () => ({ check_runs: ciRuns }) };
+  if (url === `${deployUrl}/api/health`)
+    return {
+      ok: healthy,
+      json: async () => ({ status: healthy ? 'ok' : 'unavailable' }),
+    };
   const path = url.replace('https://api.netlify.com/api/v1/', '');
   let data;
   if (path === `sites/${siteId}`) data = structuredClone(site);
   if (path === 'deploys/uploaded')
-    data = { id: 'uploaded', site_id: siteId, state: 'ready', build_id: null };
+    data = {
+      id: 'uploaded',
+      site_id: siteId,
+      state: 'ready',
+      build_id: null,
+      deploy_ssl_url: deployUrl,
+    };
+  if (
+    path === `sites/${siteId}/deploys/previous/restore` &&
+    method === 'POST'
+  ) {
+    site.published_deploy = { id: 'previous' };
+    data = {};
+  }
   if (path === `sites/${siteId}/functions`)
     data = {
       functions: [
@@ -125,11 +150,37 @@ async function request(url) {
 const deploy = () => deployProduction(run, request, async () => seedRows);
 const built = () => calls.some(({ args }) => args?.[1] === 'build');
 
-test('deploys a validated main commit with production configuration', async () => {
+test('deploys the first validated main commit with a masked database credential', async () => {
+  site.build_settings = null;
+  site.published_deploy = null;
   await deploy();
   assert.equal(site.published_deploy.id, 'uploaded');
+  assert.ok(calls.some(({ url }) => url === `${deployUrl}/api/health`));
   assert.equal(
     calls.some(({ url }) => url?.includes('/statuses/')),
+    false,
+  );
+});
+
+test('requires stopped builds when production is linked to a repository', async () => {
+  site.git_provider = 'github';
+  site.build_settings.stop_builds = false;
+  await assert.rejects(deploy(), /Stop Netlify builds/);
+  assert.equal(built(), false);
+});
+
+test('restores the previous deploy when production database health fails', async () => {
+  healthy = false;
+  await assert.rejects(deploy(), /production database health check failed/);
+  assert.equal(site.published_deploy.id, 'previous');
+});
+
+test('reports failed production database health on the first deploy', async () => {
+  healthy = false;
+  site.published_deploy = null;
+  await assert.rejects(deploy(), /production database health check failed/);
+  assert.equal(
+    calls.some(({ method }) => method === 'POST'),
     false,
   );
 });
@@ -179,18 +230,23 @@ test('refuses a database marked for seeding', async () => {
   assert.equal(built(), false);
 });
 
-test('refuses an unapproved database in either runtime or local configuration', async () => {
-  for (const url of [
-    undefined,
-    '********',
-    runtimeUrl.replace(project, 'zzzzzzzzzzzzzzzzzzzz'),
-    runtimeUrl + '?host=other',
-  ]) {
-    functionValues.DATABASE_URL = url;
-    await assert.rejects(deploy(), /Netlify Functions DATABASE_URL/);
-  }
-  functionValues.DATABASE_URL = runtimeUrl;
+test('requires the configured Functions credential and the approved project reference', async () => {
+  delete functionValues.DATABASE_URL;
+  await assert.rejects(deploy(), /Set DATABASE_URL for Netlify Functions/);
+  functionValues.DATABASE_URL = '********';
+  functionValues.POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF = 'z'.repeat(20);
+  await assert.rejects(deploy(), /approved production Supabase project ref/);
+  functionValues.POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF = project;
   process.env.DATABASE_URL = 'postgresql://localhost/postgres';
   await assert.rejects(deploy(), /Local DATABASE_URL/);
   assert.equal(built(), false);
+});
+
+test('matches a project-bound pooler URL without allowing host overrides', () => {
+  assert.equal(matchesSupabaseProject(runtimeUrl, project), true);
+  assert.equal(matchesSupabaseProject(runtimeUrl, 'z'.repeat(20)), false);
+  assert.equal(
+    matchesSupabaseProject(`${runtimeUrl}?host=another`, project),
+    false,
+  );
 });

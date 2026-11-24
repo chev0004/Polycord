@@ -118,6 +118,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
       DATABASE_URL: database.href,
       NETLIFY_AUTH_TOKEN: undefined,
       GITHUB_TOKEN: undefined,
+      POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF: undefined,
     };
     for (const [command, ...args] of fullValidation)
       execute(command, args, env, true);
@@ -223,6 +224,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
       'Published server differs from prepared package',
     );
     assert.equal((await api(`sites/${siteId}`)).published_deploy.id, deploy.id);
+    await target.verifyPublished?.(deploy);
     const summary = [
       `${name} deployed: ${deploy.id}`,
       `Source: ${sha}`,
@@ -237,7 +239,8 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
       await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   } catch (error) {
     if (
-      (await api(`sites/${siteId}`)).published_deploy.id === uploaded.deploy_id
+      site.published_deploy?.id &&
+      (await api(`sites/${siteId}`)).published_deploy?.id === uploaded.deploy_id
     ) {
       await api(
         `sites/${siteId}/deploys/${site.published_deploy.id}/restore`,
