@@ -139,13 +139,22 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
   const site = await api(`sites/${siteId}`);
   assert.equal(site.id, siteId);
   assert.equal(site.custom_domain, domain);
+  const buildSettings = site.build_settings;
   if (target.repoBranch)
-    assert.equal(site.build_settings.repo_branch, target.repoBranch);
-  assert.equal(
-    site.build_settings.stop_builds,
-    true,
-    'Stop Netlify builds before cutover',
-  );
+    assert.equal(buildSettings?.repo_branch, target.repoBranch);
+  if (
+    target.repoBranch ||
+    site.git_provider ||
+    buildSettings?.repo_url ||
+    buildSettings?.repo_path ||
+    buildSettings?.repo_branch ||
+    buildSettings?.provider
+  )
+    assert.equal(
+      buildSettings?.stop_builds,
+      true,
+      'Stop Netlify builds before cutover',
+    );
   const readEnv = (scope) =>
     JSON.parse(
       cli([
