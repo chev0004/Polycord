@@ -118,6 +118,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
       DATABASE_URL: database.href,
       NETLIFY_AUTH_TOKEN: undefined,
       GITHUB_TOKEN: undefined,
+      POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF: undefined,
     };
     for (const [command, ...args] of fullValidation)
       execute(command, args, env, true);
@@ -139,25 +140,36 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
   const site = await api(`sites/${siteId}`);
   assert.equal(site.id, siteId);
   assert.equal(site.custom_domain, domain);
+  const buildSettings = site.build_settings;
   if (target.repoBranch)
-    assert.equal(site.build_settings.repo_branch, target.repoBranch);
-  assert.equal(
-    site.build_settings.stop_builds,
-    true,
-    'Stop Netlify builds before cutover',
-  );
-  const values = JSON.parse(
-    cli([
-      'env:list',
-      '--site',
-      siteId,
-      '--context',
-      'production',
-      '--scope',
-      'builds',
-      '--json',
-    ]),
-  );
+    assert.equal(buildSettings?.repo_branch, target.repoBranch);
+  if (
+    target.repoBranch ||
+    site.git_provider ||
+    buildSettings?.repo_url ||
+    buildSettings?.repo_path ||
+    buildSettings?.repo_branch ||
+    buildSettings?.provider
+  )
+    assert.equal(
+      buildSettings?.stop_builds,
+      true,
+      'Stop Netlify builds before cutover',
+    );
+  const readEnv = (scope) =>
+    JSON.parse(
+      cli([
+        'env:list',
+        '--site',
+        siteId,
+        '--context',
+        'production',
+        '--scope',
+        scope,
+        '--json',
+      ]),
+    );
+  const values = readEnv('builds');
   assert.ok(values.AUTH_SECRET, `${name} build variables are required`);
   if (actions) {
     for (const value of Object.values(values)) {
@@ -167,7 +179,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
         );
     }
   }
-  const checks = (await target.checkValues?.(values)) ?? [];
+  const checks = (await target.checkValues?.(values, readEnv)) ?? [];
   const env = {
     ...process.env,
     ...values,
@@ -212,6 +224,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
       'Published server differs from prepared package',
     );
     assert.equal((await api(`sites/${siteId}`)).published_deploy.id, deploy.id);
+    await target.verifyPublished?.(deploy);
     const summary = [
       `${name} deployed: ${deploy.id}`,
       `Source: ${sha}`,
@@ -226,7 +239,8 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
       await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   } catch (error) {
     if (
-      (await api(`sites/${siteId}`)).published_deploy.id === uploaded.deploy_id
+      site.published_deploy?.id &&
+      (await api(`sites/${siteId}`)).published_deploy?.id === uploaded.deploy_id
     ) {
       await api(
         `sites/${siteId}/deploys/${site.published_deploy.id}/restore`,
