@@ -493,7 +493,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <p className="font-medium text-[15px] text-foreground">
                       {t('deleteAccountLabel')}
                     </p>
-                    <p className="mt-0.5 text-[12px] text-subtle">
+                    <p className="mt-0.5 text-[12px] text-danger">
                       {t('deleteAccountDescription')}
                     </p>
                   </div>
