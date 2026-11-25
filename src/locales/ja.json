@@ -1188,7 +1188,7 @@
     "notFoundTitle": "このプロフィールは表示できません",
     "notFoundDescription": "プロフィールが非公開になったか、削除された可能性があります。",
     "backToDiscover": "ディスカバリーに戻る",
-    "metaTitle": "{name}さんのPolycordプロフィール",
+    "metaTitle": "Polycord | {name}",
     "metaDescription": "{name}さんは{primary}を話し、{targets}を学習中です。Polycordで言語パートナーを見つけよう。"
   },
   "DiscoveryStories": {
@@ -1287,7 +1287,22 @@
     "home": "ユーザー検索に戻る"
   },
   "Metadata": {
+    "titleTemplate": "Polycord | %s",
     "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
+  },
+  "PageTitle": {
+    "profile": "プロフィール",
+    "saved": "保存済み",
+    "settings": "設定",
+    "inbox": "受信ボックス",
+    "onboarding": "プロフィール作成",
+    "moderation": "モデレーション",
+    "analytics": "分析",
+    "legal": "法的情報",
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー",
+    "guidelines": "コミュニティガイドライン",
+    "notFound": "ページが見つかりません"
   },
   "DatePicker": {
     "previousMonth": "前の月",

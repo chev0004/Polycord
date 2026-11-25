@@ -24,7 +24,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale: lang, namespace: 'Metadata' });
 
   return {
-    title: 'Polycord',
+    title: { default: 'Polycord', template: t('titleTemplate') },
     description: t('description'),
     icons: {
       icon: [

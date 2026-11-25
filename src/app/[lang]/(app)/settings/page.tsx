@@ -9,7 +9,10 @@ import { isOwner } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
 import { SettingsRouteClient } from './SettingsRouteClient';
+
+export const generateMetadata = pageTitle('settings');
 
 async function SettingsRoute({
   params,

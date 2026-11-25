@@ -9,9 +9,12 @@ import { AnalyticsDashboard } from '@/features/Analytics/AnalyticsDashboard';
 import { isOwner } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
 
 const RANGE_DAYS = 30;
 const DAILY_DAYS = 14;
+
+export const generateMetadata = pageTitle('analytics');
 
 async function AnalyticsRoute({
   params,

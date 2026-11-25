@@ -6,7 +6,10 @@ import { getCurrentUser } from '@/lib/auth';
 import { dayRangeIn } from '@/lib/dayRange';
 import { loadModerationSnapshot } from '@/lib/moderation';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
 import { getSeedStatus } from '@/lib/seed/access';
+
+export const generateMetadata = pageTitle('moderation');
 
 async function AdminRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

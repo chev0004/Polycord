@@ -1188,7 +1188,7 @@
     "notFoundTitle": "This profile is not available",
     "notFoundDescription": "The member may have hidden or deleted their profile.",
     "backToDiscover": "Back to Discover",
-    "metaTitle": "{name} on Polycord",
+    "metaTitle": "Polycord | {name}",
     "metaDescription": "{name} speaks {primary} and is learning {targets}. Find language partners on Polycord."
   },
   "DiscoveryStories": {
@@ -1287,7 +1287,22 @@
     "home": "Return to discovery"
   },
   "Metadata": {
+    "titleTemplate": "Polycord | %s",
     "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
+  },
+  "PageTitle": {
+    "profile": "Profile",
+    "saved": "Saved",
+    "settings": "Settings",
+    "inbox": "Inbox",
+    "onboarding": "Create profile",
+    "moderation": "Moderation",
+    "analytics": "Analytics",
+    "legal": "Legal",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "guidelines": "Community Guidelines",
+    "notFound": "Page not found"
   },
   "DatePicker": {
     "previousMonth": "Previous month",

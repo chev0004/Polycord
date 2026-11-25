@@ -1,5 +1,8 @@
 import { getLegalDocument, LegalDocument } from '@/features/Legal';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
+
+export const generateMetadata = pageTitle('guidelines');
 
 async function GuidelinesRoute({
   params,
