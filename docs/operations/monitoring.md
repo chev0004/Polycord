@@ -41,7 +41,7 @@ Restore into an isolated target, never over the live database:
    `bun scripts/verify-restore.mjs snapshot "$PRODUCTION_DIRECT_URL" > snapshot.json`
 2. Take the backup with `pg_dump` as in [Backup](readiness.md#backup).
 3. Create a new empty database on a local server, never a third Supabase project, which the free plan does not allow alongside staging and production, and [restore](readiness.md#restore) into it.
-4. Verify integrity: `bun scripts/verify-restore.mjs verify "$RESTORE_URL" snapshot.json` compares every public table’s row count, the full migration history, row digests for critical tables and public constraint definitions. Quiesce writes between the snapshot and backup so both represent the same data. Investigate every difference before accepting the restore.
+4. Verify integrity: `bun scripts/verify-restore.mjs verify "$RESTORE_URL" snapshot.json` compares every public table’s row count, the full migration history, row digests for critical tables and public constraint definitions. Quiesce writes between the snapshot and backup so both represent the same data. Investigate every difference before accepting the restore. `profiles_availability_check` and `profiles_availability_days_check` always differ in cast notation, because PostgreSQL re-parses their definitions on restore; accept them only when their allowed values match.
 5. Start a production build against the restored database locally and confirm `/api/health` returns `200`.
 6. Delete the restored database and the dump, which both contain personal data.
 

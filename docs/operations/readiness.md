@@ -44,10 +44,13 @@ Restore into a new, empty database first, and inspect it there before switching 
 
 ```bash
 psql "$RESTORE_URL" -c "drop schema public cascade"
-pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error backup.dump
+pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error --section=pre-data backup.dump
+psql "$RESTORE_URL" -c "create extension pg_trgm schema public"
+pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error --section=data backup.dump
+pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error --section=post-data backup.dump
 ```
 
-A new database already has an empty `public` schema. Dropping it first stops `pg_restore` failing on `schema "public" already exists`.
+A new database already has an empty `public` schema. Dropping it first stops `pg_restore` failing on `schema "public" already exists`. A schema-scoped `pg_dump` leaves out extensions, so `pg_trgm`, which the search indexes use, is created after the tables and before the indexes.
 
 ## Migrations
 
