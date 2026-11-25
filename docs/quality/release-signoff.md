@@ -57,19 +57,21 @@ Mark each cell Pass, Fail (with a finding number) or N/A with a reason.
 | Push: allow, receive a notification, then deny or revoke and confirm none arrives | | | | B |
 | Account export downloads complete JSON | | | | A |
 | Logout ends the session on that device | | | | A |
+| Keyboard-only navigation reaches sign-in, Discovery filters, and the report dialog. Focus returns to the report button when the dialog closes | | | | A |
 | Session expiry or revocation: a deleted or signed-out session cannot act | | | | A |
 | Account deletion, then sign-in starts fresh | | | | A |
 | Key routes in English and Japanese: Discovery, profile, Settings, legal pages | | | | A |
 
 ## Privacy checks
 
-| Check | Expected | Result |
-| --- | --- | --- |
-| A hidden or suspended profile | Not in Discovery, its direct link and voice media unavailable to others | |
-| A blocked account | Not shown in Discovery, direct link or inbox for either side while signed in | |
-| Signed-out visitor | Sees public profiles; Discord username only when the member allows anonymous copying | |
-| Denied notification permission | No prompt loop and no error; Settings shows notifications off | |
-| `robots.txt`, `sitemap.xml` and `X-Robots-Tag` | Match [production deployment](../operations/production.md#indexing) | |
+| Check | Expected | Desktop | iPhone | Android |
+| --- | --- | --- | --- | --- |
+| A hidden or suspended profile | Absent from Discovery, with its direct link and voice media unavailable to others | | | |
+| A blocked account | Hidden in Discovery, direct links and inbox for both accounts while signed in | | | |
+| Signed-out visitor | Sees public profiles and may copy Discord usernames when the member permits it | | | |
+| Denied notification permission | Settings shows notifications off, with no prompt loop or error | | | |
+
+Record the candidate's `robots.txt`, `sitemap.xml` and `X-Robots-Tag` results against the [production indexing rules](../operations/production.md#indexing).
 
 ## Findings
 
