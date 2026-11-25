@@ -23,10 +23,9 @@ const {
   moderationRestrictions,
   notifications,
   seedDatabase,
-  subscriptions,
   voiceIntros,
 } = await import('../../src/db/schema');
-const { eq, and, count, inArray, like } = await import('drizzle-orm');
+const { eq, and, count, gt, inArray, like } = await import('drizzle-orm');
 const { upsertDiscordUser, upsertProfileForUser } = await import(
   '../../src/db/profiles'
 );
@@ -243,22 +242,21 @@ try {
       .from(table)
       .innerJoin(users, eq(users.id, table.userId))
       .where(eq(users.isSynthetic, true));
-  const premiumRows = await syntheticRows(subscriptions);
+  const premiumRows = await db
+    .select({ discordUserId: users.discordUserId })
+    .from(users)
+    .where(
+      and(
+        eq(users.isSynthetic, true),
+        gt(users.premiumGrantedUntil, new Date()),
+      ),
+    );
   assert.deepEqual(
     premiumRows.map(({ discordUserId }) => discordUserId).sort(),
     generated
       .filter(({ premium }) => premium)
       .map(({ user }) => user.discordUserId)
       .sort(),
-  );
-  assert.ok(
-    premiumRows.every(
-      ({ row, discordUserId }) =>
-        row.stripeCustomerId === discordUserId &&
-        row.stripeSubscriptionId === null &&
-        row.status === 'active' &&
-        row.currentPeriodEnd > new Date(),
-    ),
   );
   const voiceRows = await syntheticRows(voiceIntros);
   const voiced = generated.filter(({ voice }) => voice);
@@ -395,15 +393,6 @@ try {
 
   const cleared = await converge(0);
   assert.equal(cleared.current.dummies, 0);
-  assert.equal(
-    (
-      await db
-        .select({ total: count() })
-        .from(subscriptions)
-        .where(like(subscriptions.stripeCustomerId, 'seed-%'))
-    )[0].total,
-    0,
-  );
   assert.equal(
     (await db.select({ total: count() }).from(voiceIntros))[0].total,
     voiceBaseline,

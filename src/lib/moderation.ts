@@ -5,7 +5,6 @@ import {
   countActivityByDay,
   countPendingCases,
   hasActivePremiumGrant,
-  isSubscriptionActive,
   listActionedPage,
   listModerationActions,
   listModerationActionsPage,
@@ -52,7 +51,7 @@ export const staffRoleOf = ({
   isOwnerDiscordId(user.discordUserId) ? 'owner' : (staffRole ?? undefined);
 
 export const toModUser = (row: ModerationUserRow): ModUser => {
-  const { user, profile, warnings, subscription } = row;
+  const { user, profile, warnings } = row;
   return {
     id: user.id,
     displayName: user.displayName,
@@ -68,9 +67,6 @@ export const toModUser = (row: ModerationUserRow): ModUser => {
     premium: {
       grantedUntil: hasActivePremiumGrant(user)
         ? user.premiumGrantedUntil?.toISOString()
-        : undefined,
-      subscriptionUntil: isSubscriptionActive(subscription)
-        ? subscription?.currentPeriodEnd?.toISOString()
         : undefined,
       configured: isPremiumDiscordId(user.discordUserId),
     },

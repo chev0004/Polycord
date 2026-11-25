@@ -32,10 +32,7 @@ type SettingsRouteClientProps = {
   locale: string;
   owner?: boolean;
   premium?: boolean;
-  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
   premiumGrantedUntil?: string;
-  subscriptionRenewsAt?: string;
-  subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -81,10 +78,7 @@ export const SettingsRouteClient = ({
   locale,
   owner = false,
   premium = false,
-  premiumSource,
   premiumGrantedUntil,
-  subscriptionRenewsAt,
-  subscriptionCancelAtPeriodEnd,
   userAvatarUrl,
   userDisplayName,
 }: SettingsRouteClientProps) => {
@@ -124,8 +118,6 @@ export const SettingsRouteClient = ({
           body: JSON.stringify({ confirmation: 'DELETE' }),
         });
 
-        if (response.status === 502) return 'billing-error';
-
         if (!response.ok) {
           throw new Error('Account delete failed');
         }
@@ -148,25 +140,8 @@ export const SettingsRouteClient = ({
       onUpdateDiscordConnection={() =>
         window.location.assign(`/api/auth/discord?locale=${locale}`)
       }
-      onManageSubscription={async () => {
-        const response = await fetch('/api/billing/portal', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ locale }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Billing session failed');
-        }
-
-        const { url } = (await response.json()) as { url: string };
-        window.location.assign(url);
-      }}
       premium={premium}
-      premiumSource={premiumSource}
       premiumGrantedUntil={premiumGrantedUntil}
-      subscriptionRenewsAt={subscriptionRenewsAt}
-      subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
     />
   );
 };

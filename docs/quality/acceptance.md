@@ -25,7 +25,7 @@ Evidence-based acceptance pass for the readiness backlog, recorded 2026-09-24 fo
 | 27 (split), 29-33 | Inbox entitlements, inbox failure rollback, reload and actor destinations | NOTIF-004 (#105) | `e2e/notifications.pw.ts`, `tests/integration/notifications.mjs` | Resolved |
 | 34-36 | Username privacy, block enforcement, unblock UI, copy ordering | SAFETY-002 (#106) | `e2e/safety.pw.ts`, `tests/integration/safety.mjs` | Resolved |
 | 37 | Session revocation and export completeness | ACCOUNT-002 (#104) | `e2e/account.pw.ts`, `tests/integration/account.mjs` | Resolved |
-| Billing | Deployed Stripe lifecycle and truthful Supporter states | BILLING-002 | None | Blocked: not started |
+| Billing | Supporter comes only from grants and the configured list, with no payment integration | BILLING-004 | `e2e/premium-grants.pw.ts`, `tests/integration/boosts.mjs` | Resolved |
 | Legal | Policy claims against behavior and operations | LEGAL-002 (#116) | `docs/legal/claims.md`, `e2e/legal.pw.ts`, `tests/integration/analytics.mjs` | Resolved, with open owner rows |
 | Operations | Monitoring, alerts, backups, production data boundary | DEV-013 (#111) | `docs/operations/readiness.md` | Blocking rows remain |
 | Test stability | Accessibility scans racing animations | TEST-003 (#113) | `e2e/accessibility.pw.ts` | Resolved |
@@ -49,7 +49,6 @@ Direct entry, refresh, Back and Forward, locale changes and return journeys are 
 
 ## Blockers
 
-1. BILLING-002 has not started, so purchase, renewal, failure, cancellation and the hardcoded renewal dates in Settings Supporter are unverified.
-2. The Open rows in `docs/legal/claims.md` need owner evidence or decisions: mailbox delivery, eligibility and guardian acknowledgement, escalation, no-sale and security assertions.
-3. The Blocking rows in `docs/operations/readiness.md` remain: production database separation, uptime monitoring and alerting.
-4. No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.
+1. The Open rows in `docs/legal/claims.md` need owner evidence or decisions: mailbox delivery, eligibility and guardian acknowledgement, escalation, no-sale and security assertions.
+2. The Blocking rows in `docs/operations/readiness.md` remain: production database separation, uptime monitoring and alerting.
+3. No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.
