@@ -2,11 +2,17 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import pg from 'pg';
 import { matchesSupabaseProject } from '../src/db/supabase-project.mjs';
+import supabaseCa from '../src/db/supabaseCa.json' with { type: 'json' };
 import { deployNetlify, runDeploy } from './deploy-netlify.mjs';
 import { stagingSiteId } from './deploy-staging.mjs';
 
 async function seedRows() {
-  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  const url = new URL(process.env.DATABASE_URL);
+  url.searchParams.delete('sslmode');
+  const client = new pg.Client({
+    connectionString: url.href,
+    ssl: { ca: supabaseCa, rejectUnauthorized: true },
+  });
   await client.connect();
   try {
     const { rows } = await client.query(
