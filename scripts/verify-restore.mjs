@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import pg from 'pg';
+import supabaseCa from '../src/db/supabaseCa.json' with { type: 'json' };
 
 const criticalTables = new Set([
   'users',
@@ -16,7 +17,14 @@ const criticalTables = new Set([
 const identifier = (name) => `"${name.replaceAll('"', '""')}"`;
 
 export async function snapshot(url) {
-  const client = new pg.Client({ connectionString: url });
+  const target = new URL(url);
+  target.searchParams.delete('sslmode');
+  const client = new pg.Client({
+    connectionString: target.href,
+    ssl: ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)
+      ? false
+      : { ca: supabaseCa, rejectUnauthorized: true },
+  });
   await client.connect();
   try {
     await client.query('begin isolation level repeatable read read only');
