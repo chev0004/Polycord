@@ -1247,7 +1247,6 @@ export const DiscoveryPage = ({
     const id = addToast({
       title: t('bumpHintTitle'),
       description: t('bumpHintDescription'),
-      iconUrl: userAvatarUrl,
       duration: BUMP_HINT_DURATION,
       action: {
         label: t('bumpHintAction'),
@@ -1258,15 +1257,7 @@ export const DiscoveryPage = ({
       },
       activity: { actionLabel: t('bumpHintAction'), onOpen: bump },
     });
-  }, [
-    currentProfileId,
-    userId,
-    userAvatarUrl,
-    addToast,
-    dismissToast,
-    bump,
-    t,
-  ]);
+  }, [currentProfileId, userId, addToast, dismissToast, bump, t]);
 
   if (!skeleton && showSkeleton)
     return (
