@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import pg from 'pg';
-import supabaseCa from '../src/db/supabaseCa.json' with { type: 'json' };
 import { matchesSupabaseProject } from '../src/db/supabase-project.mjs';
+import supabaseCa from '../src/db/supabaseCa.json' with { type: 'json' };
 import { deployNetlify, runDeploy } from './deploy-netlify.mjs';
 import { stagingSiteId } from './deploy-staging.mjs';
 
