@@ -138,14 +138,9 @@ export const PremiumPanel = ({
   const t = useTranslations('Admin');
   const { date, time } = useModFormat();
   const grant = useGrant(store, user);
-  const { grantedUntil, subscriptionUntil, configured } = user.premium;
+  const { grantedUntil, configured } = user.premium;
   const { granted, busy } = grant;
-  const otherSources = [
-    subscriptionUntil
-      ? t('premiumPaidUntil', { date: date(subscriptionUntil) })
-      : null,
-    configured ? t('premiumConfigured') : null,
-  ].filter((source) => source !== null);
+  const otherSources = configured ? [t('premiumConfigured')] : [];
 
   return (
     <div className="flex flex-col gap-3">

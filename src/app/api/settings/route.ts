@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  updateProfilePrivacyForUser,
-  updateUserEmail,
-  upsertUserSettings,
-} from '@/db';
+import { updateProfilePrivacyForUser, upsertUserSettings } from '@/db';
 import { scopedRoute } from '@/db/client';
 import { settingsSchema } from '@/features/Settings/schema';
 import { isOwner } from '@/lib/admin';
@@ -68,7 +64,6 @@ export const POST = scopedRoute(async (request: Request) => {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  await updateUserEmail(currentUser.accountId, values.email);
   await updateProfilePrivacyForUser(currentUser.accountId, {
     isPublic: values.isPublic,
     allowAnonymousCopy: values.allowAnonymousCopy,

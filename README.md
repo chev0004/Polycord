@@ -92,16 +92,16 @@ The Discord application must allow that URI as well as the localhost callback.
 Staging has its own `AUTH_SECRET` and VAPID keys. Set
 `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` for push;
 the subject is `https://polycord.chev.dev`. Rebuild after changing the public key.
-Product analytics is disabled with `POLYCORD_ANALYTICS_DISABLED=true`, and Stripe
-variables are left unset. `netlify.toml` pins the build runtimes and adds a
+Product analytics is disabled with `POLYCORD_ANALYTICS_DISABLED=true`. `netlify.toml` pins the build runtimes and adds a
 `noindex, nofollow` response header for static files. `next.config.ts` adds the
 same header to server-rendered responses on `polycord.chev.dev`. Leave
 `POLYCORD_PUBLIC_URL` unset on staging so `robots.txt` disallows all crawling and
 the sitemap stays empty.
 
 `NEXT_PUBLIC_DISCORD_INVITE_URL` is the permanent invite behind the footer Join
-Discord Server button; the button is hidden while it is unset. It is inlined at
-build time, so rebuild after changing it.
+Discord Server button and the ban screen's Open Discord Server button. Support,
+privacy, safety and ban appeals all go through that server, so set it on every
+deployed site. It is inlined at build time, so rebuild after changing it.
 
 `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` selects the Discovery loading experience.
 `true` serves the static Discovery shell with the skeleton and the early usable
@@ -187,13 +187,13 @@ Session cookies expire after 30 days and carry the unique Polycord account ID as
 
 Deleting an account invalidates all of its existing sessions. A deliberate OAuth sign-in can create a new account with a different ID; old cookies remain invalid and deleted data is not restored. Discord-keyed moderation restrictions still apply. Logout clears the current browser cookie; it does not revoke copied cookies or other devices. Deletion does not delete the Discord account or revoke Discord authorization. Users can remove Polycord under Discord User Settings > Authorized Apps separately.
 
-The version 2 JSON export includes the account, complete editable profile and styling, settings, voice data, saved links, blocks created, submitted reports, inbox state, local subscription state, boosts, push registration IDs/dates, and account-linked activity. It excludes notification actor identities, other users' account data, reports filed by others, internal moderation/abuse records, analytics metadata, and push endpoints/keys. Exports are served with `Cache-Control: no-store`.
+The version 2 JSON export includes the account, complete editable profile and styling, settings, voice data, saved links, blocks created, submitted reports, inbox state, boosts, push registration IDs/dates, and account-linked activity. It excludes notification actor identities, other users' account data, reports filed by others, internal moderation/abuse records, analytics metadata, and push endpoints/keys. Exports are served with `Cache-Control: no-store`.
 
 | Data category | Account deletion behavior |
 | --- | --- |
 | Account, profile, target languages, settings, voice | Deleted. |
 | Saved links, blocks, reports involving the account | Deleted, including links from other accounts. |
-| Account's inbox, local subscription mapping, boosts, push registrations | Deleted. Active Stripe subscriptions must first be confirmed canceled; cancellation failure preserves the account and allows retry. |
+| Account's inbox, boosts, push registrations | Deleted. |
 | Analytics events | Account link cleared; events, metadata and anonymous identifiers remain. |
 | Moderation actions | Account and deleted-report links cleared; actions and notes remain. |
 | Suspicious-activity logs | Account link cleared; action and IP data remain. |
@@ -201,7 +201,7 @@ The version 2 JSON export includes the account, complete editable profile and st
 | Actor names/avatars already stored in another user's inbox | Remain. |
 | Payment-provider records and backups | This deletion operation does not purge them. Provider retention and backup expiry require separate operational verification. |
 
-Regression coverage uses an isolated localhost PostgreSQL database via `TEST_DATABASE_URL`: `bun test` checks export boundaries, cascades, retained records, failed billing cancellation and account recreation; `bun run test:e2e` checks old cookies in two browser contexts, read/write rejection, logout and localized cancellation recovery. The tests must never point at the shared staging database. Deployed Stripe lifecycle verification and public-policy reconciliation remain tracked in BILLING-002 and LEGAL-002.
+Regression coverage uses an isolated localhost PostgreSQL database via `TEST_DATABASE_URL`: `bun test` checks export boundaries, cascades, retained records and account recreation; `bun run test:e2e` checks old cookies in two browser contexts, read/write rejection, logout and localized cancellation recovery. The tests must never point at the shared staging database.
 
 ## Scripts
 

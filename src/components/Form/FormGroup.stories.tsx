@@ -24,8 +24,8 @@ type Story = StoryObj<typeof FormGroup>;
 export const Default: Story = {
   render: () => (
     <FormGroup>
-      <Label htmlFor="email">Email Address</Label>
-      <TextInput id="email" placeholder="Enter your email address" />
+      <Label htmlFor="display-name">Display Name</Label>
+      <TextInput id="display-name" placeholder="Enter a display name" />
     </FormGroup>
   ),
 };
@@ -33,16 +33,16 @@ export const Default: Story = {
 export const WithError: Story = {
   render: () => (
     <FormGroup>
-      <Label htmlFor="email-error">Email Address</Label>
-      <TextInput id="email-error" defaultValue="not-an-email" error />
-      <FieldError>Please enter a valid email address.</FieldError>
+      <Label htmlFor="display-name-error">Display Name</Label>
+      <TextInput id="display-name-error" defaultValue="x" error />
+      <FieldError>Tags need at least 2 characters.</FieldError>
     </FormGroup>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.getByText('Please enter a valid email address.'),
+      canvas.getByText('Tags need at least 2 characters.'),
     ).toBeVisible();
   },
 };

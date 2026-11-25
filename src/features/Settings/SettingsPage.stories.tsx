@@ -25,15 +25,6 @@ const defaultSettings: SettingsFormValues = {
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
-  email: 'xhev@polycord.app',
-};
-
-const setFieldValue = (field: HTMLInputElement, value: string) => {
-  Object.getOwnPropertyDescriptor(
-    HTMLInputElement.prototype,
-    'value',
-  )?.set?.call(field, value);
-  field.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
 const meta: Meta<typeof SettingsPage> = {
@@ -59,7 +50,6 @@ const meta: Meta<typeof SettingsPage> = {
     onExportData: fn(),
     onSubmit: fn(),
     onUpdateDiscordConnection: fn(),
-    onManageSubscription: fn(),
   },
 };
 
@@ -191,46 +181,26 @@ export const RestoredDraft: Story = {
     async () => {
       sessionStorage.setItem(
         'polycord:settings:settings-draft-story',
-        JSON.stringify({ email: 'unfinished-email' }),
+        JSON.stringify({ email: 'legacy@example.com', isPublic: false }),
       );
       return {};
     },
   ],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await waitFor(() =>
-      expect(canvas.getByLabelText('Email Address')).toHaveValue(
-        'unfinished-email',
-      ),
-    );
     await expect(
-      canvas.getByText(
+      await canvas.findByText(
         'Your unsaved draft has been restored. Review it, then Save or Discard.',
       ),
     ).toBeInTheDocument();
-  },
-};
-
-export const AccountBillingError: Story = {
-  args: { onDeleteAccount: async () => 'billing-error' as const },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(
-      canvas.getByRole('button', { name: 'Delete account' }),
-    );
-    setFieldValue(
-      canvas.getByPlaceholderText('DELETE') as HTMLInputElement,
-      'DELETE',
-    );
-    const confirm = canvas.getByRole('button', {
-      name: 'Delete account',
-    });
-    await waitFor(() => expect(confirm).toBeEnabled());
-    await fireEvent.click(confirm);
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    await expect(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    ).toHaveAttribute('aria-checked', 'false');
     await waitFor(() =>
-      expect(canvas.getByRole('alert')).toHaveTextContent(
-        'subscription cancellation failed',
-      ),
+      expect(
+        sessionStorage.getItem('polycord:settings:settings-draft-story'),
+      ).toBe(JSON.stringify({ isPublic: false })),
     );
   },
 };
@@ -240,8 +210,9 @@ export const SwitchTabs: Story = {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.getByPlaceholderText('Enter your email address'),
+      canvas.getByText('Update Discord Connection'),
     ).toBeInTheDocument();
+    expect(canvas.queryByText('Email Address')).not.toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
 
@@ -249,7 +220,7 @@ export const SwitchTabs: Story = {
       expect(canvas.getByText('Make Profile Public')).toBeInTheDocument(),
     );
     expect(
-      canvas.queryByPlaceholderText('Enter your email address'),
+      canvas.queryByText('Update Discord Connection'),
     ).not.toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Notifications' }));
@@ -338,36 +309,6 @@ export const MobileBlockedAccounts: Story = {
   },
 };
 
-export const EmailValidation: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
-    setFieldValue(email, 'not-an-email');
-    await waitFor(() => expect(email).toHaveValue('not-an-email'));
-
-    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
-    await waitFor(() =>
-      expect(canvas.getByText('Make Profile Public')).toBeInTheDocument(),
-    );
-
-    fireEvent.click(canvas.getByRole('button', { name: 'Save Settings' }));
-
-    await waitFor(
-      () =>
-        expect(
-          canvas.getByText('Please enter a valid email address.'),
-        ).toBeInTheDocument(),
-      { timeout: 5000 },
-    );
-    await expect(
-      canvas.getByPlaceholderText('Enter your email address'),
-    ).toBeInTheDocument();
-  },
-};
-
 export const SaveFlow: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -377,10 +318,10 @@ export const SaveFlow: Story = {
     ).not.toBeInTheDocument();
     await expect(canvas.queryByText('All changes saved')).toBeNull();
 
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
-    setFieldValue(email, 'kenji.ito@polycord.app');
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    );
 
     await waitFor(
       () =>
@@ -397,6 +338,9 @@ export const SaveFlow: Story = {
     await waitFor(() => expect(args.onSubmit).toHaveBeenCalledTimes(1), {
       timeout: 5000,
     });
+    const [saved] = (args.onSubmit as ReturnType<typeof fn>).mock.calls[0];
+    await expect(saved).toMatchObject({ isPublic: false });
+    await expect(saved).not.toHaveProperty('email');
     await waitFor(
       () =>
         expect(
@@ -410,9 +354,10 @@ export const SaveFlow: Story = {
 export const DiscardAndRevert: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    const visibility = await canvas.findByRole('switch', {
+      name: 'Make Profile Public',
+    });
     const expectBarHidden = () =>
       waitFor(
         () =>
@@ -430,15 +375,15 @@ export const DiscardAndRevert: Story = {
         { timeout: 5000 },
       );
 
-    setFieldValue(email, 'discard.me@polycord.app');
+    fireEvent.click(visibility);
     await expectBarShown();
     fireEvent.click(canvas.getByRole('button', { name: 'Discard' }));
     await expectBarHidden();
-    await expect(email).toHaveValue('xhev@polycord.app');
+    await expect(visibility).toHaveAttribute('aria-checked', 'true');
 
-    setFieldValue(email, 'revert.me@polycord.app');
+    fireEvent.click(visibility);
     await expectBarShown();
-    setFieldValue(email, 'xhev@polycord.app');
+    fireEvent.click(visibility);
     await expectBarHidden();
   },
 };
@@ -452,10 +397,10 @@ export const SaveError: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
-    setFieldValue(email, 'error.path@polycord.app');
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    );
 
     await waitFor(
       () =>
@@ -496,11 +441,10 @@ export const SupporterTabFree: Story = {
     expect(canvas.getAllByText('No')).toHaveLength(5);
 
     expect(
-      canvas.getByText('$2.99 / month · cancel anytime'),
+      canvas.getByText("Supporter isn't available to buy right now."),
     ).toBeInTheDocument();
-    expect(canvas.getByRole('button', { name: 'Upgrade' })).toBeInTheDocument();
     expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
+      canvas.queryByRole('button', { name: 'Upgrade' }),
     ).not.toBeInTheDocument();
   },
 };
@@ -517,13 +461,10 @@ export const SupporterTabSupporter: Story = {
         canvas.getByText('Your plan: everything below is included.'),
       ).toBeInTheDocument(),
     );
-    expect(canvas.getByText('$2.99')).toBeInTheDocument();
+    expect(canvas.getAllByText('Granted')).not.toHaveLength(0);
     expect(canvas.getByText('Bump cooldown')).toBeInTheDocument();
     expect(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    ).toBeInTheDocument();
-    expect(
-      canvas.queryByRole('button', { name: 'Upgrade' }),
+      canvas.queryByText("Supporter isn't available to buy right now."),
     ).not.toBeInTheDocument();
   },
 };
@@ -662,89 +603,22 @@ export const MobileSessionExpired: Story = {
 export const SupporterGranted: Story = {
   args: {
     premium: true,
-    premiumSource: 'granted',
     premiumGrantedUntil: '2099-12-31T12:00:00Z',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
-    ).not.toBeInTheDocument();
     await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
     await expect(await canvas.findByText('Granted')).toBeInTheDocument();
     expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
-    expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
-    ).not.toBeInTheDocument();
     expect(
       canvas.queryByRole('button', { name: 'Upgrade' }),
     ).not.toBeInTheDocument();
   },
 };
 
-export const SupporterPurchased: Story = {
-  ...SupporterTabSupporter,
-  args: {
-    premium: true,
-    premiumSource: 'purchased',
-    subscriptionRenewsAt: '2099-11-30T12:00:00Z',
-  },
-};
-
-export const SupporterBoth: Story = {
-  args: {
-    ...SupporterPurchased.args,
-    premiumSource: 'both',
-    premiumGrantedUntil: '2099-12-31T12:00:00Z',
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.getByText(/Renews/)).toBeInTheDocument();
-    expect(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    ).toBeInTheDocument();
-  },
-};
-
 export const SupporterExpired: Story = {
   ...SupporterTabFree,
-  args: { premium: false, premiumSource: 'free' },
-};
-
-export const SupporterOverdueWithGrant: Story = {
-  ...SupporterBoth,
-  args: {
-    ...SupporterBoth.args,
-    subscriptionRenewsAt: '2000-01-01T12:00:00Z',
-  },
-  play: async ({ args, canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(canvas.getByRole('button', { name: 'Supporter' }));
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    await fireEvent.click(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    );
-    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
-  },
-};
-
-export const MobileSupporterOverdueWithGrant: Story = {
-  ...SupporterOverdueWithGrant,
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
-  play: async ({ args, canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(
-      await canvas.findByRole('button', { name: /^Supporter/ }),
-    );
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    await fireEvent.click(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    );
-    await expect(args.onManageSubscription).toHaveBeenCalledTimes(1);
-  },
+  args: { premium: false },
 };
 
 export const MobileSupporterGranted: Story = {
@@ -757,29 +631,9 @@ export const MobileSupporterGranted: Story = {
     );
     await expect(await canvas.findByText('Granted')).toBeInTheDocument();
     expect(canvas.getByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
-    expect(
-      canvas.queryByRole('button', { name: 'Manage billing' }),
-    ).not.toBeInTheDocument();
     expect(
       canvas.queryByRole('button', { name: 'Upgrade' }),
     ).not.toBeInTheDocument();
-  },
-};
-
-export const MobileSupporterBoth: Story = {
-  ...SupporterBoth,
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await fireEvent.click(
-      await canvas.findByRole('button', { name: /^Supporter/ }),
-    );
-    await expect(await canvas.findByText(/Grant ends/)).toBeInTheDocument();
-    expect(canvas.getByText(/Renews/)).toBeInTheDocument();
-    expect(
-      canvas.getByRole('button', { name: 'Manage billing' }),
-    ).toBeInTheDocument();
   },
 };
 
@@ -793,7 +647,6 @@ export const SupporterGrantedJapanese: Story = {
       await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
     ).toBeInTheDocument();
     expect(canvas.getByText(/\u4ed8\u4e0e\u671f\u9650/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
   },
 };
 
@@ -809,7 +662,6 @@ export const MobileSupporterGrantedJapanese: Story = {
       await canvas.findByText('\u4ed8\u4e0e\u6e08\u307f'),
     ).toBeInTheDocument();
     expect(canvas.getByText(/\u4ed8\u4e0e\u671f\u9650/)).toBeInTheDocument();
-    expect(canvas.queryByText('$2.99')).not.toBeInTheDocument();
   },
 };
 
@@ -828,7 +680,9 @@ export const SupporterLegacyLink: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(await canvas.findByText('Bump cooldown')).toBeInTheDocument();
-    expect(canvas.getByRole('button', { name: 'Upgrade' })).toBeInTheDocument();
+    expect(
+      canvas.getByText("Supporter isn't available to buy right now."),
+    ).toBeInTheDocument();
   },
 };
 

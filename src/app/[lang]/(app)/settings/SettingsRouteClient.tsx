@@ -12,7 +12,6 @@ import { isLocale, localizePath } from '@/utils/localePaths';
 
 type SettingsRouteClientProps = {
   userId: string;
-  defaultEmail: string;
   initialPrivacySettings?: Pick<
     SettingsFormValues,
     'allowAnonymousCopy' | 'displayTimezone' | 'isPublic'
@@ -32,10 +31,7 @@ type SettingsRouteClientProps = {
   locale: string;
   owner?: boolean;
   premium?: boolean;
-  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
   premiumGrantedUntil?: string;
-  subscriptionRenewsAt?: string;
-  subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -75,16 +71,12 @@ const downloadAccountData = async () => {
 
 export const SettingsRouteClient = ({
   userId,
-  defaultEmail,
   initialPrivacySettings,
   initialSettings,
   locale,
   owner = false,
   premium = false,
-  premiumSource,
   premiumGrantedUntil,
-  subscriptionRenewsAt,
-  subscriptionCancelAtPeriodEnd,
   userAvatarUrl,
   userDisplayName,
 }: SettingsRouteClientProps) => {
@@ -105,7 +97,6 @@ export const SettingsRouteClient = ({
     applicationLanguage: isLocale(locale) ? locale : 'en',
     timeFormat: initialSettings?.timeFormat ?? '24hr',
     languageDisplay: initialSettings?.languageDisplay ?? 'long',
-    email: defaultEmail,
   };
 
   return (
@@ -123,8 +114,6 @@ export const SettingsRouteClient = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ confirmation: 'DELETE' }),
         });
-
-        if (response.status === 502) return 'billing-error';
 
         if (!response.ok) {
           throw new Error('Account delete failed');
@@ -148,25 +137,8 @@ export const SettingsRouteClient = ({
       onUpdateDiscordConnection={() =>
         window.location.assign(`/api/auth/discord?locale=${locale}`)
       }
-      onManageSubscription={async () => {
-        const response = await fetch('/api/billing/portal', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ locale }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Billing session failed');
-        }
-
-        const { url } = (await response.json()) as { url: string };
-        window.location.assign(url);
-      }}
       premium={premium}
-      premiumSource={premiumSource}
       premiumGrantedUntil={premiumGrantedUntil}
-      subscriptionRenewsAt={subscriptionRenewsAt}
-      subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
     />
   );
 };

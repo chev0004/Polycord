@@ -1,6 +1,6 @@
 # Policy Claims
 
-Claim-by-claim check of the Terms of Service, Privacy Policy and Community Guidelines in `src/features/Legal/legalContent.ts`, plus user-facing benefit copy, against implemented behavior. Reviewed 2026-09-24 against `develop` for LEGAL-002.
+Claim-by-claim check of the Terms of Service, Privacy Policy and Community Guidelines in `src/features/Legal/legalContent.ts`, plus user-facing benefit copy, against implemented behavior. Reviewed 2026-09-24 against `develop` for LEGAL-002. Operator and Supporter rows rechecked 2026-11-19 for LEGAL-004 against the BILLING-004 and AUTH-004 changes.
 
 Status values:
 
@@ -17,34 +17,37 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Users must be 13 or the local digital-consent age | No age is collected and there is no age gate. Adding age data is not assumed to be required. | Open: owner decides how eligibility is operationalized |
 | Minors need a parent or guardian to review and agree | No guardian acknowledgement exists | Open: owner decision |
 | Signing in or browsing is acceptance | No acceptance record or checkbox exists | Open: owner decides whether an explicit acknowledgement is needed |
-| Polycord never sees the Discord password | OAuth code flow with `identify email` scope in `src/app/api/auth/discord/route.ts`. The callback does not store Discord tokens. | Verified |
+| Polycord never sees the Discord password | OAuth code flow with `identify` scope in `src/app/api/auth/discord/route.ts`. The callback does not store Discord tokens. | Verified |
 | Deleting the account removes the profile and disconnects Discord | Deletion removes the profile and revokes sessions (`tests/integration/account.mjs`, `e2e/account.pw.ts`) but cannot revoke the Discord authorization | Reworded: points to Discord Authorized Apps |
 | Public profiles appear in discovery and on share links | `/[lang]/u/[id]` and discovery queries in `src/db/discovery.ts`; `e2e/safety.pw.ts` | Verified |
 | Enforcement: hide, remove content, suspend, ban | Admin actions are warn, hide or unhide, suspend or unsuspend, ban or unban (`src/app/api/admin/moderation/route.ts`, `tests/integration/moderation.mjs`). There is no content removal action. | Reworded |
 | Unlawful activity may be reported to Discord or authorities | No documented escalation process or contact route | Open: owner defines the escalation process |
-| Price, plan contents and renewal dates are shown before subscribing | Settings shows the price and plan table, and payment runs through Stripe Checkout (`createCheckoutSession`). Settings also shows a hardcoded "renews July 11, 2026" (`premiumPriceRenewal`, `premiumMembershipDescriptionPremium`), which is not a real renewal date. | Reworded to price and Stripe Checkout. Open: renewal copy belongs to BILLING-002 |
-| Subscriptions renew until cancelled and paid features last to period end | `isSubscriptionActive` checks status and `currentPeriodEnd`, and the webhook stores `cancelAtPeriodEnd` | Open: deployed Stripe lifecycle is verified under BILLING-002 |
-| Questions go to support@polycord.app | The domain has MX records only. Delivery, ownership and staffing have no evidence. | Open: owner verifies the mailbox |
+| Price, plan contents and renewal dates are shown before subscribing | BILLING-004 removed the payment integration. Settings shows the plan table and says Supporter is not available to buy | Removed from the Terms |
+| Subscriptions renew until cancelled and paid features last to period end | BILLING-004 converted active subscriptions into grants ending at their paid period end, and access now comes only from grants and the configured list | Removed from the Terms |
+| The agreement is with the individual who operates Polycord, and liability is the operator's | The Terms and Privacy Policy intros name the operator role and use "we". No personal name, entity or trading name is published | Reworded: owner decides whether to form an entity or register a name |
+| The Terms cover the website, the Polycord Discord app and Supporter | The website is this repository. The Discord app's `/profile` command renders the card layout chosen in Settings (`discordCardDescription`). Website sign-in requests only the `identify` scope, uses the OAuth token once to read `users/@me` without storing it, and stores the Discord ID, username, display name and avatar URL | Open: review the Discord app’s code to establish how it accesses data and what it reads, stores and logs |
+| Supporter is an optional paid subscription that is not currently for sale, and Polycord takes no payments | BILLING-004 removed the payment integration. Settings shows the plan table and says Supporter is not available to buy. Access comes only from grants and the configured list | Verified |
+| Questions go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004) | Open: owner sets the invite URL and staffs moderator intake |
 
 ## Privacy Policy
 
 | Claim | Behavior and evidence | Status |
 | --- | --- | --- |
-| Underage reports go to privacy@polycord.app | Same mailbox evidence gap as support | Open: owner verifies the mailbox and review process |
-| Discord ID, username, avatar and email are collected | `normalizeDiscordUser` in `src/lib/auth.ts` | Verified |
-| Profile, usage, service and billing data listed | Tables in `src/db/schema.ts`: `profiles`, `analytics_events`, `saved_profiles`, `user_blocks`, `reports`, `notifications`, `push_subscriptions`, `subscriptions` | Verified |
+| Underage reports go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004) | Open: owner sets the invite URL and staffs moderator intake and a review process |
+| Discord ID, username, display name and avatar are collected, and email is no longer requested or saved at sign-in | `normalizeDiscordUser` in `src/lib/auth.ts` and the `identify` scope. Retiring stored addresses requires the post-rollout column drop | Verified |
+| Profile, usage, service and billing data listed | Tables in `src/db/schema.ts`: `profiles`, `analytics_events`, `saved_profiles`, `user_blocks`, `reports`, `notifications`, `push_subscriptions`. Supporter grants are stored on `users` | Verified |
 | IP addresses are kept for abuse prevention | `suspicious_activity.ip` and IP-keyed `rate_limit_counters` | Verified |
 | Public profile details are visible to members and link holders | Also visible to signed-out visitors. Signed-in members always receive the Discord username; guests only with `allowAnonymousCopy` (`toDiscoveryProfile` in `src/db/profiles.ts`, `e2e/safety.pw.ts`) | Reworded |
-| Email is never public | `toDiscoveryProfile` has no email field | Verified |
 | Timezone and availability display are controlled in Settings | Timezone is in Settings and the profile editor; availability only in the profile editor | Reworded |
 | Blocking hides people | Blocks are mutual between signed-in accounts (`src/db/discovery.ts`, `tests/integration/safety.mjs`). Public profiles stay visible when signed out, as Settings already states. | Reworded |
 | Turning off Product analytics stops future account-linked events | `trackEvent` skips events for users with `productAnalytics` off; deletion clears the account link (`tests/integration/analytics.mjs`) | Verified |
-| Discord message content is not collected | Scopes are `identify email` only | Verified |
+| Discord message content is not collected | Scopes are `identify` only | Verified |
 | Cookies keep sign-in and language; browser storage keeps preferences and onboarding | Cookies: session, OAuth state, `NEXT_LOCALE`. Preferences are stored with the account. Session storage holds unsaved form drafts and the discovery return position (`src/hooks/useFormDraft.ts`). | Reworded |
-| Data is shared with hosts, Discord, Stripe and push services | Matches the integrations in `src/lib/stripe.ts`, `src/lib/push`, and the Discord routes. Voice intros are stored in the database. | Verified |
+| Polycord is run by an individual operator | Privacy Policy intro, matching the Terms | Reworded |
+| Data is shared with hosts, Discord and push services | Matches the integrations in `src/lib/push` and the Discord routes. Voice intros are stored in the database. BILLING-004 removed the payment provider | Verified |
 | Personal data is never sold | No code path sells data. This is an accountable business commitment. | Open: owner review |
 | Deletion removes listed data; some records remain | Matches the retention note in `getAccountExportByUserId` and Settings `deleteAccountRetentionNote` (`tests/integration/account.mjs`) | Reworded |
-| Export covers account, profile, settings and voice | Export also includes saved profiles, blocks, reports, inbox, billing, boosts, push registrations and analytics (`src/db/account.ts`) | Reworded |
+| Export covers account, profile, settings and voice | Export also includes saved profiles, blocks, reports, inbox, Supporter grants, boosts, push registrations and analytics (`src/db/account.ts`) | Reworded |
 | Industry-standard security measures | No security review or control inventory backs this phrase | Open: owner review |
 
 ## Community Guidelines
@@ -55,7 +58,7 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Reports are confidential | Reporter identity appears only on the admin route behind `isAdmin` | Verified |
 | Enforcement: hide, remove content, warn, remove account | Warn, hide, suspend and ban. Warnings reach free and Supporter inboxes (`tests/integration/notifications.mjs`). | Reworded |
 | Serious issues are escalated to authorities | No documented escalation process | Open: owner defines the process |
-| Contact safety@polycord.app | Same mailbox evidence gap | Open: owner verifies the mailbox |
+| Contact the moderators in the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004) | Open: owner sets the invite URL and staffs moderator intake |
 
 ## Product copy
 

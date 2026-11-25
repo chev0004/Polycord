@@ -19,7 +19,7 @@ const profile = {
 const signIn = async (context: BrowserContext, id: string) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const [account] =
-    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, 'voice-test', 'Voice test', 'voice@example.com') on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, 'voice-test', 'Voice test') on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
   await sql.end();
   const payload = Buffer.from(
     JSON.stringify({
@@ -28,7 +28,6 @@ const signIn = async (context: BrowserContext, id: string) => {
         accountId: account.id,
         name: 'Voice test',
         username: 'voice-test',
-        email: 'voice@example.com',
       },
       expiresAt: Date.now() + 3600000,
     }),
@@ -59,7 +58,7 @@ test('a saved voice intro plays, downloads and stops when removed', async ({
     ).toBe(200);
     const [user] =
       await sql`select id from users where discord_user_id = ${id}`;
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${user.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${user.id}`;
     const audio = readFileSync('tests/fixtures/voice-short.webm').toString(
       'base64',
     );

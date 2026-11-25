@@ -14,7 +14,7 @@ Every read and write through `/api/admin/seed` returns `404` unless all of the f
 
 Writes also require a same-origin request. `NODE_ENV` and the request URL are never used.
 
-Dummies are marked by `users.is_synthetic`, which defaults to `false`, and cleanup deletes only marked users. Names, usernames, identifier formats and emails are never used to classify them. Each dummy also has a reserved `discord_user_id` of the form `seed-000001`, which a Discord OAuth snowflake cannot collide with and which cannot sign in, because sessions are only issued after a Discord OAuth callback.
+Dummies are marked by `users.is_synthetic`, which defaults to `false`, and cleanup deletes only marked users. Names, usernames and identifier formats are never used to classify them. Each dummy also has a reserved `discord_user_id` of the form `seed-000001`, which a Discord OAuth snowflake cannot collide with and which cannot sign in, because sessions are only issued after a Discord OAuth callback.
 
 ## Enabling
 
@@ -35,7 +35,7 @@ To disable, unset either variable or delete the `seed_database` row.
 - The target counts dummy profiles only. With 17 real accounts, a target of 10,000 leaves the 17 accounts and adds 10,000 dummies.
 - Each request adds or removes at most 2,000 dummies; the tab repeats requests and shows progress until the count reaches the target. Repeating a target is safe: identifiers are deterministic and inserts skip existing ones.
 - Reducing removes the newest dummies first (highest identifier). Profiles, target languages, saves, settings, notifications, reports, blocks and boosts cascade from `users`; `moderation_restrictions` has no foreign key, so the tool deletes restrictions for removed identifiers, and clears any stale ones before recreating an identifier.
-- Generated data is deterministic for an identifier: uneven primary-language distribution, one to three target languages, mutual learning pairs, country and timezone combinations, fixed windows and any-time availability, tags, bios, bumps spread over the previous 30 days, about 5% private or moderation-hidden, and 1% boosted for seven days without any subscription or Stripe record. Avatars and voice intros are empty.
+- Generated data is deterministic for an identifier: uneven primary-language distribution, one to three target languages, mutual learning pairs, country and timezone combinations, fixed windows and any-time availability, tags, bios, bumps spread over the previous 30 days, about 5% private or moderation-hidden, and 1% boosted for seven days without a Supporter grant. Avatars and voice intros are empty.
 - Views, username copies, saves and boost impressions involving dummy profiles create no notifications or analytics events.
 
 ## Capacity

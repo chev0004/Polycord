@@ -117,18 +117,14 @@ for (const width of [320, 375, 390]) {
 
       await page.goto('/en/settings');
       await fits();
-      await page.getByRole('button', { name: /^Email Address/ }).click();
-      await page
-        .getByRole('dialog')
-        .getByLabel('Email Address')
-        .fill('mobile@example.com');
+      await page.getByRole('button', { name: /^Time Format/ }).click();
       const settingsSaved = page.waitForResponse(
         (r) =>
           r.url().endsWith('/api/settings') && r.request().method() === 'POST',
       );
       await page
         .getByRole('dialog')
-        .getByRole('button', { name: 'Save', exact: true })
+        .getByRole('button', { name: '12-hour', exact: true })
         .click();
       expect((await settingsSaved).status()).toBe(200);
       await expect(page.getByText('Saved', { exact: true })).toBeVisible();
@@ -141,8 +137,8 @@ for (const width of [320, 375, 390]) {
         animations: 'disabled',
       });
       await expect(
-        page.getByRole('button', { name: /^Email Address/ }),
-      ).toContainText('mobile@example.com');
+        page.getByRole('button', { name: /^Time Format/ }),
+      ).toContainText('12-hour');
     } finally {
       await sql`delete from users where discord_user_id = ${id}`;
       await sql.end();
@@ -308,7 +304,7 @@ test('settings drill-in pages reach and save every setting on phones', async ({
   const id = randomUUID().replaceAll('-', '');
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const [owner] =
-    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, ${id}, 'Settings phone', 'phone@example.com') returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, 'Settings phone') returning id`;
   const payload = Buffer.from(
     JSON.stringify({
       user: { id, accountId: owner.id, name: 'Settings phone' },
@@ -385,7 +381,7 @@ test('settings drill-in pages reach and save every setting on phones', async ({
     await expect(page).toHaveURL(/#supporter$/);
     await expect(page.getByRole('table')).toBeVisible();
     await expect(
-      main.getByRole('button', { name: 'Upgrade', exact: true }),
+      main.getByText("Supporter isn't available to buy right now."),
     ).toBeVisible();
     await main.getByRole('button', { name: 'Settings', exact: true }).click();
     await expect(page).toHaveURL(/#privacy$/);

@@ -9,14 +9,7 @@ import { FaDiscord } from 'react-icons/fa';
 import { MdChevronLeft, MdChevronRight, MdRefresh } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import {
-  FieldError,
-  FormGroup,
-  Label,
-  Select,
-  TextInput,
-  Toggle,
-} from '@/components/Form';
+import { FormGroup, Label, Select, TextInput, Toggle } from '@/components/Form';
 import { DraftNotice } from '@/components/Form/DraftNotice';
 import { languageOptions } from '@/constants/languages';
 import { ReturnLink } from '@/features/Navigation/ReturnLink';
@@ -43,17 +36,13 @@ export type SettingsPageProps = {
   userId?: string;
   blockedUsers?: React.ReactNode;
   defaultValues: SettingsFormValues;
-  onDeleteAccount: () => Promise<'billing-error' | undefined> | undefined;
+  onDeleteAccount: () => Promise<void> | void;
   onExportData: () => Promise<void> | void;
   onSubmit?: (data: SettingsFormValues) => Promise<void> | void;
   onUpdateDiscordConnection: () => void;
-  onManageSubscription: () => Promise<void> | void;
   owner?: boolean;
   premium?: boolean;
-  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
   premiumGrantedUntil?: string;
-  subscriptionRenewsAt?: string;
-  subscriptionCancelAtPeriodEnd?: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
 };
@@ -129,18 +118,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onExportData,
   onSubmit: onSubmitProp,
   onUpdateDiscordConnection,
-  onManageSubscription,
   owner = false,
   premium = false,
-  premiumSource,
   premiumGrantedUntil,
-  subscriptionRenewsAt,
-  subscriptionCancelAtPeriodEnd = false,
   userAvatarUrl,
   userDisplayName,
   userId,
 }) => {
-  const grantedOnly = premiumSource === 'granted';
   const t = useTranslations('Settings');
   const currentLocale = useLocale();
   const [activeSection, setActiveSection] = useState<SectionId>('account');
@@ -149,7 +133,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
   const [deleteStatus, setDeleteStatus] = useState<
-    'idle' | 'confirming' | 'loading' | 'error' | 'billing-error'
+    'idle' | 'confirming' | 'loading' | 'error'
   >('idle');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle');
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -157,9 +141,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     'idle' | 'denied' | 'unsupported' | 'error'
   >('idle');
   const [pushBusy, setPushBusy] = useState(false);
-  const [billingStatus, setBillingStatus] = useState<
-    'idle' | 'loading' | 'error'
-  >('idle');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const mobile = useIsMobile();
   const visibleSections = useMemo(
@@ -176,17 +157,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     (devSaved.loadTracing !== devApplied.loadTracing ||
       devSaved.discoverySkeleton !== devApplied.discoverySkeleton);
 
-  const handleManageSubscription = async () => {
-    setBillingStatus('loading');
-
-    try {
-      await onManageSubscription();
-      setBillingStatus('idle');
-    } catch {
-      setBillingStatus('error');
-    }
-  };
-
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues,
@@ -197,7 +167,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     control,
     reset,
     resetField,
-    watch,
     formState: { isSubmitting, isDirty, errors },
   } = form;
   const draft = useFormDraft(
@@ -278,12 +247,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     }
   };
 
-  const onInvalid = (formErrors: typeof errors) => {
-    if (formErrors.email) {
-      jumpToSection('account');
-    }
-  };
-
   const handleDiscard = () => {
     reset();
     draft.clear();
@@ -314,10 +277,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     setDeleteStatus('loading');
 
     try {
-      if ((await onDeleteAccount()) === 'billing-error') {
-        setDeleteStatus('billing-error');
-        return;
-      }
+      await onDeleteAccount();
       reset();
       draft.clear();
     } catch {
@@ -346,8 +306,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     { label: t('languageDisplayShort'), value: 'short' },
   ];
 
-  const emailValue = watch('email');
-
   if (mobile) {
     return (
       <MobileSettings
@@ -360,10 +318,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         premium={premium}
         userAvatarUrl={userAvatarUrl}
         userDisplayName={userDisplayName}
-        premiumSource={premiumSource}
         premiumGrantedUntil={premiumGrantedUntil}
-        subscriptionRenewsAt={subscriptionRenewsAt}
-        subscriptionCancelAtPeriodEnd={subscriptionCancelAtPeriodEnd}
         options={{
           applicationLanguage: localizedLanguageOptions,
           timeFormat: timeFormatOptions,
@@ -373,8 +328,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         pushStatus={pushStatus}
         pushBusy={pushBusy}
         onPushToggle={handlePushToggle}
-        billingStatus={billingStatus}
-        onManageSubscription={handleManageSubscription}
         exportStatus={exportStatus}
         onExportData={handleExportData}
         onUpdateDiscordConnection={onUpdateDiscordConnection}
@@ -394,7 +347,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   return (
     <form
       noValidate
-      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      onSubmit={handleSubmit(onSubmit)}
       className={`mx-auto w-full max-w-[1140px] px-6 pt-8 pb-24 ${
         mobile === null ? 'max-md:invisible' : ''
       }`}
@@ -428,7 +381,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <p className="truncate font-semibold text-[14px] text-foreground">
                   {userDisplayName}
                 </p>
-                <p className="truncate text-[12px] text-muted">{emailValue}</p>
               </div>
             </div>
             <div className="flex flex-row flex-wrap gap-1 lg:flex-col">
@@ -460,30 +412,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               title={t('accountTitle')}
               description={t('accountDescription')}
             >
-              <FormGroup>
-                <Label htmlFor="email" required>
-                  {t('emailLabel')}
-                </Label>
-                <TextInput
-                  id="email"
-                  inputMode="email"
-                  autoCapitalize="off"
-                  autoComplete="email"
-                  spellCheck={false}
-                  {...register('email')}
-                  placeholder={t('emailPlaceholder')}
-                  error={!!errors.email}
-                />
-                <p className="text-[12px] text-subtle">
-                  {t('emailDescription')}
-                </p>
-                {errors.email && (
-                  <FieldError id="email-error">
-                    {t(errors.email.message as string)}
-                  </FieldError>
-                )}
-              </FormGroup>
-
               <SettingRow
                 label={t('updateDiscordConnectionLabel')}
                 description={t('updateDiscordConnectionDescription')}
@@ -503,7 +431,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 label={t('premiumMembershipLabel')}
                 description={
                   premium
-                    ? grantedOnly && premiumGrantedUntil
+                    ? premiumGrantedUntil
                       ? t('premiumGrantEnds', {
                           date: new Date(
                             premiumGrantedUntil,
@@ -513,19 +441,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     : t('premiumMembershipDescription')
                 }
               >
-                {grantedOnly ? (
+                {premium ? (
                   <span className="text-sm text-subtle">
                     {t('premiumGranted')}
                   </span>
-                ) : premium ? (
-                  <Button
-                    variant="outline"
-                    onClick={handleManageSubscription}
-                    disabled={billingStatus === 'loading'}
-                    className="h-10 whitespace-nowrap"
-                  >
-                    {t('manageBillingButton')}
-                  </Button>
                 ) : (
                   <Button
                     variant="outline"
@@ -606,14 +525,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <p className="text-[12px] text-subtle leading-relaxed">
                       {t('deleteAccountRetentionNote')}
                     </p>
-                    {deleteStatus === 'error' ||
-                    deleteStatus === 'billing-error' ? (
+                    {deleteStatus === 'error' ? (
                       <p role="alert" className="text-danger text-xs">
-                        {t(
-                          deleteStatus === 'billing-error'
-                            ? 'deleteAccountBillingError'
-                            : 'deleteAccountError',
-                        )}
+                        {t('deleteAccountError')}
                       </p>
                     ) : null}
                     <div className="flex flex-wrap gap-2">
@@ -658,77 +572,28 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               }
             >
               {premium ? (
-                <div className="flex items-center justify-between gap-4 rounded-xl bg-background-darker px-4 py-3.5">
-                  <div className="min-w-0">
-                    <div className="flex items-baseline gap-[5px]">
-                      <span className="font-bold text-[26px] text-foreground tracking-[-0.01em]">
-                        {grantedOnly
-                          ? t('premiumGranted')
-                          : t('premiumPriceAmount')}
-                      </span>
-                      {grantedOnly ? null : (
-                        <span className="text-[13px] text-muted">
-                          {t('premiumPerMonth')}
-                        </span>
-                      )}
-                    </div>
-                    {grantedOnly ? null : (
-                      <p className="mt-0.5 text-[12.5px] text-subtle">
-                        {t('premiumPlanNote')}
-                      </p>
-                    )}
-                    {premiumGrantedUntil ? (
-                      <p className="mt-0.5 text-[12.5px] text-subtle">
-                        {t('premiumGrantEnds', {
-                          date: new Date(
-                            premiumGrantedUntil,
-                          ).toLocaleDateString(currentLocale),
-                        })}
-                      </p>
-                    ) : null}
-                    {!grantedOnly && subscriptionRenewsAt ? (
-                      <p className="mt-0.5 text-[12.5px] text-subtle">
-                        {t(
-                          subscriptionCancelAtPeriodEnd
-                            ? 'billingEnds'
-                            : 'billingRenews',
-                          {
-                            date: new Date(
-                              subscriptionRenewsAt,
-                            ).toLocaleDateString(currentLocale),
-                          },
-                        )}
-                      </p>
-                    ) : null}
-                  </div>
-                  {grantedOnly ? null : (
-                    <Button
-                      variant="outline"
-                      onClick={handleManageSubscription}
-                      disabled={billingStatus === 'loading'}
-                      className="h-10 whitespace-nowrap"
-                    >
-                      {t('manageBillingButton')}
-                    </Button>
-                  )}
+                <div className="rounded-xl bg-background-darker px-4 py-3.5">
+                  <span className="font-bold text-[26px] text-foreground tracking-[-0.01em]">
+                    {t('premiumGranted')}
+                  </span>
+                  {premiumGrantedUntil ? (
+                    <p className="mt-0.5 text-[12.5px] text-subtle">
+                      {t('premiumGrantEnds', {
+                        date: new Date(premiumGrantedUntil).toLocaleDateString(
+                          currentLocale,
+                        ),
+                      })}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 
               <CompareTable />
 
               {premium ? null : (
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[12px] text-subtle">
-                    {t('premiumUpgradeNote')}
-                  </span>
-                  <Button
-                    onClick={handleManageSubscription}
-                    disabled={billingStatus === 'loading'}
-                    className="h-9 whitespace-nowrap text-[13px]"
-                  >
-                    {t('premiumUpgradeButton')}
-                  </Button>
-                </div>
+                <p className="text-[12px] text-subtle">
+                  {t('premiumUnavailableNote')}
+                </p>
               )}
             </SectionCard>
           )}
@@ -1118,15 +983,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </SectionCard>
           )}
 
-          {isDirty || billingStatus === 'error' ? (
+          {isDirty ? (
             <div className="sticky bottom-[calc(var(--dock-space,0px)+20px)] z-[6] flex flex-col gap-3 rounded-[18px] border border-line bg-background-darker px-5 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               {saveStatus === 'error' ? (
                 <span className="text-[13px] text-danger">
                   {t('saveError')}
-                </span>
-              ) : billingStatus === 'error' ? (
-                <span className="text-[13px] text-danger">
-                  {t('billingError')}
                 </span>
               ) : (
                 <span className="text-[13px] text-primary-light">

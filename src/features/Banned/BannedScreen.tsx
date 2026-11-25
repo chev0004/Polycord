@@ -1,4 +1,4 @@
-import { MdMailOutline } from 'react-icons/md';
+import { FaDiscord } from 'react-icons/fa';
 import en from '@/locales/en.json';
 import ja from '@/locales/ja.json';
 
@@ -6,10 +6,12 @@ export const BannedScreen = ({
   locale,
   date,
   reference,
+  inviteUrl = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL,
 }: {
   locale: string;
   date: Date;
   reference: string;
+  inviteUrl?: string;
 }) => {
   const copy = locale === 'ja' ? ja.Banned : en.Banned;
   const formattedDate = new Intl.DateTimeFormat(locale, {
@@ -65,16 +67,24 @@ export const BannedScreen = ({
           <h2 className="font-semibold text-lg text-primary max-md:text-base">
             {copy.appealTitle}
           </h2>
-          <p className="text-[#e5e7eb] text-sm leading-[1.6] max-md:mb-2 max-md:leading-normal">
-            {copy.appealBody}
-          </p>
-          <a
-            href={`mailto:support@polycord.app?subject=${encodeURIComponent(`${copy.appealSubject} ${reference}`)}`}
-            className="mt-1 inline-flex h-10 items-center gap-2 rounded-control border border-line-strong px-5 font-semibold text-sm hover:bg-overlay focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 max-md:mt-0 max-md:h-[50px] max-md:w-full max-md:justify-center max-md:rounded-full max-md:border-0 max-md:bg-primary max-md:text-[15px] max-md:text-on-primary max-md:hover:bg-primary-light"
-          >
-            <MdMailOutline size={18} aria-hidden className="max-md:size-5" />
-            {copy.emailSupport}
-          </a>
+          {inviteUrl ? (
+            <>
+              <p className="text-[#e5e7eb] text-sm leading-[1.6] max-md:mb-2 max-md:leading-normal">
+                {copy.appealBody}
+              </p>
+              <a
+                href={inviteUrl}
+                className="mt-1 inline-flex h-10 items-center gap-2 rounded-control border border-line-strong px-5 font-semibold text-sm hover:bg-overlay focus-visible:bg-overlay max-md:mt-0 max-md:h-[50px] max-md:w-full max-md:justify-center max-md:rounded-full max-md:border-0 max-md:bg-primary max-md:text-[15px] max-md:text-on-primary max-md:hover:bg-primary-light"
+              >
+                <FaDiscord size={18} aria-hidden className="max-md:size-5" />
+                {copy.openDiscord}
+              </a>
+            </>
+          ) : (
+            <p className="text-[#e5e7eb] text-sm leading-[1.6]">
+              {copy.appealUnavailable}
+            </p>
+          )}
         </section>
       </main>
     </div>

@@ -740,9 +740,6 @@ export const SupporterOtherSources: Story = {
                 grantedUntil: new Date(
                   Date.now() + 86400000 * 30,
                 ).toISOString(),
-                subscriptionUntil: new Date(
-                  Date.now() + 86400000 * 12,
-                ).toISOString(),
               },
             }
           : user,
@@ -752,10 +749,9 @@ export const SupporterOtherSources: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
-      await canvas.findByText(/^Paid subscription active until/),
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByText('Supporter through the configured Supporter list.'),
+      await canvas.findByText(
+        'Supporter through the configured Supporter list.',
+      ),
     ).toBeInTheDocument();
     await expect(
       canvas.getByText(/won't end Supporter while another source is active/),

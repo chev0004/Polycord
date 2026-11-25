@@ -10,7 +10,5 @@ export const isPremiumUser = async (user: CurrentUser): Promise<boolean> => {
   }
 
   const account = await getPremiumAccountByDiscordUserId(user.id);
-  return (
-    account !== null && isPremiumAccount(account.user, account.subscription)
-  );
+  return account !== null && isPremiumAccount(account);
 };
