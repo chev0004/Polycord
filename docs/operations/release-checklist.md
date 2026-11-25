@@ -41,7 +41,7 @@ Everything that must change between the current staging deployment and a public 
 
 ## Integrations
 
-- [ ] Push notifications deliver on the production domain with its VAPID subject.
+- [x] Push notifications deliver on the production domain with its VAPID subject.
 - [ ] Discord login, logout and session expiry complete on the production domain.
 - [x] The [post-deploy checks](monitoring.md#post-deploy-checks) pass on the launch candidate, and the assigned responder receives the [pre-launch test alert](monitoring.md#uptime-monitoring-and-pre-launch-test-alert).
 
