@@ -106,6 +106,7 @@ export const useToastStack = () => {
     const newId = lastToastId;
     const newToast = { ...toast, id: newId };
     setToasts((prev) => [...prev, newToast]);
+    return newId;
   }, []);
 
   const dismissToast = useCallback((id: number) => {

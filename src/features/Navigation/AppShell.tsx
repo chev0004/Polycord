@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import {
   type CSSProperties,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -38,15 +39,19 @@ export const useNavbarBump = (
   const handler = useRef(onClick);
   const enabled = Boolean(onClick);
 
+  const bump = useCallback(() => handler.current?.(), []);
+
   useEffect(() => {
     handler.current = onClick;
   });
 
   useEffect(() => {
     if (!enabled) return;
-    setBump({ onClick: () => handler.current?.(), readyAt });
+    setBump({ onClick: bump, readyAt });
     return () => setBump(null);
-  }, [setBump, enabled, readyAt]);
+  }, [setBump, enabled, readyAt, bump]);
+
+  return bump;
 };
 
 const PendingCasesContext = createContext<(count: number) => void>(() => {});

@@ -760,6 +760,45 @@ export const BumpProfile: Story = {
   },
 };
 
+export const BumpHintAfterOnboarding: Story = {
+  beforeEach: () => {
+    sessionStorage.setItem('polycord:bump-hint:new-member', '1');
+    return () => sessionStorage.removeItem('polycord:bump-hint:new-member');
+  },
+  render: BumpProfile.render,
+  args: { userId: 'new-member' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      await canvas.findByText('Bump your profile to show it in Discovery'),
+    ).toBeInTheDocument();
+    await expect(
+      sessionStorage.getItem('polycord:bump-hint:new-member'),
+    ).toBeNull();
+    await userEvent.click(canvas.getByRole('button', { name: 'Bump now' }));
+    await expect(await canvas.findByText('Profile bumped')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        canvas.queryByText('Bump your profile to show it in Discovery'),
+      ).not.toBeInTheDocument(),
+    );
+  },
+};
+
+export const BumpHintAfterOnboardingMobile: Story = {
+  ...BumpHintAfterOnboarding,
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      await canvas.findByText('Bump your profile to show it in Discovery'),
+    );
+    await expect(await canvas.findByText('Profile bumped')).toBeInTheDocument();
+  },
+};
+
 export const BumpProfileCooldown: Story = {
   render: (args) => {
     const t = useTranslations('DiscoveryStories');

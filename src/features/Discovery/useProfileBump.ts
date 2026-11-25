@@ -103,5 +103,5 @@ export const useProfileBump = ({
     }
   };
 
-  useNavbarBump(bump, readyAt);
+  return useNavbarBump(bump, readyAt);
 };

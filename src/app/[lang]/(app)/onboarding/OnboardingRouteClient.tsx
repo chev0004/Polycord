@@ -45,6 +45,11 @@ export const OnboardingRouteClient = ({
         }
 
         if (voiceClip) await saveVoiceIntroRequest(voiceClip);
+        if (data.isPublic) {
+          try {
+            sessionStorage.setItem(`polycord:bump-hint:${userId}`, '1');
+          } catch {}
+        }
         discoveryCache.expire();
         router.push(`/${locale}`);
         router.refresh();

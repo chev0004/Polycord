@@ -149,6 +149,7 @@ type DiscoveryPageProps = {
 };
 
 const BUMP_TOAST_DURATION = 4000;
+const BUMP_HINT_DURATION = 10000;
 
 type ProfileDraft = {
   primaryLanguage?: string;
@@ -1210,7 +1211,7 @@ export const DiscoveryPage = ({
     [],
   );
 
-  useProfileBump({
+  const bump = useProfileBump({
     profileId: currentProfileId,
     readyAt: bumpReadyAt,
     avatarUrl: userAvatarUrl,
@@ -1233,6 +1234,39 @@ export const DiscoveryPage = ({
         );
     },
   });
+
+  useEffect(() => {
+    if (!currentProfileId) return;
+    const key = `polycord:bump-hint:${userId}`;
+    try {
+      if (sessionStorage.getItem(key) !== '1') return;
+      sessionStorage.removeItem(key);
+    } catch {
+      return;
+    }
+    const id = addToast({
+      title: t('bumpHintTitle'),
+      description: t('bumpHintDescription'),
+      iconUrl: userAvatarUrl,
+      duration: BUMP_HINT_DURATION,
+      action: {
+        label: t('bumpHintAction'),
+        onClick: () => {
+          dismissToast(id);
+          bump();
+        },
+      },
+      activity: { actionLabel: t('bumpHintAction'), onOpen: bump },
+    });
+  }, [
+    currentProfileId,
+    userId,
+    userAvatarUrl,
+    addToast,
+    dismissToast,
+    bump,
+    t,
+  ]);
 
   if (!skeleton && showSkeleton)
     return (
