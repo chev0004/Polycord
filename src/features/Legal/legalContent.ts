@@ -20,13 +20,13 @@ export const LEGAL_DOCUMENT_IDS: LegalDocumentId[] = [
 
 export const LEGAL_CANONICAL_LOCALE = 'en';
 
-const LAST_UPDATED = '2026-09-24';
+const LAST_UPDATED = '2026-11-19';
 
 const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
     lastUpdated: LAST_UPDATED,
     intro:
-      'These terms explain the deal between you and Polycord when you use the service to discover language partners. By signing in or browsing public profiles you agree to them. We have kept the language plain on purpose, but it is still a binding agreement.',
+      'These terms are an agreement between you and the individual who operates Polycord, called "we" or "us" here. Polycord is a language-exchange service for discovering language partners, made up of this website and the Polycord Discord app. Polycord Supporter is its optional paid subscription. These terms cover all three. By signing in or browsing public profiles you agree to them. We have kept the language plain on purpose, but it is still a binding agreement.',
     sections: [
       {
         heading: 'Who can use Polycord',
@@ -81,25 +81,25 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Supporter and payments',
         paragraphs: [
-          'Some features are part of Polycord Supporter. The price and what Supporter includes are shown in Settings, and Stripe Checkout shows the amount and billing period before you pay. Subscriptions renew until you cancel, and you keep paid features until the end of the period you already paid for.',
+          'Polycord Supporter is an optional paid subscription that adds the features listed in Settings. It is not currently available to buy, and Polycord does not take payments. If Supporter has been granted to your account, Settings shows when it ends.',
         ],
       },
       {
         heading: 'Changes and availability',
         paragraphs: [
-          'Polycord is a product that keeps evolving, so features may change, pause, or be removed. We may update these terms as the service grows; when we make a material change we will update the date at the top of this page.',
+          'Polycord keeps evolving, so features may change, pause, or be removed. We may update these terms as the service grows; when we make a material change we will update the date at the top of this page.',
         ],
       },
       {
         heading: 'Disclaimers and liability',
         paragraphs: [
-          'Polycord helps you find people, but we cannot vet every member, so use your own judgement before sharing personal details or meeting anyone. The service is provided "as is" without warranties, and to the extent the law allows, Polycord is not liable for indirect or incidental damages arising from your use of it.',
+          'Polycord helps you find people, but we cannot vet every member, so use your own judgement before sharing personal details or meeting anyone. The service is provided "as is" without warranties, and to the extent the law allows, we are not liable for indirect or incidental damages arising from your use of it.',
         ],
       },
       {
         heading: 'Contact',
         paragraphs: [
-          'Questions about these terms can go to support@polycord.app.',
+          'For questions about these terms, message the moderators in the Polycord Discord server, linked at the bottom of every page.',
         ],
       },
     ],
@@ -107,12 +107,12 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
   privacy: {
     lastUpdated: LAST_UPDATED,
     intro:
-      'This policy explains what Polycord collects, why, and the control you have over it. We try to collect as little as we need to run a language-partner discovery service, and we never sell your personal data.',
+      'Polycord is run by an individual operator, called "we" in this policy. It explains what we collect, why, and the control you have over it. We try to collect as little as we need to run a language-partner discovery service, and we never sell your personal data.',
     sections: [
       {
         heading: 'Minors',
         paragraphs: [
-          'Polycord is for users aged 13 and above, subject to any higher minimum age where they live. We do not knowingly collect personal information from users below that age. If you believe an underage child has provided information, contact privacy@polycord.app so we can review and remove the account and personal data as appropriate.',
+          'Polycord is for users aged 13 and above, subject to any higher minimum age where they live. We do not knowingly collect personal information from users below that age. If you believe an underage child has provided information, message the moderators in the Polycord Discord server, linked at the bottom of every page so we can review and remove the account and personal data as appropriate.',
         ],
       },
       {
@@ -121,11 +121,11 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'We collect information when you sign in and use Polycord:',
         ],
         list: [
-          'Discord account data you authorise at sign-in: your Discord ID, username, avatar, and email address.',
+          'Discord account data you authorise at sign-in: your Discord ID, username, display name, and avatar. Polycord does not request or save your email address at sign-in.',
           'Profile data you choose to add: languages, proficiency, country, timezone, availability, bio, tags, card styling, and voice introductions.',
           'Usage data: product events, timestamps, locale, and limited feature metadata. Events from signed-in users can be linked to their account.',
           'Service data: saved profiles, blocks, reports, moderation records, notifications, preferences, and technical logs, including IP addresses for abuse prevention.',
-          'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Supporter, we store Stripe customer and subscription identifiers and billing status; Stripe processes payment details.',
+          'If you enable browser push notifications, we store your browser subscription endpoint and delivery keys. For Supporter, we store when your Supporter access ends.',
         ],
       },
       {
@@ -137,7 +137,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'What is public on your profile',
         paragraphs: [
-          'When your profile is set to public, the details you add to it are visible to other members and to anyone with your public profile link, including people who are not signed in. Your email address is never shown publicly.',
+          'When your profile is set to public, the details you add to it are visible to other members and to anyone with your public profile link, including people who are not signed in.',
           'Signed-in members can see and copy your Discord username. Logged-out visitors can see and copy it only if you allow anonymous copying in Settings. You choose whether your timezone is displayed in Settings or the profile editor, and whether your availability is displayed in the profile editor.',
           'Blocking hides two signed-in accounts from each other. A public profile can still be viewed by anyone who is signed out.',
         ],
@@ -158,20 +158,20 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'How we share information',
         paragraphs: [
-          'We share data with providers that host and operate Polycord, Discord for sign-in, Stripe for payments, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
+          'We share data with providers that host Polycord and run its infrastructure, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
         ],
       },
       {
         heading: 'Data retention',
         paragraphs: [
-          'Deleting your account removes your account, profile, settings, voice introduction, saved profiles, blocks, reports involving you, inbox notifications, local billing records, boosts, and push subscriptions, and stops your existing sessions.',
+          'Deleting your account removes your account, profile, settings, voice introduction, saved profiles, blocks, reports involving you, inbox notifications, boosts, and push subscriptions, and stops your existing sessions.',
           'Analytics events, moderation actions, and abuse-prevention logs remain with the link to your account cleared, and their metadata, notes, or IP addresses can remain. Rate-limit counters, your display name and avatar in notifications already delivered to other members, payment-provider records, and backups are not removed by deletion. If your account has a moderation restriction, your Discord ID and that restriction are kept to prevent ban evasion.',
         ],
       },
       {
         heading: 'Export and deletion',
         paragraphs: [
-          'You can download your account, complete profile, settings, voice introduction, saved profiles, blocks, submitted reports, inbox state, billing state, boosts, push registrations, and account-linked activity as JSON from Settings. The export leaves out other people’s private data and delivery credentials. You can also delete your account there. For access, correction, deletion, or restriction requests beyond those controls, contact privacy@polycord.app.',
+          'You can download your account, complete profile, settings, voice introduction, saved profiles, blocks, submitted reports, inbox state, boosts, push registrations, and account-linked activity as JSON from Settings. The export leaves out other people’s private data and delivery credentials. You can also delete your account there. For access, correction, deletion, or restriction requests beyond those controls, message the moderators in the Polycord Discord server, linked at the bottom of every page.',
         ],
       },
       {
@@ -182,7 +182,9 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       },
       {
         heading: 'Contact',
-        paragraphs: ['Privacy questions can go to privacy@polycord.app.'],
+        paragraphs: [
+          'For privacy questions, message the moderators in the Polycord Discord server, linked at the bottom of every page.',
+        ],
       },
     ],
   },
@@ -256,7 +258,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Contact',
         paragraphs: [
-          'You can report a profile in the app or contact safety@polycord.app.',
+          'You can report a profile in the app or message the moderators in the Polycord Discord server, linked at the bottom of every page.',
         ],
       },
     ],

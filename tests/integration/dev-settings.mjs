@@ -7,7 +7,6 @@ const devCookies = [];
 let user;
 mock.module('@/db', () => ({
   updateProfilePrivacyForUser: async () => true,
-  updateUserEmail: async () => {},
   upsertUserSettings: async (_userId, values) => writes.push(values),
 }));
 mock.module('@/lib/auth', () => ({
@@ -30,7 +29,6 @@ const settings = {
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
-  email: 'user@example.com',
 };
 const save = (values) =>
   POST(

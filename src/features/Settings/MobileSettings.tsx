@@ -13,7 +13,6 @@ import {
   MdDownload,
   MdLockOutline,
   MdLogout,
-  MdMailOutline,
   MdNotificationsNone,
   MdOutlineSchedule,
   MdOutlineWorkspacePremium,
@@ -24,7 +23,7 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { FieldError, Label, TextInput, Toggle } from '@/components/Form';
+import { Label, TextInput, Toggle } from '@/components/Form';
 import { ActionSheet, Sheet, SheetLabel, SheetRow } from '@/components/Sheet';
 import { ToastStack } from '@/components/Toast';
 import { signInHref } from '@/features/Navigation/signIn';
@@ -107,7 +106,7 @@ const mobilePages: string[] = [
 
 type ChoiceField = 'applicationLanguage' | 'timeFormat' | 'languageDisplay';
 
-type SaveField = ChoiceField | ToggleField | 'email';
+type SaveField = ChoiceField | ToggleField;
 
 type ToggleField =
   | 'isPublic'
@@ -130,21 +129,16 @@ type MobileSettingsProps = {
   premium: boolean;
   userAvatarUrl?: string;
   userDisplayName: string;
-  premiumSource?: 'free' | 'granted' | 'purchased' | 'both';
   premiumGrantedUntil?: string;
-  subscriptionRenewsAt?: string;
-  subscriptionCancelAtPeriodEnd: boolean;
   options: Record<ChoiceField, { label: string; value: string }[]>;
   blockedUsers?: ReactNode;
   pushStatus: 'idle' | 'denied' | 'unsupported' | 'error';
   pushBusy: boolean;
   onPushToggle: (checked: boolean) => Promise<void>;
-  billingStatus: 'idle' | 'loading' | 'error';
-  onManageSubscription: () => Promise<void>;
   exportStatus: 'idle' | 'loading' | 'success' | 'error';
   onExportData: () => Promise<void>;
   onUpdateDiscordConnection: () => void;
-  deleteStatus: 'idle' | 'confirming' | 'loading' | 'error' | 'billing-error';
+  deleteStatus: 'idle' | 'confirming' | 'loading' | 'error';
   deleteConfirmation: string;
   onDeleteConfirmationChange: (value: string) => void;
   onDeleteStart: () => void;
@@ -162,17 +156,12 @@ export const MobileSettings = ({
   premium,
   userAvatarUrl,
   userDisplayName,
-  premiumSource,
   premiumGrantedUntil,
-  subscriptionRenewsAt,
-  subscriptionCancelAtPeriodEnd,
   options,
   blockedUsers,
   pushStatus,
   pushBusy,
   onPushToggle,
-  billingStatus,
-  onManageSubscription,
   exportStatus,
   onExportData,
   onUpdateDiscordConnection,
@@ -183,17 +172,12 @@ export const MobileSettings = ({
   onDeleteReset,
   onDeleteAccount,
 }: MobileSettingsProps) => {
-  const grantedOnly = premiumSource === 'granted';
   const t = useTranslations('Settings');
   const locale = useLocale();
   const { control, watch, getValues, setValue, resetField } = form;
   const { toasts, addToast, dismissToast } = useToastStack();
   const [mobilePage, setMobilePage] = useState<MobilePage | null>(null);
-  const [sheet, setSheet] = useState<ChoiceField | 'email' | 'delete' | null>(
-    null,
-  );
-  const [emailDraft, setEmailDraft] = useState('');
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<ChoiceField | 'delete' | null>(null);
   const [saving, setSaving] = useState(false);
   const pagesPushed = useRef(0);
   const [animatePage, setAnimatePage] = useState(false);
@@ -233,12 +217,6 @@ export const MobileSettings = ({
     setMobilePage(parent);
   };
 
-  const openEmailSheet = () => {
-    setEmailDraft(getValues('email'));
-    setEmailError(null);
-    setSheet('email');
-  };
-
   const save = async <K extends SaveField>(
     name: K,
     value: PathValue<SettingsFormValues, K>,
@@ -247,8 +225,6 @@ export const MobileSettings = ({
     const parsed = settingsSchema.safeParse(getValues());
     if (!parsed.success) {
       resetField(name);
-      openEmailSheet();
-      setEmailError(parsed.error.issues[0].message);
       return;
     }
     setSaving(true);
@@ -260,16 +236,6 @@ export const MobileSettings = ({
       description: t(saved ? 'savedDescription' : 'saveError'),
       duration: saved ? 2500 : 4000,
     });
-  };
-
-  const applyEmail = () => {
-    const result = settingsSchema.shape.email.safeParse(emailDraft);
-    if (!result.success) {
-      setEmailError(result.error.issues[0].message);
-      return;
-    }
-    setSheet(null);
-    void save('email', emailDraft);
   };
 
   const values = watch();
@@ -561,16 +527,11 @@ export const MobileSettings = ({
               <span className="self-start rounded bg-primary-darker px-1.5 py-0.5 font-bold text-[10px] text-primary-light uppercase tracking-[0.04em]">
                 {premium ? t('premiumYourPlan') : t('premiumTag')}
               </span>
-              <p>
-                <span className="font-black text-[34px] tracking-[-0.02em]">
-                  {grantedOnly ? t('premiumGranted') : t('premiumPriceAmount')}
-                </span>{' '}
-                {grantedOnly ? null : (
-                  <span className="font-medium text-muted text-sm">
-                    {t('premiumPerMonth')}
-                  </span>
-                )}
-              </p>
+              {premium ? (
+                <p className="font-black text-[34px] tracking-[-0.02em]">
+                  {t('premiumGranted')}
+                </p>
+              ) : null}
               <p className="text-[13px] text-subtle leading-snug">
                 {premium
                   ? t('premiumTabDescriptionPremium')
@@ -585,45 +546,13 @@ export const MobileSettings = ({
                   })}
                 </p>
               ) : null}
-              {premium && !grantedOnly && subscriptionRenewsAt ? (
-                <p className="text-[13px] text-subtle">
-                  {t(
-                    subscriptionCancelAtPeriodEnd
-                      ? 'billingEnds'
-                      : 'billingRenews',
-                    {
-                      date: new Date(subscriptionRenewsAt).toLocaleDateString(
-                        locale,
-                      ),
-                    },
-                  )}
-                </p>
-              ) : null}
             </div>
             <CompareTable />
-            {grantedOnly ? null : (
-              <>
-                <Button
-                  variant={premium ? 'outline' : 'primary'}
-                  weight="semibold"
-                  onClick={onManageSubscription}
-                  disabled={billingStatus === 'loading'}
-                  className="h-[50px] rounded-full text-[15px]"
-                >
-                  {premium
-                    ? t('manageBillingButton')
-                    : t('premiumUpgradeButton')}
-                </Button>
-                <p className="text-center text-subtle text-xs">
-                  {premium ? t('premiumPlanNote') : t('premiumUpgradeNote')}
-                </p>
-              </>
-            )}
-            {billingStatus === 'error' ? (
-              <p role="alert" className="text-center text-[13px] text-danger">
-                {t('billingError')}
+            {premium ? null : (
+              <p className="text-center text-subtle text-xs">
+                {t('premiumUnavailableNote')}
               </p>
-            ) : null}
+            )}
           </SettingsPushPage>
         ) : (
           <div className="flex flex-col px-4">
@@ -632,14 +561,9 @@ export const MobileSettings = ({
             </h1>
             <div className="flex items-center gap-3.5 rounded-3xl bg-background-dark p-4">
               <Avatar avatarUrl={userAvatarUrl} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-bold text-[17px]">
-                  {userDisplayName}
-                </p>
-                <p className="truncate text-[13px] text-muted">
-                  {values.email}
-                </p>
-              </div>
+              <p className="min-w-0 flex-1 truncate font-bold text-[17px]">
+                {userDisplayName}
+              </p>
               <span
                 className={`flex h-[26px] flex-shrink-0 items-center rounded-full px-2.5 font-semibold text-xs ${
                   premium
@@ -653,13 +577,6 @@ export const MobileSettings = ({
 
             <SheetLabel>{t('accountTitle')}</SheetLabel>
             <SettingsGroup>
-              <SheetRow
-                icon={MdMailOutline}
-                label={t('emailLabel')}
-                value={values.email}
-                chevron
-                onClick={openEmailSheet}
-              />
               <SheetRow
                 icon={MdSync}
                 label={t('updateDiscordConnectionLabel')}
@@ -763,44 +680,6 @@ export const MobileSettings = ({
         )}
       </fieldset>
 
-      <Sheet
-        open={sheet === 'email'}
-        onOpenChange={(open) => setSheet(open ? 'email' : null)}
-        title={t('emailLabel')}
-        footer={
-          <Button
-            weight="semibold"
-            onClick={applyEmail}
-            className="h-[50px] flex-1 rounded-full text-[15px]"
-          >
-            {t('save')}
-          </Button>
-        }
-      >
-        <TextInput
-          id="email-sheet"
-          inputMode="email"
-          autoCapitalize="off"
-          autoComplete="email"
-          spellCheck={false}
-          aria-label={t('emailLabel')}
-          value={emailDraft}
-          placeholder={t('emailPlaceholder')}
-          error={Boolean(emailError)}
-          onChange={(event) => {
-            setEmailDraft(event.target.value);
-            setEmailError(null);
-          }}
-        />
-        {emailError ? (
-          <FieldError id="email-sheet-error">{t(emailError)}</FieldError>
-        ) : (
-          <p className="mt-2 text-[13px] text-subtle leading-snug">
-            {t('emailDescription')}
-          </p>
-        )}
-      </Sheet>
-
       {(Object.keys(choices) as ChoiceField[]).map((field) => (
         <ActionSheet
           key={field}
@@ -867,13 +746,9 @@ export const MobileSettings = ({
           <p className="text-[12px] text-subtle leading-relaxed">
             {t('deleteAccountRetentionNote')}
           </p>
-          {deleteStatus === 'error' || deleteStatus === 'billing-error' ? (
+          {deleteStatus === 'error' ? (
             <p role="alert" className="text-danger text-xs">
-              {t(
-                deleteStatus === 'billing-error'
-                  ? 'deleteAccountBillingError'
-                  : 'deleteAccountError',
-              )}
+              {t('deleteAccountError')}
             </p>
           ) : null}
         </div>

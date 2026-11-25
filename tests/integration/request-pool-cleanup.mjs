@@ -38,17 +38,13 @@ mock.module('next/server', () => ({
   after: (callback) => callbacks.push(callback),
 }));
 const { scopedRoute, withRenderPool } = await import('../../src/db/client');
-const { POST } = await import('../../src/app/api/billing/webhook/route');
 const drain = async () => {
   await Promise.all(callbacks.splice(0).map((callback) => callback()));
   assert.equal(connections, 0);
 };
-const response = await POST(
-  new Request('http://localhost/api/billing/webhook', {
-    method: 'POST',
-    body: '{}',
-  }),
-);
+const response = await scopedRoute(
+  async () => new Response(null, { status: 400 }),
+)();
 assert.equal(response.status, 400);
 assert.ok(connections > 0);
 assert.equal(callbacks.length, 1);

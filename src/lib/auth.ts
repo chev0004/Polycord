@@ -34,7 +34,6 @@ type DiscordUser = {
   username: string;
   global_name?: string | null;
   avatar?: string | null;
-  email?: string | null;
 };
 
 export {
@@ -144,7 +143,6 @@ export const normalizeDiscordUser = (discordUser: DiscordUser): CurrentUser => {
     name: discordUser.global_name ?? discordUser.username,
     username: discordUser.username,
     avatarUrl,
-    email: discordUser.email ?? undefined,
   };
 };
 
@@ -199,9 +197,7 @@ export const getSessionIdentity = cache(async () => {
   ]);
   return {
     account:
-      user?.id === session.accountId
-        ? { user, currentUser: { ...session, email: user.email ?? undefined } }
-        : null,
+      user?.id === session.accountId ? { user, currentUser: session } : null,
     restriction: identityRestriction(user, restriction),
   };
 });

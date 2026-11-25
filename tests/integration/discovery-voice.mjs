@@ -8,8 +8,9 @@ process.env.DATABASE_URL = url.href;
 process.env.POLYCORD_PREMIUM_USER_IDS = '';
 mock.module('server-only', () => ({}));
 const { db } = await import('../../src/db/client');
-const { users, profiles, subscriptions, userBlocks, voiceIntros } =
-  await import('../../src/db/schema');
+const { users, profiles, userBlocks, voiceIntros } = await import(
+  '../../src/db/schema'
+);
 const { countDiscovery, listDiscoveryPage } = await import(
   '../../src/db/discovery'
 );
@@ -38,7 +39,9 @@ const owners = await db
       discordUserId: `${prefix}-${name}`,
       discordUsername: `${prefix}-${name}`,
       displayName: `Voice ${prefix} ${name}`,
-      premiumGrantedUntil: ['granted', 'boostedPlain'].includes(name)
+      premiumGrantedUntil: ['granted', 'subscribed', 'boostedPlain'].includes(
+        name,
+      )
         ? future
         : name === 'expired'
           ? past
@@ -76,12 +79,6 @@ try {
       boostedUntil: name === 'boostedPlain' ? future : null,
     })),
   );
-  await db.insert(subscriptions).values({
-    userId: owner.subscribed.id,
-    stripeCustomerId: `cus_${prefix}`,
-    status: 'active',
-    currentPeriodEnd: future,
-  });
   await db.insert(voiceIntros).values(
     ['granted', 'subscribed', 'noDuration', 'free', 'expired'].map((name) => ({
       userId: owner[name].id,

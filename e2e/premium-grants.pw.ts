@@ -141,9 +141,6 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
       extended.premium_granted_until.getTime() -
         row.premium_granted_until.getTime(),
     ).toBe(14 * 86400000);
-    expect(
-      await sql`select 1 from subscriptions where user_id in ${sql([member.id, dummy.id])}`,
-    ).toHaveLength(0);
     expect(await premiumCard(memberContext, `${prefix} Member`)).toBe(true);
     expect(
       (
@@ -198,15 +195,11 @@ test('owners grant and revoke complimentary Supporter for real and dummy account
       ).status(),
     ).toBe(200);
     expect(await premiumCard(memberContext, `${prefix} Dummy`)).toBe(true);
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${dummy.id}, ${`test-${prefix}`}, 'active', now() + interval '10 days')`;
     const dummyRevoked = await revoke(ownerContext, dummy.id);
     expect((await dummyRevoked.json()).users[0].premium).toMatchObject({
       configured: false,
     });
-    expect(
-      (await dummyRevoked.json()).users[0].premium.subscriptionUntil,
-    ).toBeDefined();
-    expect(await premiumCard(memberContext, `${prefix} Dummy`)).toBe(true);
+    expect(await premiumCard(memberContext, `${prefix} Dummy`)).toBeFalsy();
 
     const ownerPage = await ownerContext.newPage();
     await ownerPage.setViewportSize({ width: 1280, height: 900 });

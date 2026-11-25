@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import {
   getPremiumAccountByDiscordUserId,
-  getPremiumSource,
   getPrivacySettingsByDiscordUserId,
   getUserSettingsByDiscordUserId,
+  hasActivePremiumGrant,
 } from '@/db';
 import { isOwner } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth';
@@ -30,16 +30,11 @@ async function SettingsRoute({
     isPremiumUser(user),
   ]);
   const owner = isOwner(user);
-  const subscription = account?.subscription;
-  const premiumSource = account
-    ? getPremiumSource(account.user, subscription ?? null)
-    : 'free';
 
   return (
     <main>
       <SettingsRouteClient
         userId={user.id}
-        defaultEmail={user.email ?? ''}
         initialPrivacySettings={privacySettings}
         initialSettings={
           settings
@@ -61,16 +56,11 @@ async function SettingsRoute({
         locale={lang}
         owner={owner}
         premium={premium}
-        premiumSource={premiumSource}
         premiumGrantedUntil={
-          premiumSource === 'granted' || premiumSource === 'both'
-            ? account?.user.premiumGrantedUntil?.toISOString()
+          account && hasActivePremiumGrant(account)
+            ? account.premiumGrantedUntil?.toISOString()
             : undefined
         }
-        subscriptionRenewsAt={
-          subscription?.currentPeriodEnd?.toISOString() ?? undefined
-        }
-        subscriptionCancelAtPeriodEnd={subscription?.cancelAtPeriodEnd}
         userAvatarUrl={user.avatarUrl}
         userDisplayName={user.name}
       />

@@ -158,7 +158,7 @@ test('discovery display names fill with their own banner colour on hover', async
       await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,card_color,custom_gradient_from,custom_gradient_to,accent_override)
         values (now() - make_interval(mins => ${index}),${owners[index].id},true,'en','ja','beginner','A hover fixture.',array[${prefix}],${colour},'#ff5f6d','#ffc371',${accent ?? null})`;
       if (premium)
-        await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owners[index].id}, ${`${prefix}-${index}`}, 'active', now() + interval '1 day')`;
+        await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${owners[index].id}`;
     }
     const paint = (locator: Locator) =>
       locator.evaluate((element) => {
@@ -227,7 +227,7 @@ test('public profile names fill with the banner colour on hover', async ({
       await sql`insert into profiles (last_bumped_at,user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,card_color)
         values (now(),${owners[index].id},true,'en','ja','beginner','A name fixture.',array[${prefix}],${colour})`;
       if (premium)
-        await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owners[index].id}, ${`${prefix}-${index}`}, 'active', now() + interval '1 day')`;
+        await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${owners[index].id}`;
     }
     const paint = (locator: Locator) =>
       locator.evaluate((element) => {
@@ -334,7 +334,7 @@ test('the progress bar follows the signed-in member profile colour', async ({
     await expect(page).toHaveURL('/en');
     await expect(bar).toHaveCSS('background-color', slate);
 
-    await sql`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${owner.id}, ${id}, 'active', now() + interval '1 day')`;
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${owner.id}`;
     await sql`update profiles set card_color='custom', custom_gradient_from='#ff5f6d', custom_gradient_to='#ffc371' where user_id=${owner.id}`;
     await page.reload();
     await expect(bar).toHaveCSS(

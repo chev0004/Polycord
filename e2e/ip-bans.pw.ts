@@ -126,14 +126,6 @@ test.describe('ip bans', () => {
     expect((await request.get('/api/health', from(BLOCKED))).status()).toBe(
       200,
     );
-    expect(
-      (
-        await request.post('/api/billing/webhook', {
-          ...from(BLOCKED),
-          data: '{}',
-        })
-      ).status(),
-    ).toBe(400);
   });
 
   test('forwarding headers cannot spoof or poison the block', async ({

@@ -17,7 +17,7 @@ const createUser = async (name: string, premium = false) => {
     await db`insert into users (discord_user_id, discord_username, display_name) values (${discordId}, ${discordId}, ${name}) returning id`;
   await db`insert into user_settings (user_id) values (${account.id})`;
   if (premium)
-    await db`insert into subscriptions (user_id, stripe_customer_id, status, current_period_end) values (${account.id}, ${`cus_${discordId}`}, 'active', now() + interval '30 days')`;
+    await db`update users set premium_granted_until = now() + interval '30 days' where id = ${account.id}`;
   await db.end();
   return { discordId, accountId: account.id as string, name };
 };
@@ -202,19 +202,6 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
     await expect
       .poll(() => sort.evaluate((el) => getComputedStyle(el).backgroundColor))
       .not.toBe(before);
-
-    await page.goto('/en/settings');
-    await page.getByRole('button', { name: /^Email Address/ }).click();
-    const email = page.getByRole('dialog').getByLabel('Email Address');
-    await email.fill('not-an-email');
-    await page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Save', exact: true })
-      .click();
-    await expect(email).toHaveAttribute('aria-invalid', 'true');
-    await expect(email).toHaveAccessibleDescription(
-      'Please enter a valid email address.',
-    );
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/en');

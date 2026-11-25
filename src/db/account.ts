@@ -12,7 +12,6 @@ import {
   pushSubscriptions,
   reports,
   savedProfiles,
-  subscriptions,
   userBlocks,
   userSettings,
   users,
@@ -53,7 +52,6 @@ export const getAccountExportByUserId = async (userId: string) => {
     blocks,
     filedReports,
     inbox,
-    billing,
     boosts,
     push,
     analytics,
@@ -83,7 +81,6 @@ export const getAccountExportByUserId = async (userId: string) => {
       })
       .from(notifications)
       .where(eq(notifications.userId, user.id)),
-    db.select().from(subscriptions).where(eq(subscriptions.userId, user.id)),
     db.select().from(profileBoosts).where(eq(profileBoosts.userId, user.id)),
     db
       .select({
@@ -113,7 +110,6 @@ export const getAccountExportByUserId = async (userId: string) => {
       discordUsername: user.discordUsername,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
-      email: user.email,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     },
@@ -162,7 +158,6 @@ export const getAccountExportByUserId = async (userId: string) => {
     blocks,
     reportsFiled: filedReports,
     notifications: inbox,
-    subscription: billing[0] ?? null,
     profileBoosts: boosts,
     pushSubscriptions: push,
     analyticsEvents: analytics,

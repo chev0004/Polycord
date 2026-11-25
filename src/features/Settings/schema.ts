@@ -15,15 +15,11 @@ export const settingsSchema = z.object({
   applicationLanguage: z.enum(locales),
   timeFormat: z.enum(['12hr', '24hr']),
   languageDisplay: z.enum(['long', 'short']),
-  email: z
-    .string()
-    .email({ message: 'emailInvalid' })
-    .min(1, { message: 'emailRequired' }),
 });
 
 export type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export const settingsDraftSchema = settingsSchema
   .omit({ pushNotifications: true })
-  .extend({ email: z.string(), applicationLanguage: z.string() })
+  .extend({ applicationLanguage: z.string() })
   .partial();

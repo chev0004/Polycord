@@ -35,7 +35,11 @@ const identity = {
   id: randomUUID().replaceAll('-', ''),
   name: 'Account export test',
 };
-let user = await upsertDiscordUser(identity);
+let user = await upsertDiscordUser({
+  ...identity,
+  email: 'legacy-oauth@example.com',
+});
+assert.equal(Object.hasOwn(user, 'email'), false);
 const other = await upsertDiscordUser({
   id: randomUUID().replaceAll('-', ''),
   name: 'Confidential identity',
@@ -110,12 +114,6 @@ try {
     .insert(schema.notifications)
     .values({ userId: other.id, kind: 'copy', actorName: identity.name })
     .returning();
-  await db.insert(schema.subscriptions).values({
-    userId: user.id,
-    stripeCustomerId: `cus_${randomUUID()}`,
-    stripeSubscriptionId: 'sub_isolated',
-    status: 'canceled',
-  });
   await db.insert(schema.profileBoosts).values({ userId: user.id });
   await db.insert(schema.pushSubscriptions).values({
     userId: user.id,
@@ -168,6 +166,7 @@ try {
     JSON.stringify(await getAccountExportByUserId(user.id)),
   );
   assert.equal(exported.version, 2);
+  assert.equal('email' in exported.account, false);
   for (const [key, value] of Object.entries(settings))
     assert.equal(exported.settings[key], value);
   for (const key of [
@@ -189,7 +188,7 @@ try {
   assert.equal(exported.reportsFiled[0].details, 'My submitted report');
   assert.equal(exported.reportsFiled.length, 1);
   assert.equal(exported.notifications[0].kind, 'copy');
-  assert.equal(exported.subscription.stripeSubscriptionId, 'sub_isolated');
+  assert.equal('subscription' in exported, false);
   for (const key of ['profileBoosts', 'pushSubscriptions', 'analyticsEvents'])
     assert.equal(exported[key].length, 1);
   for (const secret of [
@@ -238,7 +237,6 @@ try {
     schema.voiceIntros,
     schema.savedProfiles,
     schema.notifications,
-    schema.subscriptions,
     schema.profileBoosts,
     schema.pushSubscriptions,
   ]) {
