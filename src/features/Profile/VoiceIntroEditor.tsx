@@ -14,21 +14,42 @@ import { VoiceIntroPlayer } from './VoiceIntroPlayer';
 const DOWNLOAD_NAME = 'polycord-voice-intro';
 const RECORDER_STOP_BUFFER_MS = 100;
 
-type PendingClip = {
+export type PendingVoiceClip = {
   url: string;
   dataUrl: string;
   mimeType: string;
   seconds: number;
 };
 
-export type PendingVoiceClip = { url: string; seconds: number };
-
 type VoiceIntroEditorProps = {
   premium: boolean;
   profileId?: string;
   voiceSeconds: number;
+  saveOnPublish?: boolean;
   onChange: (seconds: number) => void;
   onPendingChange?: (clip: PendingVoiceClip | null) => void;
+};
+
+export class VoiceIntroSaveError extends Error {
+  constructor(readonly status: number) {
+    super('Voice intro save failed');
+  }
+}
+
+export const saveVoiceIntroRequest = async (clip: PendingVoiceClip) => {
+  const response = await fetch('/api/profile/voice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mimeType: clip.mimeType, audio: clip.dataUrl }),
+  });
+
+  if (!response.ok) {
+    throw new VoiceIntroSaveError(response.status);
+  }
+
+  clearClips();
+  discoveryCache.expire();
+  return (await response.json()) as { durationSeconds: number };
 };
 
 const blobToDataUrl = (blob: Blob): Promise<string> =>
@@ -43,6 +64,7 @@ export const VoiceIntroEditor = ({
   premium,
   profileId,
   voiceSeconds,
+  saveOnPublish = false,
   onChange,
   onPendingChange,
 }: VoiceIntroEditorProps) => {
@@ -50,10 +72,10 @@ export const VoiceIntroEditor = ({
   const locale = useLocale();
   const maxSeconds = entitlementLimit('profile.voiceIntroSeconds', premium);
   const [recording, setRecording] = useState(false);
-  const [pending, setPending] = useState<PendingClip | null>(null);
+  const [pending, setPending] = useState<PendingVoiceClip | null>(null);
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
-  const [error, setError] = useState<'mic' | 'save' | null>(null);
+  const [error, setError] = useState<'mic' | 'save' | 'profile' | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const stopRecordingRef = useRef<() => void>(() => {});
@@ -71,9 +93,7 @@ export const VoiceIntroEditor = ({
   );
 
   useEffect(() => {
-    onPendingChange?.(
-      pending ? { url: pending.url, seconds: pending.seconds } : null,
-    );
+    onPendingChange?.(pending);
   }, [pending, onPendingChange]);
 
   const startRecording = async () => {
@@ -164,28 +184,17 @@ export const VoiceIntroEditor = ({
     setError(null);
 
     try {
-      const response = await fetch('/api/profile/voice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mimeType: pending.mimeType,
-          audio: pending.dataUrl,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Voice intro save failed');
-      }
-
-      clearClips();
-      discoveryCache.expire();
-      const saved = (await response.json()) as { durationSeconds: number };
+      const saved = await saveVoiceIntroRequest(pending);
       onChange(saved.durationSeconds);
       setRevision((current) => current + 1);
       URL.revokeObjectURL(pending.url);
       setPending(null);
-    } catch {
-      setError('save');
+    } catch (error) {
+      setError(
+        error instanceof VoiceIntroSaveError && error.status === 409
+          ? 'profile'
+          : 'save',
+      );
     } finally {
       setBusy(false);
     }
@@ -223,7 +232,12 @@ export const VoiceIntroEditor = ({
   const description = recording
     ? t('voiceIntroRecordingDescription', { seconds: maxSeconds })
     : pending
-      ? t('voiceIntroPendingDescription', { seconds: pending.seconds })
+      ? t(
+          saveOnPublish
+            ? 'voiceIntroPublishDescription'
+            : 'voiceIntroPendingDescription',
+          { seconds: pending.seconds },
+        )
       : voiceSeconds > maxSeconds
         ? t('voiceIntroOverLimitDescription', {
             seconds: voiceSeconds,
@@ -288,13 +302,15 @@ export const VoiceIntroEditor = ({
               filename={DOWNLOAD_NAME}
             />
             <div className="flex gap-2">
-              <Button
-                onClick={saveClip}
-                disabled={busy}
-                className="h-9 text-[13px]"
-              >
-                {busy ? t('voiceIntroSaving') : t('voiceIntroSaveLabel')}
-              </Button>
+              {saveOnPublish ? null : (
+                <Button
+                  onClick={saveClip}
+                  disabled={busy}
+                  className="h-9 text-[13px]"
+                >
+                  {busy ? t('voiceIntroSaving') : t('voiceIntroSaveLabel')}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={discardClip}
@@ -309,13 +325,19 @@ export const VoiceIntroEditor = ({
 
         {error ? (
           <p className="text-[12px] text-danger">
-            {error === 'mic' ? t('voiceIntroMicError') : t('voiceIntroError')}
+            {error === 'mic'
+              ? t('voiceIntroMicError')
+              : error === 'profile'
+                ? t('voiceIntroNeedsProfile')
+                : t('voiceIntroError')}
           </p>
         ) : null}
       </div>
-      <p className="text-[13px] text-muted leading-relaxed">
-        {t('voiceIntroImmediate')}
-      </p>
+      {saveOnPublish ? null : (
+        <p className="text-[13px] text-muted leading-relaxed">
+          {t('voiceIntroImmediate')}
+        </p>
+      )}
       {premium ? null : (
         <p className="text-[13px] text-muted leading-relaxed">
           {t.rich('voiceIntroUpsell', {

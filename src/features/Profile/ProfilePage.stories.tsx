@@ -189,6 +189,7 @@ export const SaveDiscordCard: Story = {
     await waitFor(() =>
       expect(args.onSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ discordCard: 'rank' }),
+        null,
       ),
     );
   },
@@ -250,6 +251,7 @@ export const SupporterSavesSupporterDiscordCard: Story = {
     await waitFor(() =>
       expect(args.onSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ discordCard: 'metal' }),
+        null,
       ),
     );
   },
@@ -706,6 +708,7 @@ export const TimezoneSearch: Story = {
     await waitFor(() =>
       expect(args.onSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ timezone: 'Asia/Tokyo' }),
+        null,
       ),
     );
   },
@@ -952,6 +955,7 @@ export const LapsedOverLimit: Story = {
             level: 'beginner',
           })),
         }),
+        null,
       ),
     );
   },
@@ -1195,6 +1199,7 @@ export const Mobile: Story = {
         expect.objectContaining({
           targetLanguages: [{ language: 'en', level: 'advanced' }],
         }),
+        null,
       ),
     );
   },
@@ -1475,6 +1480,7 @@ export const MobileTimezonePicker: Story = {
           timezone: 'Europe/London',
           displayTimezone: true,
         }),
+        null,
       ),
     );
   },
@@ -1504,6 +1510,7 @@ export const MobileSaveDiscordCard: Story = {
     await waitFor(() =>
       expect(args.onSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ discordCard: 'rank' }),
+        null,
       ),
     );
   },
@@ -1559,6 +1566,7 @@ export const MobileSupporterSavesSupporterDiscordCard: Story = {
     await waitFor(() =>
       expect(args.onSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ discordCard: 'metal' }),
+        null,
       ),
     );
   },
@@ -1655,6 +1663,7 @@ export const FreeCustomColourPreviewIsNotSaved: Story = {
           bio: 'A bio edited while previewing custom colours.',
           cardColor: DEFAULT_CARD_COLOR,
         }),
+        null,
       ),
     );
     const submitted = JSON.stringify(
@@ -1712,6 +1721,7 @@ export const SupporterSavesCustomColours: Story = {
           customGradient: expect.objectContaining({ from: '#22cc88' }),
           accentOverride: '#00ffaa',
         }),
+        null,
       ),
     );
   },
@@ -1764,6 +1774,7 @@ export const SuggestsExistingTags: Story = {
         expect.objectContaining({
           tags: ['Anime', 'Cooking', 'Photography', 'Gaming'],
         }),
+        null,
       ),
     );
   },
@@ -1795,6 +1806,7 @@ export const MobileSuggestsExistingTags: Story = {
         expect.objectContaining({
           tags: ['Anime', 'Cooking', 'Photography', 'Travel'],
         }),
+        null,
       ),
     );
   },
