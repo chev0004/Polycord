@@ -187,9 +187,13 @@ export const GET = scopedRoute(async (request: NextRequest) => {
       metadata: { isNewUser: !existingUser },
     });
 
-    const response = NextResponse.redirect(
-      new URL(localizePath(redirectTo, locale), getRedirectUri(request)),
-      303,
+    const destination = new URL(
+      localizePath(redirectTo, locale),
+      getRedirectUri(request),
+    );
+    const response = new NextResponse(
+      `<!doctype html><meta name="referrer" content="no-referrer"><meta http-equiv="refresh" content="0;url=${destination.href.replaceAll('&', '&amp;')}">`,
+      { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
     );
     await setSessionCookie(response, currentUser, user.id);
     if (isOwnerDiscordId(currentUser.id)) {

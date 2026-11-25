@@ -350,7 +350,10 @@ try {
     }
   };
   const signedIn = await signIn();
-  assert.equal(signedIn.headers.get('location'), 'http://localhost/en/profile');
+  assert.match(
+    await signedIn.text(),
+    /content="0;url=http:\/\/localhost\/en\/profile"/,
+  );
   const freshSession = signedIn.cookies.get('polycord_session').value;
   user = await getUserByDiscordId(identity.id);
   assert.notEqual(user.id, originalId);
