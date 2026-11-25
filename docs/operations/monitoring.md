@@ -49,14 +49,14 @@ The 2026-09-23 drill in [readiness](readiness.md) used disposable data. This dri
 
 ## Application rollback
 
-Rehearse before launch, when no public users depend on the site, or on staging:
+Rehearse before launch, when no public users depend on the site, or on staging. For a staging rehearsal, use `https://polycord.chev.dev` for the post-deploy checks and expect `X-Robots-Tag` to include `noindex`.
 
 1. Note the published deploy ID in Netlify.
 2. In the deploys list, publish the previous deploy, which must be compatible with the current schema.
 3. Confirm Netlify reports the previous deploy as published, and the post-deploy checks pass.
 4. Publish the original deploy again, and confirm the checks once more.
 
-Netlify publishes deploys atomically. After a rollback, the next owner deploy publishes from `main` again. See [production deployment](production.md#rollback).
+Netlify publishes deploys atomically. The next owner deploy publishes the current tip of `prod` for production and `develop` for staging. See [production deployment](production.md#rollback).
 
 ## Responders
 
@@ -64,7 +64,7 @@ Polycord has a single maintainer. The owner is the only responder for outages an
 
 ## Uptime monitoring and pre-launch test alert
 
-Once production is live, add an external uptime monitor, if the owner approves the account:
+Once the production candidate is reachable, set up an external uptime monitor and verify delivery of the test alert before announcing launch. Get the owner's approval for the account and test alert first.
 
 - Service: Better Stack Uptime, free plan (10 monitors, email alerts).
 - Monitors: the homepage, `https://polycord.net/` with redirects followed, and `https://polycord.net/api/health`, which returns `503` when the database is unreachable and stays reachable for banned IPs.

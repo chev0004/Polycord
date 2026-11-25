@@ -44,7 +44,7 @@ Everything that must change between the current staging deployment and a public 
 
 - [ ] Push notifications deliver on the production domain with its VAPID subject.
 - [ ] Discord login, logout and session expiry complete on the production domain.
-- [ ] The [post-deploy checks](monitoring.md#post-deploy-checks) pass on the launch candidate. Uptime monitoring and its test alert follow after launch (DEV-042).
+- [ ] The [post-deploy checks](monitoring.md#post-deploy-checks) pass on the launch candidate, and the assigned responder receives the [pre-launch test alert](monitoring.md#uptime-monitoring-and-pre-launch-test-alert).
 
 ## Launch gates
 
