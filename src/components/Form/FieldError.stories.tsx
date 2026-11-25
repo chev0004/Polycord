@@ -6,7 +6,7 @@ const meta: Meta<typeof FieldError> = {
   title: 'Components/Form/FieldError',
   component: FieldError,
   args: {
-    children: 'Please enter a valid email address.',
+    children: 'Tags need at least 2 characters.',
   },
   decorators: [
     (Story) => (
@@ -25,7 +25,7 @@ export const Default: Story = {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.getByText('Please enter a valid email address.'),
+      canvas.getByText('Tags need at least 2 characters.'),
     ).toBeVisible();
   },
 };
@@ -38,7 +38,7 @@ export const Empty: Story = {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.queryByText('Please enter a valid email address.'),
+      canvas.queryByText('Tags need at least 2 characters.'),
     ).not.toBeInTheDocument();
   },
 };

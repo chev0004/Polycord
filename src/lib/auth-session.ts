@@ -3,7 +3,6 @@ export type CurrentUser = {
   name: string;
   username?: string;
   avatarUrl?: string;
-  email?: string;
 };
 
 export type SessionPayload = {
@@ -198,16 +197,20 @@ export const createSessionCookieValue = async (
     return null;
   }
 
-  const { email: _email, ...identity } = user;
   const issuedAt = Date.now();
   const session: SessionPayload = {
-    user: { ...identity, accountId },
+    user: withoutEmail({ ...user, accountId }),
     issuedAt,
     expiresAt: issuedAt + SESSION_DURATION_SECONDS * 1000,
   };
 
   return signPayload(session, secret);
 };
+
+const withoutEmail = ({
+  email: _email,
+  ...user
+}: SessionPayload['user'] & { email?: unknown }) => user;
 
 export const readSessionFromCookieValue = async (value: string) => {
   const secret = getAuthSecret();
@@ -227,9 +230,27 @@ export const readSessionFromCookieValue = async (value: string) => {
   }
 
   return {
-    ...session.user,
+    ...withoutEmail(session.user),
     issuedAt:
       session.issuedAt ?? session.expiresAt - SESSION_DURATION_SECONDS * 1000,
+  };
+};
+
+export const reissueLegacySessionCookieValue = async (value: string) => {
+  const secret = getAuthSecret();
+  const session =
+    secret && (await verifyPayload<SessionPayload>(value, secret));
+
+  if (!secret || !session || !('email' in session.user)) {
+    return null;
+  }
+
+  return {
+    value: await signPayload(
+      { ...session, user: withoutEmail(session.user) },
+      secret,
+    ),
+    expiresAt: session.expiresAt,
   };
 };
 

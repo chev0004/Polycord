@@ -99,8 +99,9 @@ same header to server-rendered responses on `polycord.chev.dev`. Leave
 the sitemap stays empty.
 
 `NEXT_PUBLIC_DISCORD_INVITE_URL` is the permanent invite behind the footer Join
-Discord Server button; the button is hidden while it is unset. It is inlined at
-build time, so rebuild after changing it.
+Discord Server button and the ban screen's Open Discord Server button. Support,
+privacy, safety and ban appeals all go through that server, so set it on every
+deployed site. It is inlined at build time, so rebuild after changing it.
 
 `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` selects the Discovery loading experience.
 `true` serves the static Discovery shell with the skeleton and the early usable

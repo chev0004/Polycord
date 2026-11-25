@@ -13,7 +13,6 @@ import {
   MdDownload,
   MdLockOutline,
   MdLogout,
-  MdMailOutline,
   MdNotificationsNone,
   MdOutlineSchedule,
   MdOutlineWorkspacePremium,
@@ -24,7 +23,7 @@ import {
 } from 'react-icons/md';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { FieldError, Label, TextInput, Toggle } from '@/components/Form';
+import { Label, TextInput, Toggle } from '@/components/Form';
 import { ActionSheet, Sheet, SheetLabel, SheetRow } from '@/components/Sheet';
 import { ToastStack } from '@/components/Toast';
 import { signInHref } from '@/features/Navigation/signIn';
@@ -107,7 +106,7 @@ const mobilePages: string[] = [
 
 type ChoiceField = 'applicationLanguage' | 'timeFormat' | 'languageDisplay';
 
-type SaveField = ChoiceField | ToggleField | 'email';
+type SaveField = ChoiceField | ToggleField;
 
 type ToggleField =
   | 'isPublic'
@@ -178,11 +177,7 @@ export const MobileSettings = ({
   const { control, watch, getValues, setValue, resetField } = form;
   const { toasts, addToast, dismissToast } = useToastStack();
   const [mobilePage, setMobilePage] = useState<MobilePage | null>(null);
-  const [sheet, setSheet] = useState<ChoiceField | 'email' | 'delete' | null>(
-    null,
-  );
-  const [emailDraft, setEmailDraft] = useState('');
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<ChoiceField | 'delete' | null>(null);
   const [saving, setSaving] = useState(false);
   const pagesPushed = useRef(0);
   const [animatePage, setAnimatePage] = useState(false);
@@ -222,12 +217,6 @@ export const MobileSettings = ({
     setMobilePage(parent);
   };
 
-  const openEmailSheet = () => {
-    setEmailDraft(getValues('email'));
-    setEmailError(null);
-    setSheet('email');
-  };
-
   const save = async <K extends SaveField>(
     name: K,
     value: PathValue<SettingsFormValues, K>,
@@ -236,8 +225,6 @@ export const MobileSettings = ({
     const parsed = settingsSchema.safeParse(getValues());
     if (!parsed.success) {
       resetField(name);
-      openEmailSheet();
-      setEmailError(parsed.error.issues[0].message);
       return;
     }
     setSaving(true);
@@ -249,16 +236,6 @@ export const MobileSettings = ({
       description: t(saved ? 'savedDescription' : 'saveError'),
       duration: saved ? 2500 : 4000,
     });
-  };
-
-  const applyEmail = () => {
-    const result = settingsSchema.shape.email.safeParse(emailDraft);
-    if (!result.success) {
-      setEmailError(result.error.issues[0].message);
-      return;
-    }
-    setSheet(null);
-    void save('email', emailDraft);
   };
 
   const values = watch();
@@ -584,14 +561,9 @@ export const MobileSettings = ({
             </h1>
             <div className="flex items-center gap-3.5 rounded-3xl bg-background-dark p-4">
               <Avatar avatarUrl={userAvatarUrl} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-bold text-[17px]">
-                  {userDisplayName}
-                </p>
-                <p className="truncate text-[13px] text-muted">
-                  {values.email}
-                </p>
-              </div>
+              <p className="min-w-0 flex-1 truncate font-bold text-[17px]">
+                {userDisplayName}
+              </p>
               <span
                 className={`flex h-[26px] flex-shrink-0 items-center rounded-full px-2.5 font-semibold text-xs ${
                   premium
@@ -605,13 +577,6 @@ export const MobileSettings = ({
 
             <SheetLabel>{t('accountTitle')}</SheetLabel>
             <SettingsGroup>
-              <SheetRow
-                icon={MdMailOutline}
-                label={t('emailLabel')}
-                value={values.email}
-                chevron
-                onClick={openEmailSheet}
-              />
               <SheetRow
                 icon={MdSync}
                 label={t('updateDiscordConnectionLabel')}
@@ -714,44 +679,6 @@ export const MobileSettings = ({
           </div>
         )}
       </fieldset>
-
-      <Sheet
-        open={sheet === 'email'}
-        onOpenChange={(open) => setSheet(open ? 'email' : null)}
-        title={t('emailLabel')}
-        footer={
-          <Button
-            weight="semibold"
-            onClick={applyEmail}
-            className="h-[50px] flex-1 rounded-full text-[15px]"
-          >
-            {t('save')}
-          </Button>
-        }
-      >
-        <TextInput
-          id="email-sheet"
-          inputMode="email"
-          autoCapitalize="off"
-          autoComplete="email"
-          spellCheck={false}
-          aria-label={t('emailLabel')}
-          value={emailDraft}
-          placeholder={t('emailPlaceholder')}
-          error={Boolean(emailError)}
-          onChange={(event) => {
-            setEmailDraft(event.target.value);
-            setEmailError(null);
-          }}
-        />
-        {emailError ? (
-          <FieldError id="email-sheet-error">{t(emailError)}</FieldError>
-        ) : (
-          <p className="mt-2 text-[13px] text-subtle leading-snug">
-            {t('emailDescription')}
-          </p>
-        )}
-      </Sheet>
 
       {(Object.keys(choices) as ChoiceField[]).map((field) => (
         <ActionSheet

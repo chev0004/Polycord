@@ -45,7 +45,7 @@ export const GET = async (request: NextRequest) => {
   authorizeUrl.searchParams.set('client_id', clientId);
   authorizeUrl.searchParams.set('redirect_uri', getRedirectUri(request));
   authorizeUrl.searchParams.set('response_type', 'code');
-  authorizeUrl.searchParams.set('scope', 'identify email');
+  authorizeUrl.searchParams.set('scope', 'identify');
   authorizeUrl.searchParams.set('state', state.nonce);
 
   const response = NextResponse.redirect(authorizeUrl);

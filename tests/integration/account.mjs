@@ -35,7 +35,11 @@ const identity = {
   id: randomUUID().replaceAll('-', ''),
   name: 'Account export test',
 };
-let user = await upsertDiscordUser(identity);
+let user = await upsertDiscordUser({
+  ...identity,
+  email: 'legacy-oauth@example.com',
+});
+assert.equal(Object.hasOwn(user, 'email'), false);
 const other = await upsertDiscordUser({
   id: randomUUID().replaceAll('-', ''),
   name: 'Confidential identity',
@@ -162,6 +166,7 @@ try {
     JSON.stringify(await getAccountExportByUserId(user.id)),
   );
   assert.equal(exported.version, 2);
+  assert.equal('email' in exported.account, false);
   for (const [key, value] of Object.entries(settings))
     assert.equal(exported.settings[key], value);
   for (const key of [

@@ -14,7 +14,7 @@ Every read and write through `/api/admin/seed` returns `404` unless all of the f
 
 Writes also require a same-origin request. `NODE_ENV` and the request URL are never used.
 
-Dummies are marked by `users.is_synthetic`, which defaults to `false`, and cleanup deletes only marked users. Names, usernames, identifier formats and emails are never used to classify them. Each dummy also has a reserved `discord_user_id` of the form `seed-000001`, which a Discord OAuth snowflake cannot collide with and which cannot sign in, because sessions are only issued after a Discord OAuth callback.
+Dummies are marked by `users.is_synthetic`, which defaults to `false`, and cleanup deletes only marked users. Names, usernames and identifier formats are never used to classify them. Each dummy also has a reserved `discord_user_id` of the form `seed-000001`, which a Discord OAuth snowflake cannot collide with and which cannot sign in, because sessions are only issued after a Discord OAuth callback.
 
 ## Enabling
 
