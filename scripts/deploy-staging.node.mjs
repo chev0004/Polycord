@@ -17,6 +17,10 @@ let head;
 let buildHead;
 let buildId;
 let publishedDigest;
+let diff;
+let recordOk;
+let ciRuns;
+let status;
 
 beforeEach(async () => {
   process.env = {
@@ -25,11 +29,13 @@ beforeEach(async () => {
     GITHUB_REF: 'refs/heads/develop',
     GITHUB_EVENT_NAME: 'push',
     GITHUB_SHA: sha,
-    GITHUB_ACTIONS: 'false',
+    GITHUB_ACTIONS: 'true',
     GITHUB_STEP_SUMMARY: '',
     NETLIFY_AUTH_TOKEN: 'synthetic-token',
     DATABASE_URL: 'postgresql://synthetic/actions',
+    GITHUB_TOKEN: 'synthetic-github-token',
   };
+  delete process.env.TEST_DATABASE_URL;
   process.chdir(await mkdtemp(join(tmpdir(), 'polycord-deploy-')));
   await mkdir('.netlify/static/_next/static', { recursive: true });
   await mkdir('.netlify/functions', { recursive: true });
@@ -66,6 +72,10 @@ beforeEach(async () => {
   buildHead = sha;
   buildId = null;
   publishedDigest = digest;
+  diff = 'src/app/page.tsx\n';
+  recordOk = true;
+  ciRuns = [{ conclusion: 'success' }];
+  status = '';
 });
 
 afterEach(() => {
@@ -78,6 +88,8 @@ function run(command, args, options) {
   let stdout = '';
   if (args[0] === 'rev-parse') stdout = sha;
   if (args[0] === 'ls-remote') stdout = `${head}\trefs/heads/develop\n`;
+  if (args[0] === 'diff') stdout = diff;
+  if (args[0] === 'status') stdout = status;
   if (args[1] === 'env:list')
     stdout = JSON.stringify({
       DATABASE_URL: '****************uire',
@@ -93,6 +105,14 @@ function run(command, args, options) {
 }
 
 async function request(url, options) {
+  if (url.includes('/check-runs')) {
+    calls.push({ url });
+    return { ok: true, json: async () => ({ check_runs: ciRuns }) };
+  }
+  if (url.startsWith('https://api.github.com/')) {
+    calls.push({ url, method: options.method, body: JSON.parse(options.body) });
+    return { ok: recordOk, status: recordOk ? 201 : 500 };
+  }
   const path = url.replace('https://api.netlify.com/api/v1/', '');
   calls.push({ path, method: options.method });
   let data;
@@ -195,4 +215,108 @@ test('rejects a hosted build job and restores the previous deployment', async ()
     /Unexpected hosted Netlify build/,
   );
   assert.equal(site.published_deploy.id, 'previous');
+});
+
+test('publishes an older source when develop only adds docs or tests', async () => {
+  head = 'b'.repeat(40);
+  diff = 'docs/operations/readiness.md\ne2e/profile.pw.ts\n';
+  await deployStaging(run, request);
+  assert.equal(site.published_deploy.id, 'uploaded');
+  assert.ok(
+    calls.some(
+      ({ args }) => args?.[0] === 'fetch' && args.includes('b'.repeat(40)),
+    ),
+  );
+});
+
+test('records the published source only after verification', async () => {
+  await deployStaging(run, request);
+  const record = calls.find(({ url }) => url);
+  assert.equal(
+    record.url,
+    `https://api.github.com/repos/chev0004/Polycord/statuses/${sha}`,
+  );
+  assert.equal(record.body.context, 'staging/published');
+  assert.equal(record.body.state, 'success');
+  assert.equal(
+    calls.findIndex(({ url }) => url),
+    calls.length - 1,
+  );
+});
+
+test('does not record a source that failed verification', async () => {
+  publishedDigest = 'unexpected-digest';
+  await assert.rejects(deployStaging(run, request));
+  assert.equal(
+    calls.some(({ url }) => url),
+    false,
+  );
+});
+
+test('keeps a verified publish when recording its source fails', async () => {
+  recordOk = false;
+  await assert.rejects(deployStaging(run, request), /Recording the published/);
+  assert.equal(site.published_deploy.id, 'uploaded');
+});
+
+const owner = () => {
+  process.env.GITHUB_ACTIONS = 'false';
+  for (const key of ['GITHUB_REF', 'GITHUB_EVENT_NAME', 'GITHUB_SHA'])
+    delete process.env[key];
+};
+const ran = (script) => calls.filter(({ args }) => args?.includes(script));
+
+test('an owner deploys the clean develop tip on CI evidence', async () => {
+  owner();
+  await deployStaging(run, request);
+  assert.equal(site.published_deploy.id, 'uploaded');
+  assert.deepEqual(ran('test:e2e'), []);
+  assert.equal(
+    calls.find(({ body }) => body).body.context,
+    'staging/published',
+  );
+});
+
+test('an owner without CI evidence runs the full suite on a disposable database first', async () => {
+  owner();
+  ciRuns = [];
+  process.env.TEST_DATABASE_URL = 'postgresql://localhost/polycord_test';
+  await deployStaging(run, request);
+  const [e2e, barOnly] = ran('test:e2e');
+  assert.equal(e2e.env.DATABASE_URL, 'postgresql://localhost/polycord_test');
+  assert.ok(
+    barOnly.args.includes('NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED=false'),
+  );
+  assert.equal(e2e.env.NETLIFY_AUTH_TOKEN, undefined);
+  assert.equal(e2e.env.GITHUB_TOKEN, undefined);
+  assert.ok(
+    calls.indexOf(ran('test:storybook')[0]) <
+      calls.findIndex(({ args }) => args?.[1] === 'env:list'),
+  );
+  assert.equal(site.published_deploy.id, 'uploaded');
+});
+
+test('refuses an owner deploy without evidence, from a dirty checkout or off the tip', async () => {
+  owner();
+  ciRuns = [{ conclusion: 'failure' }];
+  await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
+  for (const url of [
+    process.env.DATABASE_URL,
+    'postgresql://remote/polycord_test',
+    'postgresql://localhost/postgres',
+    'postgresql://localhost/polycord_test?host=remote',
+  ]) {
+    process.env.TEST_DATABASE_URL = url;
+    await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
+  }
+  assert.equal(ran('migrate').length, 0);
+  status = ' M src/app/page.tsx\n';
+  await assert.rejects(deployStaging(run, request), /clean checkout/);
+  status = '';
+  head = 'b'.repeat(40);
+  await assert.rejects(deployStaging(run, request), /develop tip/);
+  assert.equal(
+    calls.some(({ path }) => path),
+    false,
+  );
 });

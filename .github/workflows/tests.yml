@@ -2,16 +2,8 @@ name: Tests
 
 on:
   pull_request:
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - LICENSE
   push:
     branches: [develop, main]
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - LICENSE
   workflow_dispatch:
 
 concurrency:
@@ -21,34 +13,45 @@ concurrency:
 jobs:
   gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: read
+      pull-requests: read
+      statuses: read
     outputs:
-      skip: ${{ steps.tested.outputs.skip }}
+      validate: ${{ steps.plan.outputs.validate }}
+      static: ${{ steps.plan.outputs.static }}
+      unit: ${{ steps.plan.outputs.unit }}
+      package: ${{ steps.plan.outputs.package }}
+      e2e: ${{ steps.plan.outputs.e2e }}
+      storybook: ${{ steps.plan.outputs.storybook }}
+      deploy: ${{ steps.plan.outputs.deploy }}
     steps:
-      - id: tested
-        run: |
-          set +e
-          skip=false
-          if [ "$GITHUB_EVENT_NAME" = push ]; then
-            tree=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" --jq .commit.tree.sha)
-            for parent in $(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" --jq '.parents[].sha'); do
-              parent_tree=$(gh api "repos/$GITHUB_REPOSITORY/commits/$parent" --jq .commit.tree.sha)
-              passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/tests.yml/runs?head_sha=$parent&status=success" --jq .total_count)
-              if [ "$parent_tree" = "$tree" ] && [ "$passed" -gt 0 ]; then
-                skip=true
-              fi
-            done
-          fi
-          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 50 }}
+      - uses: ./.github/actions/setup
+      - id: plan
+        run: node scripts/develop-plan.mjs
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SCOPED_PLANS: ${{ vars.CI_SCOPED_PLANS }}
+
+  static:
+    needs: gate
+    if: needs.gate.outputs.static == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: bun run check:all
 
   unit:
-    needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.unit == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -71,13 +74,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: bun run db:migrate
-      - run: bun run check:all
-      - run: node --test scripts/deploy-staging.node.mjs
+      - run: node --test scripts/*.node.mjs
       - run: bun test
 
   package:
-    needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.package == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -110,8 +112,8 @@ jobs:
       - run: node scripts/check-netlify-package.mjs
 
   e2e:
-    needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -155,8 +157,8 @@ jobs:
           path: test-results/
 
   storybook:
-    needs: gate
-    if: needs.gate.outputs.skip != 'true'
+    needs: [gate, static]
+    if: needs.gate.outputs.storybook == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -175,11 +177,33 @@ jobs:
           name: storybook-test-results
           path: test-results/
 
+  result:
+    name: CI result
+    needs: [gate, static, unit, package, e2e, storybook]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/ci-result.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NEEDS: ${{ toJSON(needs) }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RECORD_EVIDENCE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+
   deploy-staging:
-    needs: [gate, unit, package, e2e, storybook]
+    needs: [gate, result]
     if: >-
       !cancelled() &&
-      !contains(needs.*.result, 'failure') &&
+      needs.gate.outputs.deploy == 'true' &&
+      needs.result.result == 'success' &&
       github.repository == 'chev0004/Polycord' &&
       github.ref == 'refs/heads/develop' &&
       github.event_name != 'pull_request' &&
@@ -188,15 +212,17 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      statuses: write
     environment:
       name: staging
       url: https://polycord.chev.dev
     concurrency:
       group: netlify-staging
-      cancel-in-progress: false
+      queue: max
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
