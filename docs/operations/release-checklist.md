@@ -4,8 +4,8 @@ Everything that must change between the current staging deployment and a public 
 
 ## Environment
 
-- [ ] Production has its own database, separate from the shared staging and local Supabase database. See [readiness](readiness.md).
-- [ ] Production has its own `AUTH_SECRET`, VAPID keys and `VAPID_SUBJECT`.
+- [x] Production has its own database, separate from the shared staging and local Supabase database. See [readiness](readiness.md).
+- [x] Production has its own `AUTH_SECRET`, VAPID keys and `VAPID_SUBJECT`.
 - [x] Discord allows the production callback `https://<domain>/api/auth/discord/callback`, and `DISCORD_REDIRECT_URI` is set to it.
 - [ ] `POLYCORD_ADMIN_USER_IDS` lists only current administrators.
 - [x] Analytics stays disabled until the privacy policy covers it. LEGAL-002 decides.
