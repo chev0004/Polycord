@@ -37,7 +37,7 @@ Everything that must change between the current staging deployment and a public 
 
 ## Staging identification
 
-- [ ] Decide whether staging shows a visible staging badge. No badge exists today; staging is only identified by its domain and `noindex` headers.
+- [x] Decide whether staging shows a visible staging badge. Decided on 2026-11-25: no badge for now. Staging is identified by its domain and `noindex` headers.
 
 ## Integrations
 
