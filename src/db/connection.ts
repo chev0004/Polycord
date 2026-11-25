@@ -2,6 +2,7 @@ import 'server-only';
 
 import { Socket } from 'node:net';
 import { Client } from 'pg';
+import { matchesSupabaseProject } from './supabase-project.mjs';
 import supabaseCa from './supabaseCa.json';
 
 export const connectionConfig = () => {
@@ -9,6 +10,13 @@ export const connectionConfig = () => {
 
   if (!databaseUrl) {
     throw new Error('DATABASE_URL is required to connect to the database.');
+  }
+
+  const project = process.env.POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF;
+  if (project && !matchesSupabaseProject(databaseUrl, project)) {
+    throw new Error(
+      'DATABASE_URL must point to the approved Supabase project.',
+    );
   }
 
   const url = new URL(databaseUrl);

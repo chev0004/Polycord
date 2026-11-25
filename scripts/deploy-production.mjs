@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import pg from 'pg';
+import { matchesSupabaseProject } from '../src/db/supabase-project.mjs';
 import { deployNetlify, runDeploy } from './deploy-netlify.mjs';
 import { stagingSiteId } from './deploy-staging.mjs';
 
@@ -15,21 +16,6 @@ async function seedRows() {
   } finally {
     await client.end();
   }
-}
-
-function verifyDatabaseProject(value, project, kind) {
-  const url = URL.parse(value ?? '');
-  assert.ok(
-    url &&
-      ['postgresql:', 'postgres:'].includes(url.protocol) &&
-      url.pathname === '/postgres' &&
-      [...url.searchParams.keys()].every((key) => key === 'sslmode') &&
-      ((url.hostname === `db.${project}.supabase.co` &&
-        Boolean(url.username)) ||
-        (url.hostname.endsWith('.pooler.supabase.com') &&
-          new RegExp(`^[a-zA-Z0-9_-]+\\.${project}$`).test(url.username))),
-    `${kind} DATABASE_URL must point to the approved production Supabase project`,
-  );
 }
 
 export async function deployProduction(
@@ -61,14 +47,22 @@ export async function deployProduction(
       name: 'Production',
       siteId,
       domain,
-      branch: 'main',
+      branch: 'prod',
       events: [],
       checkValues: async (values, readEnv) => {
-        verifyDatabaseProject(process.env.DATABASE_URL, project, 'Local');
-        verifyDatabaseProject(
-          readEnv('functions').DATABASE_URL,
+        assert.ok(
+          matchesSupabaseProject(process.env.DATABASE_URL, project),
+          'Local DATABASE_URL must point to the approved production Supabase project',
+        );
+        const runtime = readEnv('functions');
+        assert.ok(
+          runtime.DATABASE_URL,
+          'Set DATABASE_URL for Netlify Functions',
+        );
+        assert.equal(
+          runtime.POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF,
           project,
-          'Netlify Functions',
+          'Netlify Functions must use the approved production Supabase project ref',
         );
         assert.equal(
           values.POLYCORD_PUBLIC_URL,
@@ -105,11 +99,22 @@ export async function deployProduction(
         );
         return [
           `Origin: ${origin}`,
-          `Supabase project: ${project} (local and Netlify Functions)`,
+          `Supabase project: ${project} (local and verified runtime database)`,
           `Administrators: ${values.POLYCORD_ADMIN_USER_IDS.split(',').filter(Boolean).length}`,
           `Analytics: ${values.POLYCORD_ANALYTICS_DISABLED === 'true' ? 'disabled' : 'enabled'}`,
           'Seeding: off, no seed database row',
         ];
+      },
+      verifyPublished: async (deploy) => {
+        const health = new URL('/api/health', deploy.deploy_ssl_url);
+        const response = await request(health.href, {
+          redirect: 'error',
+          signal: AbortSignal.timeout(30_000),
+        });
+        assert.ok(
+          response.ok && (await response.json()).status === 'ok',
+          'Published production database health check failed',
+        );
       },
     },
     run,

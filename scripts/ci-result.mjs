@@ -1,5 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { ciPolicy, evidence, resultContext, treeOf } from './ci-evidence.mjs';
+import {
+  ciPolicy,
+  evidence,
+  jobNames,
+  resultContext,
+  treeOf,
+} from './ci-evidence.mjs';
 
 export async function reportResult(
   env = process.env,
@@ -7,16 +13,23 @@ export async function reportResult(
   request = fetch,
 ) {
   const { gate, ...jobs } = JSON.parse(env.NEEDS);
-  const planned = gate?.outputs?.validate;
-  const validated = planned === 'true';
-  const expected = validated ? 'success' : 'skipped';
-  const failed = ['unit', 'package', 'e2e', 'storybook']
-    .filter((name) => jobs[name]?.result !== expected)
-    .map((name) => `${name} ${jobs[name]?.result ?? 'missing'}`);
+  const plan = gate?.outputs ?? {};
+  const validated = plan.validate === 'true';
+  const failed = jobNames.flatMap((name) => {
+    const required = plan[name];
+    if (required !== 'true' && required !== 'false')
+      return [`${name} plan missing`];
+    const result = jobs[name]?.result ?? 'missing';
+    return result === (required === 'true' ? 'success' : 'skipped')
+      ? []
+      : [`${name} ${result}`];
+  });
   if (gate?.result !== 'success')
     failed.unshift(`gate ${gate?.result ?? 'missing'}`);
-  else if (planned !== 'true' && planned !== 'false')
-    failed.unshift('validation plan missing');
+  else if (
+    plan.validate !== String(jobNames.some((name) => plan[name] === 'true'))
+  )
+    failed.unshift('validation plan missing or inconsistent');
   if (failed.length) return { passed: false, reason: failed.join(', ') };
   if (!validated || env.RECORD_EVIDENCE !== 'true')
     return { passed: true, reason: 'No evidence recorded.' };

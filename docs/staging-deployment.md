@@ -34,23 +34,45 @@ and deploy:
   the newest such status in the last 50 first-parent commits. When the only
   differences from it are docs, tests or stories (`scripts/deploy-inputs.mjs`),
   the run validates and builds nothing.
-- A push whose gate opens after `develop` has advanced skips validation and publish.
-  The latest push owns validation until staging records an equivalent publish.
-  An in-flight predecessor never counts as a publish.
+- When the push is a merged PR whose Tests run passed on the exact landed tree,
+  the run deploys without repeating validation. See [CI result](#ci-result).
+- A stale gate skips its push. The latest push owns validation until an equivalent
+  publish is recorded.
 - Otherwise, including when the status, history or GitHub API is unavailable,
   the run validates fully and then deploys.
 
-Validation jobs that already started can finish independently. Staging deploy
-jobs queue without replacing pending jobs. Each deploy rechecks freshness before
-packaging and before upload and fails if it cannot compare with the tip.
+Validation jobs that already started finish independently. Deploy jobs queue
+without replacing pending jobs and recheck freshness before packaging and upload.
+
+## PR job plans
+
+The gate runs `scripts/ci-plan.mjs` on the PR merge diff. Static checks
+(Biome, locale checks and TypeScript) run in their own job before any unit,
+package, browser or Storybook job starts, so a failing static check starts
+nothing expensive. The gate summary lists the reason for every planned and
+skipped job.
+
+| Changed files | Jobs |
+| --- | --- |
+| Docs only (`*.md`, `docs/`, `LICENSE`) | none |
+| Story files (`src/**/*.stories.tsx`) | static, Storybook |
+| Locale copy with unchanged parsed message structure and a known coverage mapping | static and the jobs mapped to the changed keys |
+| `scripts/tickets.ts`, Husky hooks, `commitlint.config.mjs` | static |
+| Anything else, including a mix with anything else, or an unavailable diff | everything |
+
+Scoped plans apply only when the repository variable `CI_SCOPED_PLANS` is
+`true`. Until then every non-docs PR runs everything, and the gate summary
+records which jobs the scoped plan would have skipped, so plans can be compared
+with full runs before skips are enabled. Docs-only PRs skip validation either
+way. To force the full suite on a scoped PR, add the `full-ci` label and re-run
+the workflow.
 
 ## CI result
 
 Every Tests run ends with the `CI result` job. It passes only when the gate
 succeeded and every job the gate planned succeeded, and staging requires it.
 Use `CI result` as the single required status check for `develop` where the
-plan supports branch protection. Docs-only PRs still run the gate, skip
-validation and report a passing `CI result`.
+plan supports branch protection.
 
 For a validated PR from this repository, `CI result` sets a `ci/result` commit
 status on the PR head with the checked-out merge tree
@@ -63,8 +85,10 @@ only when:
 - the merge changed none of the CI policy files, so the run used the reviewed
   workflow;
 - GitHub's run record is the Tests workflow for that PR head in this
-  repository, its latest attempt completed successfully, and every job in that
-  attempt, including each required job, succeeded.
+  repository, and its latest attempt completed successfully;
+- every job in that attempt succeeded or was skipped, and every job the landed
+  diff's plan requires succeeded. A scoped run is reused only when its jobs
+  cover that plan.
 
 If the PR run is still active, the gate waits up to 15 minutes for it. A base
 that advanced after the run, a canceled or incomplete job, a later attempt than
@@ -108,7 +132,7 @@ Once, in GitHub, Settings, Codespaces, Secrets, add these user secrets with acce
 | `NETLIFY_AUTH_TOKEN` | A Netlify personal access token with an expiry |
 | `POLYCORD_GITHUB_TOKEN` | A fine-grained token for this repository only: Checks read, Commit statuses read and write |
 | `STAGING_DATABASE_URL` | The staging database's session pooler URL (Supabase, Connect, Session pooler), because codespaces cannot reach the IPv6-only direct URL |
-| `PRODUCTION_DATABASE_URL` | The production database's direct URL, once it exists |
+| `PRODUCTION_DATABASE_URL` | The production database's Session pooler URL for the owner build and migrations |
 
 To publish, create a 4-core codespace on `develop` and run:
 
