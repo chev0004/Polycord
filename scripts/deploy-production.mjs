@@ -47,7 +47,7 @@ export async function deployProduction(
       name: 'Production',
       siteId,
       domain,
-      branch: 'main',
+      branch: 'prod',
       events: [],
       checkValues: async (values, readEnv) => {
         assert.ok(

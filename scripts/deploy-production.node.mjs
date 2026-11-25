@@ -98,7 +98,10 @@ function run(command, args, options) {
   calls.push({ command, args });
   let stdout = '';
   if (args[0] === 'rev-parse') stdout = sha;
-  if (args[0] === 'ls-remote') stdout = `${sha}\trefs/heads/main\n`;
+  if (args[0] === 'ls-remote') {
+    assert.equal(args[2], 'refs/heads/prod');
+    stdout = `${sha}\trefs/heads/prod\n`;
+  }
   if (args[1] === 'env:list')
     stdout = JSON.stringify(
       args.includes('functions') ? functionValues : values,
@@ -150,7 +153,7 @@ async function request(url, { method = 'GET' } = {}) {
 const deploy = () => deployProduction(run, request, async () => seedRows);
 const built = () => calls.some(({ args }) => args?.[1] === 'build');
 
-test('deploys the first validated main commit with a masked database credential', async () => {
+test('deploys the first validated prod commit with a masked database credential', async () => {
   site.build_settings = null;
   site.published_deploy = null;
   await deploy();
@@ -188,7 +191,7 @@ test('reports failed production database health on the first deploy', async () =
 test('only the owner can deploy production, never GitHub Actions', async () => {
   Object.assign(process.env, {
     GITHUB_ACTIONS: 'true',
-    GITHUB_REF: 'refs/heads/main',
+    GITHUB_REF: 'refs/heads/prod',
     GITHUB_EVENT_NAME: 'workflow_dispatch',
     GITHUB_SHA: sha,
   });

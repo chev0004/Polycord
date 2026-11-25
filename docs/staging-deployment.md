@@ -132,7 +132,7 @@ Once, in GitHub, Settings, Codespaces, Secrets, add these user secrets with acce
 | `NETLIFY_AUTH_TOKEN` | A Netlify personal access token with an expiry |
 | `POLYCORD_GITHUB_TOKEN` | A fine-grained token for this repository only: Checks read, Commit statuses read and write |
 | `STAGING_DATABASE_URL` | The staging database's session pooler URL (Supabase, Connect, Session pooler), because codespaces cannot reach the IPv6-only direct URL |
-| `PRODUCTION_DATABASE_URL` | The production database's direct URL, once it exists |
+| `PRODUCTION_DATABASE_URL` | The production database's Session pooler URL for the owner build and migrations |
 
 To publish, create a 4-core codespace on `develop` and run:
 
