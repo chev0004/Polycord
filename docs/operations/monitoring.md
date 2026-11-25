@@ -79,7 +79,7 @@ Monitor requests count toward Netlify usage. On a credit-based Netlify team, che
 | --- | --- | --- |
 | Post-deploy checks | Output of every check for the launch candidate | Pending: production site |
 | Log access | Who can open production function logs, and the retention period | Pending: production site |
-| Backup | Time of the first production backup and where it is stored | Pending: production database |
-| Restore drill | Backup time, restore target, `verify-restore` output, health check result | Pending: production backup |
+| Backup | Time of the first production backup and where it is stored | Done: 2026-11-25 07:23:59 UTC, `pg_dump` 17.12 against server 17.12, 73 KB, taken from the empty production database in the release codespace and deleted after the restore drill. Weekly backups start once it holds member data |
+| Restore drill | Backup time, restore target, `verify-restore` output, health check result | Done: the 07:23:59 UTC backup restored into a local PostgreSQL 17 container in the release codespace. `verify-restore` matched table row counts, migration history and critical row digests, and reported only the two availability CHECK constraints in different cast notation with the same allowed values. A production build of `770668b7` against the restore returned `200` from `/api/health`. The restore, dump and snapshot were deleted |
 | Application rollback | Deploy IDs before and after, check results, time taken | Pending: production site |
 | Uptime monitor and test alert | Monitor URLs, interval, time the test email arrived | Pending: pre-launch delivery to assigned responder |
