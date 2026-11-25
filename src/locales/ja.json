@@ -892,7 +892,7 @@
     "profileInteractionAlertDescriptionPremium": "誰かが自分のDiscordユーザー名をコピーしたときに通知する。相手がサインインしている場合は名前を表示します。",
     "profileViewAlertLabel": "プロフィール閲覧の通知",
     "profileViewAlertDescriptionPremium": "誰かが自分のプロフィールを閲覧したときに通知する。相手がサインインしている場合は名前を表示します。",
-    "profileViewAlertDescriptionFree": "誰かが自分のプロフィールを閲覧したときに通知する。相手がサインインしていれば誰かわかります。",
+    "profileViewAlertDescriptionFree": "サポーターでプロフィール閲覧の通知を受け取れます。",
     "saveSettings": "設定を保存",
     "saving": "保存中...",
     "unsavedChanges": "保存されていない変更があります",
