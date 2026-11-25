@@ -430,9 +430,7 @@ export const DiscoveryPage = ({
       groupSizes.slice(0, safePage).reduce((sum, size) => sum + size, 0);
 
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
-  const skipInitialRefresh = useRef(
-    Boolean(discoveryData) && !feedError && !discoveryCache.changed(),
-  );
+  const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
   const hasLoaded = useRef(Boolean(discoveryData));
   const appliedUrl = useRef<string | null>(null);
   const unmounting = useRef(false);
@@ -603,8 +601,9 @@ export const DiscoveryPage = ({
       return;
     const refresh = refreshDiscovery;
     const profilesChanged = () => refresh('refresh');
-    if (skipInitialRefresh.current) skipInitialRefresh.current = false;
-    else if (!discoveryCache.prefetched(requestUrlRef.current))
+    const skip = skipInitialRefresh.current && !discoveryCache.changed();
+    skipInitialRefresh.current = false;
+    if (!skip && !discoveryCache.prefetched(requestUrlRef.current))
       refresh('query');
     const focus = () => {
       if (!requestRef.current) void refresh();
