@@ -770,9 +770,11 @@ export const BumpHintAfterOnboarding: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await expect(
-      await canvas.findByText('Bump your profile to show it in Discovery'),
-    ).toBeInTheDocument();
+    const hint = (
+      await canvas.findByText('Bump your profile to show it in Discovery')
+    ).closest('li') as HTMLElement;
+    await expect(hint.querySelector('img')).toBeNull();
+    await expect(within(hint).queryByText('?')).not.toBeInTheDocument();
     await expect(
       sessionStorage.getItem('polycord:bump-hint:new-member'),
     ).toBeNull();
@@ -792,9 +794,13 @@ export const BumpHintAfterOnboardingMobile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await userEvent.click(
-      await canvas.findByText('Bump your profile to show it in Discovery'),
+    const hint = await canvas.findByText(
+      'Bump your profile to show it in Discovery',
     );
+    const banner = hint.closest('[role="alert"]') as HTMLElement;
+    await expect(banner.querySelector('img')).toBeNull();
+    await expect(within(banner).queryByText('?')).not.toBeInTheDocument();
+    await userEvent.click(hint);
     await expect(await canvas.findByText('Profile bumped')).toBeInTheDocument();
   },
 };
