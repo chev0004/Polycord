@@ -44,6 +44,11 @@ export const OnboardingRouteClient = ({
           throw await saveResponseError(response, 'Profile save failed');
         }
 
+        if (data.isPublic) {
+          try {
+            sessionStorage.setItem(`polycord:bump-hint:${userId}`, '1');
+          } catch {}
+        }
         discoveryCache.expire();
         router.push(`/${locale}`);
         router.refresh();
