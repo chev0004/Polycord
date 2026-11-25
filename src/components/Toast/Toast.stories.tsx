@@ -57,6 +57,8 @@ export const Default: Story = {
 
     const toast = title.closest('li');
     if (!toast) throw new Error('Toast root not found');
+    await expect(within(toast).queryByText('?')).not.toBeInTheDocument();
+    await expect(toast.querySelector('img')).toBeNull();
 
     await userEvent.click(within(toast).getByRole('button'));
 
@@ -99,6 +101,14 @@ export const WithAvatar: Story = {
       iconUrl="https://cdn.discordapp.com/embed/avatars/0.png"
     />
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByText('Show toast'));
+
+    const toast = (await canvas.findByText('Username copied')).closest('li');
+    await expect(toast?.querySelector('img')).toBeInTheDocument();
+  },
 };
 
 const BlockToastDemo = () => {
