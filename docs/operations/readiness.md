@@ -16,13 +16,13 @@ Status values:
 | Test and audit fixture isolation | Chev | `playwright.config.ts`, `tests/integration/*.mjs`, `.github/workflows/tests.yml` | Verified | Browser tests throw unless `TEST_DATABASE_URL` is on localhost. Integration scripts assert a localhost host before connecting. `bun test` runs with `NODE_ENV=test` and does not load `.env.local` (probed 2026-09-23: `DATABASE_URL` unset). CI uses a service Postgres container. |
 | Local tools against shared data | Chev | `package.json` `db:*` scripts, `bun run dev` | Blocking | `bun run dev`, `db:migrate` and `db:studio` use `.env.local`, which points at the shared database. This is safe only while no production data exists. |
 | Health check | Chev | `GET /api/health` | Verified | Returns `200 {"status":"ok"}` after a database round trip and `503 {"status":"unavailable"}` when the database is unreachable. Verified on a production build against disposable Postgres, including recovery after the database restarts. |
-| Uptime monitoring | Chev | External monitor (not chosen) | Blocking | Nothing in the repository polls `/api/health`. Choosing a service, and any purchase, needs separate authorization. |
+| Uptime monitoring | Chev | [Post-deploy checks](monitoring.md#post-deploy-checks) and [external monitoring](monitoring.md#uptime-monitoring-and-pre-launch-test-alert) | Verified | Better Stack Uptime checks the homepage and `/api/health` every 3 minutes and emails the owner. See the [evidence](monitoring.md#evidence). |
 | Error and performance monitoring | Chev | Netlify function logs; no app-level reporter | Unverified | Netlify records function logs for server routes. Log retention, and whether anyone reviews them, has not been checked. The repository has no error reporting service. |
-| Alert recipients and test alert | Chev | Not configured | Blocking | No alert route exists in the repository. The acceptance test alert needs a chosen monitor and an authorized test path that sends no personal data. |
-| Database backups | Chev | Supabase project settings | Unverified | Supabase backup schedule and retention depend on the project plan and have not been checked. The manual logical backup below is verified against disposable data. |
-| Restore procedure | Chev | [Restore](#restore) | Verified | Drilled 2026-09-23 on disposable PostgreSQL 17.10: a backup taken at migration 0018 was restored into a new database and in place, and the fixture rows survived both. |
+| Alert recipients and test alert | Chev | Owner email | Verified | A test alert from a temporary monitor reached the owner's inbox at 08:02 UTC on 2026-11-25. See the [evidence](monitoring.md#evidence). |
+| Database backups | Chev | [Backups](monitoring.md#backups) | Verified | Supabase Free takes no automatic backups, so production relies on manual logical backups before each migration and weekly. The first production backup was taken at 07:23:59 UTC on 2026-11-25. |
+| Restore procedure | Chev | [Restore](#restore) | Verified | Drilled 2026-09-23 on disposable PostgreSQL 17.10: a backup taken at migration 0018 was restored into a new database and in place, and the fixture rows survived both. The first production backup restored into an isolated database on 2026-11-25 and passed `verify-restore`. See the [evidence](monitoring.md#evidence). |
 | Migration and rollback | Chev | [Migrations](#migrations), [Rollback](#rollback) | Verified | Same drill: 0019 was applied, rolled back to the 0018 backup, then rolled forward again. The migration journal count matched each step (19, 20, 19, 20). |
-| Application deploy rollback | Chev | Netlify deploys list | Unverified | Merges to `develop` deploy automatically. Netlify can republish an earlier deploy, but this has not been exercised for Polycord. |
+| Application deploy rollback | Chev | [Rollback rehearsal](monitoring.md#application-rollback) | Unverified | Record both deploy IDs and the health checks for the rollback and the return to the original build. |
 | Secrets | Chev | Netlify environment variables | Unverified | README requires runtime secrets in Netlify, never Git, with separate staging `AUTH_SECRET` and VAPID keys. The values themselves have not been audited. |
 | Incident ownership | Chev | [Incidents](#incidents) | Verified | Single maintainer. No rotation or backup responder exists. |
 | Support, privacy, safety and appeal contact | Chev | `NEXT_PUBLIC_DISCORD_INVITE_URL`, `src/features/Legal/legalContent.ts`, `src/features/Banned/BannedScreen.tsx` | Blocking | Contact goes through the moderators in the Polycord Discord server. The invite URL must be set on every deploy, and moderator intake still needs an owner. |
@@ -44,10 +44,13 @@ Restore into a new, empty database first, and inspect it there before switching 
 
 ```bash
 psql "$RESTORE_URL" -c "drop schema public cascade"
-pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error backup.dump
+pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error --section=pre-data backup.dump
+psql "$RESTORE_URL" -c "create extension pg_trgm schema public"
+pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error --section=data backup.dump
+pg_restore -d "$RESTORE_URL" --no-owner --no-privileges --exit-on-error --section=post-data backup.dump
 ```
 
-A new database already has an empty `public` schema. Dropping it first stops `pg_restore` failing on `schema "public" already exists`.
+A new database already has an empty `public` schema. Dropping it first stops `pg_restore` failing on `schema "public" already exists`. A schema-scoped `pg_dump` leaves out extensions, so `pg_trgm`, which the search indexes use, is created after the tables and before the indexes.
 
 ## Migrations
 
