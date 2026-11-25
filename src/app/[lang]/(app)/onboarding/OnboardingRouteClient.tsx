@@ -2,7 +2,7 @@
 
 import { discoveryCache } from '@/features/Discovery/discoveryCache';
 import { useRouteProgressRouter } from '@/features/Navigation/RouteProgress';
-import { ProfilePage } from '@/features/Profile';
+import { ProfilePage, saveVoiceIntroRequest } from '@/features/Profile';
 import { saveResponseError } from '@/lib/formErrors';
 
 type OnboardingRouteClientProps = {
@@ -33,7 +33,7 @@ export const OnboardingRouteClient = ({
       userAvatarUrl={userAvatarUrl}
       userDisplayName={userDisplayName}
       userUsername={userUsername}
-      onSubmit={async (data) => {
+      onSubmit={async (data, voiceClip) => {
         const response = await fetch('/api/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -44,6 +44,7 @@ export const OnboardingRouteClient = ({
           throw await saveResponseError(response, 'Profile save failed');
         }
 
+        if (voiceClip) await saveVoiceIntroRequest(voiceClip);
         discoveryCache.expire();
         router.push(`/${locale}`);
         router.refresh();

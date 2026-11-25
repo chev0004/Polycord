@@ -89,7 +89,11 @@ import {
 } from './TargetLanguagesEditor';
 import { detectTimezone, timezoneOptions } from './timezoneOptions';
 import { useBoostState } from './useBoostState';
-import { type PendingVoiceClip, VoiceIntroEditor } from './VoiceIntroEditor';
+import {
+  type PendingVoiceClip,
+  VoiceIntroEditor,
+  VoiceIntroSaveError,
+} from './VoiceIntroEditor';
 
 type ProfilePageProps = {
   userId?: string;
@@ -102,7 +106,10 @@ type ProfilePageProps = {
   onBoostProfile?: () => Promise<BoostResult | undefined> | undefined;
   onBumpProfile?: () => Promise<void> | void;
   onDeleteProfile?: () => Promise<void> | void;
-  onSubmit?: (data: ProfileFormValues) => Promise<void> | void;
+  onSubmit?: (
+    data: ProfileFormValues,
+    voiceClip: PendingVoiceClip | null,
+  ) => Promise<void> | void;
   onViewPublicProfile?: () => void;
   onViewSaved?: () => void;
   premium?: boolean;
@@ -251,6 +258,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [tagInput, setTagInput] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
+  const [voiceSaveFailed, setVoiceSaveFailed] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -411,14 +419,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     setSessionExpired(false);
     setTagError(null);
     setSaveFailed(false);
+    setVoiceSaveFailed(false);
     setDeleteFailed(false);
 
     if (onSubmitProp) {
       try {
-        await onSubmitProp(data);
+        await onSubmitProp(data, isCreate ? pendingVoice : null);
         reset(data);
         draft.clear();
       } catch (error) {
+        if (error instanceof VoiceIntroSaveError) {
+          setVoiceSaveFailed(true);
+          return;
+        }
         setSessionExpired(error instanceof SessionExpiredError);
         const issues =
           error instanceof FieldValidationError ? error.issues : [];
@@ -583,6 +596,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const tagsError = tagError ?? tagsSchemaError;
   const bannerError =
     (saveFailed ? t('saveError') : null) ??
+    (voiceSaveFailed ? t('voiceIntroPublishError') : null) ??
     (deleteFailed ? t('deleteError') : null);
 
   const tagEditor = (
@@ -736,6 +750,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           premium={premium}
           profileId={profileId}
           voiceSeconds={field.value ?? 0}
+          saveOnPublish={isCreate}
           onChange={(seconds) =>
             resetField('voiceIntroSeconds', { defaultValue: seconds })
           }
