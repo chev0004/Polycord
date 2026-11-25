@@ -9,8 +9,9 @@ const getLocale = (locale: string | null): (typeof locales)[number] =>
 
 export const GET = (request: NextRequest) => {
   const locale = getLocale(request.nextUrl.searchParams.get('locale'));
-  const response = NextResponse.redirect(
-    new URL(`/${locale}`, request.nextUrl.origin),
+  const response = new NextResponse(
+    `<!doctype html><meta http-equiv="refresh" content="0;url=/${locale}">`,
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
   );
 
   clearSessionCookie(response);
