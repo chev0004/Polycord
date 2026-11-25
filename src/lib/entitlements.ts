@@ -3,6 +3,7 @@ import type { CurrentUser } from './auth-session';
 export const ENTITLEMENT_LIMITS = {
   'profile.targetLanguages': { free: 2, premium: 10 },
   'profile.tags': { free: 5, premium: 8 },
+  'profile.voiceIntroSeconds': { free: 8, premium: 20 },
   'discovery.bumpCooldownMs': {
     free: 3 * 60 * 60 * 1000,
     premium: 90 * 60 * 1000,
@@ -13,7 +14,6 @@ export const ENTITLEMENT_LIMITS = {
 export type LimitEntitlement = keyof typeof ENTITLEMENT_LIMITS;
 
 export const PREMIUM_FEATURES = [
-  'profile.voiceIntro',
   'profile.cardThemes',
   'privacy.hiddenVisits',
   'notifications.profileViews',

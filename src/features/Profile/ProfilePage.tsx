@@ -120,7 +120,6 @@ type ProfilePageProps = {
 const FREE_TAG_CAP = entitlementLimit('profile.tags', false);
 const PREMIUM_TAG_CAP = entitlementLimit('profile.tags', true);
 const NO_TAGS: string[] = [];
-const PREVIEW_TEASE_VOICE_SECONDS = 12;
 const FIELDS_WITH_ERRORS = new Set([
   'primaryLanguage',
   'targetLanguages',
@@ -517,10 +516,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       availability: displayAvailability
         ? (availability ?? undefined)
         : undefined,
-      voiceIntroSeconds: premium
-        ? (pendingVoice?.seconds ?? voiceIntroSeconds)
-        : PREVIEW_TEASE_VOICE_SECONDS,
-      voiceIntroSrc: premium ? pendingVoice?.url : undefined,
+      voiceIntroSeconds:
+        pendingVoice?.seconds ??
+        (voiceIntroSeconds <=
+        entitlementLimit('profile.voiceIntroSeconds', premium)
+          ? voiceIntroSeconds
+          : 0),
+      voiceIntroSrc: pendingVoice?.url,
     };
   }, [
     allowAnonymousCopy,

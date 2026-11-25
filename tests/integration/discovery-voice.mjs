@@ -14,6 +14,7 @@ const { users, profiles, userBlocks, voiceIntros } = await import(
 const { countDiscovery, listDiscoveryPage } = await import(
   '../../src/db/discovery'
 );
+const { listPlayableVoiceIntros } = await import('../../src/db/voiceIntros');
 const { buildDiscoveryQuery, parseDiscoveryState } = await import(
   '../../src/features/Discovery/discoveryUrlState'
 );
@@ -24,10 +25,11 @@ const future = new Date(Date.now() + 86400000);
 const past = new Date(Date.now() - 86400000);
 const names = [
   'granted',
-  'subscribed',
+  'longGrant',
   'removed',
   'noDuration',
   'free',
+  'freeLong',
   'expired',
   'boostedPlain',
   'blocker',
@@ -39,7 +41,7 @@ const owners = await db
       discordUserId: `${prefix}-${name}`,
       discordUsername: `${prefix}-${name}`,
       displayName: `Voice ${prefix} ${name}`,
-      premiumGrantedUntil: ['granted', 'subscribed', 'boostedPlain'].includes(
+      premiumGrantedUntil: ['granted', 'longGrant', 'boostedPlain'].includes(
         name,
       )
         ? future
@@ -71,31 +73,56 @@ try {
       proficiencyLevel: 'beginner',
       bio: 'A safe isolated voice fixture.',
       tags: [prefix],
-      voiceIntroSeconds: ['noDuration', 'boostedPlain', 'blocker'].includes(
-        name,
-      )
-        ? null
-        : 5,
+      voiceIntroSeconds: {
+        granted: 15,
+        longGrant: 20,
+        removed: 5,
+        free: 8,
+        freeLong: 9,
+        expired: 15,
+      }[name],
       boostedUntil: name === 'boostedPlain' ? future : null,
     })),
   );
   await db.insert(voiceIntros).values(
-    ['granted', 'subscribed', 'noDuration', 'free', 'expired'].map((name) => ({
-      userId: owner[name].id,
-      mimeType: 'audio/webm',
-      durationSeconds: 5,
-      sizeBytes: 3,
-      data: 'AAAA',
-    })),
+    ['granted', 'longGrant', 'noDuration', 'free', 'freeLong', 'expired'].map(
+      (name) => ({
+        userId: owner[name].id,
+        mimeType: 'audio/webm',
+        durationSeconds: 5,
+        sizeBytes: 3,
+        data: 'AAAA',
+      }),
+    ),
   );
 
   const everyone = await load([]);
   assert.equal(everyone.total, names.length);
 
+  assert.deepEqual(
+    Object.fromEntries(
+      everyone.profiles.map((profile) => [
+        profile.displayName,
+        profile.voiceIntroSeconds,
+      ]),
+    ),
+    Object.fromEntries(
+      names.map((name) => [
+        `Voice ${prefix} ${name}`,
+        { granted: 15, longGrant: 20, removed: 5, free: 8 }[name],
+      ]),
+    ),
+  );
+
   const voice = await load([['voice', 'yes']]);
-  assert.equal(voice.total, 2);
-  assert.deepEqual(ids(voice).sort(), named('granted', 'subscribed'));
-  assert.equal(await countDiscovery(query([['voice', 'yes']]), 'en', {}), 2);
+  assert.equal(voice.total, 3);
+  assert.deepEqual(ids(voice).sort(), named('free', 'granted', 'longGrant'));
+  assert.equal(await countDiscovery(query([['voice', 'yes']]), 'en', {}), 3);
+  assert.deepEqual(
+    (await listPlayableVoiceIntros(everyone.profiles.map(({ id }) => id)))
+      .length,
+    3,
+  );
   assert.deepEqual(
     ids(
       await load([
@@ -112,7 +139,7 @@ try {
         ['primary', 'en'],
       ])
     ).total,
-    2,
+    3,
   );
 
   const boosted = await load([['sort', 'name-asc']]);
@@ -131,8 +158,8 @@ try {
     blockedUserId: owner.granted.id,
   });
   assert.deepEqual(
-    ids(await load([['voice', 'yes']], owner.blocker.id)),
-    named('subscribed'),
+    ids(await load([['voice', 'yes']], owner.blocker.id)).sort(),
+    named('free', 'longGrant'),
   );
 
   const state = query([['voice', 'yes']]);

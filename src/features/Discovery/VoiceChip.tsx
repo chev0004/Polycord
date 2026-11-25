@@ -207,7 +207,6 @@ export const VoiceChip = ({
 type ProfileVoiceChipProps = {
   profile: {
     id: string;
-    premium?: boolean;
     voiceIntroSeconds?: number;
     voiceIntroSrc?: string;
   };
@@ -220,7 +219,7 @@ export const ProfileVoiceChip = ({
   fetchMode,
   className,
 }: ProfileVoiceChipProps) =>
-  profile.premium && profile.voiceIntroSeconds ? (
+  profile.voiceIntroSeconds ? (
     <VoiceChip
       seconds={profile.voiceIntroSeconds}
       src={profile.voiceIntroSrc}

@@ -6,7 +6,6 @@ import {
 import { getActiveUser } from '@/lib/auth';
 import type { CurrentUser } from '@/lib/auth-session';
 import { parseByteRange } from '@/lib/byteRange';
-import { isPremiumUser } from '@/lib/entitlements.server';
 import { gatedRoute } from '@/lib/gatedRoute';
 
 const loadOwnIntro = async (
@@ -18,11 +17,7 @@ const loadOwnIntro = async (
   if (
     row?.profile.userId !== currentUser.accountId ||
     !row.profile.voiceIntroSeconds ||
-    !(await getActiveUser()) ||
-    !(await isPremiumUser({
-      id: row.user.discordUserId,
-      name: row.user.displayName,
-    }))
+    !(await getActiveUser())
   ) {
     return null;
   }
