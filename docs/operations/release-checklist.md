@@ -30,7 +30,7 @@ Everything that must change between the current staging deployment and a public 
 ## Page metadata
 
 - [x] The root description is localized for English and Japanese.
-- [ ] Route-specific titles for discovery, legal, saved, settings, profile and onboarding. Every route currently shares the title `Polycord`.
+- [x] Route-specific titles for discovery, legal, saved, settings, profile and onboarding. Pages read `Polycord | <page>` and profiles `Polycord | <name>`; Discovery keeps `Polycord`.
 - [ ] Canonical and hreflang `<link>` tags on public routes. The sitemap carries alternates, but the pages do not.
 - [ ] Open Graph and social preview images.
 - [ ] Public profile metadata and whether profiles are indexable. Owned by PROFILE-011. `robots.txt` disallows `/<locale>/u` until then.
