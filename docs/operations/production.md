@@ -26,6 +26,7 @@ The owner does these steps. None of them is automated.
 | `NEXT_PUBLIC_DISCORD_INVITE_URL` | The Polycord Discord server invite |
 | `POLYCORD_ANALYTICS_DISABLED` | `true` until the owner approves analytics in production |
 | `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` | Same value as staging |
+| `POLYCORD_DIRECT_BAN_CHECK` | `true`, as on staging, so the middleware checks bans in-process instead of calling `/api/internal/ban-check` |
 | `POLYCORD_ENVIRONMENT`, `POLYCORD_SEED_ENABLED` | Leave unset |
 
 6. In the Netlify site's **production** context, set `DATABASE_URL` to the approved production Supabase runtime connection URL and select **Contains secret values**. Use Netlify's allowed secret scopes, including **Functions**. Set `POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF` to the approved project reference in the same context. The app checks that its database URL matches this reference before connecting.
