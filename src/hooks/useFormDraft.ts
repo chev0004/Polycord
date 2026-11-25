@@ -38,7 +38,7 @@ export const useFormDraft = <T extends FieldValues>(
       const raw = sessionStorage.getItem(key);
       if (raw) {
         const draft = schema.safeParse(JSON.parse(raw));
-        if (draft.success) {
+        if (draft.success && Object.keys(draft.data as object).length) {
           reset(
             { ...getValues(), ...(draft.data as DefaultValues<T>) },
             { keepDefaultValues: true },

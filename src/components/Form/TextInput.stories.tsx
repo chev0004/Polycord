@@ -19,11 +19,11 @@ type Story = StoryObj<typeof TextInput>;
 
 export const Default: Story = {
   args: {
-    placeholder: 'Enter your email address',
+    placeholder: 'Enter a display name',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const input = canvas.getByPlaceholderText('Enter your email address');
+    const input = canvas.getByPlaceholderText('Enter a display name');
 
     await userEvent.type(input, 'kenji.ito@example.com');
 
@@ -39,7 +39,7 @@ export const Filled: Story = {
 
 export const ErrorState: Story = {
   args: {
-    defaultValue: 'not-an-email',
+    defaultValue: 'x',
     error: true,
   },
 };

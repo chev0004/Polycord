@@ -1,1 +1,1 @@
-bun run check:all
+bun scripts/pre-push.mjs

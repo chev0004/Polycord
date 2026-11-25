@@ -110,7 +110,6 @@ export const getAccountExportByUserId = async (userId: string) => {
       discordUsername: user.discordUsername,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
-      email: user.email,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     },

@@ -269,7 +269,7 @@ for (const layout of ['desktop', 'mobile'] as const) {
       };
       try {
         const [account] =
-          await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${viewer.id}, ${viewer.username}, ${viewer.name}, 'cache@example.com') returning id`;
+          await sql`insert into users (discord_user_id, discord_username, display_name) values (${viewer.id}, ${viewer.username}, ${viewer.name}) returning id`;
         ids.push(account.id);
         const others =
           await sql`insert into users (discord_user_id, discord_username, display_name)

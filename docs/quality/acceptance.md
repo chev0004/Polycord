@@ -50,5 +50,5 @@ Direct entry, refresh, Back and Forward, locale changes and return journeys are 
 ## Blockers
 
 1. The Open rows in `docs/legal/claims.md` need owner evidence or decisions: mailbox delivery, eligibility and guardian acknowledgement, escalation, no-sale and security assertions.
-2. The Blocking rows in `docs/operations/readiness.md` remain: production database separation, uptime monitoring and alerting.
+2. Complete the Blocking and Pending rows in `docs/operations/readiness.md`, including the isolated production backup, restore and delivery of the pre-launch test alert.
 3. No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.

@@ -14,7 +14,6 @@ const validSettings: SettingsFormValues = {
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
-  email: 'user@example.com',
 };
 
 describe('settingsSchema', () => {
@@ -35,19 +34,10 @@ describe('settingsSchema', () => {
     ).toBe(false);
   });
 
-  it('rejects an invalid email with the localized message key', () => {
-    const result = settingsSchema.safeParse({
-      ...validSettings,
-      email: 'not-an-email',
-    });
-
-    expect(result.success).toBe(false);
-
-    if (!result.success) {
-      expect(result.error.issues.map((issue) => issue.message)).toContain(
-        'emailInvalid',
-      );
-    }
+  it('drops a submitted email address', () => {
+    expect(
+      settingsSchema.parse({ ...validSettings, email: 'user@example.com' }),
+    ).not.toHaveProperty('email');
   });
 
   it('drops a submitted application theme', () => {

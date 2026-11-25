@@ -203,19 +203,6 @@ test('touch, keyboard, dialog and error states stay reachable on phones', async 
       .poll(() => sort.evaluate((el) => getComputedStyle(el).backgroundColor))
       .not.toBe(before);
 
-    await page.goto('/en/settings');
-    await page.getByRole('button', { name: /^Email Address/ }).click();
-    const email = page.getByRole('dialog').getByLabel('Email Address');
-    await email.fill('not-an-email');
-    await page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Save', exact: true })
-      .click();
-    await expect(email).toHaveAttribute('aria-invalid', 'true');
-    await expect(email).toHaveAccessibleDescription(
-      'Please enter a valid email address.',
-    );
-
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/en');
     await page.getByRole('button', { name: 'Change language' }).click();

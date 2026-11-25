@@ -19,7 +19,7 @@ const profile = {
 const signIn = async (context: BrowserContext, id: string) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const [account] =
-    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, 'draft-test', 'Draft test', 'draft@example.com') on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, 'draft-test', 'Draft test') on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
   await sql.end();
   const payload = Buffer.from(
     JSON.stringify({
@@ -28,7 +28,6 @@ const signIn = async (context: BrowserContext, id: string) => {
         accountId: account.id,
         name: 'Draft test',
         username: 'draft-test',
-        email: 'draft@example.com',
       },
       expiresAt: Date.now() + 3600000,
     }),
@@ -285,31 +284,29 @@ test('settings preserve incomplete drafts and clear discarded changes', async ({
       (await context.request.post('/api/profile', { data: profile })).status(),
     ).toBe(200);
     await page.goto('/en/settings');
-    await page.getByLabel('Email Address').fill('unfinished');
     await page.getByRole('button', { name: 'Privacy', exact: true }).click();
-    await page
-      .getByRole('switch', { name: 'Display timezone', exact: true })
-      .click();
+    const timezone = page.getByRole('switch', {
+      name: 'Display timezone',
+      exact: true,
+    });
+    await timezone.click();
+    const drafted = (await timezone.getAttribute('aria-checked')) as string;
     await page.reload();
-    await page.getByRole('button', { name: 'Account', exact: true }).click();
-    await expect(page.getByLabel('Email Address')).toHaveValue('unfinished');
+    await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    await expect(timezone).toHaveAttribute('aria-checked', drafted);
     await page.setViewportSize({ width: 375, height: 812 });
     await page.screenshot({
       path: testInfo.outputPath('settings-restored-mobile.png'),
       fullPage: true,
     });
     await expect(
-      page.getByRole('main').getByRole('button', { name: /^Email Address/ }),
-    ).toContainText('unfinished');
-    await expect(
       page.getByRole('button', { name: 'Discard', exact: true }),
     ).toHaveCount(0);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.getByRole('button', { name: 'Discard', exact: true }).click();
     await page.reload();
-    await expect(page.getByLabel('Email Address')).toHaveValue(
-      'draft@example.com',
-    );
+    await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    await expect(timezone).not.toHaveAttribute('aria-checked', drafted);
     expect(
       await page.evaluate(
         (userId) => sessionStorage.getItem(`polycord:settings:${userId}`),
