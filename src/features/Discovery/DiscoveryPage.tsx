@@ -601,8 +601,9 @@ export const DiscoveryPage = ({
       return;
     const refresh = refreshDiscovery;
     const profilesChanged = () => refresh('refresh');
-    if (skipInitialRefresh.current) skipInitialRefresh.current = false;
-    else if (!discoveryCache.prefetched(requestUrlRef.current))
+    const skip = skipInitialRefresh.current && !discoveryCache.changed();
+    skipInitialRefresh.current = false;
+    if (!skip && !discoveryCache.prefetched(requestUrlRef.current))
       refresh('query');
     const focus = () => {
       if (!requestRef.current) void refresh();
