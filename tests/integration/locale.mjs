@@ -50,13 +50,20 @@ globalThis.fetch = async (url) =>
 const signIn = () =>
   GET(
     new NextRequest(
-      'http://localhost/api/auth/discord/callback?code=test&state=state-1',
+      'http://localhost/api/auth/discord/callback?code=test&state=state-1&iss=https%3A%2F%2Fdiscord.com',
     ),
   );
+const destination = async (response) =>
+  (await response.text()).match(/content="0;url=([^"]*)"/)[1];
 
 {
   const response = await signIn();
-  expect(response.headers.get('location')).toBe(
+  expect(response.status).toBe(200);
+  expect(response.headers.get('location')).toBeNull();
+  expect(await response.clone().text()).toStartWith(
+    '<!doctype html><meta name="referrer" content="no-referrer"><meta http-equiv="refresh"',
+  );
+  expect(await destination(response)).toBe(
     'http://localhost/ja/settings?from=saved#appearance',
   );
   expect(response.cookies.get('NEXT_LOCALE')?.value).toBe('ja');
@@ -64,7 +71,7 @@ const signIn = () =>
 }
 
 settings.applicationLanguage = 'de';
-expect((await signIn()).headers.get('location')).toBe(
+expect(await destination(await signIn())).toBe(
   'http://localhost/en/settings?from=saved#appearance',
 );
 
@@ -72,9 +79,14 @@ expect((await signIn()).headers.get('location')).toBe(
   settings = null;
   redirectTo = '/ja';
   const response = await signIn();
-  expect(response.headers.get('location')).toBe('http://localhost/ja');
+  expect(await destination(response)).toBe('http://localhost/ja');
   expect(writes).toEqual([['account-1', { applicationLanguage: 'ja' }]]);
 }
+
+redirectTo = '/en/settings?tab=profile&from=saved';
+expect(await destination(await signIn())).toBe(
+  'http://localhost/en/settings?tab=profile&amp;from=saved',
+);
 
 settings = { applicationLanguage: 'en', loadTracing: true };
 redirectTo = '/en';
