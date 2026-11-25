@@ -1,6 +1,6 @@
 # Production Deployment
 
-Production is a separate Netlify site and a separate Supabase project. It shares the package checks with staging but never its site, database, secrets or seed data. Releases come from the `main` branch, and only the owner deploys them, from a clean Linux checkout with their own credentials. GitHub never holds production credentials, so the release path works on GitHub Free with a private repository and keeps working when Actions minutes run out.
+Production is a separate Netlify site and a separate Supabase project. It shares the package checks with staging but never its site, database, secrets or seed data. Releases come from the `prod` branch, and only the owner deploys them, from a clean Linux checkout with their own credentials. Owner credentials stay in the owner's Codespace secrets, outside GitHub Actions.
 
 The production domain is `polycord.net` once the owner confirms its ownership. Until then, nothing points at it and staging keeps `polycord.chev.dev`.
 
@@ -8,9 +8,9 @@ The production domain is `polycord.net` once the owner confirms its ownership. U
 
 The owner does these steps. None of them is automated.
 
-1. Point the confirmed domain at a new Netlify site on the same free team. Add `www.polycord.net` as a domain alias so Netlify redirects it to the apex domain, and wait until Netlify serves both over HTTPS.
-2. On that Netlify site, stop builds (Site configuration, Build and deploy, Stop builds). Releases upload prepared packages, and the deploy fails while hosted builds are active.
-3. Create a new Supabase project for production on the free plan. Local development, staging and tests must never point at it. Migrate it with `DATABASE_URL=<production direct URL> bunx drizzle-kit migrate` from a clean checkout of the release commit, after taking a [backup](readiness.md#backup) once it holds data.
+1. Point the confirmed domain at a new Netlify site on the same free team. Add `www.polycord.net` as a domain alias so Netlify redirects it to the apex domain. Verify HTTPS on both hosts before launch.
+2. Keep the production Netlify site unlinked from Git. If a repository is linked, stop hosted builds in the project's build settings before deploying. The owner deploy uploads a prepared package.
+3. Create a new Supabase project for production on the free plan. Local development, staging and tests must never point at it. Apply migrations from a clean checkout of the release commit using the production Session pooler URL in Codespaces. Take a [backup](readiness.md#backup) before migrating a database that holds data.
 4. In the Discord developer portal, add `https://polycord.net/api/auth/discord/callback` as a redirect URI. This is part of the approved release setup, not before.
 5. Set the production site's build variables in the Netlify **production** context:
 
@@ -28,8 +28,8 @@ The owner does these steps. None of them is automated.
 | `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` | Same value as staging |
 | `POLYCORD_ENVIRONMENT`, `POLYCORD_SEED_ENABLED` | Leave unset |
 
-6. In the Netlify site's **production** context, set `DATABASE_URL` with **Functions** scope to the runtime connection URL from the approved production Supabase project. The offline build uses the owner's local `DATABASE_URL` separately. Confirm both URLs identify the same approved project and that the runtime credentials belong to that project. The deploy reads the resolved Functions value from Netlify and stops before building if that value is absent, masked or points elsewhere. Run with an owner credential that can read it, and keep the value out of logs and evidence.
-7. Prepare the [owner deploy environment](../staging-deployment.md#owner-run-deployment). Set `POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF` to the project reference from the approved Supabase project dashboard. Record the site ID and project reference, and verify the deployed candidate's database-backed health and sign-in before launch.
+6. In the Netlify site's **production** context, set `DATABASE_URL` to the approved production Supabase runtime connection URL and select **Contains secret values**. Use Netlify's allowed secret scopes, including **Functions**. Set `POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF` to the approved project reference in the same context. The app checks that its database URL matches this reference before connecting.
+7. Prepare the [owner deploy environment](../staging-deployment.md#owner-run-deployment). Set `POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF` to the same project reference and provide a separate owner-side `DATABASE_URL` for the offline build. The deploy checks the local URL and the Netlify Functions project reference before building. Record the site ID and project reference and keep both connection URLs out of logs and evidence.
 
 ## Free plan limits
 
@@ -41,12 +41,12 @@ The owner does these steps. None of them is automated.
 ## Releasing a candidate
 
 1. Choose a `develop` commit whose staging deploy is verified.
-2. Point `main` at it with `git push origin <sha>:refs/heads/main`. While Actions minutes remain, the push runs the Tests workflow on `main`, whose `CI result` check becomes the release evidence.
+2. Point `prod` at it with `git push origin <sha>:refs/heads/prod`. While Actions minutes remain, the push runs the Tests workflow on `prod`, whose `CI result` check becomes the release evidence.
 3. Apply any pending migrations to the production database first, following [Migrations](readiness.md#migrations). The package build runs `scripts/check-migrations.ts` and fails if the database is behind.
 4. In a codespace set up as in [owner-run deployment](../staging-deployment.md#owner-run-deployment), run:
 
 ```sh
-git fetch origin && git switch --detach origin/main
+git fetch origin && git switch --detach origin/prod
 export GITHUB_TOKEN="$POLYCORD_GITHUB_TOKEN" DATABASE_URL="$PRODUCTION_DATABASE_URL" \
   NETLIFY_PRODUCTION_SITE_ID=<site ID> POLYCORD_PRODUCTION_DOMAIN=polycord.net \
   POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF=<approved project ref> \
@@ -57,11 +57,11 @@ node scripts/deploy-production.mjs
 
 `scripts/deploy-production.mjs` refuses to continue unless:
 
-- it runs outside GitHub Actions on Linux with Node 22, from a clean checkout of the current `main` tip, the site is not the staging site, and the Netlify site's domain matches `POLYCORD_PRODUCTION_DOMAIN` with hosted builds stopped;
+- it runs outside GitHub Actions on Linux with Node 22, from a clean checkout of the current `prod` tip. It requires the production site and domain and checks that hosted builds are stopped if Git is linked;
 - the commit has a passing `CI result` check. Without one, it runs the full suite first (migrations, `check:all`, script tests, unit tests, browser tests and Storybook tests) against `TEST_DATABASE_URL`, a disposable database that must differ from `DATABASE_URL`, with the Netlify and GitHub tokens removed from the environment;
 - `POLYCORD_PUBLIC_URL` and `DISCORD_REDIRECT_URI` use the production origin, `POLYCORD_ENVIRONMENT` and `POLYCORD_SEED_ENABLED` are unset, the Discord, VAPID, administrator and invite keys are present, and the database has no `seed_database` row.
 
-It then builds offline, uploads with `--no-build`, and checks that the published server digest matches the package, the runtime is Node 22 and no hosted build ran. If a check fails after upload, it restores the previous deploy. The summary records the deploy ID, source commit, which validation it relied on, digest, origin, number of administrators, analytics setting and seed state, without secret values. Paste it into the release record.
+It then builds offline, uploads with `--no-build`, and checks that the published server digest matches the package, the runtime is Node 22 and no hosted build ran. A database-backed health check runs against the new deploy permalink, where Netlify supplies the masked credential to the app. If a check fails after upload, the script reports the failure and restores the previous deploy when one exists. The summary records the deploy ID, source commit, validation, digest, origin, approved project reference, number of administrators, analytics setting and seed state. Paste it into the release record.
 
 ## Indexing
 
@@ -78,4 +78,4 @@ Netlify also sends `X-Robots-Tag: noindex` on every deploy permalink (`<deploy I
 
 ## Rollback
 
-Restore the previous deploy from the Netlify deploys list, or move `main` back to an earlier commit and run the owner deploy again. Only roll back to a build that works with the current database schema. See [Rollback](readiness.md#rollback).
+Restore the previous deploy from the Netlify deploys list, or move `prod` back to an earlier commit and run the owner deploy again. Only roll back to a build that works with the current database schema. See [Rollback](readiness.md#rollback).
