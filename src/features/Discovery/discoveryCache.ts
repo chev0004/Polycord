@@ -9,10 +9,12 @@ const prefetchedAt = new Map<string, number>();
 const PREFETCH_FRESH_MS = 60_000;
 let criteria: string | null = null;
 let viewer: DiscoveryViewer | null = null;
+let changed = false;
 
 export const discoveryCache = {
   get: (url: string) => entries.get(url),
   viewer: () => viewer,
+  changed: () => changed,
   begin: (url: string) => {
     const generation = (generations.get(url) ?? 0) + 1;
     generations.set(url, generation);
@@ -75,12 +77,14 @@ export const discoveryCache = {
       });
   },
   expire: () => {
+    changed = true;
     prefetchedAt.clear();
     for (const url of pending.keys())
       generations.set(url, (generations.get(url) ?? 0) + 1);
     pending.clear();
   },
   invalidate: () => {
+    changed = true;
     profileSheetStore.invalidate();
     entries.clear();
     pending.clear();
