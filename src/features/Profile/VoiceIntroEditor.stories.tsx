@@ -9,10 +9,12 @@ const EditorHarness = ({
   premium,
   initialSeconds = 0,
   profileId,
+  saveOnPublish,
 }: {
   premium: boolean;
   initialSeconds?: number;
   profileId?: string;
+  saveOnPublish?: boolean;
 }) => {
   const [seconds, setSeconds] = useState(initialSeconds);
   return (
@@ -21,6 +23,7 @@ const EditorHarness = ({
         premium={premium}
         profileId={profileId}
         voiceSeconds={seconds}
+        saveOnPublish={saveOnPublish}
         onChange={setSeconds}
       />
     </div>
@@ -170,6 +173,70 @@ export const FreeRecording: Story = {
     );
     await expect(
       await canvas.findByRole('button', { name: 'Save clip' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const OnboardingRecording: Story = {
+  args: { premium: false, saveOnPublish: true },
+  beforeEach: mockRecordingApis,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Record voice intro' }),
+    );
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Stop recording' }),
+    );
+    await expect(
+      await canvas.findByText(
+        /-second clip will be saved to your card when you publish your profile\.$/,
+      ),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Discard' }),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('button', { name: 'Save clip' }),
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.queryByText(/apply immediately/),
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const SaveBeforeProfile: Story = {
+  args: { premium: false },
+  beforeEach: () => {
+    const restore = mockRecordingApis();
+    const mocked = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        String(args[0]) === '/api/profile/voice'
+          ? Promise.resolve(Response.json({}, { status: 409 }))
+          : mocked(...args),
+      { preconnect: mocked.preconnect },
+    );
+    return restore;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Record voice intro' }),
+    );
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Stop recording' }),
+    );
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Save clip' }),
+    );
+    await expect(
+      await canvas.findByText('Save your profile before adding a voice intro.'),
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Save clip' }),
     ).toBeInTheDocument();
   },
 };
