@@ -15,3 +15,17 @@ export const getBumpCooldown = (
 
   return { nextBumpAt, remainingMs };
 };
+
+export const getBumpReadyAt = (
+  lastBumpedAt: Date | null | undefined,
+  premium: boolean,
+  now = new Date(),
+) => {
+  const { nextBumpAt, remainingMs } = getBumpCooldown(
+    lastBumpedAt,
+    premium,
+    now,
+  );
+
+  return remainingMs > 0 ? nextBumpAt.toISOString() : undefined;
+};

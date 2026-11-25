@@ -306,7 +306,7 @@ export const ShareWithoutAvatar: Story = {
   play: async ({ canvasElement }) => {
     const toast = await shareFirstProfile(canvasElement);
     await expect(toast.querySelector('img')).toBeNull();
-    await expect(within(toast).getByText('?')).toBeInTheDocument();
+    await expect(within(toast).queryByText('?')).not.toBeInTheDocument();
   },
 };
 

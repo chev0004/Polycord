@@ -5,7 +5,7 @@ import {
   mapProfileToDiscoveryProfile,
   toViewerAvailabilityContext,
 } from '@/db';
-import { getBumpCooldown } from '@/features/Profile/bumpProfile';
+import { getBumpReadyAt } from '@/features/Profile/bumpProfile';
 import { getCurrentUser } from '@/lib/auth';
 import { tracePage } from '@/lib/pageLoadTrace';
 import { SavedRouteClient } from './SavedRouteClient';
@@ -36,10 +36,10 @@ async function SavedRoute({ params }: { params: Promise<{ lang: string }> }) {
       currentProfileId={profile?.profile.id}
       bumpReadyAt={
         profile?.profile.isPublic
-          ? getBumpCooldown(
+          ? getBumpReadyAt(
               profile.profile.lastBumpedAt,
               Boolean(mapProfileToDiscoveryProfile(profile).premium),
-            ).nextBumpAt.toISOString()
+            )
           : undefined
       }
       userAvatarUrl={user.avatarUrl}

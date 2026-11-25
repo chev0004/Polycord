@@ -68,16 +68,10 @@ export const Toast = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div
-        className={`col-span-3 grid items-center gap-x-4 p-4 ${action ? 'grid-cols-[auto_1fr_auto_max-content]' : 'grid-cols-[auto_1fr_max-content]'}`}
-      >
-        {iconUrl ? (
-          <Avatar avatarUrl={iconUrl} size={'md'} />
-        ) : (
-          <Avatar size={'md'} />
-        )}
+      <div className="col-span-3 flex items-center gap-x-4 p-4">
+        {iconUrl ? <Avatar avatarUrl={iconUrl} size={'md'} /> : null}
 
-        <div>
+        <div className="min-w-0 flex-1">
           <div className="mb-0.5 font-figtree font-medium text-foreground text-sm">
             {title}
           </div>

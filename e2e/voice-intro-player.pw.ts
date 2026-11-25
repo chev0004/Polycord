@@ -45,6 +45,73 @@ const signIn = async (context: BrowserContext, id: string) => {
   ]);
 };
 
+test('a voice intro recorded during onboarding is saved with the new profile', async ({
+  page,
+  context,
+}) => {
+  const id = randomUUID().replaceAll('-', '');
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  try {
+    await signIn(context, id);
+    await page.addInitScript(() => {
+      navigator.mediaDevices.getUserMedia = async () => {
+        const audio = new AudioContext();
+        const tone = audio.createOscillator();
+        const destination = audio.createMediaStreamDestination();
+        tone.connect(destination);
+        tone.start();
+        return destination.stream;
+      };
+    });
+    await page.goto('/en/onboarding');
+    await page.evaluate(
+      ([key, draft]) => sessionStorage.setItem(key, draft),
+      [`polycord:profile:${id}`, JSON.stringify(profile)],
+    );
+    await page.reload();
+    await page.getByRole('button', { name: 'Record voice intro' }).click();
+    await page.waitForTimeout(1500);
+    await page.getByRole('button', { name: 'Stop recording' }).click();
+    await expect(
+      page.getByText(
+        /-second clip will be saved to your card when you publish your profile\.$/,
+      ),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save clip' })).toHaveCount(
+      0,
+    );
+
+    await page.route('**/api/profile/voice', (route) =>
+      route.fulfill({ status: 500, json: {} }),
+    );
+    await page
+      .getByRole('button', { name: 'Publish profile', exact: true })
+      .click();
+    await expect(
+      page.getByText(
+        'Your profile was saved, but your voice intro was not. Publish again to retry, or discard the clip.',
+      ),
+    ).toBeVisible();
+    await expect(page).toHaveURL('/en/onboarding');
+
+    await page.unroute('**/api/profile/voice');
+    await page
+      .getByRole('button', { name: 'Publish profile', exact: true })
+      .click();
+    await expect(page).toHaveURL('/en');
+    const [intro] =
+      await sql`select duration_seconds from voice_intros join users on users.id = voice_intros.user_id where users.discord_user_id = ${id}`;
+    expect(intro.duration_seconds).toBeGreaterThan(0);
+    await page.goto('/en/profile');
+    await expect(
+      page.getByText(/-second intro is live on your card\.$/),
+    ).toBeVisible();
+  } finally {
+    await sql`delete from users where discord_user_id = ${id}`;
+    await sql.end();
+  }
+});
+
 test('a saved voice intro plays, downloads and stops when removed', async ({
   page,
   context,
