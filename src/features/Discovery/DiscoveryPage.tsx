@@ -430,7 +430,9 @@ export const DiscoveryPage = ({
       groupSizes.slice(0, safePage).reduce((sum, size) => sum + size, 0);
 
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
-  const skipInitialRefresh = useRef(Boolean(discoveryData) && !feedError);
+  const skipInitialRefresh = useRef(
+    Boolean(discoveryData) && !feedError && !discoveryCache.changed(),
+  );
   const hasLoaded = useRef(Boolean(discoveryData));
   const appliedUrl = useRef<string | null>(null);
   const unmounting = useRef(false);
