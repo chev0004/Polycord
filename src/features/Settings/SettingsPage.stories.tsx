@@ -25,15 +25,6 @@ const defaultSettings: SettingsFormValues = {
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
-  email: 'xhev@polycord.app',
-};
-
-const setFieldValue = (field: HTMLInputElement, value: string) => {
-  Object.getOwnPropertyDescriptor(
-    HTMLInputElement.prototype,
-    'value',
-  )?.set?.call(field, value);
-  field.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
 const meta: Meta<typeof SettingsPage> = {
@@ -190,23 +181,27 @@ export const RestoredDraft: Story = {
     async () => {
       sessionStorage.setItem(
         'polycord:settings:settings-draft-story',
-        JSON.stringify({ email: 'unfinished-email' }),
+        JSON.stringify({ email: 'legacy@example.com', isPublic: false }),
       );
       return {};
     },
   ],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await waitFor(() =>
-      expect(canvas.getByLabelText('Email Address')).toHaveValue(
-        'unfinished-email',
-      ),
-    );
     await expect(
-      canvas.getByText(
+      await canvas.findByText(
         'Your unsaved draft has been restored. Review it, then Save or Discard.',
       ),
     ).toBeInTheDocument();
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    await expect(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    ).toHaveAttribute('aria-checked', 'false');
+    await waitFor(() =>
+      expect(
+        sessionStorage.getItem('polycord:settings:settings-draft-story'),
+      ).toBe(JSON.stringify({ isPublic: false })),
+    );
   },
 };
 
@@ -215,8 +210,9 @@ export const SwitchTabs: Story = {
     const canvas = within(canvasElement);
 
     await expect(
-      canvas.getByPlaceholderText('Enter your email address'),
+      canvas.getByText('Update Discord Connection'),
     ).toBeInTheDocument();
+    expect(canvas.queryByText('Email Address')).not.toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
 
@@ -224,7 +220,7 @@ export const SwitchTabs: Story = {
       expect(canvas.getByText('Make Profile Public')).toBeInTheDocument(),
     );
     expect(
-      canvas.queryByPlaceholderText('Enter your email address'),
+      canvas.queryByText('Update Discord Connection'),
     ).not.toBeInTheDocument();
 
     fireEvent.click(canvas.getByRole('button', { name: 'Notifications' }));
@@ -313,36 +309,6 @@ export const MobileBlockedAccounts: Story = {
   },
 };
 
-export const EmailValidation: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
-    setFieldValue(email, 'not-an-email');
-    await waitFor(() => expect(email).toHaveValue('not-an-email'));
-
-    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
-    await waitFor(() =>
-      expect(canvas.getByText('Make Profile Public')).toBeInTheDocument(),
-    );
-
-    fireEvent.click(canvas.getByRole('button', { name: 'Save Settings' }));
-
-    await waitFor(
-      () =>
-        expect(
-          canvas.getByText('Please enter a valid email address.'),
-        ).toBeInTheDocument(),
-      { timeout: 5000 },
-    );
-    await expect(
-      canvas.getByPlaceholderText('Enter your email address'),
-    ).toBeInTheDocument();
-  },
-};
-
 export const SaveFlow: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -352,10 +318,10 @@ export const SaveFlow: Story = {
     ).not.toBeInTheDocument();
     await expect(canvas.queryByText('All changes saved')).toBeNull();
 
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
-    setFieldValue(email, 'kenji.ito@polycord.app');
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    );
 
     await waitFor(
       () =>
@@ -372,6 +338,9 @@ export const SaveFlow: Story = {
     await waitFor(() => expect(args.onSubmit).toHaveBeenCalledTimes(1), {
       timeout: 5000,
     });
+    const [saved] = (args.onSubmit as ReturnType<typeof fn>).mock.calls[0];
+    await expect(saved).toMatchObject({ isPublic: false });
+    await expect(saved).not.toHaveProperty('email');
     await waitFor(
       () =>
         expect(
@@ -385,9 +354,10 @@ export const SaveFlow: Story = {
 export const DiscardAndRevert: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    const visibility = await canvas.findByRole('switch', {
+      name: 'Make Profile Public',
+    });
     const expectBarHidden = () =>
       waitFor(
         () =>
@@ -405,15 +375,15 @@ export const DiscardAndRevert: Story = {
         { timeout: 5000 },
       );
 
-    setFieldValue(email, 'discard.me@polycord.app');
+    fireEvent.click(visibility);
     await expectBarShown();
     fireEvent.click(canvas.getByRole('button', { name: 'Discard' }));
     await expectBarHidden();
-    await expect(email).toHaveValue('xhev@polycord.app');
+    await expect(visibility).toHaveAttribute('aria-checked', 'true');
 
-    setFieldValue(email, 'revert.me@polycord.app');
+    fireEvent.click(visibility);
     await expectBarShown();
-    setFieldValue(email, 'xhev@polycord.app');
+    fireEvent.click(visibility);
     await expectBarHidden();
   },
 };
@@ -427,10 +397,10 @@ export const SaveError: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    const email = canvas.getByPlaceholderText(
-      'Enter your email address',
-    ) as HTMLInputElement;
-    setFieldValue(email, 'error.path@polycord.app');
+    fireEvent.click(canvas.getByRole('button', { name: 'Privacy' }));
+    fireEvent.click(
+      await canvas.findByRole('switch', { name: 'Make Profile Public' }),
+    );
 
     await waitFor(
       () =>
@@ -509,6 +479,9 @@ export const GatedProfileViewAlert: Story = {
     await waitFor(() =>
       expect(canvas.getByText('Profile View Alert')).toBeInTheDocument(),
     );
+    expect(
+      canvas.getByText('Get profile view alerts with Supporter.'),
+    ).toBeInTheDocument();
     expect(canvas.getAllByText('Supporter')).toHaveLength(2);
 
     fireEvent.click(canvas.getByRole('switch', { name: 'Profile View Alert' }));

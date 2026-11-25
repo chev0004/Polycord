@@ -99,8 +99,9 @@ same header to server-rendered responses on `polycord.chev.dev`. Leave
 the sitemap stays empty.
 
 `NEXT_PUBLIC_DISCORD_INVITE_URL` is the permanent invite behind the footer Join
-Discord Server button; the button is hidden while it is unset. It is inlined at
-build time, so rebuild after changing it.
+Discord Server button and the ban screen's Open Discord Server button. Support,
+privacy, safety and ban appeals all go through that server, so set it on every
+deployed site. It is inlined at build time, so rebuild after changing it.
 
 `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` selects the Discovery loading experience.
 `true` serves the static Discovery shell with the skeleton and the early usable
@@ -268,6 +269,12 @@ bun run check:all
 bunx tsc --noEmit
 bun run build
 ```
+
+The pre-push hook (`scripts/pre-push.mjs`) classifies every ref. Docs-only
+updates and deletions skip `check:all`. Push code updates from a clean checkout
+whose tree matches each such ref. If the code refs have different trees, push
+them separately from their corresponding worktrees. Unavailable comparisons
+require checks.
 
 For database changes, also run:
 

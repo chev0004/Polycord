@@ -14,7 +14,6 @@ const settings = {
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
-  email: 'preferences@example.com',
 };
 
 const signIn = async (context: BrowserContext) => {
@@ -22,7 +21,7 @@ const signIn = async (context: BrowserContext) => {
   const name = `Preferences ${id.slice(0, 8)}`;
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const [account] =
-    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, ${name}, ${name}, ${settings.email}) returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${name}, ${name}) returning id`;
   await sql.end();
   const payload = Buffer.from(
     JSON.stringify({
@@ -31,7 +30,6 @@ const signIn = async (context: BrowserContext) => {
         accountId: account.id,
         name,
         username: name,
-        email: settings.email,
       },
       expiresAt: Date.now() + 3600000,
     }),
@@ -266,10 +264,10 @@ test('core pages stay dark and settings expose only supported options', async ({
         });
     }
     await page.goto('/en/settings');
-    await expect(page.getByText(/Sign-in uses Discord/)).toBeVisible();
     await expect(
-      page.getByPlaceholder('Enter your email for recovery'),
-    ).toHaveCount(0);
+      page.getByRole('heading', { name: 'Account', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText('Email Address')).toHaveCount(0);
     await page.getByRole('button', { name: 'Privacy', exact: true }).click();
     await expect(
       page.getByRole('switch', { name: 'Activity Status' }),
@@ -290,10 +288,13 @@ test('core pages stay dark and settings expose only supported options', async ({
       fullPage: true,
     });
     await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: 'Account', exact: true }).click();
-    await page
-      .getByLabel('Email Address')
-      .fill('saved.preferences@example.com');
+    await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    const timezone = page.getByRole('switch', {
+      name: 'Display timezone',
+      exact: true,
+    });
+    await timezone.click();
+    const saved = (await timezone.getAttribute('aria-checked')) as string;
     await page
       .getByRole('button', { name: 'Save Settings', exact: true })
       .click();
@@ -301,9 +302,8 @@ test('core pages stay dark and settings expose only supported options', async ({
       page.getByRole('button', { name: 'Save Settings', exact: true }),
     ).toHaveCount(0);
     await page.reload();
-    await expect(page.getByLabel('Email Address')).toHaveValue(
-      'saved.preferences@example.com',
-    );
+    await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+    await expect(timezone).toHaveAttribute('aria-checked', saved);
   } finally {
     await sql`delete from users where discord_user_id=${account.id}`;
     await sql.end();

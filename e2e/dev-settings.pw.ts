@@ -18,12 +18,11 @@ const settings = {
   applicationLanguage: 'en',
   timeFormat: '24hr',
   languageDisplay: 'long',
-  email: 'dev@example.com',
 };
 
 const signIn = async (context: BrowserContext, discordId: string) => {
   const [account] =
-    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${discordId}, ${discordId}, ${discordId}, ${settings.email}) on conflict (discord_user_id) do update set email = excluded.email returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${discordId}, ${discordId}, ${discordId}) on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
   const payload = Buffer.from(
     JSON.stringify({
       user: {
@@ -31,7 +30,6 @@ const signIn = async (context: BrowserContext, discordId: string) => {
         accountId: account.id,
         name: discordId,
         username: discordId,
-        email: settings.email,
       },
       expiresAt: Date.now() + 3600000,
     }),

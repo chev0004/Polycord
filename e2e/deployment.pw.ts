@@ -34,7 +34,7 @@ const signIn = async (context: BrowserContext) => {
   const id = randomUUID().replaceAll('-', '');
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const [account] =
-    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, ${id}, ${id}, 'deploy@example.com') returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, ${id}, ${id}) returning id`;
   await sql.end();
   const payload = Buffer.from(
     JSON.stringify({
@@ -43,7 +43,6 @@ const signIn = async (context: BrowserContext) => {
         accountId: account.id,
         name: id,
         username: id,
-        email: 'deploy@example.com',
       },
       expiresAt: Date.now() + 3600000,
     }),
@@ -89,8 +88,10 @@ test('a page on the current build is left alone', async ({ page }) => {
 
 test('a failed lazy chunk recovers with a single reload', async ({ page }) => {
   const loads = countLoads(page);
-  await page.goto('/en/legal');
-  await failChunk(page);
+  const watcherReady = () =>
+    page.waitForResponse((response) => response.url().endsWith('/api/build'));
+  await Promise.all([watcherReady(), page.goto('/en/legal')]);
+  await Promise.all([watcherReady(), failChunk(page)]);
   await expect.poll(() => loads.count).toBe(2);
   await failChunk(page);
   await page.waitForTimeout(1500);
@@ -101,15 +102,20 @@ test('unsaved edits are never reloaded silently', async ({ page, context }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await signIn(context);
   await page.goto('/en/settings');
-  const email = page.getByLabel('Email Address');
-  await email.fill('changed@example.com');
+  await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+  const timezone = page.getByRole('switch', {
+    name: 'Display timezone',
+    exact: true,
+  });
+  await timezone.click();
+  const changed = (await timezone.getAttribute('aria-checked')) as string;
   await newBuild(page);
   const loads = countLoads(page);
   await checkAgain(page);
   await expect(page.getByText('A new version is available')).toBeVisible();
   await page.waitForTimeout(1000);
   expect(loads.count).toBe(0);
-  await expect(email).toHaveValue('changed@example.com');
+  await expect(timezone).toHaveAttribute('aria-checked', changed);
   await page.getByRole('button', { name: 'Discard' }).click();
   await expect.poll(() => loads.count).toBe(1);
 });
@@ -121,14 +127,19 @@ test('a failed chunk never reloads unsaved edits silently', async ({
   await page.setViewportSize({ width: 1280, height: 900 });
   await signIn(context);
   await page.goto('/en/settings');
-  const email = page.getByLabel('Email Address');
-  await email.fill('changed@example.com');
+  await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+  const timezone = page.getByRole('switch', {
+    name: 'Display timezone',
+    exact: true,
+  });
+  await timezone.click();
+  const changed = (await timezone.getAttribute('aria-checked')) as string;
   const loads = countLoads(page);
   await failChunk(page);
   await expect(page.getByText('A new version is available')).toBeVisible();
   await page.waitForTimeout(1000);
   expect(loads.count).toBe(0);
-  await expect(email).toHaveValue('changed@example.com');
+  await expect(timezone).toHaveAttribute('aria-checked', changed);
   await page.getByRole('button', { name: 'Discard' }).click();
   await expect.poll(() => loads.count).toBe(1);
 });

@@ -19,7 +19,7 @@ const profile = {
 const signIn = async (context: BrowserContext, id: string) => {
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
   const [account] =
-    await sql`insert into users (discord_user_id, discord_username, display_name, email) values (${id}, 'voice-test', 'Voice test', 'voice@example.com') on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name) values (${id}, 'voice-test', 'Voice test') on conflict (discord_user_id) do update set display_name = excluded.display_name returning id`;
   await sql.end();
   const payload = Buffer.from(
     JSON.stringify({
@@ -28,7 +28,6 @@ const signIn = async (context: BrowserContext, id: string) => {
         accountId: account.id,
         name: 'Voice test',
         username: 'voice-test',
-        email: 'voice@example.com',
       },
       expiresAt: Date.now() + 3600000,
     }),
