@@ -10,7 +10,7 @@ import { withRenderPool } from '@/db/client';
 import type { StaffRole } from '@/features/Admin/types';
 import { parseDiscoveryState } from '@/features/Discovery/discoveryUrlState';
 import { PageLoadReady } from '@/features/Navigation/PageLoadTrace';
-import { getBumpCooldown } from '@/features/Profile/bumpProfile';
+import { getBumpReadyAt } from '@/features/Profile/bumpProfile';
 import { getStaffRole } from '@/lib/admin';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -90,11 +90,10 @@ async function renderDiscovery(
       viewerAvailability = viewer.availability;
 
       if (profile.profile.isPublic) {
-        const { nextBumpAt } = getBumpCooldown(
+        bumpReadyAt = getBumpReadyAt(
           profile.profile.lastBumpedAt,
           Boolean(mapProfileToDiscoveryProfile(profile).premium),
         );
-        bumpReadyAt = nextBumpAt.toISOString();
       }
     }
   }

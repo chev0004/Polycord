@@ -10,7 +10,7 @@ import {
   DEFAULT_CARD_COLOR,
   DEFAULT_CUSTOM_GRADIENT,
 } from '@/features/Discovery/cardTheme';
-import { getBumpCooldown } from '@/features/Profile/bumpProfile';
+import { getBumpReadyAt } from '@/features/Profile/bumpProfile';
 import type { ProfileFormValues } from '@/features/Profile/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
@@ -73,10 +73,7 @@ async function ProfileRoute({ params }: { params: Promise<{ lang: string }> }) {
         boostsRemaining={boostStatus?.remaining}
         bumpReadyAt={
           profile?.profile.isPublic
-            ? getBumpCooldown(
-                profile.profile.lastBumpedAt,
-                premium,
-              ).nextBumpAt.toISOString()
+            ? getBumpReadyAt(profile.profile.lastBumpedAt, premium)
             : undefined
         }
         lastBumpedAt={

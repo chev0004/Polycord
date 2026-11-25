@@ -9,7 +9,7 @@ import {
 import { listDiscoveryPage } from '@/db/discovery';
 import { parseDiscoveryState } from '@/features/Discovery/discoveryUrlState';
 import type { DiscoveryViewer } from '@/features/Discovery/discoveryViewer';
-import { getBumpCooldown } from '@/features/Profile/bumpProfile';
+import { getBumpReadyAt } from '@/features/Profile/bumpProfile';
 import { getStaffRole } from '@/lib/admin';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
@@ -68,10 +68,10 @@ export const GET = gatedRoute(async ({ user, measure }, request: Request) => {
           skeleton: role === 'owner' ? settings?.discoverySkeleton : undefined,
           pendingCases,
           bumpReadyAt: profile?.profile.isPublic
-            ? getBumpCooldown(
+            ? getBumpReadyAt(
                 profile.profile.lastBumpedAt,
                 Boolean(discoveryProfile?.premium),
-              ).nextBumpAt.toISOString()
+              )
             : undefined,
         }
       : { isLoggedIn: false };

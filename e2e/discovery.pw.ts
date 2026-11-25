@@ -81,6 +81,52 @@ test('a first bump publishes the card at the front in one update', async ({
   }
 });
 
+test('a never bumped profile can bump at once on a device clock behind the server', async ({
+  page,
+  context,
+}) => {
+  const sql = postgres(process.env.TEST_DATABASE_URL as string);
+  const id = randomUUID().replaceAll('-', '');
+  const name = `Skewed bump ${id.slice(0, 8)}`;
+  const [owner] =
+    await sql`insert into users (discord_user_id,discord_username,display_name) values (${id},${name},${name}) returning id`;
+  const payload = Buffer.from(
+    JSON.stringify({
+      user: { id, accountId: owner.id, name, username: name },
+      expiresAt: Date.now() + 3600000,
+    }),
+  ).toString('base64url');
+  const signature = createHmac('sha256', 'polycord-isolated-audit-secret')
+    .update(payload)
+    .digest('base64url');
+  await context.addCookies([
+    {
+      name: 'polycord_session',
+      value: `${payload}.${signature}`,
+      domain: 'localhost',
+      path: '/',
+    },
+  ]);
+  try {
+    await sql`insert into profiles (user_id,is_public,primary_language,target_language,proficiency_level,bio,tags,country,timezone)
+      values (${owner.id},true,'en','ja','beginner','A profile that has never been bumped.','{}','US','UTC')`;
+    await page.clock.install({ time: Date.now() - 60000 });
+    for (const path of ['/en', '/en/profile', '/en/saved']) {
+      await page.goto(path);
+      await page.getByRole('button', { name: 'Account menu' }).click();
+      await expect(
+        page.getByRole('button', { name: 'Bump profile', exact: true }),
+      ).toBeEnabled();
+      await expect(page.getByRole('button', { name: /^Bump in / })).toHaveCount(
+        0,
+      );
+    }
+  } finally {
+    await sql`delete from users where id=${owner.id}`;
+    await sql.end();
+  }
+});
+
 test('discovery keeps results through refresh, failure and return navigation', async ({
   page,
 }, testInfo) => {
