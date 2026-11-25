@@ -390,6 +390,7 @@ test('onboarding scopes incomplete drafts and enforces the same tag caps as edit
 
 test('lapsed profiles keep existing languages, tags and styling during unrelated saves', async ({
   context,
+  request,
 }) => {
   const id = randomUUID().replaceAll('-', '');
   const sql = postgres(process.env.TEST_DATABASE_URL as string);
@@ -421,7 +422,7 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
         await context.request.post('/api/profile', {
           data: {
             ...values,
-            bio: 'Only the bio changes after my paid plan expires.',
+            bio: 'Only the bio changes after my Supporter grant expires.',
           },
         })
       ).status(),
@@ -439,6 +440,39 @@ test('lapsed profiles keep existing languages, tags and styling during unrelated
         })
       ).status(),
     ).toBe(400);
+    const reordered = [...values.tags.slice(5), ...values.tags.slice(0, 3)];
+    expect(
+      (
+        await context.request.post('/api/profile', {
+          data: {
+            ...values,
+            tags: reordered,
+            targetLanguages: [...values.targetLanguages].reverse(),
+          },
+        })
+      ).status(),
+    ).toBe(200);
+    const [{ id: profileId }] =
+      await sql`select id from profiles where user_id = ${user.id}`;
+    const publicProfile = async () =>
+      (await (await request.get(`/api/profile/public/${profileId}`)).json())
+        .profile;
+    expect((await publicProfile()).tags).toEqual(reordered.slice(0, 5));
+    expect(
+      (await publicProfile()).targetLanguages.map(
+        ({ language }: { language: string }) => language,
+      ),
+    ).toEqual(['fr', 'de']);
+    expect(
+      (
+        await context.request.post('/api/profile', {
+          data: { ...values, tags: [...reordered, 'Grown'] },
+        })
+      ).status(),
+    ).toBe(400);
+    await sql`update users set premium_granted_until = now() + interval '1 day' where id = ${user.id}`;
+    expect((await publicProfile()).tags).toEqual(reordered);
+    expect((await publicProfile()).targetLanguages).toHaveLength(3);
   } finally {
     await sql`delete from users where discord_user_id = ${id}`;
     await sql.end();

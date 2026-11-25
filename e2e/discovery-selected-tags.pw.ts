@@ -9,8 +9,8 @@ test('a selected tag outside the popular tags stays visible and removable', asyn
   const prefix = randomUUID().slice(0, 8);
   const cricket = `${prefix}cricket`;
   const owners =
-    await sql`insert into users (discord_user_id, discord_username, display_name)
-    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Tags ' || lpad(n::text, 2, '0') from generate_series(1, 34) n returning id`;
+    await sql`insert into users (discord_user_id, discord_username, display_name, premium_granted_until)
+    select ${prefix} || '-' || n, ${prefix} || '-' || n, ${prefix} || ' Tags ' || lpad(n::text, 2, '0'), now() + interval '1 day' from generate_series(1, 34) n returning id`;
   const ids = owners.map((owner) => owner.id);
   try {
     await sql`insert into profiles (last_bumped_at, user_id, is_public, primary_language, target_language, proficiency_level, bio, tags)

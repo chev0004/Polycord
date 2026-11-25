@@ -886,6 +886,101 @@ export const SupporterTagCap: Story = {
   },
 };
 
+const lapsedProfile: ProfileFormValues = {
+  ...sampleProfile,
+  targetLanguages: ['en', 'ko', 'fr'].map((language) => ({
+    language,
+    level: 'beginner',
+  })),
+  tags: [
+    'Anime',
+    'Cooking',
+    'Photography',
+    'Travel',
+    'Music',
+    'Gaming',
+    'Cinema',
+    'Hiking',
+  ],
+};
+
+export const LapsedOverLimit: Story = {
+  args: { premium: false, initialValues: lapsedProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(canvas.getByText(/5\/5 tags/)).toBeInTheDocument();
+    await expect(canvas.getByText(/2\/2 languages/)).toBeInTheDocument();
+    await expect(canvas.getAllByText('Hidden on Free')).toHaveLength(2);
+    await expect(
+      canvas.queryByRole('combobox', { name: 'Target Languages 3' }),
+    ).toBeNull();
+
+    fireEvent.click(
+      canvas.getByRole('button', { name: 'Show Hiking on your profile' }),
+    );
+    await expect(
+      await canvas.findByRole('button', { name: 'Show Music on your profile' }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      canvas.getByRole('button', { name: 'Show French on your profile' }),
+    );
+    await expect(
+      await canvas.findByRole('button', {
+        name: 'Show Korean on your profile',
+      }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Save Profile' }),
+    );
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tags: [
+            'Anime',
+            'Cooking',
+            'Photography',
+            'Travel',
+            'Hiking',
+            'Gaming',
+            'Cinema',
+            'Music',
+          ],
+          targetLanguages: ['en', 'fr', 'ko'].map((language) => ({
+            language,
+            level: 'beginner',
+          })),
+        }),
+      ),
+    );
+  },
+};
+
+export const MobileLapsedOverLimit: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { premium: false, initialValues: lapsedProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      await canvas.findByRole('button', { name: /^French/ }),
+    ).toHaveTextContent('Hidden');
+    await expect(canvas.getByText('2/2')).toBeInTheDocument();
+    await expect(canvas.getByText('5/5')).toBeInTheDocument();
+
+    fireEvent.click(canvas.getByRole('button', { name: /^French/ }));
+    const sheet = within(await screen.findByRole('dialog'));
+    await expect(sheet.queryByRole('button', { name: 'French' })).toBeNull();
+    fireEvent.click(
+      sheet.getByRole('button', { name: 'Show French on your profile' }),
+    );
+    await expect(
+      await sheet.findByRole('button', { name: 'Show Korean on your profile' }),
+    ).toBeInTheDocument();
+  },
+};
+
 export const ValidationErrors: Story = {
   args: {
     initialValues: sampleProfile,

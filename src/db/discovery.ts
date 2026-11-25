@@ -30,6 +30,8 @@ import { db } from './client';
 import { discoveryAvailability } from './discoveryAvailability';
 import { discoverySearch } from './discoverySearch';
 import {
+  activeTagsSql,
+  activeTargetSql,
   mapDiscoveryProfiles,
   publiclyVisible,
   type ViewerAvailabilityContext,
@@ -90,7 +92,7 @@ const tagCounts = (where: SQL | undefined, limit?: number, lead?: SQL) =>
   db
     .execute<DiscoveryTagCount>(sql`select tag, count(*)::int as count from ${profiles}
       inner join ${users} on ${profiles.userId} = ${users.id}
-      cross join lateral unnest(${profiles.tags}) tag where ${where}
+      cross join lateral unnest(${activeTagsSql()}) tag where ${where}
       group by tag order by ${lead ?? sql``} count(*) desc, tag ${limit ? sql`limit ${limit}` : sql``}`)
     .then(({ rows }) => rows);
 
@@ -198,8 +200,9 @@ const discoveryWhere = async (
       values.map((value) => sql`${value}`),
       sql`,`,
     );
-    return sql`${profiles.id} in (
-    select profile_id from profile_target_languages where ${sql.identifier(column)}::text in (${list})
+    return sql`exists (
+    select 1 from profile_target_languages where profile_id = ${profiles.id}
+      and ${sql.identifier(column)}::text in (${list}) and ${activeTargetSql(sql`position`)}
   ) or (not exists (select 1 from profile_target_languages where profile_id = ${profiles.id}) and
     ${column === 'language' ? profiles.targetLanguage : profiles.proficiencyLevel}::text in (${list}))`;
   };
@@ -221,12 +224,13 @@ const discoveryWhere = async (
     conditions.push(
       sql`(${targetMatch('proficiency_level', selection('proficiency'))})`,
     );
+  const selectedTags = sql`array[${sql.join(
+    state.selectedTags.map((tag) => sql`${tag}`),
+    sql`,`,
+  )}]::text[]`;
   if (state.selectedTags.length)
     conditions.push(
-      sql`${profiles.tags} @> array[${sql.join(
-        state.selectedTags.map((tag) => sql`${tag}`),
-        sql`,`,
-      )}]::text[]`,
+      sql`${profiles.tags} @> ${selectedTags} and ${activeTagsSql()} @> ${selectedTags}`,
     );
 
   const query = state.searchQuery.trim().toLowerCase();

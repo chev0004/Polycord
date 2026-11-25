@@ -26,6 +26,7 @@ const owners = await db
       discordUserId: `${prefix}-${index}`,
       discordUsername: `${prefix}-${index}`,
       displayName: `Tags ${prefix} ${index}`,
+      premiumGrantedUntil: new Date(Date.now() + 86400000),
     })),
   )
   .returning();

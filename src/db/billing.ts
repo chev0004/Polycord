@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { eq, inArray, or, type SQL, sql } from 'drizzle-orm';
 import { isPremiumDiscordId } from '@/lib/entitlements';
 import { type GrantUnit, grantExpiry } from '@/lib/premiumGrant';
 import { db } from './client';
@@ -10,6 +10,17 @@ export const hasActivePremiumGrant = ({
   premiumGrantedUntil,
 }: Pick<User, 'premiumGrantedUntil'>) =>
   premiumGrantedUntil !== null && premiumGrantedUntil.getTime() > Date.now();
+
+export const premiumAccountSql = () => {
+  const ids = (process.env.POLYCORD_PREMIUM_USER_IDS ?? '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  return or(
+    ids.length ? inArray(users.discordUserId, ids) : undefined,
+    sql`${users.premiumGrantedUntil} > now()`,
+  ) as SQL;
+};
 
 export const isPremiumAccount = (
   user: Pick<User, 'discordUserId' | 'premiumGrantedUntil'>,
