@@ -162,6 +162,7 @@ export const ActivityBanner: Story = {
     await expect(banner).toHaveTextContent('now');
     await expect(banner).toHaveTextContent('xhev copied your username');
     await expect(banner).toHaveTextContent('View profile');
+    await expect(within(banner).queryByText('?')).not.toBeInTheDocument();
 
     await userEvent.click(within(banner).getByRole('button'));
 

@@ -41,7 +41,9 @@ export const MobileToast = ({
           onClick={open}
           className="flex w-full items-start gap-3 text-left"
         >
-          <Avatar avatarUrl={toast.iconUrl} size="sm" />
+          {toast.iconUrl ? (
+            <Avatar avatarUrl={toast.iconUrl} size="sm" />
+          ) : null}
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1.5 text-muted text-xs">
               <span className="font-semibold text-foreground">
