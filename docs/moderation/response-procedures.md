@@ -59,7 +59,7 @@ When a case passes to another moderator or to the owner, the moderation notes an
 
 Synthetic cases only. Use dedicated member, moderator and banned fixtures. Confirm the invite and assigned urgent channel with the owner before exercising them.
 
-1. Open the footer invite while signed out and submit a synthetic support case. From Discord, submit a separate synthetic privacy request and confirm that it reaches the owner through the private intake.
+1. Open the footer invite while signed out and submit a synthetic support case. From Discord, submit separate synthetic privacy and safety cases. Confirm that the privacy request reaches the owner and that moderators can receive a safety concern from someone without a Polycord account through the private intake.
 2. Open the ban screen with a banned fixture. Follow the invite and submit a synthetic appeal with its reference. Confirm receipt and the owner’s decision in the moderation record.
 3. File a clearly labeled urgent exercise through the report form. Have the moderator triage the report and hand it off through the assigned urgent channel. Record the responder’s acknowledgment and next action. Keep the exercise within Polycord.
 4. Record the candidate SHA, UTC time, test case, queue or responder role, acknowledgment time, outcome, and a redacted evidence link for each exercise.
@@ -69,6 +69,7 @@ Synthetic cases only. Use dedicated member, moderator and banned fixtures. Confi
 | Harassment report from a signed-in member | Report action, Reports queue, warn, close | Report reaches the queue and moves to resolved after the action; reporter hidden from the reported member | Automated: `e2e/admin-report-pages.pw.ts`, `e2e/safety.pw.ts`, `tests/integration/moderation.mjs` | Verified 2026-11-19: `e2e/admin-report-pages.pw.ts`, `e2e/safety.pw.ts`, `e2e/account.pw.ts` and `e2e/ip-bans.pw.ts` (19 tests) passed on a disposable database. `tests/integration/moderation.mjs` runs in CI |
 | Urgent child-safety report | Report as `other` with details, hide, suspend, escalate | Profile hidden and account suspended at once; responder identified | Moderator walkthrough | Pending: owner names the responder and urgent channel |
 | Signed-out support question | Footer Discord link | Reaches the moderator channel | Synthetic Discord message | Pending: invite URL and moderators |
+| Safety concern from someone without a Polycord account | Footer Discord link and private intake | Moderator acknowledges the concern and records the next action | Redacted intake record | Pending: live Discord rehearsal |
 | Privacy deletion request | Discord, Settings deletion | Self-service deletion succeeds; leftover request goes to the owner | Automated deletion: `e2e/account.pw.ts`; Discord step pending | Partly verified |
 | Ban appeal | Ban screen Discord button, Admin search, owner unban | Moderator finds the account; owner records the decision | Ban screen: `e2e/ip-bans.pw.ts`; owner ban and unban: `e2e/journeys.pw.ts`; Discord step pending | Partly verified |
 
