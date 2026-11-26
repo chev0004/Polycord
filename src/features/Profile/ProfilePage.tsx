@@ -67,6 +67,7 @@ import { useFormDraft } from '@/hooks/useFormDraft';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { entitlementLimit } from '@/lib/entitlements';
 import { FieldValidationError, SessionExpiredError } from '@/lib/formErrors';
+import { searchOptions } from '@/lib/searchOptions';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { BoostDialog, type BoostDialogError } from './BoostDialog';
 import { BoostProfileError, type BoostResult } from './boostProfileRequest';
@@ -1053,6 +1054,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     value={field.value || ''}
                     onValueChange={field.onChange}
                     options={localizedLanguageOptions}
+                    filter={searchOptions}
                     placeholder={t('languageSelectPlaceholder')}
                     error={!!errors.primaryLanguage}
                   />
