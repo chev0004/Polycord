@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import {
@@ -14,6 +14,8 @@ import { fontVariables } from '../fonts';
 import '../globals.css';
 
 export const generateStaticParams = () => locales.map((lang) => ({ lang }));
+
+export const viewport: Viewport = { themeColor: '#c1d5e9' };
 
 export async function generateMetadata({
   params,
