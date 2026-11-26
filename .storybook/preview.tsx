@@ -35,7 +35,7 @@ const preview: Preview = {
 
       return (
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <div className={fontVariables}>
+          <div className={fontVariables} lang={locale}>
             <Story />
           </div>
         </NextIntlClientProvider>
