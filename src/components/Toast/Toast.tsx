@@ -63,7 +63,7 @@ export const Toast = ({
     <li
       {...props}
       aria-live="polite"
-      className="ToastRoot relative overflow-hidden rounded-md bg-background-darker shadow-lg data-[state=closed]:animate-hide data-[state=open]:animate-slideIn"
+      className="ToastRoot relative overflow-hidden rounded-md bg-background-darker shadow-[0_0_0_1px_var(--color-line-strong),0_14px_30px_-6px_rgba(0,0,0,0.7)] data-[state=closed]:animate-hide data-[state=open]:animate-slideIn"
       data-state={state}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
