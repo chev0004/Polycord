@@ -41,8 +41,8 @@ Reporter identities appear only on admin routes behind staff checks, and the rep
 ## Ban appeals
 
 1. Ask the person for their Discord username or ID and the reference shown on their ban screen (`PC-XXXX-XXXX`).
-2. Find the account in Admin and read the ban note in its moderation history.
-3. The ban reference is a hash and cannot be searched in Admin, so it cannot be checked against the account. Confirm the identity through the Discord account sending the appeal.
+2. Paste the reference into Ban reference in Admin, in the moderation header on desktop or the Users tab on mobile. It shows whether the ban is an IP block or an account ban, its date, its note and the account involved, never the IP address. Account ban references shown before 2026-11-26 are not found, and the ban screen shows a current one when reopened.
+3. Check that the account matches the Discord account sending the appeal, and read the ban note in its moderation history.
 4. Hand the appeal to the owner, who decides, unbans or keeps the ban, and notes the decision. A moderator replies with the outcome.
 
 ## Privacy requests
