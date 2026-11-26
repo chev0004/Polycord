@@ -195,13 +195,55 @@ export const ActivityBannerSwipeUp: Story = {
   },
 };
 
+const showsDetailInOneColumn: Story['play'] = async ({
+  args,
+  canvasElement,
+}) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(canvas.getByText('Show toast'));
+
+  const toast = await canvas.findByRole('status');
+  await expect(toast).toHaveTextContent(args.toast.title);
+  await expect(toast).toHaveTextContent(args.toast.mobileDescription ?? '');
+  await expect(toast.children).toHaveLength(2);
+  const text = (toast.lastElementChild as HTMLElement).getBoundingClientRect();
+  await expect(text.width).toBeGreaterThan(
+    toast.getBoundingClientRect().width - 70,
+  );
+};
+
 export const CooldownDetail: Story = {
   args: {
     toast: {
       title: 'Bump cooling down',
-      description: 'Try again in 2 hours.',
-      mobileDescription: 'Try again in 2 hours.',
+      description: 'Try again in 2 hours 59 minutes.',
+      mobileDescription: 'Try again in 2 hours 59 minutes.',
       variant: 'error',
+    },
+  },
+  play: showsDetailInOneColumn,
+};
+
+export const CooldownDetailJapanese: Story = {
+  globals: { locale: 'ja' },
+  args: {
+    toast: {
+      title: 'まだバンプできません',
+      description: 'あと2時間59分で再試行できます。',
+      mobileDescription: 'あと2時間59分で再試行できます。',
+      variant: 'error',
+    },
+  },
+  play: showsDetailInOneColumn,
+};
+
+export const PrerequisiteStatus: Story = {
+  args: {
+    toast: {
+      title: 'Log in to save profiles',
+      description: '',
+      variant: 'info',
     },
   },
   play: async ({ canvasElement }) => {
@@ -210,9 +252,34 @@ export const CooldownDetail: Story = {
     await userEvent.click(canvas.getByText('Show toast'));
 
     const toast = await canvas.findByRole('status');
+    await expect(toast.querySelector('svg')).toHaveClass('text-muted');
+  },
+};
 
-    await expect(toast).toHaveTextContent('Bump cooling down');
-    await expect(toast).toHaveTextContent('Try again in 2 hours.');
+const bump = fn();
+
+export const FirstBumpPrompt: Story = {
+  globals: { locale: 'ja' },
+  args: {
+    toast: {
+      title: 'プロフィールをバンプしてディスカバリーに表示しましょう',
+      description: '',
+      mobileDescription: '新しいプロフィールは最初のバンプ後に表示されます。',
+      activity: { actionLabel: '今すぐバンプ', onOpen: bump },
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByText('Show toast'));
+
+    const banner = await canvas.findByRole('alert');
+    await expect(banner).toHaveTextContent(
+      '新しいプロフィールは最初のバンプ後に表示されます。',
+    );
+    await expect(banner).toHaveTextContent('今すぐバンプ');
+    await userEvent.click(within(banner).getByRole('button'));
+    await expect(bump).toHaveBeenCalledTimes(1);
   },
 };
 
