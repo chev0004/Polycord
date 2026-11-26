@@ -68,6 +68,7 @@ export const useProfileActions = (
         description: limited
           ? t('reportCooldownDescription')
           : t('reportErrorDescription'),
+        mobileDescription: limited ? t('reportCooldownDescription') : undefined,
         duration: 4000,
       });
       throw error;

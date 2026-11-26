@@ -1028,6 +1028,7 @@ export const DiscoveryPage = ({
         description: limited
           ? t('reportCooldownDescription')
           : t('reportErrorDescription'),
+        mobileDescription: limited ? t('reportCooldownDescription') : undefined,
         duration: BUMP_TOAST_DURATION,
       });
       throw error;
