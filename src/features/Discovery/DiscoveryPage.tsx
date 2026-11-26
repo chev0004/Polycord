@@ -1250,6 +1250,7 @@ export const DiscoveryPage = ({
     const id = addToast({
       title: t('bumpHintTitle'),
       description: t('bumpHintDescription'),
+      mobileDescription: t('bumpHintDescription'),
       duration: BUMP_HINT_DURATION,
       action: {
         label: t('bumpHintAction'),

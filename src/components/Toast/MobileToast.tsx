@@ -58,7 +58,14 @@ export const MobileToast = ({
               <span aria-hidden="true">·</span>
               <span>{t('Toast.now')}</span>
             </span>
-            <span className="block text-foreground text-sm">{toast.title}</span>
+            <span className="block text-balance text-foreground text-sm [word-break:auto-phrase]">
+              {toast.title}
+            </span>
+            {toast.mobileDescription ? (
+              <span className="mt-0.5 block text-balance text-muted text-xs [word-break:auto-phrase]">
+                {toast.mobileDescription}
+              </span>
+            ) : null}
             {toast.activity.actionLabel ? (
               <span className="mt-0.5 block text-primary-light text-xs">
                 {toast.activity.actionLabel}
