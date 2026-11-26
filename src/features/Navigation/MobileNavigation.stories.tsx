@@ -246,7 +246,7 @@ export const SupporterBanner: Story = {
 
     const banner = await screen.findByRole('alert');
     await expect(banner).toHaveTextContent('xhev copied your username');
-    await expect(banner).toHaveTextContent('View profile');
+    await expect(banner).toHaveTextContent('Open Inbox');
 
     await userEvent.click(banner.querySelector('button') as HTMLElement);
 

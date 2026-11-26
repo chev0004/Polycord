@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, fn, screen, userEvent, waitFor } from '@storybook/test';
+import {
+  expect,
+  fn,
+  screen,
+  userEvent,
+  waitFor,
+  within,
+} from '@storybook/test';
 import { setUnsavedChanges } from '@/lib/unsavedChanges';
 import { DeploymentWatcher } from './DeploymentWatcher';
 
@@ -85,5 +92,23 @@ export const Japanese: Story = {
     await expect(
       screen.getByRole('button', { name: '再読み込み' }),
     ).toBeInTheDocument();
+  },
+};
+
+export const MobileUnsavedChangesAskFirst: Story = {
+  globals: { locale: 'ja' },
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  beforeEach: UnsavedChangesAskFirst.beforeEach,
+  play: async ({ args }) => {
+    const banner = await screen.findByRole('alert');
+    await expect(banner).toHaveTextContent(
+      '準備ができたら再読み込みして、最新バージョンのPolycordを使ってください。',
+    );
+    await expect(banner).toHaveTextContent('再読み込み');
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await expect(banner).toBeInTheDocument();
+    await expect(args.onReload).not.toHaveBeenCalled();
+    await userEvent.click(within(banner).getByRole('button'));
+    await waitFor(() => expect(args.onReload).toHaveBeenCalledTimes(1));
   },
 };

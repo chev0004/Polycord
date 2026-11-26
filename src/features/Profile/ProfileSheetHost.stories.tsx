@@ -128,3 +128,42 @@ export const ReportAndBlockClosesProfile: Story = {
     await waitFor(() => expect(profileSheetStore.get()).toBeNull());
   },
 };
+
+export const ReportRateLimited: Story = {
+  beforeEach: () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        String(args[0]) === '/api/report'
+          ? Promise.resolve(Response.json({}, { status: 429 }))
+          : original(...args),
+      { preconnect: original.preconnect },
+    );
+    profileSheetStore.open({
+      ...profile,
+      isLoggedIn: true,
+      waitForDiscovery: false,
+    });
+    return () => {
+      globalThis.fetch = original;
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+    await userEvent.click(
+      await body.findByRole('button', { name: 'More actions' }),
+    );
+    await userEvent.click(
+      await body.findByRole('button', { name: 'Report profile' }),
+    );
+    await userEvent.click(
+      await body.findByRole('radio', { name: 'Spam or scam' }),
+    );
+    await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+
+    const toast = await body.findByRole('status', { hidden: true });
+    await expect(toast).toHaveTextContent('Too many reports');
+    await expect(toast).toHaveTextContent('Please try again later.');
+    await expect(toast.querySelector('svg')).toHaveClass('text-danger');
+  },
+};
