@@ -15,13 +15,13 @@ Everything that must change between the current staging deployment and a public 
 
 | Item | Staging (`polycord.chev.dev`) | Production |
 | --- | --- | --- |
-| `POLYCORD_PUBLIC_URL` | Unset | `https://polycord.net` once ownership is confirmed |
+| `POLYCORD_PUBLIC_URL` | Unset | `https://polycord.net` |
 | `/robots.txt` | `Disallow: /` | Allows public routes, disallows `/api/`, `/banned`, profile routes and signed-in routes including the inbox, links the sitemap |
 | `/sitemap.xml` | Empty | Discovery and legal pages in both locales, with hreflang alternates |
 | `X-Robots-Tag` on pages, from `next.config.ts` | `noindex, nofollow` on every host | Sent on every host except the `POLYCORD_PUBLIC_URL` host |
 | `X-Robots-Tag` on static files, from `netlify.toml` | `noindex, nofollow` | `noindex, nofollow` |
 
-- [ ] Set `POLYCORD_PUBLIC_URL` in the production build environment. `robots.txt` and `sitemap.xml` are generated at build time, so rebuild after changing it.
+- [x] Set `POLYCORD_PUBLIC_URL` in the production build environment. `robots.txt` and `sitemap.xml` are generated at build time, so rebuild after changing it. Every production deploy checks it matches the production origin.
 - [x] Scope the page `X-Robots-Tag` header by environment in `next.config.ts`, based on `POLYCORD_PUBLIC_URL`. `netlify.toml` keeps it on static files, which never pass through Next.js.
 - [ ] After the first staging deploy with this change, confirm `X-Robots-Tag` on pages and static files on `polycord.chev.dev`, `polycord-staging.netlify.app` and a deploy permalink.
 - [x] Confirm `polycord.net` and `www.polycord.net` serve HTTPS and `www` redirects to the apex domain.
