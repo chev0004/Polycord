@@ -7,7 +7,7 @@ Everything that must change between the current staging deployment and a public 
 - [x] Production has its own database, separate from the shared staging and local Supabase database. See [readiness](readiness.md).
 - [x] Production has its own `AUTH_SECRET`, VAPID keys and `VAPID_SUBJECT`.
 - [x] Discord allows the production callback `https://<domain>/api/auth/discord/callback`, and `DISCORD_REDIRECT_URI` is set to it.
-- [ ] `POLYCORD_ADMIN_USER_IDS` lists only current administrators.
+- [x] `POLYCORD_ADMIN_USER_IDS` lists only current administrators. Since 2026-11-26 it holds the owner's main account alone.
 - [x] Analytics stays disabled until the privacy policy covers it. LEGAL-002 decides.
 - [x] `POLYCORD_SEED_ENABLED` and `POLYCORD_ENVIRONMENT` are unset, and the production database has no `seed_database` row. See [dummy profiles](dummy-profiles.md).
 
