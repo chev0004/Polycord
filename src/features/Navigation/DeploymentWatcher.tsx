@@ -46,7 +46,9 @@ export const DeploymentWatcher = ({
       addToast({
         title: t('title'),
         description: t('description'),
+        mobileDescription: t('description'),
         action: { label: t('reload'), onClick: run },
+        activity: { actionLabel: t('reload'), onOpen: run },
         duration: TOAST_DURATION_MS,
       });
     },

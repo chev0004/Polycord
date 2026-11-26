@@ -50,7 +50,7 @@ export const useMobileToast = ({
   const [closing, setClosing] = useState(false);
   const [offset, setOffset] = useState(0);
   const remaining = useRef(
-    toast.activity ? ACTIVITY_DURATION : STATUS_DURATION,
+    toast.activity ? (toast.duration ?? ACTIVITY_DURATION) : STATUS_DURATION,
   );
   const startedAt = useRef(0);
   const timer = useRef<number | undefined>(undefined);
