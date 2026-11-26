@@ -287,3 +287,41 @@ Commit messages must follow Conventional Commits, for example:
 ```text
 docs: update project readme
 ```
+
+## Attach Media To A PR
+
+Use GitHub CLI 2.99.0 or later with push access to the repository. After opening
+the PR, run this from the folder containing the screenshots and clips to save
+the current description with its original line endings and spacing:
+
+```bash
+pr='<PR number>'
+repo=chev0004/Polycord
+gh pr view "$pr" --repo "$repo" --json body |
+  bun -e 'process.stdout.write(JSON.parse(await Bun.stdin.text()).body)' > body.md
+```
+
+Insert the media references under the relevant `After (Screenshot)` heading in
+`body.md`. Use descriptive alt text for images and a separate paragraph for each
+video:
+
+```markdown
+![Discovery with the country filter open](./discovery.png)
+
+![](./discovery.mp4)
+```
+
+```bash
+gh pr edit "$pr" --repo "$repo" --body-file body.md \
+  --attach ./discovery.png --attach ./discovery.mp4
+```
+
+GitHub CLI replaces those local references in place. Check the PR description
+for `github.com/user-attachments/assets` URLs in the intended section and play
+the video inline. Keep the shared `pr-assets` release available for existing PRs.
+
+If a retake is needed, fetch the latest body and replace the old media line with
+a local reference to the new file. If some uploads fail, GitHub still saves the
+successful attachments. Fetch that updated body and retry only the failed files.
+See [GitHub's attachment guide](https://docs.github.com/en/github-cli/github-cli/attaching-files-with-github-cli)
+for supported files and usage.
