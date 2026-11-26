@@ -59,6 +59,7 @@ export const useProfileBump = ({
     if (!profileId) {
       addToast({
         title: t('bumpNeedsProfileTitle'),
+        variant: 'info',
         description: t('bumpNeedsProfileDescription'),
         duration: BUMP_TOAST_DURATION,
       });

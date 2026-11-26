@@ -960,6 +960,7 @@ export const DiscoveryPage = ({
     if (!isLoggedIn) {
       addToast({
         title: t('reportLoginTitle'),
+        variant: 'info',
         description: t('reportLoginDescription'),
         duration: BUMP_TOAST_DURATION,
       });
@@ -1103,6 +1104,7 @@ export const DiscoveryPage = ({
     if (!isLoggedIn) {
       addToast({
         title: t('blockLoginTitle'),
+        variant: 'info',
         description: t('blockLoginDescription'),
         duration: BUMP_TOAST_DURATION,
       });

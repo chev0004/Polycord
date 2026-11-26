@@ -1,9 +1,15 @@
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { MdCheckCircle, MdErrorOutline } from 'react-icons/md';
+import { MdCheckCircle, MdErrorOutline, MdInfoOutline } from 'react-icons/md';
 import { useMobileToast } from '@/hooks/useMobileToast';
 import type { ToastData } from '@/hooks/useToast';
 import { Avatar } from '../Avatar';
+
+const STATUS_ICONS = {
+  error: [MdErrorOutline, 'text-danger'],
+  info: [MdInfoOutline, 'text-muted'],
+  success: [MdCheckCircle, 'text-primary-light'],
+} as const;
 
 export const MobileToastViewport = ({ children }: { children: ReactNode }) => (
   <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+8px)]">
@@ -68,17 +74,14 @@ export const MobileToast = ({
     );
   }
 
-  const Icon = toast.variant === 'error' ? MdErrorOutline : MdCheckCircle;
+  const [Icon, iconColor] = STATUS_ICONS[toast.variant ?? 'success'];
 
   return (
     <output
       {...shared}
       className="MobileToast pointer-events-auto flex min-h-11 max-w-full touch-none select-none items-center gap-2 rounded-[22px] bg-background-darker py-2.5 pr-[18px] pl-3.5 font-figtree font-semibold text-foreground text-sm leading-[1.3] shadow-[0_0_0_1px_var(--color-line-strong),0_14px_30px_-6px_rgba(0,0,0,0.7)] data-[state=closed]:opacity-0"
     >
-      <Icon
-        size={20}
-        className={`flex-shrink-0 ${toast.variant === 'error' ? 'text-danger' : 'text-primary-light'}`}
-      />
+      <Icon size={20} className={`flex-shrink-0 ${iconColor}`} />
       <span className="text-balance [word-break:auto-phrase]">
         {toast.title}
         {toast.mobileDescription ? (

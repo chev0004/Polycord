@@ -33,6 +33,7 @@ export const useIncomingNotificationToasts = ({
           title: mobile ? message : t('newNotification'),
           description: mobile ? '' : message,
           iconUrl: premium ? notification.actorAvatarUrl : undefined,
+          variant: notification.kind === 'warning' ? 'info' : undefined,
           activity: onOpen && {
             actionLabel:
               notification.kind === 'warning'

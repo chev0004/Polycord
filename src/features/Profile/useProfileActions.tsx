@@ -36,6 +36,7 @@ export const useProfileActions = (
     if (!isLoggedIn) {
       addToast({
         title: t('reportLoginTitle'),
+        variant: 'info',
         description: t('reportLoginDescription'),
         duration: 4000,
       });
@@ -76,6 +77,7 @@ export const useProfileActions = (
     if (!isLoggedIn) {
       addToast({
         title: t('blockLoginTitle'),
+        variant: 'info',
         description: t('blockLoginDescription'),
         duration: 4000,
       });

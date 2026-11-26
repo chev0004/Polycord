@@ -125,6 +125,7 @@ export const ProfileGrid = ({
       if (!isLoggedIn) {
         addToast({
           title: t('saveLoginTitle'),
+          variant: 'info',
           description: t('saveLoginDescription'),
           duration: 4000,
         });
