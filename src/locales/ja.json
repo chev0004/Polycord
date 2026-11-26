@@ -1301,7 +1301,8 @@
   },
   "Metadata": {
     "titleTemplate": "Polycord | %s",
-    "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。"
+    "description": "サーバーではなくプロフィールから、Discordで言語学習者とつながろう。話せる言語と練習したい言語でパートナーを探せます。",
+    "previewAlt": "言語交換のプロフィールカードの上から顔を出すPolycordのロゴ"
   },
   "PageTitle": {
     "profile": "プロフィール",
