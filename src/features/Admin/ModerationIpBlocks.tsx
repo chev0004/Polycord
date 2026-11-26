@@ -8,14 +8,12 @@ import { AccountPicker } from './AccountPicker';
 import {
   ActionError,
   modButton,
+  modField,
   Spinner,
   useModFormat,
 } from './ModerationParts';
 import type { IpBlock, ObservedIp } from './types';
 import { isReauthError, type ModerationStore } from './useModeration';
-
-const field =
-  'h-10 w-full rounded-full border border-white/[0.07] bg-background-darker px-3.5 text-foreground text-sm outline-none placeholder:text-subtle focus:border-white/[0.14]';
 
 export const IpBlocksPanel = ({
   store,
@@ -179,7 +177,7 @@ export const IpBlocksPanel = ({
           onChange={(event) => setManual(event.target.value)}
           placeholder={t('ipManualPlaceholder')}
           aria-label={t('ipManualPlaceholder')}
-          className={`${field} font-mono`}
+          className={`${modField} font-mono`}
         />
         <input
           value={reason}
@@ -187,7 +185,7 @@ export const IpBlocksPanel = ({
           onChange={(event) => setReason(event.target.value)}
           placeholder={t('ipReasonPlaceholder')}
           aria-label={t('ipReasonPlaceholder')}
-          className={field}
+          className={modField}
         />
         <button
           type="button"
