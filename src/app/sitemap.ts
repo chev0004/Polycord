@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { localeUrls } from '@/lib/localeAlternates';
 import { locales } from '@/utils/locales';
 
 const publicPaths = [
@@ -16,17 +17,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     return [];
   }
 
-  const localeUrl = (locale: string, path: string) =>
-    new URL(`/${locale}${path}`, publicUrl).href;
-
-  return publicPaths.flatMap((path) =>
-    locales.map((locale) => ({
-      url: localeUrl(locale, path),
-      alternates: {
-        languages: Object.fromEntries(
-          locales.map((alternate) => [alternate, localeUrl(alternate, path)]),
-        ),
-      },
-    })),
-  );
+  return publicPaths.flatMap((path) => {
+    const languages = localeUrls(publicUrl, path);
+    return locales.map((locale) => ({
+      url: languages[locale],
+      alternates: { languages },
+    }));
+  });
 }
