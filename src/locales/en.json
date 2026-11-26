@@ -1301,9 +1301,11 @@
   },
   "Metadata": {
     "titleTemplate": "Polycord | %s",
-    "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice."
+    "description": "Meet language learners on Discord through profiles instead of servers. Find partners by the languages you speak and want to practice.",
+    "previewAlt": "The Polycord logo peeking over language exchange profile cards"
   },
   "PageTitle": {
+    "discovery": "Polycord | Find language exchange partners on Discord",
     "profile": "Profile",
     "saved": "Saved",
     "settings": "Settings",

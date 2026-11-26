@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import {
@@ -15,6 +15,8 @@ import '../globals.css';
 
 export const generateStaticParams = () => locales.map((lang) => ({ lang }));
 
+export const viewport: Viewport = { themeColor: '#c1d5e9' };
+
 export async function generateMetadata({
   params,
 }: {
@@ -22,10 +24,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const t = await getTranslations({ locale: lang, namespace: 'Metadata' });
+  const publicUrl = process.env.POLYCORD_PUBLIC_URL;
 
   return {
+    metadataBase: publicUrl ? new URL(publicUrl) : undefined,
     title: { default: 'Polycord', template: t('titleTemplate') },
     description: t('description'),
+    openGraph: {
+      images: {
+        url: `/link-preview-${lang}.png`,
+        width: 1200,
+        height: 630,
+        alt: t('previewAlt'),
+      },
+    },
+    twitter: { card: 'summary_large_image' },
     icons: {
       icon: [
         { url: '/favicon.ico', sizes: 'any' },
