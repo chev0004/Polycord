@@ -7,7 +7,8 @@ test('pages are titled Polycord | page in both locales', async ({
   context,
 }) => {
   for (const [path, title] of [
-    ['/en', 'Polycord'],
+    ['/en', 'Polycord | Find language exchange partners on Discord'],
+    ['/ja', 'Polycord | Discordで言語交換のパートナーを見つけよう'],
     ['/en/legal', 'Polycord | Legal'],
     ['/en/legal/terms', 'Polycord | Terms of Service'],
     ['/ja/legal/privacy', 'Polycord | プライバシーポリシー'],
