@@ -2,7 +2,7 @@ import { getLegalDocument, LegalDocument } from '@/features/Legal';
 import { tracePage } from '@/lib/pageLoadTrace';
 import { pageTitle } from '@/lib/pageTitle';
 
-export const generateMetadata = pageTitle('terms');
+export const generateMetadata = pageTitle('terms', '/legal/terms');
 
 async function TermsRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
