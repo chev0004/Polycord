@@ -79,7 +79,8 @@
     "noOptions": "No options"
   },
   "Toast": {
-    "now": "now"
+    "now": "now",
+    "close": "Dismiss notification"
   },
   "Inbox": {
     "title": "Inbox",

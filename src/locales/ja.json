@@ -79,7 +79,8 @@
     "noOptions": "選択肢がありません"
   },
   "Toast": {
-    "now": "今"
+    "now": "今",
+    "close": "通知を閉じる"
   },
   "Inbox": {
     "title": "受信ボックス",

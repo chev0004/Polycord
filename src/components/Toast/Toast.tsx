@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import type {
   ComponentProps,
   CSSProperties,
@@ -48,6 +49,7 @@ export const Toast = ({
   onMouseLeave,
   ...props
 }: ToastProps) => {
+  const t = useTranslations('Toast');
   const [isHovered, setIsHovered] = useState(false);
   const state = open ? 'open' : 'closed';
   const handleMouseEnter: MouseEventHandler<HTMLLIElement> = (event) => {
@@ -90,10 +92,11 @@ export const Toast = ({
         </div>
         <button
           type="button"
-          className="flex text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground focus-visible:text-foreground"
+          aria-label={t('close')}
+          className="-mt-1.5 grid h-8 w-8 flex-shrink-0 place-items-center rounded-full text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground focus-visible:bg-background-dark focus-visible:text-foreground"
           onClick={() => onOpenChange?.(false)}
         >
-          <MdClose />
+          <MdClose size={18} />
         </button>
       </div>
 
