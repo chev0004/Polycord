@@ -288,11 +288,13 @@ export const FilterSheet = ({
   const subFilter = filters.find((filter) => filter.id === subpage);
   const activeSubFilter = drilled ? subFilter : undefined;
   const query = search.trim().toLowerCase();
-  const subOptions = subFilter
-    ? subFilter.options.filter((option) =>
-        option.label.toLowerCase().includes(query),
-      )
-    : [];
+  const subOptions = !subFilter
+    ? []
+    : subFilter.filter
+      ? subFilter.filter(subFilter.options, search)
+      : subFilter.options.filter((option) =>
+          option.label.toLowerCase().includes(query),
+        );
 
   const openSheet = () => {
     setDraft(value);
