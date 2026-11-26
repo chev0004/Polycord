@@ -74,6 +74,7 @@ import { SettingsToggleRow } from '@/features/Settings/MobileSettings';
 import { useTimeFormat } from '@/features/Settings/TimeFormat';
 import { entitlementLimit } from '@/lib/entitlements';
 import { BIO_MAX } from '@/lib/profileFields';
+import { searchOptions } from '@/lib/searchOptions';
 import { COLOR_LABEL_KEYS } from './CardColorPicker';
 import { MobileDiscordCardPicker } from './DiscordCard/MobileDiscordCardPicker';
 import { DISCORD_CARD_LAYOUTS } from './DiscordCard/registry';
@@ -1126,6 +1127,7 @@ export const MobileCardEditor = ({
                 }
                 label={t('chooseLanguage')}
                 options={pickOptions}
+                filter={searchOptions}
                 value={
                   languagePick.kind === 'primary'
                     ? values.primaryLanguage

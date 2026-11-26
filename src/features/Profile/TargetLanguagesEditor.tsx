@@ -19,6 +19,7 @@ import {
   Select,
 } from '@/components/Form';
 import { languageOptions, Proficiency, proficiencyOptions } from '@/constants';
+import { searchOptions } from '@/lib/searchOptions';
 import {
   FREE_LANGUAGE_CAP,
   PREMIUM_LANGUAGE_CAP,
@@ -139,6 +140,7 @@ export const TargetLanguagesEditor = ({
                           value={field.value || ''}
                           onValueChange={field.onChange}
                           options={options}
+                          filter={searchOptions}
                           placeholder={t('languageSelectPlaceholder')}
                           error={Boolean(errorMessage) && !currentLanguage}
                           errorId="target-languages-error"

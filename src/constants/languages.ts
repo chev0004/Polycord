@@ -1298,7 +1298,7 @@ export const languages: Language[] = [
   },
 ];
 
-type LanguageOption = { label: string; value: string };
+type LanguageOption = { label: string; value: string; names: string[] };
 
 const getLocalizedName = (item: Language, locale: string): string => {
   const nameKey = `name_${locale}` as `name_${string}`;
@@ -1310,6 +1310,9 @@ export const languageOptions = (locale: string): LanguageOption[] => {
     .map((lang) => ({
       label: getLocalizedName(lang, locale),
       value: lang.code,
+      names: Object.entries(lang).flatMap(([key, name]) =>
+        key.startsWith('name_') ? [name] : [],
+      ),
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 };
@@ -1364,7 +1367,9 @@ const proficiencyLevels: ProficiencyLevel[] = [
   },
 ];
 
-export const proficiencyOptions = (locale: string): LanguageOption[] => {
+export const proficiencyOptions = (
+  locale: string,
+): { label: string; value: string }[] => {
   const nameKey = `name_${locale}` as 'name_en' | 'name_ja';
   const fallbackKey = 'name_en';
 
