@@ -30,9 +30,9 @@ Everything that must change between the current staging deployment and a public 
 ## Page metadata
 
 - [x] The root description is localized for English and Japanese.
-- [x] Route-specific titles for discovery, legal, saved, settings, profile and onboarding. Pages read `Polycord | <page>` and profiles `Polycord | <name>`; Discovery keeps `Polycord`.
+- [x] Route-specific titles for discovery, legal, saved, settings, profile and onboarding. Pages read `Polycord | <page>` and profiles `Polycord | <name>`; Discovery reads `Polycord | Find language exchange partners on Discord`.
 - [x] Canonical and hreflang `<link>` tags on public routes. Discovery and the legal pages link their canonical URL and both language versions, matching the sitemap, when `POLYCORD_PUBLIC_URL` is set.
-- [ ] Open Graph and social preview images.
+- [x] Open Graph and social preview images. Every page shares a 1200×630 large image card in its own language (`public/link-preview-en.png`, `public/link-preview-ja.png`) under its own title and description, and the `#c1d5e9` theme colour tints the embed bar. Image URLs point at the production origin when `POLYCORD_PUBLIC_URL` is set.
 - [ ] Public profile metadata and whether profiles are indexable. Owned by PROFILE-011. `robots.txt` disallows `/<locale>/u` until then.
 
 ## Staging identification
