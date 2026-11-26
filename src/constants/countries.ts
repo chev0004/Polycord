@@ -381,5 +381,8 @@ export const countryOptions = (locale: string) => {
   return countries.map((country) => ({
     label: country[nameKey] ?? country[fallbackKey],
     value: country.code,
+    names: Object.entries(country).flatMap(([key, name]) =>
+      key.startsWith('name_') ? [name] : [],
+    ),
   }));
 };
