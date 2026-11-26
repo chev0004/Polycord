@@ -318,7 +318,7 @@ gh pr edit "$pr" --repo "$repo" --body-file body.md \
 
 GitHub CLI replaces those local references in place. Check the PR description
 for `github.com/user-attachments/assets` URLs in the intended section and play
-the video inline. Keep the shared `pr-assets` release available for existing PRs.
+the video inline.
 
 If a retake is needed, fetch the latest body and replace the old media line with
 a local reference to the new file. If some uploads fail, GitHub still saves the
