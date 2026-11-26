@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { countryOptions } from '@/constants/countries';
 import { languageOptions } from '@/constants/languages';
 import { searchOptions } from './searchOptions';
 
@@ -36,5 +37,19 @@ describe('searchOptions for languages', () => {
 
   it('returns every option for an empty query', () => {
     expect(labels('en', ' ')).toHaveLength(languageOptions('en').length);
+  });
+});
+
+describe('searchOptions for countries', () => {
+  const countries = (locale: string, query: string) =>
+    searchOptions(countryOptions(locale), query).map(({ label }) => label);
+
+  it('finds a country by any catalog name once', () => {
+    for (const query of ['Japan', 'jap', 'JAPAN']) {
+      const found = countries('ja', query);
+      expect(found.filter((label) => label === '日本')).toHaveLength(1);
+      expect(found[0]).toBe('日本');
+    }
+    expect(countries('en', '日本')[0]).toBe('Japan');
   });
 });
