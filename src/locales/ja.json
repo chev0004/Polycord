@@ -117,6 +117,7 @@
     "noteFromModeration": "運営からのお知らせ",
     "readWarning": "警告を読む",
     "seeWhoWithPremium": "サポーターで誰だったか見る",
+    "openInbox": "受信ボックスを開く",
     "justNow": "たった今",
     "minutesAgo": "{count, plural, other {#分前}}",
     "hoursAgo": "{count, plural, other {#時間前}}",

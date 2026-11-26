@@ -117,6 +117,7 @@
     "noteFromModeration": "Note from moderation",
     "readWarning": "Read warning",
     "seeWhoWithPremium": "See who it was with Supporter",
+    "openInbox": "Open Inbox",
     "justNow": "Just now",
     "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",
     "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}",

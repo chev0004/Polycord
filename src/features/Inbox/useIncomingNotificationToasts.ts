@@ -39,9 +39,7 @@ export const useIncomingNotificationToasts = ({
               notification.kind === 'warning'
                 ? undefined
                 : premium
-                  ? notification.actorProfileId
-                    ? t('viewProfile')
-                    : undefined
+                  ? t('openInbox')
                   : t('seeWhoWithPremium'),
             onOpen,
           },
