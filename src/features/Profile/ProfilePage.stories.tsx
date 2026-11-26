@@ -755,6 +755,84 @@ export const MobileLanguageSearchByAnyName: Story = {
   },
 };
 
+export const CountrySearchAcrossLocales: Story = {
+  globals: { locale: 'ja' },
+  args: { initialValues: { ...sampleProfile, country: 'US' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const country = canvas.getByLabelText('出身国') as HTMLInputElement;
+
+    setFieldValue(country, 'Japan');
+    await expect(
+      await screen.findAllByRole('option', { name: '日本' }),
+    ).toHaveLength(1);
+    setFieldValue(country, 'jap');
+    fireEvent.mouseDown(await screen.findByRole('option', { name: '日本' }));
+    await waitFor(() => expect(country).toHaveValue('日本'));
+
+    fireEvent.click(canvas.getByRole('button', { name: 'プロフィールを保存' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ country: 'JP' }),
+        null,
+      ),
+    );
+  },
+};
+
+export const CountrySearchByJapaneseName: Story = {
+  args: { initialValues: { ...sampleProfile, country: 'US' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const country = canvas.getByLabelText('Country') as HTMLInputElement;
+
+    setFieldValue(country, '日本');
+    fireEvent.mouseDown(await screen.findByRole('option', { name: 'Japan' }));
+    await waitFor(() => expect(country).toHaveValue('Japan'));
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Profile' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ country: 'JP' }),
+        null,
+      ),
+    );
+  },
+};
+
+export const MobileCountrySearchAcrossLocales: Story = {
+  globals: { locale: 'ja' },
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: { ...sampleProfile, country: 'US' } },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(await canvas.findByRole('button', { name: /^出身国/ }));
+    const sheet = within(await screen.findByRole('dialog'));
+    fireEvent.click(sheet.getByRole('button', { name: 'アメリカ合衆国' }));
+    setFieldValue(
+      await sheet.findByRole('textbox', { name: '出身国' }),
+      'Japan',
+    );
+    await expect(
+      await sheet.findAllByRole('button', { name: '日本' }),
+    ).toHaveLength(1);
+    setFieldValue(sheet.getByRole('textbox', { name: '出身国' }), 'jap');
+    fireEvent.click(await sheet.findByRole('button', { name: '日本' }));
+    await waitFor(() =>
+      expect(sheet.queryByRole('textbox', { name: '出身国' })).toBeNull(),
+    );
+    fireEvent.click(await sheet.findByRole('button', { name: '完了' }));
+    fireEvent.click(await canvas.findByRole('button', { name: '保存' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ country: 'JP' }),
+        null,
+      ),
+    );
+  },
+};
+
 export const TimezoneSearch: Story = {
   args: { initialValues: { ...sampleProfile, timezone: '' } },
   play: async ({ args, canvasElement }) => {
