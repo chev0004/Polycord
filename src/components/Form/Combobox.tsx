@@ -5,11 +5,14 @@ import React, { useEffect, useId, useMemo, useState } from 'react';
 import { MdCheck } from 'react-icons/md';
 import { normalizeSearch } from '@/lib/normalizeSearch';
 
+type ComboboxOption = { label: string; value: string };
+
 export type ComboboxProps = {
   id?: string;
   ariaLabel?: string;
   placeholder?: string;
-  options: { label: string; value: string }[];
+  options: ComboboxOption[];
+  filter?: (options: ComboboxOption[], query: string) => ComboboxOption[];
   className?: string;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onValueChange: (value: string) => void;
@@ -28,6 +31,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       ariaLabel,
       placeholder,
       options,
+      filter,
       className,
       onBlur,
       onValueChange,
@@ -80,11 +84,12 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       if (!searchTerm || searchTerm === selectedLabel) {
         return options;
       }
+      if (filter) return filter(options, searchTerm);
       const normalizedSearch = normalizeSearch(searchTerm);
       return options.filter((option) =>
         normalizeSearch(option.label).includes(normalizedSearch),
       );
-    }, [searchTerm, selectedLabel, options]);
+    }, [searchTerm, selectedLabel, options, filter]);
 
     const rowVirtualizer = useVirtualizer({
       count: filteredOptions.length,

@@ -421,23 +421,27 @@ export const SheetDrill = ({
   </>
 );
 
+type PickOption = { label: string; value: string };
+
 export const SheetPickList = ({
   label,
   options,
   value,
   onSelect,
+  filter,
 }: {
   label: string;
-  options: { label: string; value: string }[];
+  options: PickOption[];
   value: string;
   onSelect: (value: string) => void;
+  filter?: (options: PickOption[], query: string) => PickOption[];
 }) => {
   const t = useTranslations('Sheet');
   const [search, setSearch] = useState('');
   const query = normalizeSearch(search.trim());
-  const shown = options.filter((option) =>
-    normalizeSearch(option.label).includes(query),
-  );
+  const shown = filter
+    ? filter(options, search)
+    : options.filter((option) => normalizeSearch(option.label).includes(query));
 
   return (
     <>
