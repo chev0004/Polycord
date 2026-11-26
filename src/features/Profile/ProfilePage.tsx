@@ -1081,6 +1081,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     value={field.value || ''}
                     onValueChange={field.onChange}
                     options={localizedCountryOptions}
+                    filter={searchOptions}
                     placeholder={t('countryPlaceholder')}
                     error={!!errors.country}
                   />

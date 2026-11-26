@@ -15,6 +15,7 @@ import {
   languageOptions,
   proficiencyOptions,
 } from '@/constants/languages';
+import { searchOptions } from '@/lib/searchOptions';
 import {
   type AvailabilityContext,
   isAvailableNow,
@@ -72,6 +73,7 @@ export const useDiscoveryFilterDefs = (options?: {
         labelKey: 'filterPrimaryLanguage',
         placeholderKey: 'filterSelectLanguage',
         options: languageOptions(locale),
+        filter: searchOptions,
         multiple: true,
       },
       {
@@ -80,6 +82,7 @@ export const useDiscoveryFilterDefs = (options?: {
         labelKey: 'filterTargetLanguage',
         placeholderKey: 'filterSelectLanguage',
         options: languageOptions(locale),
+        filter: searchOptions,
         multiple: true,
       },
       {
@@ -88,6 +91,7 @@ export const useDiscoveryFilterDefs = (options?: {
         labelKey: 'filterCountry',
         placeholderKey: 'filterSelectCountry',
         options: countryOptions(locale),
+        filter: searchOptions,
         multiple: true,
       },
       {

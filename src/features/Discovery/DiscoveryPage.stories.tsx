@@ -2,6 +2,7 @@ import { getRouter } from '@storybook/nextjs/navigation.mock';
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   expect,
+  fireEvent,
   fn,
   screen,
   userEvent,
@@ -856,6 +857,114 @@ export const MobileFilterSearchCover: Story = {
         expect(document.elementFromPoint(left + 40, top - 2)).toBe(bar);
       },
       { timeout: 5000 },
+    );
+  },
+};
+
+const openFilterPopover = async (canvasElement: HTMLElement, name: string) => {
+  await userEvent.click(within(canvasElement).getByRole('button', { name }));
+  return within(
+    await waitFor(() => {
+      const content =
+        canvasElement.ownerDocument.querySelector<HTMLElement>(
+          '.PopoverContent',
+        );
+      if (!content) throw new Error('Filter popover did not open');
+      return content;
+    }),
+  );
+};
+
+export const FilterSearchAcrossLocales: Story = {
+  globals: { locale: 'ja' },
+  args: { locale: 'ja' },
+  render: Mobile.render,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    let popover = await openFilterPopover(canvasElement, '国');
+    for (const query of ['Japan', 'jap']) {
+      fireEvent.change(popover.getByRole('textbox'), {
+        target: { value: query },
+      });
+      await expect(
+        await popover.findAllByRole('button', { name: '日本' }),
+      ).toHaveLength(1);
+    }
+    await userEvent.click(popover.getByRole('button', { name: 'キャンセル' }));
+
+    popover = await openFilterPopover(canvasElement, '学習言語');
+    fireEvent.change(popover.getByRole('textbox'), {
+      target: { value: 'English' },
+    });
+    await expect(
+      await popover.findAllByRole('button', { name: '英語' }),
+    ).toHaveLength(1);
+    await userEvent.click(popover.getByRole('button', { name: 'キャンセル' }));
+
+    popover = await openFilterPopover(canvasElement, '主要言語');
+    fireEvent.change(popover.getByRole('textbox'), {
+      target: { value: 'eng' },
+    });
+    await userEvent.click(await popover.findByRole('button', { name: '英語' }));
+    await userEvent.click(popover.getByRole('button', { name: '適用' }));
+    await waitFor(() =>
+      expect(canvas.getByText('1人のパートナー')).toBeInTheDocument(),
+    );
+  },
+};
+
+export const CountryFilterByJapaneseName: Story = {
+  render: Mobile.render,
+  play: async ({ canvasElement }) => {
+    const popover = await openFilterPopover(canvasElement, 'Country');
+    fireEvent.change(popover.getByRole('textbox'), {
+      target: { value: '日本' },
+    });
+    await expect(
+      await popover.findAllByRole('button', { name: 'Japan' }),
+    ).toHaveLength(1);
+  },
+};
+
+export const MobileFilterSearchAcrossLocales: Story = {
+  globals: { locale: 'ja' },
+  args: { locale: 'ja' },
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: Mobile.render,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'フィルター' }));
+    const sheet = within(await screen.findByRole('dialog'));
+    await userEvent.click(sheet.getByRole('button', { name: /^国/ }));
+    fireEvent.change(await sheet.findByRole('textbox', { name: '国' }), {
+      target: { value: 'Japan' },
+    });
+    await expect(
+      await sheet.findAllByRole('button', { name: '日本' }),
+    ).toHaveLength(1);
+    await userEvent.click(sheet.getByRole('button', { name: '戻る' }));
+
+    await userEvent.click(sheet.getByRole('button', { name: /^学習言語/ }));
+    fireEvent.change(await sheet.findByRole('textbox', { name: '学習言語' }), {
+      target: { value: 'English' },
+    });
+    await expect(
+      await sheet.findAllByRole('button', { name: '英語' }),
+    ).toHaveLength(1);
+    await userEvent.click(sheet.getByRole('button', { name: '戻る' }));
+
+    await userEvent.click(sheet.getByRole('button', { name: /^主要言語/ }));
+    fireEvent.change(await sheet.findByRole('textbox', { name: '主要言語' }), {
+      target: { value: 'eng' },
+    });
+    await userEvent.click(await sheet.findByRole('button', { name: '英語' }));
+    await userEvent.click(
+      await sheet.findByRole('button', { name: '1人のパートナーを表示' }),
+    );
+    await waitFor(() =>
+      expect(canvas.getByText('1人のパートナー')).toBeInTheDocument(),
     );
   },
 };

@@ -7,11 +7,14 @@ import type { IconType } from 'react-icons';
 import { MdCheck, MdOutlineKeyboardArrowDown, MdSearch } from 'react-icons/md';
 import { Button } from '../Button';
 
+type FilterOption = { label: string; value: string };
+
 export type FilterButtonProps = {
   icon: IconType;
   labelKey: string;
   placeholderKey?: string;
-  options: { label: string; value: string }[];
+  options: FilterOption[];
+  filter?: (options: FilterOption[], query: string) => FilterOption[];
   className?: string;
   value?: string | string[];
   onValueChange?: (value: string | string[]) => void;
@@ -35,6 +38,7 @@ export const FilterButton = React.forwardRef<
       labelKey,
       placeholderKey,
       options,
+      filter,
       className,
       value,
       onValueChange,
@@ -82,11 +86,12 @@ export const FilterButton = React.forwardRef<
 
     const shownOptions = useMemo(() => {
       if (!searchable || !search) return options;
+      if (filter) return filter(options, search);
       const query = search.toLowerCase();
       return options.filter((option) =>
         option.label.toLowerCase().includes(query),
       );
-    }, [options, search, searchable]);
+    }, [options, filter, search, searchable]);
 
     const getDisplayText = () => {
       if (applied.length === 1) {
