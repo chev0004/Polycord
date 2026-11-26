@@ -7,6 +7,7 @@ import type {
   ActivityFilters,
   ActivityPage,
   ActivityRange,
+  BanReferenceMatch,
   IpBlock,
   ModActioned,
   ModData,
@@ -157,6 +158,14 @@ export const useModeration = (initial: ModSnapshot) => {
       commit(await send('/api/admin/premium', method, body)),
     [commit],
   );
+
+  const lookupBanReference = useCallback(async (reference: string) => {
+    const response = await fetch(
+      `/api/admin/ban-reference?reference=${encodeURIComponent(reference)}`,
+    );
+    if (!response.ok) throw new Error('failed');
+    return ((await response.json()) as { ban: BanReferenceMatch | null }).ban;
+  }, []);
 
   const loadIpBlocks = useCallback(async (userId?: string) => {
     const response = await fetch(
@@ -316,6 +325,7 @@ export const useModeration = (initial: ModSnapshot) => {
       changePremium('POST', { userId, amount, unit }),
     revokePremium: (userId: string) => changePremium('DELETE', { userId }),
     loadIpBlocks,
+    lookupBanReference,
     loadActivityLog,
     loadReports,
     loadActioned,

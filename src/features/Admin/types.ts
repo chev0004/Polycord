@@ -101,6 +101,15 @@ export type ModLogEntry = {
   createdAt: string;
 };
 
+export type BanReferenceMatch = {
+  kind: 'ip' | 'account';
+  bannedAt: string;
+  revokedAt?: string;
+  note?: string;
+  discordUserId?: string;
+  user?: ModUser;
+};
+
 export type IpBlock = {
   id: string;
   ip: string;

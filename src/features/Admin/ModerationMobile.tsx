@@ -18,6 +18,7 @@ import {
   MdChevronLeft,
   MdChevronRight,
   MdClose,
+  MdConfirmationNumber,
   MdContentCopy,
   MdDone,
   MdExpandMore,
@@ -56,6 +57,7 @@ import {
   useTabPrefetch,
 } from './ActivityPages';
 import { prefetchRecentMonths } from './adminCache';
+import { BanReferencePanel } from './ModerationBanReference';
 import type { ModTab, Notify, UsersQuery } from './ModerationDesktop';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
@@ -523,6 +525,7 @@ const UsersScreen = ({
   const t = useTranslations('Admin');
   const [staffOpen, setStaffOpen] = useState(false);
   const [ipBlocksOpen, setIpBlocksOpen] = useState(false);
+  const [banReferenceOpen, setBanReferenceOpen] = useState(false);
   const [actionSheet, setActionSheet] = useState(false);
   const trimmed = users.query.trim();
   const actions = new Map((pages.rows ?? []).map((row) => [row.userId, row]));
@@ -546,24 +549,35 @@ const UsersScreen = ({
         />
       </div>
       <div className={`px-3 ${trimmed ? '' : fade(pages)}`}>
-        {store.meRole === 'owner' && !trimmed ? (
+        {trimmed ? null : (
           <div className={`${group} mb-1.5`}>
+            {store.meRole === 'owner' ? (
+              <>
+                <SheetRow
+                  icon={MdGroup}
+                  label={t('manageStaff')}
+                  description={t('staffCount', { count: store.staff.length })}
+                  chevron
+                  onClick={() => setStaffOpen(true)}
+                />
+                <SheetRow
+                  icon={MdBlock}
+                  label={t('manageIpBlocks')}
+                  description={t('ipBlocksHint')}
+                  chevron
+                  onClick={() => setIpBlocksOpen(true)}
+                />
+              </>
+            ) : null}
             <SheetRow
-              icon={MdGroup}
-              label={t('manageStaff')}
-              description={t('staffCount', { count: store.staff.length })}
+              icon={MdConfirmationNumber}
+              label={t('banReference')}
+              description={t('banReferenceHint')}
               chevron
-              onClick={() => setStaffOpen(true)}
-            />
-            <SheetRow
-              icon={MdBlock}
-              label={t('manageIpBlocks')}
-              description={t('ipBlocksHint')}
-              chevron
-              onClick={() => setIpBlocksOpen(true)}
+              onClick={() => setBanReferenceOpen(true)}
             />
           </div>
-        ) : null}
+        )}
         {trimmed ? null : (
           <>
             <div className="px-1 pt-1 pb-3">
@@ -686,6 +700,13 @@ const UsersScreen = ({
         title={t('manageIpBlocks')}
       >
         <IpBlocksPanel store={store} mobile />
+      </Sheet>
+      <Sheet
+        open={banReferenceOpen}
+        onOpenChange={setBanReferenceOpen}
+        title={t('banReference')}
+      >
+        <BanReferencePanel store={store} mobile />
       </Sheet>
     </>
   );

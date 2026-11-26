@@ -26,6 +26,7 @@ import {
   targetLanguagesForProfile,
 } from './profiles';
 import {
+  ipBans,
   type ModerationActionKind,
   moderationActions,
   moderationRestrictions,
@@ -36,6 +37,48 @@ import {
   suspiciousActivity,
   users,
 } from './schema';
+
+export const listBanCandidates = () =>
+  Promise.all([
+    db
+      .select({
+        id: ipBans.id,
+        bannedAt: ipBans.createdAt,
+        revokedAt: ipBans.revokedAt,
+        note: ipBans.reason,
+        discordUserId: ipBans.targetDiscordUserId,
+      })
+      .from(ipBans),
+    db
+      .select({
+        discordUserId: users.discordUserId,
+        bannedAt: users.bannedAt,
+      })
+      .from(users)
+      .where(isNotNull(users.bannedAt)),
+    db
+      .select({
+        discordUserId: moderationRestrictions.discordUserId,
+        bannedAt: moderationRestrictions.bannedAt,
+      })
+      .from(moderationRestrictions)
+      .where(isNotNull(moderationRestrictions.bannedAt)),
+  ]);
+
+export const latestBanNote = async (userId: string) => {
+  const [row] = await db
+    .select({ note: moderationActions.note })
+    .from(moderationActions)
+    .where(
+      and(
+        eq(moderationActions.targetUserId, userId),
+        eq(moderationActions.action, 'ban'),
+      ),
+    )
+    .orderBy(desc(moderationActions.createdAt))
+    .limit(1);
+  return row?.note ?? undefined;
+};
 
 export const listReportsAgainstUsers = async (userIds: string[]) =>
   userIds.length
