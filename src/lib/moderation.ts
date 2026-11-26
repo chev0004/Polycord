@@ -42,7 +42,7 @@ import {
   pageOf,
 } from './activityWindow';
 import { isOwnerDiscordId, ownerDiscordIds } from './admin';
-import { banReference } from './banLookup';
+import { banReference } from './banReference';
 import { isPremiumDiscordId } from './entitlements';
 
 type ModerationUserRow = Awaited<

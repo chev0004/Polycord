@@ -1,19 +1,11 @@
 import 'server-only';
 
-import { createHash } from 'node:crypto';
 import { createBanClient } from '@/db/connection';
 import type { BanNotice } from './banGate';
+import { banReference } from './banReference';
 import { type LoadMeasure, measureLoad } from './loadTrace';
 
 export const BAN_STATEMENT_TIMEOUT_MS = 2500;
-
-const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-
-export const banReference = (seed: string) => {
-  const digest = createHash('sha256').update(seed).digest();
-  const code = Array.from(digest.subarray(0, 8), (byte) => ALPHABET[byte % 32]);
-  return `PC-${code.slice(0, 4).join('')}-${code.slice(4).join('')}`;
-};
 
 type BanRow = { kind: 'ip' | 'identity'; ref: string; at: Date };
 
