@@ -647,6 +647,62 @@ export const IpBlockSelection: Story = {
   },
 };
 
+const bannedUser = moderationSnapshot.users.find(
+  (user) => user.id === 'ryan',
+) as ModUser;
+
+const mockBanReferenceApi = () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = Object.assign(
+    async (...args: Parameters<typeof fetch>) => {
+      const url = String(args[0]);
+      if (url.startsWith('/api/admin/activity-log')) return activityPage();
+      if (!url.startsWith('/api/admin/ban-reference')) return original(...args);
+      return Response.json({
+        ban: url.includes('PC-7K2M-41QX')
+          ? {
+              kind: 'account',
+              bannedAt: '2026-11-20T09:30:00.000Z',
+              note: 'Repeated spam after a warning',
+              discordUserId: bannedUser.discordId,
+              user: bannedUser,
+            }
+          : null,
+      });
+    },
+    { preconnect: original.preconnect },
+  );
+  return () => {
+    globalThis.fetch = original;
+  };
+};
+
+export const BanReferenceLookup: Story = {
+  beforeEach: mockBanReferenceApi,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(
+      await canvas.findByRole('button', { name: 'Ban reference' }),
+    );
+    const panel = within(await screen.findByRole('dialog'));
+    const input = panel.getByLabelText('Reference from the banned screen');
+
+    fireEvent.change(input, { target: { value: 'PC-0000-0000' } });
+    fireEvent.click(panel.getByRole('button', { name: 'Look up' }));
+    await expect(
+      await panel.findByText('No ban matches this reference.'),
+    ).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: 'PC-7K2M-41QX' } });
+    fireEvent.click(panel.getByRole('button', { name: 'Look up' }));
+    await expect(await panel.findByText('Account ban')).toBeInTheDocument();
+    await expect(
+      panel.getByText('Repeated spam after a warning'),
+    ).toBeInTheDocument();
+    await expect(panel.getByText(bannedUser.displayName)).toBeInTheDocument();
+  },
+};
+
 export const ModeratorView: Story = {
   args: { initial: moderatorSnapshot },
   play: async ({ canvasElement }) => {
@@ -657,8 +713,11 @@ export const ModeratorView: Story = {
       canvas.getByRole('button', { name: /^Warn/ }),
     ).toBeInTheDocument();
     await expect(
-      canvas.queryByRole('button', { name: /^Ban/ }),
+      canvas.queryByRole('button', { name: /^Ban(?! reference)/ }),
     ).not.toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: 'Ban reference' }),
+    ).toBeInTheDocument();
     await expect(
       canvas.queryByRole('button', { name: 'Manage staff' }),
     ).not.toBeInTheDocument();

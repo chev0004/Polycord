@@ -399,4 +399,60 @@ test.describe('ip bans', () => {
     await sql`delete from moderation_actions where admin_user_id = ${admin.id}`;
     await context.close();
   });
+
+  test('staff find the ban behind a banned screen reference', async ({
+    browser,
+    request,
+  }) => {
+    const [member, other, admin] = accounts;
+    await sql`insert into ip_bans (ip, reason, target_discord_user_id) values (${BLOCKED}, 'appeal ip note', ${other.discordUserId})`;
+    await sql`update users set banned_at = now() where id = ${member.id}`;
+    await sql`insert into moderation_actions (admin_user_id, target_user_id, action, note) values (${admin.id}, ${member.id}, 'ban', 'appeal account note')`;
+    const referenceOf = async (options: ReturnType<typeof from>) =>
+      (await (await request.get('/en', options)).text()).match(
+        /PC-[0-9A-Z]{4}-[0-9A-Z]{4}/,
+      )?.[0] ?? '';
+    const ipReference = await referenceOf(from(BLOCKED));
+    const accountReference = await referenceOf(
+      from(OTHER, withSession(member)),
+    );
+    expect(ipReference).not.toBe('');
+    expect(accountReference).not.toBe('');
+
+    const context = await browser.newContext({
+      baseURL: ORIGIN,
+      extraHTTPHeaders: { 'x-test-client-ip': OTHER },
+    });
+    await context.addCookies([
+      { name: 'polycord_session', value: sessionFor(admin), url: ORIGIN },
+    ]);
+    const page = await context.newPage();
+    await page.goto('/en/admin');
+    await page.getByRole('button', { name: 'Ban reference' }).click();
+    const panel = page.getByRole('dialog');
+    const lookUp = async (reference: string) => {
+      await panel
+        .getByLabel('Reference from the banned screen')
+        .fill(reference);
+      await panel.getByRole('button', { name: 'Look up' }).click();
+    };
+
+    await lookUp(ipReference.toLowerCase());
+    await expect(panel.getByText('IP block', { exact: true })).toBeVisible();
+    await expect(panel.getByText('appeal ip note')).toBeVisible();
+    await expect(panel.getByText('Ban B', { exact: true })).toBeVisible();
+    await expect(panel).not.toContainText(BLOCKED);
+
+    await lookUp(accountReference);
+    await expect(panel.getByText('Account ban', { exact: true })).toBeVisible();
+    await expect(panel.getByText('appeal account note')).toBeVisible();
+    await expect(panel.getByText('Ban A', { exact: true })).toBeVisible();
+
+    await lookUp('PC-0000-0000');
+    await expect(
+      panel.getByText('No ban matches this reference.'),
+    ).toBeVisible();
+    await sql`delete from moderation_actions where admin_user_id = ${admin.id}`;
+    await context.close();
+  });
 });

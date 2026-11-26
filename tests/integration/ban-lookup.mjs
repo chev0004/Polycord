@@ -106,9 +106,10 @@ try {
     signal(),
   );
   assert.equal(earliest.date.toISOString(), '2026-10-03T00:00:00.000Z');
+  assert.equal(earliest.reference, banReference(rememberedId));
   assert.equal(
-    earliest.reference,
-    banReference(`${discordUserId}+${rememberedId}`),
+    (await lookupBan(null, [rememberedId, discordUserId], signal())).reference,
+    banReference(rememberedId),
   );
   assert.ok(await lookupBan(null, [rememberedId], signal()));
 
