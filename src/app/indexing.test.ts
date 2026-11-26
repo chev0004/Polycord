@@ -1,4 +1,5 @@
 import { afterEach, expect, test } from 'bun:test';
+import { localeAlternates } from '@/lib/localeAlternates';
 import robots from './robots';
 import sitemap from './sitemap';
 
@@ -35,4 +36,26 @@ test('the sitemap lists public pages in both locales on the production origin', 
   expect(urls.every((url) => url.startsWith('https://polycord.example/'))).toBe(
     true,
   );
+});
+
+test('public pages link their canonical url and both language versions', () => {
+  process.env.POLYCORD_PUBLIC_URL = 'https://polycord.example';
+  expect(localeAlternates('ja', '/legal/terms')).toEqual({
+    canonical: 'https://polycord.example/ja/legal/terms',
+    languages: {
+      en: 'https://polycord.example/en/legal/terms',
+      ja: 'https://polycord.example/ja/legal/terms',
+    },
+  });
+  expect(localeAlternates('en', '')?.canonical).toBe(
+    'https://polycord.example/en',
+  );
+  expect(sitemap()[0].alternates).toEqual({
+    languages: localeAlternates('en', '')?.languages,
+  });
+});
+
+test('without a public origin pages carry no canonical or language links', () => {
+  delete process.env.POLYCORD_PUBLIC_URL;
+  expect(localeAlternates('en', '/legal')).toBeUndefined();
 });
