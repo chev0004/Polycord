@@ -1033,7 +1033,7 @@
     "reportProfile": "プロフィールを報告",
     "blockProfile": "ユーザーをブロック",
     "blockDialogTitle": "{name}さんをブロックしますか？",
-    "blockDialogDescription": "{name}さんのプロフィールはディスカバリーに表示されなくなり、お互いに操作できなくなります。ブロック直後に元に戻すか、設定のブロック済みアカウントから解除できます。",
+    "blockDialogDescription": "{name}さんのプロフィールはディスカバリーに表示されなくなり、お互いに操作できなくなります。設定のブロック済みアカウントからいつでも解除できます。",
     "blockCancel": "キャンセル",
     "blockConfirm": "ユーザーをブロック",
     "moderateProfile": "対応する",
