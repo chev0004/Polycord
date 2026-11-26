@@ -10,6 +10,7 @@ import {
   MdBlock,
   MdCheck,
   MdClose,
+  MdConfirmationNumber,
   MdExpandMore,
   MdFilterAltOff,
   MdGroup,
@@ -37,6 +38,7 @@ import {
   useTabPrefetch,
 } from './ActivityPages';
 import { prefetchRecentMonths } from './adminCache';
+import { BanReferencePanel } from './ModerationBanReference';
 import { IpBlocksPanel } from './ModerationIpBlocks';
 import {
   ACTION_TONE,
@@ -1234,6 +1236,24 @@ export const ModerationDesktop = ({
           <p className="mt-1 text-muted text-sm">{t('subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
+          <Popover.Root>
+            <Popover.Trigger asChild>
+              <button type="button" className={modButton()}>
+                <MdConfirmationNumber size={17} />
+                {t('banReference')}
+              </button>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content
+                side="bottom"
+                align="end"
+                sideOffset={8}
+                className="PopoverContent PopoverStill z-50 w-[320px] rounded-[18px] border border-gray-500/50 bg-background-dark p-3 font-figtree shadow-lg"
+              >
+                <BanReferencePanel store={store} />
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
           {store.meRole === 'owner' ? (
             <Popover.Root>
               <Popover.Trigger asChild>

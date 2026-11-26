@@ -300,6 +300,9 @@ const toneClasses: Record<ButtonTone, string> = {
     'border-red-800 bg-red-800 text-white font-semibold enabled:hover:bg-red-900',
 };
 
+export const modField =
+  'h-10 w-full rounded-full border border-white/[0.07] bg-background-darker px-3.5 text-foreground text-sm outline-none placeholder:text-subtle focus:border-white/[0.14]';
+
 export const modButton = (tone: ButtonTone = 'default') =>
   `inline-flex h-[34px] items-center gap-1.5 whitespace-nowrap rounded-lg border px-3 text-[13px] transition-[background-color,border-color,color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 ${toneClasses[tone]}`;
 

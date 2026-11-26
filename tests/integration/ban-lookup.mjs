@@ -71,9 +71,10 @@ process.env.DATABASE_URL = proxyUrl.href;
 const { ipBans, users, moderationRestrictions } = await import(
   '../../src/db/schema'
 );
-const { lookupBan, banReference, BAN_STATEMENT_TIMEOUT_MS } = await import(
+const { lookupBan, BAN_STATEMENT_TIMEOUT_MS } = await import(
   '../../src/lib/banLookup'
 );
+const { banReference } = await import('../../src/lib/banReference');
 const { eq, sql, TransactionRollbackError } = await import('drizzle-orm');
 const { POST } = await import('../../src/app/api/internal/ban-check/route');
 const { BAN_CHECK_AUTH_HEADER, createBanCheckToken } = await import(
@@ -106,9 +107,10 @@ try {
     signal(),
   );
   assert.equal(earliest.date.toISOString(), '2026-10-03T00:00:00.000Z');
+  assert.equal(earliest.reference, banReference(rememberedId));
   assert.equal(
-    earliest.reference,
-    banReference(`${discordUserId}+${rememberedId}`),
+    (await lookupBan(null, [rememberedId, discordUserId], signal())).reference,
+    banReference(rememberedId),
   );
   assert.ok(await lookupBan(null, [rememberedId], signal()));
 

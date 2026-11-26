@@ -4,8 +4,11 @@ import { z } from 'zod';
 import {
   countActivityByDay,
   countPendingCases,
+  getUserByDiscordId,
   hasActivePremiumGrant,
+  latestBanNote,
   listActionedPage,
+  listBanCandidates,
   listModerationActions,
   listModerationActionsPage,
   listModerationStatesByProfileId,
@@ -21,6 +24,7 @@ import {
   searchModerationUserIds,
 } from '@/db';
 import type {
+  BanReferenceMatch,
   ModActioned,
   ModData,
   ModLogEntry,
@@ -38,6 +42,7 @@ import {
   pageOf,
 } from './activityWindow';
 import { isOwnerDiscordId, ownerDiscordIds } from './admin';
+import { banReference } from './banReference';
 import { isPremiumDiscordId } from './entitlements';
 
 type ModerationUserRow = Awaited<
@@ -211,6 +216,40 @@ export const searchModeration = async (query: string, offset = 0) => {
   ]);
 
   return { results, hasMore, ...(await withUsers(reports, log, results)) };
+};
+
+export const findBanByReference = async (
+  reference: string,
+): Promise<BanReferenceMatch | null> => {
+  const [ipRows, userRows, restrictionRows] = await listBanCandidates();
+  const ipBan = ipRows.find(({ id }) => banReference(id) === reference);
+  const identities = [...userRows, ...restrictionRows].filter(
+    ({ discordUserId }) => banReference(discordUserId) === reference,
+  );
+  if (!ipBan && !identities.length) return null;
+  const discordUserId = ipBan
+    ? (ipBan.discordUserId ?? undefined)
+    : identities[0].discordUserId;
+  const account = discordUserId
+    ? await getUserByDiscordId(discordUserId)
+    : undefined;
+  const [user] = account ? await listModerationUsers([account.id]) : [];
+
+  return {
+    kind: ipBan ? 'ip' : 'account',
+    bannedAt: (
+      ipBan?.bannedAt ??
+      new Date(Math.min(...identities.map(({ bannedAt }) => Number(bannedAt))))
+    ).toISOString(),
+    revokedAt: ipBan?.revokedAt?.toISOString(),
+    note: ipBan
+      ? (ipBan.note ?? undefined)
+      : account
+        ? await latestBanNote(account.id)
+        : undefined,
+    discordUserId,
+    user: user ? toModUser(user) : undefined,
+  };
 };
 
 const toSuspiciousEvent = (row: {
