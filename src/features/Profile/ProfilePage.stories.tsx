@@ -686,6 +686,75 @@ export const TimezoneRequiredForFreeTime: Story = {
   },
 };
 
+export const LanguageSearchByAnyName: Story = {
+  args: { initialValues: sampleProfile },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const primary = canvas.getByLabelText(
+      'Primary Language',
+    ) as HTMLInputElement;
+
+    setFieldValue(primary, '日本語');
+    await expect(
+      await screen.findByRole('option', { name: 'Japanese' }),
+    ).toBeInTheDocument();
+    setFieldValue(primary, 'espanol');
+    fireEvent.mouseDown(await screen.findByRole('option', { name: 'Spanish' }));
+    await waitFor(() => expect(primary).toHaveValue('Spanish'));
+
+    const target = canvas.getByLabelText(
+      'Target Languages 1',
+    ) as HTMLInputElement;
+    setFieldValue(target, 'e');
+    await expect(
+      await screen.findByRole('option', { name: 'Estonian' }),
+    ).toBeInTheDocument();
+    await expect(screen.queryByRole('option', { name: 'Greek' })).toBeNull();
+    fireEvent.mouseDown(
+      await screen.findByRole('option', { name: 'Estonian' }),
+    );
+
+    fireEvent.click(canvas.getByRole('button', { name: 'Save Profile' }));
+    await waitFor(() =>
+      expect(args.onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          primaryLanguage: 'es',
+          targetLanguages: [
+            expect.objectContaining({ language: 'et', level: 'intermediate' }),
+          ],
+        }),
+        null,
+      ),
+    );
+  },
+};
+
+export const MobileLanguageSearchByAnyName: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: { initialValues: sampleProfile },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    fireEvent.click(
+      (await canvas.findAllByRole('button', { name: /^English/ }))[0],
+    );
+    const sheet = within(await screen.findByRole('dialog'));
+    fireEvent.click(sheet.getByRole('button', { name: 'Japanese' }));
+    setFieldValue(
+      await sheet.findByRole('textbox', { name: 'Choose a language' }),
+      'espanol',
+    );
+    fireEvent.click(await sheet.findByRole('button', { name: 'Spanish' }));
+    await waitFor(() =>
+      expect(
+        sheet.queryByRole('textbox', { name: 'Choose a language' }),
+      ).toBeNull(),
+    );
+    await expect(sheet.getByRole('button', { name: 'Spanish' })).toBeVisible();
+    await expect(sheet.queryByRole('button', { name: 'Japanese' })).toBeNull();
+  },
+};
+
 export const TimezoneSearch: Story = {
   args: { initialValues: { ...sampleProfile, timezone: '' } },
   play: async ({ args, canvasElement }) => {
