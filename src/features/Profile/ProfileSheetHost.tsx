@@ -86,6 +86,7 @@ export const ProfileSheet = ({
     if (!isLoggedIn) {
       actions.addToast({
         title: t('saveLoginTitle'),
+        variant: 'info',
         description: t('saveLoginDescription'),
         duration: 4000,
       });

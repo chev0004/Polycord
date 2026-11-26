@@ -799,6 +799,9 @@ export const BumpHintAfterOnboardingMobile: Story = {
       'Bump your profile to show it in Discovery',
     );
     const banner = hint.closest('[role="alert"]') as HTMLElement;
+    await expect(banner).toHaveTextContent(
+      'New profiles appear after their first bump.',
+    );
     await expect(banner.querySelector('img')).toBeNull();
     await expect(within(banner).queryByText('?')).not.toBeInTheDocument();
     await userEvent.click(hint);
@@ -966,6 +969,52 @@ export const MobileFilterSearchAcrossLocales: Story = {
     await waitFor(() =>
       expect(canvas.getByText('1人のパートナー')).toBeInTheDocument(),
     );
+  },
+};
+
+export const ReportRateLimitedAboveDialog: Story = {
+  beforeEach: () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = Object.assign(
+      (...args: Parameters<typeof fetch>) =>
+        String(args[0]) === '/api/report'
+          ? Promise.resolve(Response.json({}, { status: 429 }))
+          : original(...args),
+      { preconnect: original.preconnect },
+    );
+    return () => {
+      globalThis.fetch = original;
+    };
+  },
+  render: Mobile.render,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(
+      (await canvas.findAllByRole('button', { name: 'Card menu' }))[0],
+    );
+    await userEvent.click(
+      await body.findByRole('button', { name: 'Report profile' }),
+    );
+    await userEvent.click(
+      await body.findByRole('radio', { name: 'Spam or scam' }),
+    );
+    await userEvent.click(body.getByRole('button', { name: 'Submit report' }));
+
+    const toast = (await body.findByText('Too many reports')).closest(
+      'li',
+    ) as HTMLElement;
+    await expect(body.getByRole('dialog')).toBeInTheDocument();
+    toast.style.pointerEvents = 'auto';
+    await waitFor(() => {
+      const box = toast.getBoundingClientRect();
+      const center = document.elementFromPoint(
+        box.left + box.width / 2,
+        box.top + box.height / 2,
+      );
+      expect(toast.contains(center)).toBe(true);
+    });
   },
 };
 

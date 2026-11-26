@@ -79,7 +79,8 @@
     "noOptions": "選択肢がありません"
   },
   "Toast": {
-    "now": "今"
+    "now": "今",
+    "close": "通知を閉じる"
   },
   "Inbox": {
     "title": "受信ボックス",
@@ -116,6 +117,7 @@
     "noteFromModeration": "運営からのお知らせ",
     "readWarning": "警告を読む",
     "seeWhoWithPremium": "サポーターで誰だったか見る",
+    "openInbox": "受信ボックスを開く",
     "justNow": "たった今",
     "minutesAgo": "{count, plural, other {#分前}}",
     "hoursAgo": "{count, plural, other {#時間前}}",
@@ -1031,7 +1033,7 @@
     "reportProfile": "プロフィールを報告",
     "blockProfile": "ユーザーをブロック",
     "blockDialogTitle": "{name}さんをブロックしますか？",
-    "blockDialogDescription": "{name}さんのプロフィールはディスカバリーに表示されなくなり、お互いに操作できなくなります。ブロック直後に元に戻すか、設定のブロック済みアカウントから解除できます。",
+    "blockDialogDescription": "{name}さんのプロフィールはディスカバリーに表示されなくなり、お互いに操作できなくなります。設定のブロック済みアカウントからいつでも解除できます。",
     "blockCancel": "キャンセル",
     "blockConfirm": "ユーザーをブロック",
     "moderateProfile": "対応する",

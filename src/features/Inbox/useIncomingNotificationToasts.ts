@@ -33,14 +33,13 @@ export const useIncomingNotificationToasts = ({
           title: mobile ? message : t('newNotification'),
           description: mobile ? '' : message,
           iconUrl: premium ? notification.actorAvatarUrl : undefined,
+          variant: notification.kind === 'warning' ? 'info' : undefined,
           activity: onOpen && {
             actionLabel:
               notification.kind === 'warning'
                 ? undefined
                 : premium
-                  ? notification.actorProfileId
-                    ? t('viewProfile')
-                    : undefined
+                  ? t('openInbox')
                   : t('seeWhoWithPremium'),
             onOpen,
           },

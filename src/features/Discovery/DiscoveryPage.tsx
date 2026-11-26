@@ -960,6 +960,7 @@ export const DiscoveryPage = ({
     if (!isLoggedIn) {
       addToast({
         title: t('reportLoginTitle'),
+        variant: 'info',
         description: t('reportLoginDescription'),
         duration: BUMP_TOAST_DURATION,
       });
@@ -1027,6 +1028,7 @@ export const DiscoveryPage = ({
         description: limited
           ? t('reportCooldownDescription')
           : t('reportErrorDescription'),
+        mobileDescription: limited ? t('reportCooldownDescription') : undefined,
         duration: BUMP_TOAST_DURATION,
       });
       throw error;
@@ -1103,6 +1105,7 @@ export const DiscoveryPage = ({
     if (!isLoggedIn) {
       addToast({
         title: t('blockLoginTitle'),
+        variant: 'info',
         description: t('blockLoginDescription'),
         duration: BUMP_TOAST_DURATION,
       });
@@ -1247,6 +1250,7 @@ export const DiscoveryPage = ({
     const id = addToast({
       title: t('bumpHintTitle'),
       description: t('bumpHintDescription'),
+      mobileDescription: t('bumpHintDescription'),
       duration: BUMP_HINT_DURATION,
       action: {
         label: t('bumpHintAction'),

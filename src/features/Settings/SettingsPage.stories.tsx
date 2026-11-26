@@ -549,7 +549,8 @@ export const MobileSaveFailure: Story = {
     await expect(toggle).toBeChecked();
     fireEvent.click(toggle);
     await waitFor(() => expect(args.onSubmit).toHaveBeenCalled());
-    await expect(await canvas.findByText("Couldn't save")).toBeInTheDocument();
+    const toast = (await canvas.findByText("Couldn't save")).closest('output');
+    await expect(toast?.querySelector('svg')).toHaveClass('text-danger');
     await expect(
       canvas.getByRole('switch', { name: 'Make Profile Public' }),
     ).toBeChecked();

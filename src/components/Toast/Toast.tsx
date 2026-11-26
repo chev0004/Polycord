@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import type {
   ComponentProps,
   CSSProperties,
@@ -16,7 +17,7 @@ export const ToastProvider = ({ children }: { children?: ReactNode }) => {
 };
 
 export const ToastViewport = ({ children }: { children?: ReactNode }) => (
-  <ol className="ToastViewport fixed right-0 bottom-0 z-50 flex w-[390px] max-w-[100vw] list-none flex-col-reverse gap-3 p-6 outline-none">
+  <ol className="ToastViewport fixed right-0 bottom-0 z-[60] flex w-[390px] max-w-[100vw] list-none flex-col-reverse gap-3 p-6 outline-none">
     {children}
   </ol>
 );
@@ -48,6 +49,7 @@ export const Toast = ({
   onMouseLeave,
   ...props
 }: ToastProps) => {
+  const t = useTranslations('Toast');
   const [isHovered, setIsHovered] = useState(false);
   const state = open ? 'open' : 'closed';
   const handleMouseEnter: MouseEventHandler<HTMLLIElement> = (event) => {
@@ -63,37 +65,38 @@ export const Toast = ({
     <li
       {...props}
       aria-live="polite"
-      className="ToastRoot relative grid grid-cols-[auto_1fr_max-content] items-center gap-x-4 overflow-hidden rounded-md bg-background-darker shadow-lg data-[state=closed]:animate-hide data-[state=open]:animate-slideIn"
+      className="ToastRoot relative overflow-hidden rounded-md bg-background-darker shadow-[0_0_0_1px_var(--color-line-strong),0_14px_30px_-6px_rgba(0,0,0,0.7)] data-[state=closed]:animate-hide data-[state=open]:animate-slideIn"
       data-state={state}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="col-span-3 flex items-center gap-x-4 p-4">
+      <div className="flex items-start gap-x-3 py-4 pr-2 pl-4">
         {iconUrl ? <Avatar avatarUrl={iconUrl} size={'md'} /> : null}
 
         <div className="min-w-0 flex-1">
-          <div className="mb-0.5 font-figtree font-medium text-foreground text-sm">
+          <div className="mb-0.5 text-balance font-figtree font-medium text-foreground text-sm [word-break:auto-phrase]">
             {title}
           </div>
-          <div className="font-figtree text-[13px] text-muted">
+          <div className="text-balance font-figtree text-[13px] text-muted [word-break:auto-phrase]">
             {description}
           </div>
+          {action ? (
+            <button
+              type="button"
+              onClick={action.onClick}
+              className="-ml-2 mt-1 rounded-md px-2 py-1 font-figtree font-semibold text-[13px] text-primary underline-offset-2 transition-colors hover:underline focus-visible:underline"
+            >
+              {action.label}
+            </button>
+          ) : null}
         </div>
-        {action ? (
-          <button
-            type="button"
-            onClick={action.onClick}
-            className="self-center rounded-md px-2 py-1 font-figtree font-semibold text-[13px] text-primary underline-offset-2 transition-colors hover:underline focus-visible:underline"
-          >
-            {action.label}
-          </button>
-        ) : null}
         <button
           type="button"
-          className="flex text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground focus-visible:text-foreground"
+          aria-label={t('close')}
+          className="-mt-1.5 grid h-8 w-8 flex-shrink-0 place-items-center rounded-full text-muted transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-background-dark hover:text-foreground focus-visible:bg-background-dark focus-visible:text-foreground"
           onClick={() => onOpenChange?.(false)}
         >
-          <MdClose />
+          <MdClose size={18} />
         </button>
       </div>
 

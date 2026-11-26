@@ -234,6 +234,7 @@ export const MobileSettings = ({
     addToast({
       title: t(saved ? 'savedTitle' : 'saveFailedTitle'),
       description: t(saved ? 'savedDescription' : 'saveError'),
+      variant: saved ? undefined : 'error',
       duration: saved ? 2500 : 4000,
     });
   };

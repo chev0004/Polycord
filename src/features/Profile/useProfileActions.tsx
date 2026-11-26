@@ -36,6 +36,7 @@ export const useProfileActions = (
     if (!isLoggedIn) {
       addToast({
         title: t('reportLoginTitle'),
+        variant: 'info',
         description: t('reportLoginDescription'),
         duration: 4000,
       });
@@ -63,9 +64,11 @@ export const useProfileActions = (
         error instanceof ReportProfileError && error.status === 429;
       addToast({
         title: limited ? t('reportCooldownTitle') : t('reportErrorTitle'),
+        variant: 'error',
         description: limited
           ? t('reportCooldownDescription')
           : t('reportErrorDescription'),
+        mobileDescription: limited ? t('reportCooldownDescription') : undefined,
         duration: 4000,
       });
       throw error;
@@ -76,6 +79,7 @@ export const useProfileActions = (
     if (!isLoggedIn) {
       addToast({
         title: t('blockLoginTitle'),
+        variant: 'info',
         description: t('blockLoginDescription'),
         duration: 4000,
       });
@@ -108,6 +112,7 @@ export const useProfileActions = (
         copied ? 'shareCopiedDescription' : 'shareErrorDescription',
       ),
       iconUrl: copied ? profile.avatarUrl : undefined,
+      variant: copied ? undefined : 'error',
       duration: 4000,
     });
   };

@@ -79,7 +79,8 @@
     "noOptions": "No options"
   },
   "Toast": {
-    "now": "now"
+    "now": "now",
+    "close": "Dismiss notification"
   },
   "Inbox": {
     "title": "Inbox",
@@ -116,6 +117,7 @@
     "noteFromModeration": "Note from moderation",
     "readWarning": "Read warning",
     "seeWhoWithPremium": "See who it was with Supporter",
+    "openInbox": "Open Inbox",
     "justNow": "Just now",
     "minutesAgo": "{count, plural, =1 {# minute ago} other {# minutes ago}}",
     "hoursAgo": "{count, plural, =1 {# hour ago} other {# hours ago}}",
@@ -1031,7 +1033,7 @@
     "reportProfile": "Report profile",
     "blockProfile": "Block user",
     "blockDialogTitle": "Block {name}?",
-    "blockDialogDescription": "{name}'s profiles will no longer appear in your Discovery feed, and neither of you can interact with the other. You can undo this right after or from your blocked accounts in Settings.",
+    "blockDialogDescription": "{name}'s profiles will no longer appear in your Discovery feed, and neither of you can interact with the other. You can unblock them anytime from your blocked accounts in Settings.",
     "blockCancel": "Cancel",
     "blockConfirm": "Block user",
     "moderateProfile": "Take action",

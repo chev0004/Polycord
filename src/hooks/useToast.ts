@@ -27,7 +27,7 @@ export type ToastData = {
   action?: ToastAction;
   duration?: number;
   iconUrl?: string;
-  variant?: 'error';
+  variant?: 'error' | 'info';
   activity?: ToastActivity;
 };
 
