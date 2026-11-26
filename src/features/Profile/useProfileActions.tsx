@@ -64,6 +64,7 @@ export const useProfileActions = (
         error instanceof ReportProfileError && error.status === 429;
       addToast({
         title: limited ? t('reportCooldownTitle') : t('reportErrorTitle'),
+        variant: 'error',
         description: limited
           ? t('reportCooldownDescription')
           : t('reportErrorDescription'),
@@ -110,6 +111,7 @@ export const useProfileActions = (
         copied ? 'shareCopiedDescription' : 'shareErrorDescription',
       ),
       iconUrl: copied ? profile.avatarUrl : undefined,
+      variant: copied ? undefined : 'error',
       duration: 4000,
     });
   };
