@@ -2,7 +2,7 @@ import { LegalHub } from '@/features/Legal';
 import { tracePage } from '@/lib/pageLoadTrace';
 import { pageTitle } from '@/lib/pageTitle';
 
-export const generateMetadata = pageTitle('legal');
+export const generateMetadata = pageTitle('legal', '/legal');
 
 async function LegalIndexRoute({
   params,

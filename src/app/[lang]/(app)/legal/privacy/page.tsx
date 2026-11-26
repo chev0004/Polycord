@@ -2,7 +2,7 @@ import { getLegalDocument, LegalDocument } from '@/features/Legal';
 import { tracePage } from '@/lib/pageLoadTrace';
 import { pageTitle } from '@/lib/pageTitle';
 
-export const generateMetadata = pageTitle('privacy');
+export const generateMetadata = pageTitle('privacy', '/legal/privacy');
 
 async function PrivacyRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

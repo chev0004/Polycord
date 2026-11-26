@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { localeAlternates } from './localeAlternates';
 
 export const pageTitle =
-  (key: string) =>
+  (key: string, publicPath?: string) =>
   async ({
     params,
   }: {
@@ -11,5 +12,11 @@ export const pageTitle =
     const { lang } = await params;
     const t = await getTranslations({ locale: lang, namespace: 'PageTitle' });
 
-    return { title: t(key) };
+    return {
+      title: t(key),
+      alternates:
+        publicPath === undefined
+          ? undefined
+          : localeAlternates(lang, publicPath),
+    };
   };
