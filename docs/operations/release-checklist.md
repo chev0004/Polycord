@@ -23,7 +23,7 @@ Everything that must change between the current staging deployment and a public 
 
 - [x] Set `POLYCORD_PUBLIC_URL` in the production build environment. `robots.txt` and `sitemap.xml` are generated at build time, so rebuild after changing it. Every production deploy checks it matches the production origin.
 - [x] Scope the page `X-Robots-Tag` header by environment in `next.config.ts`, based on `POLYCORD_PUBLIC_URL`. `netlify.toml` keeps it on static files, which never pass through Next.js.
-- [ ] After the first staging deploy with this change, confirm `X-Robots-Tag` on pages and static files on `polycord.chev.dev`, `polycord-staging.netlify.app` and a deploy permalink.
+- [x] After the first staging deploy with this change, confirm `X-Robots-Tag` on pages and static files on `polycord.chev.dev`, `polycord-staging.netlify.app` and a deploy permalink. Confirmed on 2026-11-26, along with `noindex` on a production deploy permalink and none on `polycord.net` pages.
 - [x] Confirm `polycord.net` and `www.polycord.net` serve HTTPS and `www` redirects to the apex domain.
 - [ ] Verify the domain with the search console of choice after launch.
 
