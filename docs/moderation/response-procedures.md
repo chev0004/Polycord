@@ -2,7 +2,7 @@
 
 How support, privacy, safety and ban-appeal requests reach Polycord, how moderators triage and hand them off, and how urgent cases escalate. The intake paths are the ones AUTH-004 built: the in-app report action and the moderators in the Polycord Discord server, linked from the footer and the ban screen through `NEXT_PUBLIC_DISCORD_INVITE_URL`.
 
-The owner assigns moderators and responders and approves the policies referenced here. This document does not assign anyone.
+Chev, the owner, handles support, privacy, safety and appeal intake and is the primary responder for urgent cases, as decided on 2026-11-26. The owner assigns any further moderators and approves the policies referenced here.
 
 ## Intake
 

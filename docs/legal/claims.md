@@ -27,13 +27,13 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | The agreement is with the individual who operates Polycord, and liability is the operator's | The Terms and Privacy Policy intros name the operator role and use "we". No personal name, entity or trading name is published | Reworded: owner decides whether to form an entity or register a name |
 | The Terms cover the website, the Polycord Discord app and Supporter | The website is this repository. The Discord app's `/profile` command renders the card layout chosen in Settings (`discordCardDescription`). Website sign-in requests only the `identify` scope, uses the OAuth token once to read `users/@me` without storing it, and stores the Discord ID, username, display name and avatar URL | Open: review the Discord app’s code to establish how it accesses data and what it reads, stores and logs |
 | Supporter is an optional paid subscription that is not currently for sale, and Polycord takes no payments | BILLING-004 removed the payment integration. Settings shows the plan table and says Supporter is not available to buy. Access comes only from grants and the configured list | Verified |
-| Questions go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004) | Open: owner sets the invite URL and staffs moderator intake |
+| Questions go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004). Every production deploy requires the invite URL, and the owner handles intake since 2026-11-26. A support case reached the owner in the [intake rehearsal](../moderation/response-procedures.md#rehearsal) | Verified |
 
 ## Privacy Policy
 
 | Claim | Behavior and evidence | Status |
 | --- | --- | --- |
-| Underage reports go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004) | Open: owner sets the invite URL and staffs moderator intake and a review process |
+| Underage reports go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004). The owner handles intake since 2026-11-26, and [triage](../moderation/response-procedures.md#triage) treats a minor's safety as urgent and escalates it to the owner | Verified |
 | Discord ID, username, display name and avatar are collected, and email is no longer requested or saved at sign-in | `normalizeDiscordUser` in `src/lib/auth.ts` and the `identify` scope. Retiring stored addresses requires the post-rollout column drop | Verified |
 | Profile, usage, service and billing data listed | Tables in `src/db/schema.ts`: `profiles`, `analytics_events`, `saved_profiles`, `user_blocks`, `reports`, `notifications`, `push_subscriptions`. Supporter grants are stored on `users` | Verified |
 | IP addresses are kept for abuse prevention | `suspicious_activity.ip` and IP-keyed `rate_limit_counters` | Verified |
@@ -58,7 +58,7 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Reports are confidential | Reporter identity appears only on the admin route behind `isAdmin` | Verified |
 | Enforcement: hide, remove content, warn, remove account | Warn, hide, suspend and ban. Warnings reach free and Supporter inboxes (`tests/integration/notifications.mjs`). | Reworded |
 | Serious issues are escalated to authorities | No documented escalation process | Open: owner defines the process |
-| Contact the moderators in the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004) | Open: owner sets the invite URL and staffs moderator intake |
+| Contact the moderators in the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004). Every production deploy requires the invite URL, and the owner handles intake since 2026-11-26 | Verified |
 
 ## Product copy
 
