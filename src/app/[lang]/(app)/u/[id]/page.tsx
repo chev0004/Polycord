@@ -54,7 +54,11 @@ export const generateMetadata = ({
       ),
     });
 
-    return { title, description, openGraph: { title, description } };
+    return {
+      title: { absolute: title },
+      description,
+      openGraph: { title, description },
+    };
   });
 
 async function PublicProfileRoute({

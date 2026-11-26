@@ -8,7 +8,10 @@ import {
 import { getBumpReadyAt } from '@/features/Profile/bumpProfile';
 import { getCurrentUser } from '@/lib/auth';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
 import { SavedRouteClient } from './SavedRouteClient';
+
+export const generateMetadata = pageTitle('saved');
 
 async function SavedRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

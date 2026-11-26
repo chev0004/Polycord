@@ -15,6 +15,7 @@ import type { ProfileFormValues } from '@/features/Profile/schema';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
 import { ProfileRouteClient } from './ProfileRouteClient';
 
 const toProfileFormValues = ({
@@ -43,6 +44,8 @@ const toProfileFormValues = ({
   targetLanguages,
   timezone: profile.timezone ?? '',
 });
+
+export const generateMetadata = pageTitle('profile');
 
 async function ProfileRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

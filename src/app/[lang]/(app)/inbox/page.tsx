@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { InboxPage } from '@/features/Inbox/InboxPage';
 import { getCurrentUser } from '@/lib/auth';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
+
+export const generateMetadata = pageTitle('inbox');
 
 async function InboxRoute({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

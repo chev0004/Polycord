@@ -105,16 +105,15 @@ test('username links resolve visible profiles and share links prefer them', asyn
       (await resolve(request, 'en', usernames['reused-new'])).status(),
     ).toBe(404);
 
-    for (const [locale, title] of [
-      ['en', `${prefix} Link open on Polycord`],
-      ['ja', `${prefix} Link openさんのPolycordプロフィール`],
-    ]) {
+    for (const locale of ['en', 'ja']) {
       const embed = await request.get(`/${locale}/user/${usernames.open}`, {
         headers: discordbot,
       });
       expect(embed.url()).toContain(`/${locale}/u/${accounts.open.profile}`);
-      expect(await embed.text()).toContain(
-        `<meta property="og:title" content="${title}"/>`,
+      const html = await embed.text();
+      expect(html).toContain(`<title>Polycord | ${prefix} Link open</title>`);
+      expect(html).toContain(
+        `<meta property="og:title" content="Polycord | ${prefix} Link open"/>`,
       );
     }
 

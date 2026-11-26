@@ -5,7 +5,10 @@ import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { tracePage } from '@/lib/pageLoadTrace';
+import { pageTitle } from '@/lib/pageTitle';
 import { OnboardingRouteClient } from './OnboardingRouteClient';
+
+export const generateMetadata = pageTitle('onboarding');
 
 async function OnboardingRoute({
   params,
