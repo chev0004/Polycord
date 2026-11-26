@@ -57,7 +57,6 @@ export const generateMetadata = ({
     return {
       title: { absolute: title },
       description,
-      openGraph: { title, description },
     };
   });
 

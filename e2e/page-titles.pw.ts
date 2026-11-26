@@ -57,7 +57,15 @@ test('pages are titled Polycord | page in both locales', async ({
     ]) {
       await page.goto(path);
       await expect(page).toHaveTitle(title);
+      await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+        'content',
+        title,
+      );
     }
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      'content',
+      /\/link-preview-ja\.png$/,
+    );
   } finally {
     await sql`delete from users where id=${owner.id}`;
     await sql.end();
