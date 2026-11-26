@@ -1263,6 +1263,7 @@ export const MobileCardEditor = ({
                     : t('timezoneLabel')
                 }
                 options={locationPick === 'country' ? countries : timezones}
+                filter={locationPick === 'country' ? searchOptions : undefined}
                 value={values[locationPick] ?? ''}
                 onSelect={(value) => {
                   setValue(locationPick, value, {
