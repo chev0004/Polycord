@@ -178,7 +178,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Security',
         paragraphs: [
-          'We use industry-standard measures to protect your data, but no online service is perfectly secure. Please keep your Discord account protected, since it is how you sign in.',
+          'Polycord is served only over HTTPS. You sign in through Discord, so we never see your password, and we use your Discord sign-in token once without keeping it. No online service is perfectly secure, so please keep your Discord account protected, since it is how you sign in.',
         ],
       },
       {
