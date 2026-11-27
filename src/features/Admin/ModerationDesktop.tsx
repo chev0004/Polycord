@@ -8,6 +8,7 @@ import {
   MdAdminPanelSettings,
   MdArrowForward,
   MdBlock,
+  MdCampaign,
   MdCheck,
   MdClose,
   MdConfirmationNumber,
@@ -61,6 +62,7 @@ import {
 import { PremiumPanel } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { SeedPanel } from './SeedPanel';
+import { SponsorsPanel } from './SponsorsPanel';
 import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
   ActivityRange,
@@ -80,7 +82,13 @@ import {
   type ModerationStore,
 } from './useModeration';
 
-export type ModTab = 'reports' | 'users' | 'log' | 'suspicious' | 'dummy';
+export type ModTab =
+  | 'reports'
+  | 'users'
+  | 'log'
+  | 'suspicious'
+  | 'dummy'
+  | 'sponsors';
 
 export type Notify = (
   user: ModUser,
@@ -1224,6 +1232,15 @@ export const ModerationDesktop = ({
       ...(seed
         ? [{ id: 'dummy' as const, icon: MdStorage, label: t('tabDummy') }]
         : []),
+      ...(store.meRole === 'owner'
+        ? [
+            {
+              id: 'sponsors' as const,
+              icon: MdCampaign,
+              label: t('tabSponsors'),
+            },
+          ]
+        : []),
     ];
 
   return (
@@ -1370,6 +1387,7 @@ export const ModerationDesktop = ({
         <SuspiciousTab store={store} pages={flagPages} openUser={openUser} />
       ) : null}
       {tab === 'dummy' && seed ? <SeedPanel initial={seed} /> : null}
+      {tab === 'sponsors' ? <SponsorsPanel /> : null}
     </main>
   );
 };
