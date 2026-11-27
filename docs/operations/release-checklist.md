@@ -42,10 +42,10 @@ Everything that must change between the current staging deployment and a public 
 ## Integrations
 
 - [x] Push notifications deliver on the production domain with its VAPID subject.
-- [ ] Discord login, logout and session expiry complete on the production domain.
+- [x] Discord login and logout complete on the production domain, confirmed by the owner's device testing. Session expiry is not checked, by owner decision on 2026-11-26.
 - [x] The [post-deploy checks](monitoring.md#post-deploy-checks) pass on the launch candidate, and the assigned responder receives the [pre-launch test alert](monitoring.md#uptime-monitoring-and-pre-launch-test-alert).
 
 ## Launch gates
 
 - [x] Every Blocking row in [readiness](readiness.md) is resolved. The last one, the support contact, was resolved on 2026-11-26.
-- [ ] LEGAL-002 and TEST-002 have no open acceptance blockers. LEGAL-005 closed the legal rows on 2026-11-26, and the real-device gap in [acceptance](../quality/acceptance.md#blockers) remains.
+- [x] LEGAL-002 and TEST-002 have no open acceptance blockers. LEGAL-005 closed the legal rows on 2026-11-26, and the owner's device testing closed the last [acceptance](../quality/acceptance.md#blockers) blocker the same day.
