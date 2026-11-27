@@ -89,13 +89,21 @@ export const TagCloud = ({
           {t('tagCloudLabel')}
         </span>
         {selected.length > 0 ? (
-          <button
-            type="button"
-            onClick={onClear}
-            className="font-medium text-[13px] text-primary-light transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-foreground focus-visible:text-foreground"
-          >
-            {t('tagCloudClear', { count: selected.length })}
-          </button>
+          <span className="flex items-center gap-1.5 font-medium text-[13px]">
+            <span className="text-primary-light">
+              {t('tagCloudSelected', { count: selected.length })}
+            </span>
+            <span aria-hidden className="text-subtle">
+              ·
+            </span>
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-red-300 transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-red-200 focus-visible:text-red-200"
+            >
+              {t('filterClear')}
+            </button>
+          </span>
         ) : null}
         {limitReached ? (
           <output className="text-[13px] text-subtle">

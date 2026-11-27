@@ -533,7 +533,11 @@ export const Tags: Story = {
     );
     expect(canvas.getAllByText('Yuki').length).toBeGreaterThan(0);
 
-    await userEvent.click(canvas.getByRole('button', { name: /1 selected/ }));
+    await userEvent.click(
+      within(
+        canvas.getByText('1 selected').parentElement as HTMLElement,
+      ).getByRole('button', { name: 'Clear' }),
+    );
     await waitFor(() =>
       expect(canvas.getByText('2 partners')).toBeInTheDocument(),
     );

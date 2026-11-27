@@ -63,10 +63,12 @@ export const Default: Story = {
     await expect(gaming).toHaveAttribute('aria-pressed', 'true');
 
     await userEvent.click(canvas.getByRole('button', { name: 'Anime (3)' }));
-    const clear = canvas.getByRole('button', { name: /2 selected/ });
-    await expect(clear).toBeInTheDocument();
+    await expect(canvas.getByText('2 selected')).toBeInTheDocument();
+    expect(
+      canvas.queryByRole('button', { name: /selected/ }),
+    ).not.toBeInTheDocument();
 
-    await userEvent.click(clear);
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
 
     await expect(gaming).toHaveAttribute('aria-pressed', 'false');
     expect(canvas.queryByText(/selected/)).not.toBeInTheDocument();

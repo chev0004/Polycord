@@ -1043,7 +1043,7 @@
     "searchPlaceholder": "Search names, languages, country, tags, descriptions…",
     "searchLabel": "Search profiles",
     "tagCloudLabel": "Popular tags",
-    "tagCloudClear": "{count} selected · Clear",
+    "tagCloudSelected": "{count} selected",
     "tagCloudLimit": "Maximum of {max} tags selected",
     "sortLabel": "Sort",
     "sortByLabel": "Sort by",
