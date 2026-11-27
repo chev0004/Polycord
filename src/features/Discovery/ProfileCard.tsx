@@ -425,15 +425,15 @@ export const ProfileCard = ({
   const boostedVisible = showBoostedBadge && profile.boosted && !boostExpired;
 
   const cardClassName = [
-    'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-transform duration-200',
+    'relative flex w-full flex-col gap-4 rounded-3xl bg-background-dark p-5 transition-[top] duration-200',
     (opensProfile || opensSheet) && 'group/card cursor-pointer',
     boostedVisible && 'mt-3',
     isPreview
       ? 'mb-0 border border-line shadow-none'
       : `mb-6 shadow-lg ${
           isPopoverOpen || isMenuOpen
-            ? '-translate-y-1 shadow-xl'
-            : 'hover:-translate-y-1 hover:shadow-xl'
+            ? '-top-1 shadow-xl'
+            : 'top-0 hover:-top-1 hover:shadow-xl'
         }`,
     className,
   ]
