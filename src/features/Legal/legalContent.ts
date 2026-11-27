@@ -31,7 +31,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Who can use Polycord',
         paragraphs: [
-          'You must be at least 13 years old, or the minimum digital-consent age in your country if it is higher, to use Polycord. Polycord is built for finding language partners, not for dating or any adult activity.',
+          'You must be at least 13 years old, or the minimum digital-consent age in your country if it is higher, to use Polycord. By signing in with Discord, you confirm that you meet this age. Polycord is built for finding language partners, not for dating or any adult activity.',
           'If you are under the age of majority where you live, your parent or guardian must review and agree to these terms.',
           'If you use Polycord on behalf of an organisation, you confirm that you may accept these terms for it.',
         ],
