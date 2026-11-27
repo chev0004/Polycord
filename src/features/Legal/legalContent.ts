@@ -20,7 +20,7 @@ export const LEGAL_DOCUMENT_IDS: LegalDocumentId[] = [
 
 export const LEGAL_CANONICAL_LOCALE = 'en';
 
-const LAST_UPDATED = '2026-11-19';
+const LAST_UPDATED = '2026-11-26';
 
 const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
