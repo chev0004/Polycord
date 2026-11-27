@@ -15,6 +15,7 @@ import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { trackEvent } from '@/lib/analytics/track.server';
 import { gatedRoute } from '@/lib/gatedRoute';
 import { withModerationStates } from '@/lib/moderation';
+import { loadDiscoverySponsors } from '@/lib/sponsors';
 
 export const GET = gatedRoute(async ({ user, measure }, request: Request) => {
   try {
@@ -27,7 +28,7 @@ export const GET = gatedRoute(async ({ user, measure }, request: Request) => {
     const availability = profile
       ? toViewerAvailabilityContext(profile.profile)
       : {};
-    const [data, settings, role] = await Promise.all([
+    const [data, settings, role, sponsors] = await Promise.all([
       measure('query', () =>
         listDiscoveryPage(
           state,
@@ -41,6 +42,7 @@ export const GET = gatedRoute(async ({ user, measure }, request: Request) => {
         ? measure('settings', () => getUserSettingsByUserId(user.accountId))
         : null,
       user ? measure('staff', () => getStaffRole(user)) : null,
+      measure('sponsors', () => loadDiscoverySponsors(user, locale)),
     ]);
     const [profiles, pendingCases] = await Promise.all([
       role
@@ -73,8 +75,9 @@ export const GET = gatedRoute(async ({ user, measure }, request: Request) => {
                 Boolean(discoveryProfile?.premium),
               )
             : undefined,
+          sponsors,
         }
-      : { isLoggedIn: false };
+      : { isLoggedIn: false, sponsors };
     const payload = { viewer, data: { ...data, profiles } };
     after(() =>
       trackEvent({

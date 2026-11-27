@@ -1,5 +1,6 @@
 import { after } from 'next/server';
 import type { AvailabilityPattern } from '@/constants/availability';
+import type { DiscoverySponsors } from '@/constants/sponsors';
 import { listDiscoveryPage } from '@/db/discovery';
 import type { StaffRole } from '@/features/Admin/types';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
@@ -24,6 +25,7 @@ type DiscoveryFeedProps = {
   viewerAvailability?: AvailabilityPattern;
   userAvatarUrl?: string;
   staff?: { meId: string; role: StaffRole };
+  sponsors: DiscoverySponsors | null;
   measure?: LoadMeasure;
 };
 
@@ -41,6 +43,7 @@ export const DiscoveryFeed = async ({
   viewerAvailability,
   userAvatarUrl,
   staff,
+  sponsors,
   measure = measureLoad,
 }: DiscoveryFeedProps) => {
   let data: DiscoveryData = {
@@ -104,6 +107,7 @@ export const DiscoveryFeed = async ({
       viewerAvailability={viewerAvailability}
       userAvatarUrl={userAvatarUrl}
       staff={staff}
+      sponsors={sponsors}
     />
   );
 };

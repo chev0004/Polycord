@@ -1158,7 +1158,8 @@
     "backToTop": "Back to top: search, sort and filters",
     "loadMore": "Show more partners",
     "endOfResults": "You've seen everyone who matches.",
-    "boostedBadge": "Boosted"
+    "boostedBadge": "Boosted",
+    "sponsored": "Sponsored"
   },
   "Saved": {
     "eyebrow": "Saved",
