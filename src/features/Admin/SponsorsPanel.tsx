@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { type FormEvent, useEffect, useState } from 'react';
 import {
   SPONSOR_IMAGE_SIZES,
@@ -224,7 +224,6 @@ export const SponsorsPanel = ({
   mobile?: boolean;
 }) => {
   const t = useTranslations('Admin');
-  const number = new Intl.NumberFormat(useLocale());
   const { date } = useModFormat();
   const [sponsors, setSponsors] = useState(initial);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -327,8 +326,8 @@ export const SponsorsPanel = ({
                       </p>
                       <p className="text-[12.5px] text-soft tabular-nums">
                         {t('sponsorStats', {
-                          views: number.format(sponsor.views),
-                          clicks: number.format(sponsor.clicks),
+                          views: sponsor.views,
+                          clicks: sponsor.clicks,
                         })}
                       </p>
                     </div>

@@ -27,7 +27,7 @@ const sponsors: AdminSponsor[] = [
     endsAt: from(12),
     paused: true,
     views: 3120,
-    clicks: 58,
+    clicks: 1,
   },
   {
     id: 'banner-scheduled',
@@ -72,6 +72,7 @@ export const Default: Story = {
     await expect(
       canvas.getByText('18,234 views, 412 clicks'),
     ).toBeInTheDocument();
+    await expect(canvas.getByText('3,120 views, 1 click')).toBeInTheDocument();
     await expect(canvas.getByRole('button', { name: 'Resume' })).toBeEnabled();
 
     await userEvent.click(canvas.getAllByRole('button', { name: 'Remove' })[0]);

@@ -151,7 +151,7 @@
     "sponsorStatusPaused": "Paused",
     "sponsorStatusEnded": "Ended",
     "sponsorDates": "{start} to {end}",
-    "sponsorStats": "{views} views, {clicks} clicks",
+    "sponsorStats": "{views, plural, one {# view} other {# views}}, {clicks, plural, one {# click} other {# clicks}}",
     "sponsorPause": "Pause",
     "sponsorResume": "Resume",
     "sponsorRemove": "Remove",

@@ -151,7 +151,7 @@
     "sponsorStatusPaused": "一時停止中",
     "sponsorStatusEnded": "終了",
     "sponsorDates": "{start}〜{end}",
-    "sponsorStats": "表示 {views}回、クリック {clicks}回",
+    "sponsorStats": "表示 {views, number}回、クリック {clicks, number}回",
     "sponsorPause": "一時停止",
     "sponsorResume": "再開",
     "sponsorRemove": "削除",
