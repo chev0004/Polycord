@@ -69,6 +69,7 @@ export const GET = scopedRoute(async () => {
           actorProfileId:
             premium && !row.isGuest ? (actorProfileId ?? undefined) : undefined,
           isGuest: row.isGuest,
+          hidden: !row.isGuest && row.actorName === null,
           message: row.message ?? undefined,
           warningCategory: row.warningCategory ?? undefined,
           acknowledgedAt: row.acknowledgedAt?.toISOString(),

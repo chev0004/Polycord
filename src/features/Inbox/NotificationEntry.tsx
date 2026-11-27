@@ -137,7 +137,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
               >
                 {t('viewProfile')}
               </Link>
-            ) : premium && !notification.isGuest ? (
+            ) : premium && !notification.isGuest && !notification.hidden ? (
               <p className="text-muted text-xs leading-[1.35]">
                 {t('profileUnavailable')}
               </p>

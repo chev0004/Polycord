@@ -121,6 +121,7 @@ const SupporterNotificationsStory = () => {
         {
           id: '5',
           kind: 'copy',
+          hidden: true,
           timestamp: t('hoursAgo', { count: 3 }),
         },
       ]}
@@ -155,8 +156,8 @@ export const SupporterNotifications: Story = {
       portal.getByText('An anonymous user copied your username'),
     ).toBeInTheDocument();
     await expect(
-      portal.getByText('A user copied your username'),
-    ).toBeInTheDocument();
+      portal.getByText('A user copied your username').closest('.InboxRow'),
+    ).not.toHaveTextContent('This profile is no longer available to you.');
     await expect(
       portal.queryByText('See who it was with Supporter'),
     ).not.toBeInTheDocument();
