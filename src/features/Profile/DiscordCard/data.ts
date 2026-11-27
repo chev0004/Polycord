@@ -1,3 +1,4 @@
+import { createTranslator } from 'next-intl';
 import { countryOptions } from '@/constants';
 import type {
   AvailabilityDays,
@@ -9,6 +10,7 @@ import {
   getNativeLanguageName,
   Proficiency,
 } from '@/constants/languages';
+import en from '@/locales/en.json';
 import type {
   DiscordCardAvailability,
   DiscordCardData,
@@ -20,6 +22,37 @@ export type DiscordCardLabels = {
   daysShort: Record<AvailabilityDays, string>;
   anyTime: string;
   levels: Record<Proficiency, string>;
+};
+
+const tProfile = createTranslator({
+  locale: 'en',
+  messages: en,
+  namespace: 'Profile',
+});
+const tCard = createTranslator({
+  locale: 'en',
+  messages: en,
+  namespace: 'DiscordCard',
+});
+
+export const ENGLISH_CARD_LABELS: DiscordCardLabels = {
+  days: {
+    any: tProfile('availabilityDayAny'),
+    weekdays: tProfile('availabilityDayWeekdays'),
+    weekends: tProfile('availabilityDayWeekends'),
+  },
+  daysShort: {
+    any: tCard('abbrAny'),
+    weekdays: tCard('abbrWeekdays'),
+    weekends: tCard('abbrWeekends'),
+  },
+  anyTime: tProfile('availabilityAnyTime'),
+  levels: {
+    [Proficiency.BEGINNER]: tProfile('proficiencyOptionBeginner'),
+    [Proficiency.INTERMEDIATE]: tProfile('proficiencyOptionIntermediate'),
+    [Proficiency.ADVANCED]: tProfile('proficiencyOptionAdvanced'),
+    [Proficiency.NATIVE_LEVEL]: tProfile('proficiencyOptionNativeLevel'),
+  },
 };
 
 type BuildDiscordCardDataInput = {

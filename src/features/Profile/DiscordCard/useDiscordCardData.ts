@@ -1,21 +1,9 @@
-import { createTranslator } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import type { AvailabilityPattern } from '@/constants/availability';
-import { formatCurrentTime, Proficiency } from '@/constants/languages';
-import en from '@/locales/en.json';
-import { buildDiscordCardData } from './data';
+import { formatCurrentTime } from '@/constants/languages';
+import { buildDiscordCardData, ENGLISH_CARD_LABELS } from './data';
 
 const CLOCK_INTERVAL = 30000;
-const t = createTranslator({
-  locale: 'en',
-  messages: en,
-  namespace: 'Profile',
-});
-const tCard = createTranslator({
-  locale: 'en',
-  messages: en,
-  namespace: 'DiscordCard',
-});
 
 const useCardClock = (timezone?: string) => {
   const [time, setTime] = useState('');
@@ -70,25 +58,7 @@ export const useDiscordCardData = ({
         country,
         time,
         locale: 'en',
-        labels: {
-          days: {
-            any: t('availabilityDayAny'),
-            weekdays: t('availabilityDayWeekdays'),
-            weekends: t('availabilityDayWeekends'),
-          },
-          daysShort: {
-            any: tCard('abbrAny'),
-            weekdays: tCard('abbrWeekdays'),
-            weekends: tCard('abbrWeekends'),
-          },
-          anyTime: t('availabilityAnyTime'),
-          levels: {
-            [Proficiency.BEGINNER]: t('proficiencyOptionBeginner'),
-            [Proficiency.INTERMEDIATE]: t('proficiencyOptionIntermediate'),
-            [Proficiency.ADVANCED]: t('proficiencyOptionAdvanced'),
-            [Proficiency.NATIVE_LEVEL]: t('proficiencyOptionNativeLevel'),
-          },
-        },
+        labels: ENGLISH_CARD_LABELS,
       }),
     [
       name,
