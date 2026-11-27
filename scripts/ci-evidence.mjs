@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 export const resultContext = 'ci/result';
+export const releaseContext = 'ci/release';
 export const jobNames = ['static', 'unit', 'package', 'e2e', 'storybook'];
 const policyPaths = [
   '.github',

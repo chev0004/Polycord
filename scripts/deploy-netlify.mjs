@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { appendFile } from 'node:fs/promises';
 import { checkNetlifyPackage } from './check-netlify-package.mjs';
+import { ciPolicy, evidence, releaseContext, treeOf } from './ci-evidence.mjs';
 import { deployableChanges } from './deploy-inputs.mjs';
 
 const repository = 'chev0004/Polycord';
@@ -26,6 +27,7 @@ const fullValidation = [
     'test:e2e',
     'e2e/discovery-bar-only.pw.ts',
     'e2e/dev-settings.pw.ts',
+    'e2e/discovery-logo.pw.ts',
   ],
   ['bun', 'run', 'build-storybook'],
   ['bun', 'run', 'test:storybook'],
@@ -94,13 +96,24 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
   };
   const validate = async () => {
     if (actions) return 'Tests workflow';
-    const response = await github(
-      `commits/${sha}/check-runs?check_name=CI%20result`,
+    const response = await github(`commits/${sha}/statuses?per_page=100`).catch(
+      () => null,
     );
-    assert.ok(response.ok, `CI lookup failed (${response.status})`);
-    const { check_runs } = await response.json();
-    if (check_runs.some(({ conclusion }) => conclusion === 'success'))
-      return 'CI result';
+    const statuses = response?.ok ? await response.json() : [];
+    const tree = treeOf(sha, run);
+    const policy = ciPolicy(sha, run);
+    if (
+      tree &&
+      policy &&
+      statuses.some(
+        ({ context, state, description, creator }) =>
+          context === releaseContext &&
+          state === 'success' &&
+          description === evidence(tree, policy) &&
+          creator?.login === 'github-actions[bot]',
+      )
+    )
+      return releaseContext;
     const database = URL.parse(process.env.TEST_DATABASE_URL ?? '');
     const deployDatabase = new URL(process.env.DATABASE_URL);
     assert.ok(
@@ -111,7 +124,7 @@ export async function deployNetlify(target, run = spawnSync, request = fetch) {
         database.pathname.toLowerCase() !==
           deployDatabase.pathname.toLowerCase() &&
         !database.search,
-      'No passing CI result: set TEST_DATABASE_URL to a disposable local polycord_test database',
+      'No valid CI release evidence: set TEST_DATABASE_URL to a disposable local polycord_test database',
     );
     const env = {
       ...process.env,

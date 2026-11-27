@@ -190,6 +190,7 @@ export async function planDevelop(
       ...noJobs(
         `Run ${proven} validated the same tree under the same CI policy.`,
       ),
+      reused: true,
       deploy: develop,
     };
 
@@ -206,7 +207,7 @@ if (import.meta.main) {
   if (process.env.GITHUB_OUTPUT)
     await appendFile(
       process.env.GITHUB_OUTPUT,
-      `${jobNames.map((job) => `${job}=${plan.jobs[job]}\n`).join('')}validate=${Object.values(plan.jobs).some(Boolean)}\ndeploy=${plan.deploy}\n`,
+      `${jobNames.map((job) => `${job}=${plan.jobs[job]}\n`).join('')}validate=${Object.values(plan.jobs).some(Boolean)}\nreused=${plan.reused === true}\ndeploy=${plan.deploy}\n`,
     );
   if (process.env.GITHUB_STEP_SUMMARY)
     await appendFile(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);

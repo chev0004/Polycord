@@ -4,11 +4,19 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, test } from 'node:test';
+import { evidence } from './ci-evidence.mjs';
 import { deployStaging } from './deploy-staging.mjs';
 
 const siteId = '694f7324-d2b5-43b5-9de4-ae33e0b927ee';
 const sha = 'a'.repeat(40);
 const digest = createHash('sha256').update('server archive').digest('hex');
+const policy = createHash('sha256').update('policy files').digest('hex');
+const releaseStatus = {
+  context: 'ci/release',
+  state: 'success',
+  description: evidence(sha, policy),
+  creator: { login: 'github-actions[bot]' },
+};
 const originalCwd = process.cwd();
 const originalEnv = { ...process.env };
 let calls;
@@ -19,7 +27,7 @@ let buildId;
 let publishedDigest;
 let diff;
 let recordOk;
-let ciRuns;
+let ciStatuses;
 let status;
 
 beforeEach(async () => {
@@ -74,7 +82,7 @@ beforeEach(async () => {
   publishedDigest = digest;
   diff = 'src/app/page.tsx\n';
   recordOk = true;
-  ciRuns = [{ conclusion: 'success' }];
+  ciStatuses = [releaseStatus];
   status = '';
 });
 
@@ -87,6 +95,7 @@ function run(command, args, options) {
   calls.push({ command, args, env: options.env });
   let stdout = '';
   if (args[0] === 'rev-parse') stdout = sha;
+  if (args[0] === 'ls-tree') stdout = 'policy files';
   if (args[0] === 'ls-remote') stdout = `${head}\trefs/heads/develop\n`;
   if (args[0] === 'diff') stdout = diff;
   if (args[0] === 'status') stdout = status;
@@ -105,9 +114,9 @@ function run(command, args, options) {
 }
 
 async function request(url, options) {
-  if (url.includes('/check-runs')) {
+  if (url.endsWith(`/commits/${sha}/statuses?per_page=100`)) {
     calls.push({ url });
-    return { ok: true, json: async () => ({ check_runs: ciRuns }) };
+    return { ok: true, json: async () => ciStatuses };
   }
   if (url.startsWith('https://api.github.com/')) {
     calls.push({ url, method: options.method, body: JSON.parse(options.body) });
@@ -279,7 +288,11 @@ test('an owner deploys the clean develop tip on CI evidence', async () => {
 
 test('an owner without CI evidence runs the full suite on a disposable database first', async () => {
   owner();
-  ciRuns = [];
+  ciStatuses = [
+    { ...releaseStatus, context: 'ci/result' },
+    { ...releaseStatus, description: evidence('b'.repeat(40), policy) },
+    { ...releaseStatus, creator: { login: 'someone-else' } },
+  ];
   process.env.TEST_DATABASE_URL = 'postgresql://localhost/polycord_test';
   await deployStaging(run, request);
   const [e2e, barOnly] = ran('test:e2e');
@@ -287,6 +300,7 @@ test('an owner without CI evidence runs the full suite on a disposable database 
   assert.ok(
     barOnly.args.includes('NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED=false'),
   );
+  assert.ok(barOnly.args.includes('e2e/discovery-logo.pw.ts'));
   assert.equal(e2e.env.NETLIFY_AUTH_TOKEN, undefined);
   assert.equal(e2e.env.GITHUB_TOKEN, undefined);
   assert.ok(
@@ -298,7 +312,7 @@ test('an owner without CI evidence runs the full suite on a disposable database 
 
 test('refuses an owner deploy without evidence, from a dirty checkout or off the tip', async () => {
   owner();
-  ciRuns = [{ conclusion: 'failure' }];
+  ciStatuses = [];
   await assert.rejects(deployStaging(run, request), /TEST_DATABASE_URL/);
   for (const url of [
     process.env.DATABASE_URL,

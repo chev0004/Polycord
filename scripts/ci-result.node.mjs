@@ -13,12 +13,13 @@ let accept;
 
 const git = (...args) => spawnSync('git', args, { encoding: 'utf8' });
 
-const needs = (validate, results = {}, planned = jobNames) =>
+const needs = (validate, results = {}, planned = jobNames, reused = false) =>
   JSON.stringify({
     gate: {
       result: 'success',
       outputs: {
         validate: String(validate),
+        reused: String(reused),
         ...Object.fromEntries(
           jobNames.map((job) => [
             job,
@@ -125,12 +126,14 @@ test('fails when the gate failed', async () => {
 });
 
 test('passes a planned skip without recording evidence', async () => {
-  const result = await reportResult(
-    env({ NEEDS: needs(false) }),
-    spawnSync,
-    request,
-  );
-  assert.equal(result.passed, true);
+  for (const RELEASE_SHA of ['', git('rev-parse', 'HEAD').stdout.trim()]) {
+    const result = await reportResult(
+      env({ RELEASE_SHA, NEEDS: needs(false) }),
+      spawnSync,
+      request,
+    );
+    assert.equal(result.passed, true);
+  }
   assert.equal(posts.length, 0);
   const ran = await reportResult(
     env({ NEEDS: needs(false, { unit: 'success' }) }),
@@ -140,7 +143,36 @@ test('passes a planned skip without recording evidence', async () => {
   assert.equal(ran.passed, false);
 });
 
-test('does not record evidence for forks or pushes', async () => {
+test('records release evidence for direct validation and verified reuse', async () => {
+  const sha = git('rev-parse', 'HEAD').stdout.trim();
+  for (const reused of [false, true]) {
+    const result = await reportResult(
+      env({
+        RELEASE_SHA: sha,
+        RECORD_EVIDENCE: 'false',
+        NEEDS: needs(!reused, {}, jobNames, reused),
+      }),
+      spawnSync,
+      request,
+    );
+    assert.equal(result.passed, true);
+  }
+  assert.equal(posts.length, 2);
+  for (const { url, body } of posts) {
+    assert.ok(url.endsWith(`/statuses/${sha}`));
+    assert.equal(body.context, 'ci/release');
+    assert.equal(body.description, evidence(treeOf(sha), ciPolicy(sha)));
+  }
+  const mismatched = await reportResult(
+    env({ RELEASE_SHA: 'a'.repeat(40), RECORD_EVIDENCE: 'false' }),
+    spawnSync,
+    request,
+  );
+  assert.equal(mismatched.passed, false);
+  assert.equal(posts.length, 2);
+});
+
+test('does not record evidence for forks or branches outside release CI', async () => {
   for (const overrides of [
     { RECORD_EVIDENCE: 'false' },
     { GITHUB_EVENT_NAME: 'push', RECORD_EVIDENCE: 'false' },

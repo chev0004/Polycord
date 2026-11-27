@@ -3,6 +3,7 @@ import {
   ciPolicy,
   evidence,
   jobNames,
+  releaseContext,
   resultContext,
   treeOf,
 } from './ci-evidence.mjs';
@@ -31,15 +32,23 @@ export async function reportResult(
   )
     failed.unshift('validation plan missing or inconsistent');
   if (failed.length) return { passed: false, reason: failed.join(', ') };
-  if (!validated || env.RECORD_EVIDENCE !== 'true')
-    return { passed: true, reason: 'No evidence recorded.' };
+  const release = env.RELEASE_SHA && (validated || plan.reused === 'true');
+  const sha = release
+    ? env.RELEASE_SHA
+    : validated && env.RECORD_EVIDENCE === 'true' && env.HEAD_SHA;
+  if (!sha) return { passed: true, reason: 'No evidence recorded.' };
 
   const tree = treeOf('HEAD', run);
   const policy = ciPolicy('HEAD', run);
   if (!tree || !policy)
     return { passed: false, reason: 'Cannot read the checked-out tree.' };
+  if (release && tree !== treeOf(sha, run))
+    return {
+      passed: false,
+      reason: 'Checked-out tree differs from the release.',
+    };
   const response = await request(
-    `https://api.github.com/repos/${env.GITHUB_REPOSITORY}/statuses/${env.HEAD_SHA}`,
+    `https://api.github.com/repos/${env.GITHUB_REPOSITORY}/statuses/${sha}`,
     {
       method: 'POST',
       headers: {
@@ -48,7 +57,7 @@ export async function reportResult(
       },
       body: JSON.stringify({
         state: 'success',
-        context: resultContext,
+        context: release ? releaseContext : resultContext,
         description: evidence(tree, policy),
         target_url: `${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}/attempts/${env.GITHUB_RUN_ATTEMPT}`,
       }),
