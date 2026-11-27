@@ -51,7 +51,7 @@ export const getNotificationMessage = (
 
   return notification.actorName
     ? t('userCopied', { user: notification.actorName })
-    : t('anonymousUserCopied');
+    : t(notification.isGuest ? 'anonymousUserCopied' : 'anonymousCopyAlert');
 };
 
 export const NotificationEntry: React.FC<NotificationEntryProps> = ({

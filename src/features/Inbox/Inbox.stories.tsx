@@ -118,6 +118,11 @@ const SupporterNotificationsStory = () => {
           isGuest: true,
           timestamp: t('hoursAgo', { count: 2 }),
         },
+        {
+          id: '5',
+          kind: 'copy',
+          timestamp: t('hoursAgo', { count: 3 }),
+        },
       ]}
     />
   );
@@ -131,7 +136,7 @@ export const SupporterNotifications: Story = {
       name: 'Notifications',
     });
 
-    await expect(canvas.getByText('4')).toBeInTheDocument();
+    await expect(canvas.getByText('5')).toBeInTheDocument();
 
     await userEvent.click(trigger);
 
@@ -148,6 +153,9 @@ export const SupporterNotifications: Story = {
     ).toBeInTheDocument();
     await expect(
       portal.getByText('An anonymous user copied your username'),
+    ).toBeInTheDocument();
+    await expect(
+      portal.getByText('A user copied your username'),
     ).toBeInTheDocument();
     await expect(
       portal.queryByText('See who it was with Supporter'),
