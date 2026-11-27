@@ -49,7 +49,9 @@ test('japanese policies use an accurate english fallback', async ({
     0,
   );
   await expect(
-    page.getByText(/Hidden browsing, a Supporter setting, keeps your name out/),
+    page.getByText(
+      /Hidden browsing, a Supporter setting, keeps your name and avatar out/,
+    ),
   ).toBeVisible();
   await expect(
     page.getByText(/Polycord is served only over HTTPS/),
