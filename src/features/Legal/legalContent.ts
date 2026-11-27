@@ -148,6 +148,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
         paragraphs: [
           'Product analytics records events such as sign-ups, profile saves, searches, views, and username copies. Events may include your account ID, locale, language selections, country, and the profile owner’s account ID. We do not collect Discord message content.',
           'Turn off Product analytics in Settings to stop future product events associated with your signed-in account, including browser and server events. This does not erase earlier events or disable records needed for features, notifications, security, or billing. Signed-out events are not associated with your signed-in preference.',
+          'Discovery can show sponsored spots, which Supporters do not see. Polycord serves their images itself and counts how often each spot is shown and clicked only as totals, without recording who saw or clicked it. Sponsors receive only those totals, and receive nothing from your browser unless you follow their link.',
         ],
       },
       {
