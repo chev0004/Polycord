@@ -15,4 +15,5 @@ export * from './saved';
 export * from './schema';
 export * from './seed';
 export * from './settings';
+export * from './sponsors';
 export * from './voiceIntros';
