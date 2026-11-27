@@ -48,4 +48,4 @@ Everything that must change between the current staging deployment and a public 
 ## Launch gates
 
 - [x] Every Blocking row in [readiness](readiness.md) is resolved. The last one, the support contact, was resolved on 2026-11-26.
-- [ ] LEGAL-002 and TEST-002 have no open acceptance blockers. LEGAL-005 closed the legal rows on 2026-11-26, and the real-device gap in [acceptance](../quality/acceptance.md#blockers) remains.
+- [x] LEGAL-002 and TEST-002 have no open acceptance blockers. LEGAL-005 closed the legal rows on 2026-11-26, and the owner's device testing closed the last [acceptance](../quality/acceptance.md#blockers) blocker the same day.
