@@ -103,3 +103,13 @@ After visibility changes, confirm with real runs:
 4. Record the first month of billed usage from the billing usage report here.
 
 If the monthly allowance stops Actions, rerun validation after the reset to restore CI evidence. Once automated staging is disabled, run the owner deploy separately to publish staging and record `staging/published`.
+
+## Scoped CI pilot
+
+Scoped CI was enabled on the public repository on November 27, 2026 at 5:00 p.m. Central. The first seven-day window closes December 4 at 5:00 p.m. Central. Keep the repository public during the measurement.
+
+Verify one PR that qualifies for a smaller job plan and one app PR that requires the full suite. Confirm the `full-ci` label requests the full suite. The [original narrow run](https://github.com/chev0004/Polycord/actions/runs/44645187476) used 11 runner minutes, and the [original app run](https://github.com/chev0004/Polycord/actions/runs/44645191236) used 33. Those trials predate this rollout.
+
+Use Actions job records for jobs that started during the window. Round each job up to the next minute and count each run attempt, including failed and canceled attempts with runner time. Report PR validation, `develop` and `prod` validation, ticket sync, and other hosted jobs. Show the actual total and the projected private total after subtracting the old `deploy-staging` job. Compare the projection with the target of roughly 450 runner minutes per week and record the PR volume and mix.
+
+The seven days immediately before the pilot used 1,908 runner minutes. PR validation used 1,360, `develop` validation used 345, `prod` validation used 101, ticket sync used 45, and automatic staging deploys used 57. That projects to 1,851 minutes under the private deployment plan with scoped CI still off.
