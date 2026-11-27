@@ -90,14 +90,38 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
         is_guest: true,
       },
     ]);
+    const copy = await page.request.post('/api/notifications', {
+      data: { profileId: data.actorProfile },
+    });
+    expect(await copy.json()).toEqual({ created: true });
+    const hiddenCopies =
+      await sql`select actor_user_id, actor_name, actor_avatar_url, is_guest from notifications where user_id = ${data.actor.id} and kind = 'copy'`;
+    expect(hiddenCopies).toEqual([
+      {
+        actor_user_id: null,
+        actor_name: null,
+        actor_avatar_url: null,
+        is_guest: false,
+      },
+    ]);
     await page
       .getByRole('button', { name: 'Notifications', exact: true })
       .click();
     await sql`insert into notifications (user_id, kind, actor_user_id, actor_name) values (${data.owner.id}, 'view', ${data.actor.id}, 'Inbox actor')`;
+    await sql`insert into notifications (user_id, kind) values (${data.owner.id}, 'copy')`;
     await page.clock.runFor(30000);
     await expect(page.getByRole('dialog')).toContainText(
       'Inbox actor viewed your profile',
     );
+    await expect(
+      page.getByRole('dialog').getByText('A user copied your username'),
+    ).toBeVisible();
+    await expect(page.getByRole('dialog')).not.toContainText(
+      'This profile is no longer available to you.',
+    );
+    await expect(
+      page.getByRole('link', { name: 'View profile', exact: true }),
+    ).toHaveCount(2);
     await page.screenshot({
       path: testInfo.outputPath('premium-inbox.png'),
       animations: 'disabled',
@@ -107,7 +131,7 @@ test('inbox honors server Supporter on every navbar and refreshes without naviga
     await expect(page.getByRole('dialog')).not.toContainText(
       'Inbox actor viewed your profile',
     );
-    await expect(page.getByText('A user copied your username')).toBeVisible();
+    await expect(page.getByText('A user copied your username')).toHaveCount(2);
     await expect(
       page.getByRole('button', { name: /Note from moderation/ }),
     ).toBeVisible();

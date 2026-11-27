@@ -7,6 +7,7 @@ export type StoredNotification = {
   actorAvatarUrl?: string;
   actorProfileId?: string;
   isGuest?: boolean;
+  hidden?: boolean;
   message?: string;
   warningCategory?: WarningCategory;
   acknowledgedAt?: string;

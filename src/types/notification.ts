@@ -18,6 +18,7 @@ export type Notification = {
   actorAvatarUrl?: string;
   actorProfileId?: string;
   isGuest?: boolean;
+  hidden?: boolean;
   message?: string;
   warningCategory?: WarningCategory;
   acknowledgedAt?: string;

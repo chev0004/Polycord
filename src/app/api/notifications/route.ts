@@ -18,6 +18,7 @@ import { trackEvent } from '@/lib/analytics/track.server';
 import { getActiveUser, getCurrentUser } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/entitlements.server';
 import { allowInteractionNotification } from '@/lib/notifications/interactionThrottle';
+import { interactionActor } from '@/lib/notifications/profileView';
 import {
   enforceRateLimit,
   rateLimitedResponse,
@@ -68,6 +69,7 @@ export const GET = scopedRoute(async () => {
           actorProfileId:
             premium && !row.isGuest ? (actorProfileId ?? undefined) : undefined,
           isGuest: row.isGuest,
+          hidden: !row.isGuest && row.actorName === null,
           message: row.message ?? undefined,
           warningCategory: row.warningCategory ?? undefined,
           acknowledgedAt: row.acknowledgedAt?.toISOString(),
@@ -141,12 +143,13 @@ export const POST = scopedRoute(async (request: Request) => {
     return NextResponse.json({ created: false });
   }
 
+  const actor = currentUser ? await interactionActor(currentUser) : null;
   const notification = await createNotification({
     userId: target.profile.userId,
     kind: 'copy',
-    actorUserId: currentUser?.accountId ?? null,
-    actorName: currentUser?.name ?? null,
-    actorAvatarUrl: currentUser?.avatarUrl ?? null,
+    actorUserId: actor?.id ?? null,
+    actorName: actor?.name ?? null,
+    actorAvatarUrl: actor?.avatarUrl ?? null,
     isGuest: !currentUser,
   });
 

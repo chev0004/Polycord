@@ -51,7 +51,7 @@ export const getNotificationMessage = (
 
   return notification.actorName
     ? t('userCopied', { user: notification.actorName })
-    : t('anonymousUserCopied');
+    : t(notification.isGuest ? 'anonymousUserCopied' : 'anonymousCopyAlert');
 };
 
 export const NotificationEntry: React.FC<NotificationEntryProps> = ({
@@ -137,7 +137,7 @@ export const NotificationEntry: React.FC<NotificationEntryProps> = ({
               >
                 {t('viewProfile')}
               </Link>
-            ) : premium && !notification.isGuest ? (
+            ) : premium && !notification.isGuest && !notification.hidden ? (
               <p className="text-muted text-xs leading-[1.35]">
                 {t('profileUnavailable')}
               </p>
