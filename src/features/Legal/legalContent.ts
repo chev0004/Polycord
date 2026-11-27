@@ -20,7 +20,7 @@ export const LEGAL_DOCUMENT_IDS: LegalDocumentId[] = [
 
 export const LEGAL_CANONICAL_LOCALE = 'en';
 
-const LAST_UPDATED = '2026-11-19';
+const LAST_UPDATED = '2026-11-26';
 
 const en: Record<LegalDocumentId, LegalDocumentContent> = {
   terms: {
@@ -31,7 +31,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Who can use Polycord',
         paragraphs: [
-          'You must be at least 13 years old, or the minimum digital-consent age in your country if it is higher, to use Polycord. Polycord is built for finding language partners, not for dating or any adult activity.',
+          'You must be at least 13 years old, or the minimum digital-consent age in your country if it is higher, to use Polycord. By signing in with Discord, you confirm that you meet this age. Polycord is built for finding language partners, not for dating or any adult activity.',
           'If you are under the age of majority where you live, your parent or guardian must review and agree to these terms.',
           'If you use Polycord on behalf of an organisation, you confirm that you may accept these terms for it.',
         ],
@@ -140,6 +140,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'When your profile is set to public, the details you add to it are visible to other members and to anyone with your public profile link, including people who are not signed in.',
           'Signed-in members can see and copy your Discord username. Logged-out visitors can see and copy it only if you allow anonymous copying in Settings. You choose whether your timezone is displayed in Settings or the profile editor, and whether your availability is displayed in the profile editor.',
           'Blocking hides two signed-in accounts from each other. A public profile can still be viewed by anyone who is signed out.',
+          'Viewing or sharing someone’s profile, or copying their username, can notify them. While you are signed in, profile owners with Supporter see your display name and avatar in those notifications. Hidden browsing, a Supporter setting, keeps your name out of view and share notifications, but copying a username always shows it. Activity while signed out stays anonymous.',
         ],
       },
       {
@@ -158,7 +159,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'How we share information',
         paragraphs: [
-          'We share data with providers that host Polycord and run its infrastructure, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
+          'We share data with providers that host Polycord and run its infrastructure, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We never sell your personal data.',
         ],
       },
       {
@@ -177,7 +178,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'Security',
         paragraphs: [
-          'We use industry-standard measures to protect your data, but no online service is perfectly secure. Please keep your Discord account protected, since it is how you sign in.',
+          'Polycord is served only over HTTPS. You sign in through Discord, so we never see your password, and we use your Discord sign-in token once without keeping it. No online service is perfectly secure, so please keep your Discord account protected, since it is how you sign in.',
         ],
       },
       {

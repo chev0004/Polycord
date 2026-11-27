@@ -1,11 +1,12 @@
 # Policy Claims
 
-Claim-by-claim check of the Terms of Service, Privacy Policy and Community Guidelines in `src/features/Legal/legalContent.ts`, plus user-facing benefit copy, against implemented behavior. Reviewed 2026-09-24 against `develop` for LEGAL-002. Operator and Supporter rows rechecked 2026-11-19 for LEGAL-004 against the BILLING-004 and AUTH-004 changes.
+Claim-by-claim check of the Terms of Service, Privacy Policy and Community Guidelines in `src/features/Legal/legalContent.ts`, plus user-facing benefit copy, against implemented behavior. Reviewed 2026-09-24 against `develop` for LEGAL-002. Operator and Supporter rows rechecked 2026-11-19 for LEGAL-004 against the BILLING-004 and AUTH-004 changes. The remaining open rows were closed on 2026-11-26 for LEGAL-005.
 
 Status values:
 
 - **Verified**: the behavior matches the text, with code or test evidence.
 - **Reworded**: the text described something the product does not do, so the wording now matches the evidence.
+- **Decided**: the claim rests on an owner decision rather than code, and the row records the decision and its date.
 - **Open**: needs operational evidence or an owner decision that the repository cannot supply. The row names the dependency.
 
 Every row is owned by Chev, the single maintainer. This is a consistency review, not legal advice or certification.
@@ -14,18 +15,18 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 
 | Claim | Behavior and evidence | Status |
 | --- | --- | --- |
-| Users must be 13 or the local digital-consent age | No age is collected and there is no age gate. Adding age data is not assumed to be required. | Open: owner decides how eligibility is operationalized |
-| Minors need a parent or guardian to review and agree | No guardian acknowledgement exists | Open: owner decision |
-| Signing in or browsing is acceptance | No acceptance record or checkbox exists | Open: owner decides whether an explicit acknowledgement is needed |
+| Users must be 13 or the local digital-consent age | No age is collected and there is no age gate. Every account signs in through Discord, whose [Developer Policy](https://support-dev.discord.com/hc/en-us/articles/8563934450327-Discord-Developer-Policy) (rule 9) sets the same minimum, and the Terms say signing in confirms it. Underage reports reach the owner through the Discord server and lead to removal | Decided 2026-11-26: Discord's age requirement and the sign-in confirmation, with no age data |
+| Minors need a parent or guardian to review and agree | No guardian acknowledgement exists. The Terms place the obligation on the member and their parent or guardian | Decided 2026-11-26: user obligation, no approval flow |
+| Signing in or browsing is acceptance | No acceptance record, checkbox or sign-in notice exists. The footer links the Terms on every page (`src/features/Footer/Footer.tsx`) | Decided 2026-11-26: acceptance stays in the Terms without a sign-in notice |
 | Polycord never sees the Discord password | OAuth code flow with `identify` scope in `src/app/api/auth/discord/route.ts`. The callback does not store Discord tokens. | Verified |
 | Deleting the account removes the profile and disconnects Discord | Deletion removes the profile and revokes sessions (`tests/integration/account.mjs`, `e2e/account.pw.ts`) but cannot revoke the Discord authorization | Reworded: points to Discord Authorized Apps |
 | Public profiles appear in discovery and on share links | `/[lang]/u/[id]` and discovery queries in `src/db/discovery.ts`; `e2e/safety.pw.ts` | Verified |
 | Enforcement: hide, remove content, suspend, ban | Admin actions are warn, hide or unhide, suspend or unsuspend, ban or unban (`src/app/api/admin/moderation/route.ts`, `tests/integration/moderation.mjs`). There is no content removal action. | Reworded |
-| Unlawful activity may be reported to Discord or authorities | No documented escalation process or contact route | Open: owner defines the escalation process |
+| Unlawful activity may be reported to Discord or authorities | [Urgent escalation](../moderation/response-procedures.md#urgent-escalation): moderators hide and suspend, then the owner decides whether to report to Discord Trust and Safety or the authorities and records the decision. The claim says "may" | Verified |
 | Price, plan contents and renewal dates are shown before subscribing | BILLING-004 removed the payment integration. Settings shows the plan table and says Supporter is not available to buy | Removed from the Terms |
 | Subscriptions renew until cancelled and paid features last to period end | BILLING-004 converted active subscriptions into grants ending at their paid period end, and access now comes only from grants and the configured list | Removed from the Terms |
 | The agreement is with the individual who operates Polycord, and liability is the operator's | The Terms and Privacy Policy intros name the operator role and use "we". No personal name, entity or trading name is published | Reworded: owner decides whether to form an entity or register a name |
-| The Terms cover the website, the Polycord Discord app and Supporter | The website is this repository. The Discord app's `/profile` command renders the card layout chosen in Settings (`discordCardDescription`). Website sign-in requests only the `identify` scope, uses the OAuth token once to read `users/@me` without storing it, and stores the Discord ID, username, display name and avatar URL | Open: review the Discord app’s code to establish how it accesses data and what it reads, stores and logs |
+| The Terms cover the website, the Polycord Discord app and Supporter | The website is this repository. The Discord app's `/profile` command renders the card layout chosen in Settings (`discordCardDescription`). Website sign-in requests only the `identify` scope, uses the OAuth token once to read `users/@me` without storing it, and stores the Discord ID, username, display name and avatar URL | Open: the app is not released yet. LEGAL-006 reviews what it reads, stores and logs before launch |
 | Supporter is an optional paid subscription that is not currently for sale, and Polycord takes no payments | BILLING-004 removed the payment integration. Settings shows the plan table and says Supporter is not available to buy. Access comes only from grants and the configured list | Verified |
 | Questions go to the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004). Every production deploy requires the invite URL, and the owner handles intake since 2026-11-26. A support case reached the owner in the [intake rehearsal](../moderation/response-procedures.md#rehearsal) | Verified |
 
@@ -40,15 +41,16 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Public profile details are visible to members and link holders | Also visible to signed-out visitors. Signed-in members always receive the Discord username; guests only with `allowAnonymousCopy` (`toDiscoveryProfile` in `src/db/profiles.ts`, `e2e/safety.pw.ts`) | Reworded |
 | Timezone and availability display are controlled in Settings | Timezone is in Settings and the profile editor; availability only in the profile editor | Reworded |
 | Blocking hides people | Blocks are mutual between signed-in accounts (`src/db/discovery.ts`, `tests/integration/safety.mjs`). Public profiles stay visible when signed out, as Settings already states. | Reworded |
+| Views, shares and username copies can notify the owner, Supporters see the signed-in visitor's name and avatar, and Hidden browsing hides it from view and share alerts only | View and share alerts store the actor through `interactionActor` in `src/lib/notifications/profileView.ts`, which drops it for Supporters with `hideProfileVisits`. Copy alerts in `src/app/api/notifications/route.ts` always store the signed-in actor. `getNotificationMessage` in `src/features/Inbox/NotificationEntry.tsx` names actors only for Supporter owners. Signed-out actors are stored as guests. `e2e/notifications.pw.ts` covers a hidden visit stored without a name and names that disappear when the owner's Supporter ends | Verified: added for LEGAL-005 |
 | Turning off Product analytics stops future account-linked events | `trackEvent` skips events for users with `productAnalytics` off; deletion clears the account link (`tests/integration/analytics.mjs`) | Verified |
 | Discord message content is not collected | Scopes are `identify` only | Verified |
 | Cookies keep sign-in and language; browser storage keeps preferences and onboarding | Cookies: session, OAuth state, `NEXT_LOCALE`. Preferences are stored with the account. Session storage holds unsaved form drafts and the discovery return position (`src/hooks/useFormDraft.ts`). | Reworded |
 | Polycord is run by an individual operator | Privacy Policy intro, matching the Terms | Reworded |
 | Data is shared with hosts, Discord and push services | Matches the integrations in `src/lib/push` and the Discord routes. Voice intros are stored in the database. BILLING-004 removed the payment provider | Verified |
-| Personal data is never sold | No code path sells data. This is an accountable business commitment. | Open: owner review |
+| Personal data is never sold | No code path sells data, and there are no ads or data partners. The intro and the sharing section now make the same statement instead of "to advertisers". The Discord [Developer Policy](https://support-dev.discord.com/hc/en-us/articles/8563934450327-Discord-Developer-Policy) (rules 17 and 18) separately forbids selling Discord data or giving it to ad networks | Decided 2026-11-26: owner commitment |
 | Deletion removes listed data; some records remain | Matches the retention note in `getAccountExportByUserId` and Settings `deleteAccountRetentionNote` (`tests/integration/account.mjs`) | Reworded |
 | Export covers account, profile, settings and voice | Export also includes saved profiles, blocks, reports, inbox, Supporter grants, boosts, push registrations and analytics (`src/db/account.ts`) | Reworded |
-| Industry-standard security measures | No security review or control inventory backs this phrase | Open: owner review |
+| Industry-standard security measures | No security review or control inventory backs this phrase. The text now names what is verified: HTTPS only (`http://polycord.net` redirects, with `Strict-Transport-Security`), Discord sign-in without a password, and the OAuth token used once without being stored | Reworded |
 
 ## Community Guidelines
 
@@ -57,7 +59,7 @@ Every row is owned by Chev, the single maintainer. This is a consistency review,
 | Blocking makes someone no longer appear for you | Mutual hiding while signed in, inbox filtering (`src/db/notifications.ts`), and no notification to the blocked person | Reworded |
 | Reports are confidential | Reporter identity appears only on the admin route behind `isAdmin` | Verified |
 | Enforcement: hide, remove content, warn, remove account | Warn, hide, suspend and ban. Warnings reach free and Supporter inboxes (`tests/integration/notifications.mjs`). | Reworded |
-| Serious issues are escalated to authorities | No documented escalation process | Open: owner defines the process |
+| Serious issues may be reported to authorities | [Urgent escalation](../moderation/response-procedures.md#urgent-escalation) treats a minor's safety as urgent, and the owner decides whether to report and records the decision | Verified |
 | Contact the moderators in the Polycord Discord server | Legal pages and the ban screen send people to the moderators in the Polycord Discord server through the footer and `NEXT_PUBLIC_DISCORD_INVITE_URL` (AUTH-004). Every production deploy requires the invite URL, and the owner handles intake since 2026-11-26 | Verified |
 
 ## Product copy

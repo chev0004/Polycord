@@ -28,6 +28,9 @@ test('japanese policies use an accurate english fallback', async ({
   await expect(
     page.getByText(/not currently available to buy, and Polycord does not/),
   ).toBeVisible();
+  await expect(
+    page.getByText(/By signing in with Discord, you confirm that you meet/),
+  ).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath('en-terms.png'),
     fullPage: true,
@@ -40,6 +43,16 @@ test('japanese policies use an accurate english fallback', async ({
   ).toBeVisible();
   await expect(
     page.getByText(/Logged-out visitors can see and copy it only if/),
+  ).toBeVisible();
+  await expect(page.getByText(/never sell your personal data/)).toHaveCount(2);
+  await expect(page.getByText(/to advertisers|industry-standard/)).toHaveCount(
+    0,
+  );
+  await expect(
+    page.getByText(/Hidden browsing, a Supporter setting, keeps your name out/),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Polycord is served only over HTTPS/),
   ).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath('en-privacy.png'),

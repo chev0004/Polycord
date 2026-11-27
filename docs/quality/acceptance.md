@@ -26,8 +26,8 @@ Evidence-based acceptance pass for the readiness backlog, recorded 2026-09-24 fo
 | 34-36 | Username privacy, block enforcement, unblock UI, copy ordering | SAFETY-002 (#106) | `e2e/safety.pw.ts`, `tests/integration/safety.mjs` | Resolved |
 | 37 | Session revocation and export completeness | ACCOUNT-002 (#104) | `e2e/account.pw.ts`, `tests/integration/account.mjs` | Resolved |
 | Billing | Supporter comes only from grants and the configured list, with no payment integration | BILLING-004 | `e2e/premium-grants.pw.ts`, `tests/integration/boosts.mjs` | Resolved |
-| Legal | Policy claims against behavior and operations | LEGAL-002 (#116) | `docs/legal/claims.md`, `e2e/legal.pw.ts`, `tests/integration/analytics.mjs` | Resolved, with open owner rows |
-| Operations | Monitoring, alerts, backups, production data boundary | DEV-013 (#111) | `docs/operations/readiness.md` | Blocking rows remain |
+| Legal | Policy claims against behavior and operations | LEGAL-002 (#116), LEGAL-005 | `docs/legal/claims.md`, `e2e/legal.pw.ts`, `tests/integration/analytics.mjs` | Resolved, except the unreleased Discord app (LEGAL-006) |
+| Operations | Monitoring, alerts, backups, production data boundary | DEV-013 (#111) | `docs/operations/readiness.md` | Resolved |
 | Test stability | Accessibility scans racing animations | TEST-003 (#113) | `e2e/accessibility.pw.ts` | Resolved |
 
 ## Route coverage
@@ -49,6 +49,4 @@ Direct entry, refresh, Back and Forward, locale changes and return journeys are 
 
 ## Blockers
 
-1. The Open rows in `docs/legal/claims.md` need owner evidence or decisions: mailbox delivery, eligibility and guardian acknowledgement, escalation, no-sale and security assertions.
-2. Complete the Blocking and Pending rows in `docs/operations/readiness.md`, including the isolated production backup, restore and delivery of the pre-launch test alert.
-3. No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.
+- No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.
