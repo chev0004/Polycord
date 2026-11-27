@@ -457,7 +457,7 @@ export const ProfileCard = ({
               {lastBumpRelative && (
                 <span
                   data-bump-pill
-                  className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide backdrop-blur-sm"
+                  className="whitespace-nowrap rounded-full bg-black/60 px-[11px] py-[5px] font-semibold text-[11px] text-foreground uppercase tracking-wide"
                 >
                   {lastBumpRelative}
                 </span>
@@ -468,7 +468,7 @@ export const ProfileCard = ({
                     type="button"
                     onPointerDown={moderateIntent}
                     onClick={() => setIsMenuOpen(true)}
-                    className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors active:bg-black/50"
+                    className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white transition-colors active:bg-black/50"
                     aria-label={t('cardMenu')}
                   >
                     <MdMoreVert size={19} />
@@ -504,7 +504,7 @@ export const ProfileCard = ({
                           moderateIntent?.();
                       }}
                       suppressHydrationWarning
-                      className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground backdrop-blur-sm transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground focus-visible:bg-black/50"
+                      className="after:-inset-2 relative flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/30 text-foreground transition-colors after:absolute after:content-[''] hover:bg-black/50 hover:text-foreground focus-visible:bg-black/50"
                       aria-label={t('cardMenu')}
                     >
                       <MdMoreVert size={17} />
