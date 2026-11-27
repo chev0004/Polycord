@@ -1043,7 +1043,7 @@
     "searchPlaceholder": "名前、言語、国、タグ、自己紹介を検索…",
     "searchLabel": "プロフィールを検索",
     "tagCloudLabel": "人気のタグ",
-    "tagCloudClear": "{count}件選択中 · クリア",
+    "tagCloudSelected": "{count}件選択中",
     "tagCloudLimit": "タグは最大{max}件まで選択できます",
     "sortLabel": "並び替え",
     "sortByLabel": "並び替え",
