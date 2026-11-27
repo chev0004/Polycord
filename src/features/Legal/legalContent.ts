@@ -159,7 +159,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
       {
         heading: 'How we share information',
         paragraphs: [
-          'We share data with providers that host Polycord and run its infrastructure, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We do not sell personal data to advertisers.',
+          'We share data with providers that host Polycord and run its infrastructure, Discord for sign-in, and your browser’s push service when you enable notifications. We may disclose information if the law requires it or to protect members’ safety. We never sell your personal data.',
         ],
       },
       {
