@@ -61,9 +61,9 @@ const statusOf = (sponsor: AdminSponsor, now: number) =>
 
 const statusTone = {
   Live: 'bg-primary-darker text-primary-light',
-  Scheduled: 'bg-background-darker text-soft',
+  Scheduled: 'bg-[rgba(107,114,128,0.2)] text-soft',
   Paused: 'bg-[rgba(161,98,7,0.25)] text-discord-yellow',
-  Ended: 'bg-background-darker text-subtle',
+  Ended: 'bg-[rgba(107,114,128,0.2)] text-subtle',
 };
 
 const ImageField = ({
@@ -308,7 +308,7 @@ export const SponsorsPanel = ({
                     key={sponsor.id}
                     className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-background-darker p-4"
                   >
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="flex min-w-[220px] flex-1 flex-col gap-1">
                       <p className="flex items-center gap-2">
                         <span className="truncate font-semibold text-foreground text-sm">
                           {sponsor.name}
