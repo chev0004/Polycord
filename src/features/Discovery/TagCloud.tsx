@@ -84,7 +84,7 @@ export const TagCloud = ({
 
   return (
     <div className="mt-1 flex flex-col gap-3">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-semibold text-[11px] text-subtle uppercase tracking-[0.06em]">
           {t('tagCloudLabel')}
         </span>
@@ -105,11 +105,6 @@ export const TagCloud = ({
             </button>
           </span>
         ) : null}
-        {limitReached ? (
-          <output className="text-[13px] text-subtle">
-            {t('tagCloudLimit', { max: MAX_SELECTED_TAGS })}
-          </output>
-        ) : null}
         {layout ? (
           <button
             type="button"
@@ -126,6 +121,13 @@ export const TagCloud = ({
               className={`transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'rotate-180' : ''}`}
             />
           </button>
+        ) : null}
+        {limitReached ? (
+          <output
+            className={`text-[13px] text-subtle ${collapsible ? 'basis-full' : ''}`}
+          >
+            {t('tagCloudLimit', { max: MAX_SELECTED_TAGS })}
+          </output>
         ) : null}
       </div>
       <div
