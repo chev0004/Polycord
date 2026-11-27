@@ -1,5 +1,6 @@
 import type { AvailabilityPattern } from '@/constants/availability';
 import type { TimeFormat } from '@/constants/languages';
+import type { DiscoverySponsors } from '@/constants/sponsors';
 import type { StaffRole } from '@/features/Admin/types';
 import type { CardTheme } from './cardTheme';
 
@@ -19,4 +20,5 @@ export type DiscoveryViewer = {
   cardTheme?: CardTheme;
   languageDisplay?: 'long' | 'short';
   timeFormat?: TimeFormat;
+  sponsors?: DiscoverySponsors | null;
 };

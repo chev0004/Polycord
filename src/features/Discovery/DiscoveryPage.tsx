@@ -16,6 +16,7 @@ import { siteContainerClass } from '@/components/Container';
 import { FilterBar } from '@/components/Filter';
 import { ToastStack } from '@/components/Toast';
 import type { AvailabilityPattern } from '@/constants/availability';
+import type { DiscoverySponsors } from '@/constants/sponsors';
 import type { CasePreview } from '@/features/Admin/CaseShell';
 import { prefetchCase } from '@/features/Admin/caseCache';
 import type { ModState, StaffRole } from '@/features/Admin/types';
@@ -78,6 +79,7 @@ import { ProfileGridSkeleton } from './ProfileGridSkeleton';
 import { recordProfileShare } from './profileShareRequest';
 import { SearchBar } from './SearchBar';
 import { SortMenu } from './SortMenu';
+import { SponsorBanner } from './Sponsored';
 import {
   blockedProfileIds,
   blockProfileRequest,
@@ -122,6 +124,7 @@ const ReportDialog = dynamic(() =>
 );
 
 const EMPTY_PROFILES: DiscoveryProfile[] = [];
+const SPONSORED_SLOT = 4;
 
 const withoutBlocked = (profiles: DiscoveryProfile[]) =>
   profiles.filter(({ id }) => !blockedProfileIds.has(id));
@@ -144,6 +147,7 @@ type DiscoveryPageProps = {
   viewerAvailability?: AvailabilityPattern | null;
   userAvatarUrl?: string;
   staff?: { meId: string; role: StaffRole };
+  sponsors?: DiscoverySponsors | null;
   onBumpProfile?: () => Promise<BumpProfileResponse>;
   onViewer?: (viewer: DiscoveryViewer) => void;
 };
@@ -219,6 +223,7 @@ export const DiscoveryPage = ({
   viewerAvailability,
   userAvatarUrl,
   staff,
+  sponsors,
   onBumpProfile,
   onViewer,
 }: DiscoveryPageProps) => {
@@ -425,6 +430,27 @@ export const DiscoveryPage = ({
         : pageItems,
     [pageItems, moderationOverrides],
   );
+  const sponsorCards = sponsors?.cards ?? [];
+  const sponsoredSlot = (start: number, size: number) =>
+    Math.min(start + Math.min(SPONSORED_SLOT, size), displayedItems.length);
+  const sponsored = !sponsorCards.length
+    ? []
+    : stacked
+      ? groupSizes
+          .slice(0, Math.min(safePage, sponsorCards.length))
+          .map((size, batch) => ({
+            index: sponsoredSlot(
+              groupSizes.slice(0, batch).reduce((sum, value) => sum + value, 0),
+              size,
+            ),
+            sponsor: sponsorCards[batch],
+          }))
+      : [
+          {
+            index: sponsoredSlot(0, displayedItems.length),
+            sponsor: sponsorCards[(safePage - 1) % sponsorCards.length],
+          },
+        ];
   const stackPending =
     stacked &&
     pageItems.length <
@@ -1375,6 +1401,12 @@ export const DiscoveryPage = ({
           />
         </div>
 
+        {sponsors?.banner ? (
+          <div className="mb-[22px]">
+            <SponsorBanner sponsor={sponsors.banner} />
+          </div>
+        ) : null}
+
         {refreshFailed ? (
           <div
             className="rounded-md border border-red-400/40 bg-danger-surface px-4 py-3 font-figtree text-danger text-sm"
@@ -1452,6 +1484,7 @@ export const DiscoveryPage = ({
                   handleAddMultiFilter('country', country)
                 }
                 addToast={addToast}
+                sponsored={sponsored}
                 emptyState={
                   hasActiveFilters ? undefined : t('emptyFeedDescription')
                 }

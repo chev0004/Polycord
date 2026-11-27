@@ -17,6 +17,7 @@ import { trackEvent } from '@/lib/analytics/track.server';
 import { getCurrentUser } from '@/lib/auth';
 import { type LoadMeasure, measureLoad } from '@/lib/loadTrace';
 import { createPageLoadTrace } from '@/lib/pageLoadTrace';
+import { loadDiscoverySponsors } from '@/lib/sponsors';
 import { AppFrame } from './AppFrame';
 import { DiscoveryFeed } from './DiscoveryFeed';
 
@@ -66,6 +67,7 @@ async function renderDiscovery(
       discoveryParams.append(key, entry);
   }
   const user = await measure('account', getCurrentUser);
+  const sponsors = measure('sponsors', () => loadDiscoverySponsors(user, lang));
   let needsOnboarding = false;
   let currentProfileId: string | undefined;
   let bumpReadyAt: string | undefined;
@@ -122,6 +124,7 @@ async function renderDiscovery(
     viewerAvailability,
     userAvatarUrl: user?.avatarUrl,
     staff,
+    sponsors: await sponsors,
     measure,
   });
 }

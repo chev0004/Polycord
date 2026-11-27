@@ -18,7 +18,8 @@ export type RateLimitAction =
   | 'notify-kind'
   | 'notify-actor'
   | 'auth-failure'
-  | 'analytics';
+  | 'analytics'
+  | 'sponsor';
 
 export type RateLimitSubject = {
   userId?: string;
@@ -38,6 +39,7 @@ const DEFAULT_LIMITS: Record<
   'notify-actor': { max: 3, windowMs: 86_400_000 },
   'auth-failure': { max: 10, windowMs: 900_000 },
   analytics: { max: 300, windowMs: 3_600_000 },
+  sponsor: { max: 120, windowMs: 3_600_000 },
 };
 
 export const getRateLimit = (action: RateLimitAction) => {

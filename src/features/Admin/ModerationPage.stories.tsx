@@ -112,6 +112,8 @@ const mockListsApi =
           return new Response(
             JSON.stringify({ days: { [dayKey(new Date())]: 7 } }),
           );
+        if (url.pathname === '/api/admin/sponsors')
+          return new Response(JSON.stringify({ sponsors: [] }));
         return original(...args);
       },
       { preconnect: original.preconnect },
@@ -361,6 +363,32 @@ export const DummyDataProgress: Story = {
     await expect(bar).toHaveAttribute('aria-valuemax', '5000');
     await waitFor(() => expect(bar).toHaveAttribute('aria-valuenow', '2000'));
     await expect(canvasElement.querySelector('progress')).toBeNull();
+  },
+};
+
+export const Sponsors: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(canvas.getByRole('tab', { name: 'Sponsors' }));
+    const panel = within(
+      await canvas.findByRole('region', { name: 'Sponsors' }),
+    );
+    await expect(await panel.findAllByText('No bookings yet.')).toHaveLength(2);
+    await expect(
+      panel.getByRole('button', { name: 'Add sponsor' }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const SponsorsMobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    fireEvent.click(await canvas.findByRole('button', { name: 'Sponsors' }));
+    const panel = within(
+      await canvas.findByRole('region', { name: 'Sponsors' }),
+    );
+    await expect(await panel.findAllByText('No bookings yet.')).toHaveLength(2);
   },
 };
 
@@ -724,6 +752,9 @@ export const ModeratorView: Story = {
     await expect(canvas.queryByText('Supporter')).not.toBeInTheDocument();
     await expect(
       canvas.queryByRole('button', { name: 'Grant Supporter' }),
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.queryByRole('tab', { name: 'Sponsors' }),
     ).not.toBeInTheDocument();
   },
 };

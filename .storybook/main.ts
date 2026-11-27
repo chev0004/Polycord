@@ -1,7 +1,7 @@
 import type { StorybookConfig } from '@storybook/nextjs';
 
 const config: StorybookConfig = {
-  staticDirs: ['../public'],
+  staticDirs: ['../public', { from: '../tests/fixtures', to: '/fixtures' }],
   stories: [
     '../src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../src/features/**/*.stories.@(js|jsx|mjs|ts|tsx)',

@@ -184,6 +184,9 @@ mock.module('../../src/db', () => ({
   mapProfileToDiscoveryProfile: () => null,
   toViewerAvailabilityContext: () => ({}),
 }));
+mock.module('../../src/lib/sponsors', () => ({
+  loadDiscoverySponsors: async () => null,
+}));
 mock.module('../../src/db/discovery', () => ({
   countDiscovery: async () => 0,
   listDiscoveryPage: async () => ({

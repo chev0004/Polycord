@@ -90,6 +90,7 @@ import { GrantFields, useGrant } from './ModerationPremium';
 import { StaffPanel } from './ModerationStaff';
 import { canDismissReports, protectionOf } from './permissions';
 import { SeedPanel } from './SeedPanel';
+import { SponsorsPanel } from './SponsorsPanel';
 import { SuspiciousEvents, useEventLabel } from './SuspiciousEvents';
 import type {
   ActivityRange,
@@ -1015,12 +1016,14 @@ const Dock = ({
   prefetch,
   pending,
   seeding,
+  owner,
 }: {
   tab: ModTab;
   setTab: (tab: ModTab) => void;
   prefetch: Partial<Record<ModTab, () => void>>;
   pending: number;
   seeding: boolean;
+  owner: boolean;
 }) => {
   const t = useTranslations('Admin');
   const items = useRef<Partial<Record<ModTab, HTMLElement | null>>>({});
@@ -1037,6 +1040,7 @@ const Dock = ({
     log: t('tabLog'),
     suspicious: t('tabSuspicious'),
     dummy: t('tabDummy'),
+    sponsors: t('tabSponsors'),
   };
 
   useLayoutEffect(() => {
@@ -1123,6 +1127,7 @@ const Dock = ({
         {button('log', MdHistory)}
         {button('suspicious', MdPolicy)}
         {seeding ? button('dummy', MdStorage) : null}
+        {owner ? button('sponsors', MdCampaign) : null}
       </div>
     </nav>
   );
@@ -2166,6 +2171,11 @@ export const ModerationMobile = ({
           <SeedPanel initial={seed} mobile />
         </div>
       ) : null}
+      {tab === 'sponsors' ? (
+        <div className="pt-[calc(env(safe-area-inset-top)+16px)]">
+          <SponsorsPanel mobile />
+        </div>
+      ) : null}
       <Dock
         tab={tab}
         setTab={(next) => {
@@ -2175,6 +2185,7 @@ export const ModerationMobile = ({
         prefetch={prefetch}
         pending={store.pendingCases}
         seeding={Boolean(seed)}
+        owner={store.meRole === 'owner'}
       />
       {page ? (
         <CasePage

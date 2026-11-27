@@ -12,6 +12,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MOCK_USER_AVATAR_URL } from '@/constants/mock-data';
+import type { DiscoverySponsors } from '@/constants/sponsors';
 import { moderationSnapshot } from '@/features/Admin/moderationFixtures';
 import type { ModUser } from '@/features/Admin/types';
 import { AppShell } from '@/features/Navigation/AppShell';
@@ -682,6 +683,83 @@ export const Paginated: Story = {
     await expect(
       canvas.queryByRole('button', { name: 'Next page' }),
     ).toBeNull();
+  },
+};
+
+const sponsors: DiscoverySponsors = {
+  banner: {
+    id: '6f1d7a52-3c5e-4f0b-9a64-2d8f0e1b7c41',
+    url: 'https://example.com/kumo',
+    alt: 'kumo. Speak first, grammar later.',
+    image: '/fixtures/sponsor-banner-wide.png',
+    phoneImage: '/fixtures/sponsor-banner-phone.png',
+  },
+  cards: [
+    {
+      id: '0b9e4c2a-7d18-4e63-8f5a-c3a1d6e2f904',
+      url: 'https://example.com/kumo',
+      alt: 'kumo. Phrases recorded by native speakers in 40 languages.',
+      image: '/fixtures/sponsor-card.png',
+    },
+  ],
+};
+
+const renderSponsored: Story['render'] = (args) => {
+  const t = useTranslations('DiscoveryStories');
+  const base = createSampleProfiles(t);
+  return (
+    <DiscoveryPage
+      {...args}
+      sponsors={sponsors}
+      profiles={[
+        ...base,
+        ...base.map((profile) => ({ ...profile, id: `${profile.id}-b` })),
+      ]}
+    />
+  );
+};
+
+export const Sponsored: Story = {
+  render: renderSponsored,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const links = () =>
+      canvas
+        .getAllByRole('link')
+        .filter((link) => link.getAttribute('rel') === 'sponsored noopener');
+
+    await waitFor(() =>
+      expect(canvas.getAllByText('Sponsored')).toHaveLength(2),
+    );
+    for (const link of links()) {
+      await expect(link).toHaveAttribute('href', 'https://example.com/kumo');
+      await expect(link).toHaveAttribute('target', '_blank');
+    }
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Next page' }));
+    await expect(canvas.getByText('Page 2 of 2')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(canvas.getAllByText('Sponsored')).toHaveLength(2),
+    );
+  },
+};
+
+export const SponsoredMobile: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: renderSponsored,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await waitFor(() =>
+      expect(canvas.getAllByText('Sponsored')).toHaveLength(2),
+    );
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show more partners' }),
+    );
+    await waitFor(() =>
+      expect(canvas.getByText(/seen everyone/)).toBeInTheDocument(),
+    );
+    await expect(canvas.getAllByText('Sponsored')).toHaveLength(2);
   },
 };
 

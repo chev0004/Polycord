@@ -670,6 +670,36 @@ export const suspiciousActivity = pgTable(
   ],
 ).enableRLS();
 
+export const sponsorTierEnum = pgEnum('sponsor_tier', ['card', 'banner']);
+
+export const sponsors = pgTable(
+  'sponsors',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    tier: sponsorTierEnum('tier').notNull(),
+    name: varchar('name', { length: 80 }).notNull(),
+    url: text('url').notNull(),
+    altEn: varchar('alt_en', { length: 200 }).notNull(),
+    altJa: varchar('alt_ja', { length: 200 }).notNull(),
+    image: text('image').notNull(),
+    imageType: varchar('image_type', { length: 32 }).notNull(),
+    phoneImage: text('phone_image'),
+    phoneImageType: varchar('phone_image_type', { length: 32 }),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    paused: boolean('paused').default(false).notNull(),
+    views: integer('views').default(0).notNull(),
+    clicks: integer('clicks').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('sponsors_tier_ends_at_idx').on(table.tier, table.endsAt),
+    check('sponsors_schedule_check', sql`${table.endsAt} > ${table.startsAt}`),
+  ],
+).enableRLS();
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(profiles),
   savedProfiles: many(savedProfiles),
@@ -796,6 +826,7 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 export type ProfileBoost = typeof profileBoosts.$inferSelect;
 export type VoiceIntro = typeof voiceIntros.$inferSelect;
+export type NewSponsor = typeof sponsors.$inferInsert;
 export type IpBan = typeof ipBans.$inferSelect;
 export type SuspiciousActivity = typeof suspiciousActivity.$inferSelect;
 export type NewSuspiciousActivity = typeof suspiciousActivity.$inferInsert;

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import {
+  Fragment,
   type ReactNode,
   useCallback,
   useEffect,
@@ -9,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { ToastStack } from '@/components/Toast';
+import type { DiscoverySponsor } from '@/constants/sponsors';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import {
   calculateMatchScore,
@@ -19,6 +21,7 @@ import { type ToastData, useToastStack } from '@/hooks/useToast';
 import { trackClientEvent } from '@/lib/analytics/client';
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events';
 import { type DiscoveryProfile, ProfileCard } from './ProfileCard';
+import { SponsoredCard } from './Sponsored';
 
 type ProfileGridProps = {
   profiles: DiscoveryProfile[];
@@ -49,6 +52,7 @@ type ProfileGridProps = {
   onModerate?: (profileId: string, trigger: HTMLElement | null) => void;
   onModerateIntent?: (profileId: string) => void;
   addToast?: (toast: Omit<ToastData, 'id'>) => void;
+  sponsored?: { index: number; sponsor: DiscoverySponsor }[];
 };
 
 const layOutMasonry = (grid: HTMLDivElement | null) => {
@@ -100,6 +104,7 @@ export const ProfileGrid = ({
   onModerate,
   onModerateIntent,
   addToast: externalAddToast,
+  sponsored = [],
 }: ProfileGridProps) => {
   const t = useTranslations('Discovery');
   const mobile = useIsMobile();
@@ -230,6 +235,13 @@ export const ProfileGrid = ({
     }
   };
 
+  const sponsoredAt = (index: number) =>
+    sponsored
+      .filter((slot) => slot.index === index)
+      .map(({ sponsor }) => (
+        <SponsoredCard key={`sponsored-${index}`} sponsor={sponsor} />
+      ));
+
   const renderProfileCard = (profile: DiscoveryProfile) => {
     const isOwnProfile = profile.id === currentProfileId;
     const canSaveProfile = saveEnabled && !isOwnProfile;
@@ -264,23 +276,27 @@ export const ProfileGrid = ({
             ref={layOutMasonry}
             className="mx-auto grid w-full max-w-[1180px] grid-flow-row-dense grid-cols-1 items-start gap-x-6 md:grid-cols-2 lg:grid-cols-3"
           >
-            {keyedProfiles.map(({ profile, key }) => {
+            {keyedProfiles.map(({ profile, key }, index) => {
               const blocking = blockingIds.includes(profile.id);
               return (
-                <div key={key} className="relative" aria-busy={blocking}>
-                  <div inert={blocking}>{renderProfileCard(profile)}</div>
-                  {blocking ? (
-                    <output className="absolute inset-x-0 top-0 bottom-6 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-black/50 px-4 text-center text-foreground text-sm backdrop-blur-[1px]">
-                      <span
-                        aria-hidden="true"
-                        className="h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none"
-                      />
-                      {t('blockingProfile', { name: profile.displayName })}
-                    </output>
-                  ) : null}
-                </div>
+                <Fragment key={key}>
+                  {sponsoredAt(index)}
+                  <div className="relative" aria-busy={blocking}>
+                    <div inert={blocking}>{renderProfileCard(profile)}</div>
+                    {blocking ? (
+                      <output className="absolute inset-x-0 top-0 bottom-6 z-10 flex flex-col items-center justify-center gap-2 rounded-3xl bg-black/50 px-4 text-center text-foreground text-sm backdrop-blur-[1px]">
+                        <span
+                          aria-hidden="true"
+                          className="h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none"
+                        />
+                        {t('blockingProfile', { name: profile.displayName })}
+                      </output>
+                    ) : null}
+                  </div>
+                </Fragment>
               );
             })}
+            {sponsoredAt(keyedProfiles.length)}
           </div>
         ) : (
           <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3 rounded-2xl border border-primary-dark border-dashed bg-background-darker px-6 py-12 text-center">
