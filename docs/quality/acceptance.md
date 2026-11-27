@@ -2,13 +2,14 @@
 
 Evidence-based acceptance pass for the readiness backlog, recorded 2026-09-24 for TEST-002. It maps every audit finding to its owning ticket and to the tests that prove the resolution, then records route coverage by identity and the blockers that remain.
 
-**Polycord is not accepted as a complete product.** The blockers below are still open.
+**Polycord is accepted as a complete product.** The last blocker, real-device testing, closed on 2026-11-26.
 
 ## Environment
 
 - Browser: Chromium through Playwright (`bun run test:e2e`), on a production build (`next start`) against an isolated localhost PostgreSQL database. CI runs the same suite with a Postgres service container.
 - Widths: 320, 375, 390, 768, 1024, 1280 and 1440 px are exercised by `e2e/mobile.pw.ts`, `e2e/layouts.pw.ts` and `e2e/navigation.pw.ts`.
 - Not covered: Safari, Firefox, iOS and Android devices, real on-screen keyboards, and the deployed staging site. Emulated widths are not device proof.
+- Devices: the owner tested Polycord on Safari, iOS and real phones and reported it on 2026-11-26. No per-device matrix was recorded.
 - Identities: fixtures create disposable accounts per test (logged out, free, Supporter through an active `subscriptions` row, suspended, banned, and an admin through `POLYCORD_ADMIN_USER_IDS=e2e-admin`). No shared staging or production data is used.
 
 ## Audit findings
@@ -20,7 +21,7 @@ Evidence-based acceptance pass for the readiness backlog, recorded 2026-09-24 fo
 | 8-9 | Navigation shell, return paths, inert Bump | NAV-003 (#114) | `e2e/navigation.pw.ts` | Resolved |
 | 10-12 | Editor drafts, onboarding draft scope and tag caps, timezone and voice save contract | PROFILE-012 (#108) | `e2e/drafts.pw.ts` | Resolved |
 | 13-20 | Discovery loading, prefetch, server paging, grid duplication, fonts | DISC-009 (#110) | `e2e/discovery.pw.ts`, `docs/performance/discovery.md` | Resolved |
-| 21-23, 28 | Supporter comparison at 320 px, hover-only actions, dialog height, focus, errors, motion | MOBILE-002 (#115) | `e2e/layouts.pw.ts`, `e2e/mobile.pw.ts` | Resolved, except device validation |
+| 21-23, 28 | Supporter comparison at 320 px, hover-only actions, dialog height, focus, errors, motion | MOBILE-002 (#115) | `e2e/layouts.pw.ts`, `e2e/mobile.pw.ts`, owner device testing | Resolved |
 | 24-26, 27 (split) | Branded 404 and error recovery, identifier validation, failure states outside the inbox | QA-002 (#107) | `e2e/recovery.pw.ts` | Resolved |
 | 27 (split), 29-33 | Inbox entitlements, inbox failure rollback, reload and actor destinations | NOTIF-004 (#105) | `e2e/notifications.pw.ts`, `tests/integration/notifications.mjs` | Resolved |
 | 34-36 | Username privacy, block enforcement, unblock UI, copy ordering | SAFETY-002 (#106) | `e2e/safety.pw.ts`, `tests/integration/safety.mjs` | Resolved |
@@ -49,4 +50,4 @@ Direct entry, refresh, Back and Forward, locale changes and return journeys are 
 
 ## Blockers
 
-- No Safari, iOS or real-device evidence exists for any layout or keyboard behavior.
+No blockers remain. The device gap closed when the owner reported testing Safari, iOS and real phones on 2026-11-26.
