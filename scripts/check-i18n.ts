@@ -21,6 +21,7 @@ const I18N_OBJECT_KEYS = [
 ];
 
 const CLASS_LIKE = /[-/:[\]]/;
+const CSS_VALUE = /^(?:inset|rgba?\([\d.,\s]+\)|-?[\d.]+(?:px|em|%)?|\s+)+$/;
 
 const SKIP_LINE_PATTERNS = [
   /^\s*\/\//,
@@ -121,7 +122,12 @@ function checkFile(filePath: string): Violation[] {
     const exprRegex = /[?:]\s*(['"])([^'"]*[a-zA-Z]{2,}[^'"]*)\1/g;
     for (const m of line.matchAll(exprRegex)) {
       const value = m[2];
-      if (!value.includes(' ') || CLASS_LIKE.test(value)) continue;
+      if (
+        !value.includes(' ') ||
+        CLASS_LIKE.test(value) ||
+        CSS_VALUE.test(value)
+      )
+        continue;
       violations.push({
         file: rel,
         line: i + 1,
