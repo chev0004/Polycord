@@ -140,6 +140,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'When your profile is set to public, the details you add to it are visible to other members and to anyone with your public profile link, including people who are not signed in.',
           'Signed-in members can see and copy your Discord username. Logged-out visitors can see and copy it only if you allow anonymous copying in Settings. You choose whether your timezone is displayed in Settings or the profile editor, and whether your availability is displayed in the profile editor.',
           'Blocking hides two signed-in accounts from each other. A public profile can still be viewed by anyone who is signed out.',
+          'Viewing or sharing someone’s profile, or copying their username, can notify them. While you are signed in, profile owners with Supporter see your display name and avatar in those notifications. Hidden browsing, a Supporter setting, keeps your name out of view and share notifications, but copying a username always shows it. Activity while signed out stays anonymous.',
         ],
       },
       {
