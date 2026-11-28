@@ -29,7 +29,7 @@ export const GET = scopedRoute(async (request: Request) => {
 
   return NextResponse.json(
     {
-      profilePath: `/u/${row.profile.id}`,
+      profilePath: `/en/u/${row.profile.id}`,
       cardPath: discordCardImagePath(row),
     },
     { headers: noStore },

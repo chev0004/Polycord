@@ -47,7 +47,7 @@ const found = await call('?discordUserId=111');
 assert.equal(found.status, 200);
 assert.equal(found.headers.get('cache-control'), 'no-store');
 assert.deepEqual(await found.json(), {
-  profilePath: '/u/profile-1',
+  profilePath: '/en/u/profile-1',
   cardPath: '/api/discord-card/profile-1/v1/29999999.gif',
 });
 assert.deepEqual(lookups, ['222', '111']);
