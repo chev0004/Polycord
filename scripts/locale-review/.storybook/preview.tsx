@@ -1,0 +1,66 @@
+import type { Preview } from '@storybook/react';
+import { NextIntlClientProvider } from 'next-intl';
+import { type ReactNode, useEffect } from 'react';
+import { fontVariables } from '@/app/fonts';
+import en from '@/locales/en.json';
+import ja from '@/locales/ja.json';
+import { createPreviewBridge, type PreviewWindow } from '../preview';
+import type { Locale } from '../review-state';
+import '@/app/globals.css';
+import '../reviewer.css';
+
+function Fixture({
+  children,
+  locale,
+}: {
+  children: ReactNode;
+  locale: Locale;
+}) {
+  useEffect(() => {
+    const view = window as PreviewWindow;
+    const bridge = createPreviewBridge();
+    view.localeReview = bridge;
+    return () => {
+      bridge.dispose();
+      delete view.localeReview;
+    };
+  }, []);
+
+  return (
+    <NextIntlClientProvider
+      locale={locale}
+      messages={locale === 'ja' ? ja : en}
+      timeZone="UTC"
+    >
+      <div className={fontVariables} lang={locale}>
+        <style>
+          {'.ToastTimer--running { animation-play-state: paused !important; }'}
+        </style>
+        {children}
+      </div>
+    </NextIntlClientProvider>
+  );
+}
+
+const preview: Preview = {
+  parameters: { layout: 'fullscreen' },
+  decorators: [
+    (Story, { id, args }) => {
+      if (id === 'dev-locale-review--reviewer') return <Story />;
+      const locale =
+        new URLSearchParams(window.location.search).get('locale') === 'ja'
+          ? 'ja'
+          : 'en';
+      const storyArgs = Object.hasOwn(args, 'locale')
+        ? { ...args, locale }
+        : args;
+      return (
+        <Fixture locale={locale}>
+          <Story args={storyArgs} />
+        </Fixture>
+      );
+    },
+  ],
+};
+
+export default preview;

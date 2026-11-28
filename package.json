@@ -22,6 +22,7 @@
     "db:studio": "bun --env-file=.env.local drizzle-kit studio",
     "gen:locales": "node generate-locales.mjs",
     "storybook": "bun run gen:locales && storybook dev -p 6006",
+    "review:locales": "bun scripts/locale-review/launch.ts",
     "build-storybook": "bun run gen:locales && storybook build",
     "prepare": "husky",
     "tickets": "bun --env-file=.env.local tsx scripts/tickets.ts"
