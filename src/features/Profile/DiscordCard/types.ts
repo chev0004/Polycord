@@ -50,3 +50,4 @@ export type DiscordCardLayoutDefinition = {
 
 export const DISCORD_CARD_WIDTH = 934;
 export const DISCORD_CARD_HEIGHT = 320;
+export const DISCORD_CARD_CYCLE = 2800;
