@@ -134,8 +134,12 @@ describe('ban gate', () => {
     }
   });
 
-  it('keeps health and the ban check reachable', async () => {
-    for (const path of ['/api/health', '/api/internal/ban-check']) {
+  it('keeps health, the ban check and bot endpoints reachable', async () => {
+    for (const path of [
+      '/api/health',
+      '/api/internal/ban-check',
+      '/api/bot/health',
+    ]) {
       const response = await middleware(requestFor(path, undefined, 'POST'));
 
       expect(response.status, path).toBe(200);

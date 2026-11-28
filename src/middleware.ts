@@ -37,6 +37,8 @@ const getProtectedRouteLocale = (pathname: string) => {
 };
 
 const serviceRoutes = new Set(['/api/health', '/api/build', BAN_CHECK_PATH]);
+const isServiceRoute = (pathname: string) =>
+  serviceRoutes.has(pathname) || pathname.startsWith('/api/bot/');
 const nonPageRoute = /^\/(api|_next)(\/|$)|\./;
 
 const isCrossOriginWrite = (request: NextRequest) =>
@@ -89,7 +91,7 @@ async function routeMiddleware(request: NextRequest, measure: LoadMeasure) {
   }
 
   if (
-    !serviceRoutes.has(request.nextUrl.pathname) &&
+    !isServiceRoute(request.nextUrl.pathname) &&
     !isGatedPath(request.nextUrl.pathname)
   ) {
     try {
