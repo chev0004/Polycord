@@ -97,9 +97,35 @@ const row = async () =>
 try {
   process.env.POLYCORD_PREMIUM_USER_IDS = member.discordUserId;
   assert.equal((await save({ discordCard: 'metal' })).status, 200);
+  const still = await row();
+  const stillPath = discordCardImagePath(still);
+  assert.match(stillPath, /\/\d+\.png$/);
+  const png = await image(stillPath);
+  assert.equal(png.status, 200);
+  assert.equal(png.headers.get('content-type'), 'image/png');
+  const { format, width, height } = await sharp(
+    Buffer.from(await png.arrayBuffer()),
+  ).metadata();
+  assert.deepEqual([format, width, height], ['png', 934, 320]);
+  assert.equal((await image(stillPath.replace(/png$/, 'gif'))).status, 404);
+
+  assert.equal(
+    (
+      await save({
+        discordCard: 'metal',
+        targetLanguages: [
+          { language: 'en', level: 'intermediate' },
+          { language: 'ko', level: 'beginner' },
+        ],
+      })
+    ).status,
+    200,
+  );
   const supporter = await row();
   assert.equal(discordCardFor(supporter).layout, 'metal');
   const supporterPath = discordCardImagePath(supporter);
+  assert.match(supporterPath, /\/\d+\.gif$/);
+  assert.equal((await image(supporterPath.replace(/gif$/, 'png'))).status, 404);
 
   const response = await image(supporterPath);
   assert.equal(response.status, 200);
@@ -109,7 +135,7 @@ try {
     'public, max-age=31536000, s-maxage=31536000, immutable',
   );
   const stamped = Buffer.from(await response.arrayBuffer());
-  assert.equal(await assertAnimation(stamped), 2800);
+  assert.equal(await assertAnimation(stamped), 5600);
   const base = await image(supporterPath.replace(/\d+\.gif$/, 'base.gif'));
   assert.notDeepEqual(Buffer.from(await base.arrayBuffer()), stamped);
   assert.equal(

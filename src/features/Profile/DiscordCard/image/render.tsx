@@ -158,6 +158,20 @@ export const renderDiscordCardBase = async (card: DiscordCard) => {
   );
 };
 
+export const renderDiscordCardStill = async (card: DiscordCard) => {
+  const { motion, ...stage } = await prepare(card);
+  const { paint } = await motion({ ...stage, data: card.data, t, count: 1 });
+  return sharp(paint(beatAt(0, 1)), {
+    raw: {
+      width: DISCORD_CARD_WIDTH,
+      height: DISCORD_CARD_HEIGHT,
+      channels: 4,
+    },
+  })
+    .png()
+    .toBuffer();
+};
+
 export const stampDiscordCardClock = async (
   base: Buffer,
   card: DiscordCard,
