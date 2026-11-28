@@ -23,7 +23,12 @@ const { GET } = await import('../../src/app/api/discord-card/[id]/route');
 const { discordCardFor, discordCardImagePath } = await import(
   '../../src/lib/discordCard'
 );
+const { renderDiscordCardImage } = await import(
+  '../../src/features/Profile/DiscordCard/image/render'
+);
+const { DISCORD_CARDS } = await import('../../src/constants/discordCards');
 const { eq, inArray } = await import('drizzle-orm');
+const { default: sharp } = await import('sharp');
 
 const [member] = await db
   .insert(users)
@@ -63,6 +68,18 @@ const image = (id) =>
   GET(new Request(`http://localhost/api/discord-card/${id}`), {
     params: Promise.resolve({ id }),
   });
+const assertAnimation = async (response) => {
+  assert.equal(response.headers.get('content-type'), 'image/webp');
+  const { width, pageHeight, delay, loop } = await sharp(
+    await response.arrayBuffer(),
+    { pages: -1 },
+  ).metadata();
+  assert.deepEqual([width, pageHeight, loop], [934, 320, 0]);
+  assert.ok(delay.every((ms) => ms === 41 || ms === 42));
+  const length = delay.reduce((sum, ms) => sum + ms, 0);
+  assert.equal(delay.length, Math.round((length * 24) / 1000));
+  return length;
+};
 const row = async () =>
   getPublicProfileById(
     (await getProfileByDiscordUserId(member.discordUserId)).profile.id,
@@ -77,13 +94,15 @@ try {
 
   const response = await image(supporter.profile.id);
   assert.equal(response.status, 200);
-  assert.equal(response.headers.get('content-type'), 'image/png');
   assert.equal(
     response.headers.get('cache-control'),
     'public, max-age=60, s-maxage=60',
   );
-  const png = Buffer.from(await response.arrayBuffer());
-  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [934, 320]);
+  assert.equal(await assertAnimation(response), 2800);
+  for (const layout of DISCORD_CARDS)
+    await assertAnimation(
+      await renderDiscordCardImage({ ...discordCardFor(supporter), layout }),
+    );
 
   process.env.POLYCORD_PREMIUM_USER_IDS = '';
   const ended = await row();

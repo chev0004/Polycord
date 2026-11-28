@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
 
 test.skipIf(!process.env.TEST_DATABASE_URL)(
-  'discord card images render the saved layout from public fields',
+  'discord card images animate the saved layout from public fields',
   () => {
     expect(
       execFileSync(
@@ -15,4 +15,5 @@ test.skipIf(!process.env.TEST_DATABASE_URL)(
       ),
     ).toContain('discord card image passed');
   },
+  60000,
 );
