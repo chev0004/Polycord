@@ -1590,11 +1590,11 @@ export const formatCurrentTime = (
   timezone: IANATimezone | string,
   format: TimeFormat = '24hr',
   locale = 'en',
+  now = new Date(),
 ): string => {
   if (!timezone || typeof timezone !== 'string') return '';
 
   try {
-    const now = new Date();
     const formatter = new Intl.DateTimeFormat(locale, {
       timeZone: timezone,
       hour: '2-digit',

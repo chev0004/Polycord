@@ -19,11 +19,13 @@ const { getProfileByDiscordUserId, getPublicProfileById } = await import(
   '../../src/db'
 );
 const { POST } = await import('../../src/app/api/profile/route');
-const { GET } = await import('../../src/app/api/discord-card/[id]/route');
+const { GET } = await import(
+  '../../src/app/api/discord-card/[id]/[version]/[file]/route'
+);
 const { discordCardFor, discordCardImagePath } = await import(
   '../../src/lib/discordCard'
 );
-const { renderDiscordCardImage } = await import(
+const { renderDiscordCardBase } = await import(
   '../../src/features/Profile/DiscordCard/image/render'
 );
 const { DISCORD_CARDS } = await import('../../src/constants/discordCards');
@@ -64,19 +66,25 @@ const save = (extra) =>
       }),
     }),
   );
-const image = (id) =>
-  GET(new Request(`http://localhost/api/discord-card/${id}`), {
-    params: Promise.resolve({ id }),
+const image = (path) => {
+  const [, , , id, version, file] = path.split('/');
+  return GET(new Request(`http://localhost${path}`), {
+    params: Promise.resolve({ id, version, file }),
   });
-const assertAnimation = async (response) => {
-  assert.equal(response.headers.get('content-type'), 'image/gif');
+};
+const fetchOnline = globalThis.fetch;
+globalThis.fetch = (url, init) =>
+  String(url).includes('/api/discord-card/')
+    ? image(new URL(url).pathname)
+    : fetchOnline(url, init);
+const assertAnimation = async (bytes) => {
   const {
     width,
     height,
     pageHeight = height,
     delay,
     loop,
-  } = await sharp(await response.arrayBuffer(), { pages: -1 }).metadata();
+  } = await sharp(bytes, { pages: -1 }).metadata();
   assert.deepEqual([width, pageHeight, loop], [934, 320, 0]);
   assert.ok(delay.every((ms) => ms > 0 && ms % 40 === 0));
   return delay.reduce((sum, ms) => sum + ms, 0);
@@ -93,16 +101,24 @@ try {
   assert.equal(discordCardFor(supporter).layout, 'metal');
   const supporterPath = discordCardImagePath(supporter);
 
-  const response = await image(supporter.profile.id);
+  const response = await image(supporterPath);
   assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-type'), 'image/gif');
   assert.equal(
     response.headers.get('cache-control'),
-    'public, max-age=60, s-maxage=60',
+    'public, max-age=31536000, s-maxage=31536000, immutable',
   );
-  assert.equal(await assertAnimation(response), 2800);
+  const stamped = Buffer.from(await response.arrayBuffer());
+  assert.equal(await assertAnimation(stamped), 2800);
+  const base = await image(supporterPath.replace(/\d+\.gif$/, 'base.gif'));
+  assert.notDeepEqual(Buffer.from(await base.arrayBuffer()), stamped);
+  assert.equal(
+    (await image(supporterPath.replace(/[^/]+\/(\d+\.gif)$/, 'old/$1'))).status,
+    404,
+  );
   for (const layout of DISCORD_CARDS)
     await assertAnimation(
-      await renderDiscordCardImage({ ...discordCardFor(supporter), layout }),
+      await renderDiscordCardBase({ ...discordCardFor(supporter), layout }),
     );
 
   process.env.POLYCORD_PREMIUM_USER_IDS = '';
@@ -140,9 +156,12 @@ try {
     .update(profiles)
     .set({ isPublic: false })
     .where(eq(profiles.id, hidden.profile.id));
-  assert.equal((await image(hidden.profile.id)).status, 404);
-  assert.equal((await image(randomUUID())).status, 404);
-  assert.equal((await image('not-a-profile')).status, 404);
+  const version = discordCardImagePath(hidden).split('/')[4];
+  for (const id of [hidden.profile.id, randomUUID(), 'not-a-profile'])
+    assert.equal(
+      (await image(`/api/discord-card/${id}/${version}/0.gif`)).status,
+      404,
+    );
 
   console.log('discord card image passed');
 } finally {

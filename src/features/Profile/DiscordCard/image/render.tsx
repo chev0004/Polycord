@@ -13,7 +13,7 @@ import {
 } from '../types';
 import { beatAt, cycling, type Motion, resting, type Shot } from './animation';
 import { loadFigtree, loadMono, loadZen } from './fonts';
-import { encodeAnimation } from './gif';
+import { encodeAnimation, replaceFirstFrame } from './gif';
 import { BleedImage } from './layouts/bleed';
 import {
   CharacterSelectImage,
@@ -35,6 +35,7 @@ import { WatermarkImage } from './layouts/watermark';
 import { createMeasure } from './measure';
 import { cardPalette } from './palette';
 import type { CardImageProps } from './parts';
+import { changedBox } from './pixels';
 import { staged } from './staging';
 
 const FPS = 25;
@@ -71,19 +72,16 @@ const zenText = (data: DiscordCardData) =>
     .flatMap(({ script, greeting }) => [script, greeting])
     .join('');
 
-export const renderDiscordCardImage = async ({
-  layout,
-  data,
-  banner,
-  accent,
-  headers,
-}: {
+const PLACEHOLDER_TIME = '00:00';
+
+type DiscordCard = {
   layout: DiscordCardLayout;
   data: DiscordCardData;
   banner: string;
   accent: string;
-  headers?: Record<string, string>;
-}) => {
+};
+
+const prepare = async ({ layout, data, banner, accent }: DiscordCard) => {
   const [figtree, mono, zen] = await Promise.all([
     loadFigtree(),
     loadMono(),
@@ -93,7 +91,6 @@ export const renderDiscordCardImage = async ({
   const [Layout, motion] = IMAGE_LAYOUTS[layout];
   const palette = cardPalette(banner, accent);
   const measure = createMeasure(fonts);
-  const count = Math.max(1, data.targets.length);
 
   const sheet = async (element: ReactNode, width: number, height: number) => {
     const png = new ImageResponse(
@@ -142,26 +139,35 @@ export const renderDiscordCardImage = async ({
     return taken;
   };
 
-  const { paint, continuous } = await motion({
-    data,
-    palette,
-    measure,
-    t,
-    count,
-    shot,
-    sheet,
-  });
+  return { motion, palette, measure, sheet, shot };
+};
+
+export const renderDiscordCardBase = async (card: DiscordCard) => {
+  const data = { ...card.data, time: card.data.time && PLACEHOLDER_TIME };
+  const { motion, ...stage } = await prepare({ ...card, data });
+  const count = Math.max(1, data.targets.length);
+  const { paint, continuous } = await motion({ ...stage, data, t, count });
   const loop = continuous ?? count * DISCORD_CARD_CYCLE;
   const draw = continuous ? paint : resting(paint);
   const frames = Math.round((loop * FPS) / 1000);
   const start = (index: number) => Math.round((index * loop) / frames);
-  const animation = await encodeAnimation(
+  return encodeAnimation(
     frames,
     (index) => draw(beatAt(start(index), count)),
     (index) => start(index + 1) - start(index),
   );
+};
 
-  return new Response(new Uint8Array(animation), {
-    headers: { ...headers, 'Content-Type': 'image/gif' },
-  });
+export const stampDiscordCardClock = async (
+  base: Buffer,
+  card: DiscordCard,
+) => {
+  if (!card.data.time) return base;
+  const { shot } = await prepare(card);
+  const [live, placeholder] = await Promise.all([
+    shot(),
+    shot({ data: { ...card.data, time: PLACEHOLDER_TIME } }),
+  ]);
+  const box = changedBox(live, placeholder);
+  return box ? replaceFirstFrame(base, live, box) : base;
 };

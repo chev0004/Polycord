@@ -1,4 +1,5 @@
 import 'server-only';
+import sharp from 'sharp';
 import { DISCORD_CARD_HEIGHT, DISCORD_CARD_WIDTH } from '../types';
 import { type Box, changedBox, type Pixels } from './pixels';
 
@@ -231,13 +232,7 @@ const compress = (indices: Uint8Array, minimum: number) => {
 
 const word = (value: number) => [value & 255, value >> 8];
 
-const image = (
-  frame: Pixels,
-  table: Uint8Array,
-  shown: Uint16Array,
-  box: Box,
-) => {
-  const keys = snap(frame, table, shown, box);
+const image = (keys: Uint16Array, box: Box) => {
   const { entries, lookup, clear } = palette(keys);
   const bits = Math.max(1, Math.ceil(Math.log2(entries.length)));
   const indices = new Uint8Array(keys.length);
@@ -262,6 +257,17 @@ const image = (
   };
 };
 
+const control = (clear: number, delay: number[]) =>
+  Uint8Array.from([
+    0x21,
+    0xf9,
+    4,
+    4 | Number(clear >= 0),
+    ...delay,
+    Math.max(0, clear),
+    0,
+  ]);
+
 export const encodeAnimation = (
   count: number,
   paint: (index: number) => Pixels,
@@ -270,7 +276,7 @@ export const encodeAnimation = (
   const first = paint(0);
   const table = levels(first);
   const shown = new Uint16Array(WIDTH * HEIGHT).fill(CLEAR);
-  const frames = [{ ...image(first, table, shown, FULL), time: 0 }];
+  const frames = [{ ...image(snap(first, table, shown, FULL), FULL), time: 0 }];
   let previous = first;
   let time = delay(0);
 
@@ -278,20 +284,16 @@ export const encodeAnimation = (
     const next = paint(index);
     const box = next !== previous && changedBox(next, previous);
     previous = next;
-    if (box) frames.push({ ...image(next, table, shown, box), time });
+    if (box)
+      frames.push({ ...image(snap(next, table, shown, box), box), time });
   }
 
   const centiseconds = (ms: number) => Math.round(ms / 10);
   const parts = frames.flatMap(({ bytes, clear, time: start }, at) => [
-    Uint8Array.from([
-      0x21,
-      0xf9,
-      4,
-      4 | Number(clear >= 0),
-      ...word(centiseconds(frames[at + 1]?.time ?? time) - centiseconds(start)),
-      Math.max(0, clear),
-      0,
-    ]),
+    control(
+      clear,
+      word(centiseconds(frames[at + 1]?.time ?? time) - centiseconds(start)),
+    ),
     bytes,
   ]);
 
@@ -311,5 +313,47 @@ export const encodeAnimation = (
     ]),
     ...parts,
     Uint8Array.from([0x3b]),
+  ]);
+};
+
+const FIRST_CONTROL = 13 + 19;
+
+export const replaceFirstFrame = async (
+  gif: Buffer,
+  frame: Pixels,
+  box: Box,
+) => {
+  const shown = await sharp(gif, { page: 0 }).ensureAlpha().raw().toBuffer();
+  const keys = new Uint16Array(WIDTH * HEIGHT);
+  for (let at = 0; at < keys.length; at++)
+    keys[at] =
+      shown[at * 4 + 3] < 128
+        ? CLEAR
+        : (((shown[at * 4] - 4) >> 3) << 10) |
+          (((shown[at * 4 + 1] - 4) >> 3) << 5) |
+          ((shown[at * 4 + 2] - 4) >> 3);
+  const fresh = snap(
+    frame,
+    levels(frame),
+    new Uint16Array(WIDTH * HEIGHT).fill(CLEAR),
+    box,
+  );
+  for (let row = 0; row < box.height; row++)
+    keys.set(
+      fresh.subarray(row * box.width, (row + 1) * box.width),
+      (box.y + row) * WIDTH + box.x,
+    );
+
+  const start = FIRST_CONTROL + 8;
+  let end = start + 10;
+  if (gif[start + 9] & 0x80) end += 3 << ((gif[start + 9] & 7) + 1);
+  for (end++; gif[end]; end += gif[end] + 1);
+  const { bytes, clear } = image(keys, FULL);
+
+  return Buffer.concat([
+    gif.subarray(0, FIRST_CONTROL),
+    control(clear, [gif[FIRST_CONTROL + 4], gif[FIRST_CONTROL + 5]]),
+    bytes,
+    gif.subarray(end + 1),
   ]);
 };
