@@ -3,6 +3,7 @@ import type { Locale, Observation, Occurrence } from './review-state';
 import { clean, keysIn } from './tags';
 
 export type PreviewBridge = ReturnType<typeof createPreviewBridge>;
+export type ReviewStatus = 'pending' | 'verified';
 export type PreviewWindow = Window & {
   localeReview?: PreviewBridge;
   localeReviewInputs?: Map<
@@ -326,15 +327,19 @@ export function createPreviewBridge() {
       }
       return { actions, scope };
     },
-    markPending(ids: string[]) {
+    markReview(statuses?: ReadonlyMap<string, ReviewStatus>) {
       for (const element of marked) {
-        element.removeAttribute('data-locale-review-pending');
+        element.removeAttribute('data-locale-review-status');
       }
       marked.clear();
-      for (const id of ids) {
+      for (const [id, status] of statuses ?? []) {
         const element = targets.get(id);
-        if (!element) continue;
-        element.setAttribute('data-locale-review-pending', '');
+        if (
+          !element ||
+          element.getAttribute('data-locale-review-status') === 'pending'
+        )
+          continue;
+        element.setAttribute('data-locale-review-status', status);
         marked.add(element);
       }
     },

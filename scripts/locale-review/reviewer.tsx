@@ -20,7 +20,7 @@ import {
   type Scene,
   sectionPending,
 } from './placements';
-import type { PreviewBridge } from './preview';
+import type { PreviewBridge, ReviewStatus } from './preview';
 import {
   available,
   type Choice,
@@ -366,31 +366,35 @@ function Workspace({
       ),
     [findings, positions, sectionId],
   );
-  const pendingByKey = useMemo(
+  const reviewStatusByKey = useMemo(
     () =>
-      new Map(
+      new Map<string, ReviewStatus>(
         sectionFindings
           .filter((finding) => !finding.noteOnly)
-          .map((finding) => [finding.key, !verified(review, finding, locale)]),
+          .map((finding) => [
+            finding.key,
+            verified(review, finding, locale) ? 'verified' : 'pending',
+          ]),
       ),
     [sectionFindings, review, locale],
   );
-  const pendingTextIds = useMemo(
+  const textStatuses = useMemo(
     () =>
-      live?.occurrences
-        .filter(
-          ({ key, surface }) => surface === 'Text' && pendingByKey.get(key),
-        )
-        .map(({ id }) => id) ?? [],
-    [live, pendingByKey],
+      new Map(
+        live?.occurrences.flatMap(({ id, key, surface }) => {
+          const status = reviewStatusByKey.get(key);
+          return surface === 'Text' && status ? [[id, status] as const] : [];
+        }),
+      ),
+    [live, reviewStatusByKey],
   );
   const inspectable =
     live?.occurrences.filter(
-      ({ key, surface }) => surface !== 'Text' && pendingByKey.has(key),
+      ({ key, surface }) => surface !== 'Text' && reviewStatusByKey.has(key),
     ) ?? [];
   const pendingAttributes = new Set(
     inspectable
-      .filter(({ key }) => pendingByKey.get(key))
+      .filter(({ key }) => reviewStatusByKey.get(key) === 'pending')
       .map(({ key }) => key),
   );
   const finding =
@@ -517,8 +521,10 @@ function Workspace({
   }, [interactive, reading, selectedPlacement?.id]);
 
   useEffect(() => {
-    bridge.current?.markPending(!reading && !interactive ? pendingTextIds : []);
-  }, [interactive, pendingTextIds, reading]);
+    bridge.current?.markReview(
+      !reading && !interactive ? textStatuses : undefined,
+    );
+  }, [interactive, textStatuses, reading]);
 
   function resetSection() {
     setScene(undefined);
@@ -674,11 +680,11 @@ function Workspace({
               {interactive ? 'Resume inspection' : 'Interact with preview'}
             </button>
           </div>
-          {!reading && !interactive && pendingTextIds.length > 0 && (
-            <p className="lr-review-legend">
-              <span className="lr-review-mark">Dotted underline</span> marks
-              wording to review.
-            </p>
+          {!reading && !interactive && textStatuses.size > 0 && (
+            <div className="lr-review-legend">
+              <span data-locale-review-status="pending">Needs review</span>
+              <span data-locale-review-status="verified">Verified</span>
+            </div>
           )}
           {scene ? (
             <div className="lr-stage" ref={stage} aria-busy={reading}>
@@ -803,11 +809,9 @@ function Workspace({
                     >
                       {item.surface} ·{' '}
                       <span
-                        className={
-                          pendingByKey.get(item.key)
-                            ? 'lr-review-mark'
-                            : undefined
-                        }
+                        data-locale-review-status={reviewStatusByKey.get(
+                          item.key,
+                        )}
                       >
                         {item.text}
                       </span>

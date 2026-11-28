@@ -141,12 +141,21 @@
   gap: 4px;
 }
 
-[data-locale-review-pending],
-.lr-review-mark {
-  text-decoration: underline dotted
-    color-mix(in srgb, currentColor 45%, transparent);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.2em;
+[data-locale-review-status="pending"] {
+  --lr-review-tint: #ef666640;
+}
+
+[data-locale-review-status="verified"] {
+  --lr-review-tint: #5bc28b40;
+}
+
+[data-locale-review-status] {
+  background-image: linear-gradient(
+    var(--lr-review-tint),
+    var(--lr-review-tint)
+  );
+  border-radius: 3px;
+  box-decoration-break: clone;
 }
 
 [data-locale-review-active] {
@@ -154,9 +163,15 @@
 }
 
 .lr-review-legend {
+  display: flex;
+  gap: 8px;
   margin: 0 0 8px;
   color: var(--lr-muted);
   font-size: 12px;
+}
+
+.lr-review-legend span {
+  padding: 2px 6px;
 }
 
 .lr-stage {
