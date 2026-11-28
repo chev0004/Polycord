@@ -1,4 +1,5 @@
 import { parse, TYPE } from '@formatjs/icu-messageformat-parser';
+import { unusedKeys } from './unused';
 
 export const locales = ['en', 'ja'] as const;
 export const snapshots = ['develop', 'now'] as const;
@@ -50,7 +51,6 @@ export type Observation = { occurrences: Occurrence[] };
 export type SnapshotReview = {
   picks: Record<string, Choice>;
   terms: Record<string, string>;
-  observations: Record<string, Partial<Record<Locale, Observation>>>;
   checks: Record<string, Wording>;
   section: string;
 };
@@ -132,7 +132,9 @@ export function readCheckpoint(html: string, progress: string): Review {
       throw new Error('The saved review and progress files do not match.');
     }
     per[base] = {
-      picks,
+      picks: Object.fromEntries(
+        Object.entries(picks).filter(([key]) => !unusedKeys.has(key)),
+      ),
       terms: {
         ...savedReview?.terms,
         ...(model.toneRevision !== 1 && {
@@ -141,11 +143,17 @@ export function readCheckpoint(html: string, progress: string): Review {
         }),
       },
       checks: {},
-      observations: {},
       section: 'profile-privacy',
     };
   }
-  return { inventory, base: model.base, per };
+  return {
+    inventory: {
+      ...inventory,
+      issues: inventory.issues.filter(({ key }) => !unusedKeys.has(key)),
+    },
+    base: model.base,
+    per,
+  };
 }
 
 export function choiceOptions(
@@ -271,25 +279,55 @@ export function updateWording(
   const previous = review.per[review.base];
   const current = { ...previous, ...update, checks: { ...previous.checks } };
   const next = { ...review, per: { ...review.per, [review.base]: current } };
-  const changed = new Map(
-    review.inventory.issues.flatMap((finding) => {
-      const before = wording(review, finding);
-      const after = wording(next, finding);
-      const changes = locales.filter(
-        (locale) => before[locale] !== after[locale],
-      );
-      return changes.length ? [[finding.key, changes] as const] : [];
-    }),
-  );
-  for (const [id, check] of Object.entries(current.checks)) {
-    const [key] = JSON.parse(id);
-    const changes = changed.get(key);
-    if (!changes) continue;
+  for (const finding of review.inventory.issues) {
+    const check = previous.checks[finding.key];
+    if (!check) continue;
+    const before = wording(review, finding);
+    const after = wording(next, finding);
     const remaining = { ...check };
-    for (const locale of changes) delete remaining[locale];
-    current.checks[id] = remaining;
+    for (const locale of locales) {
+      if (before[locale] !== after[locale]) delete remaining[locale];
+    }
+    current.checks[finding.key] = remaining;
   }
   return next;
+}
+
+export function verified(review: Review, finding: Finding, locale: Locale) {
+  const selected = wording(review, finding)[locale];
+  return (
+    selected !== undefined &&
+    review.per[review.base].checks[finding.key]?.[locale] === selected
+  );
+}
+
+export function verifyLine(
+  review: Review,
+  finding: Finding,
+  locale: Locale,
+): Review {
+  const selected = wording(review, finding)[locale];
+  const original = finding.original[review.base][locale];
+  if (
+    selected === undefined ||
+    original === undefined ||
+    wordingError(original, selected)
+  )
+    return review;
+  const state = review.per[review.base];
+  return {
+    ...review,
+    per: {
+      ...review.per,
+      [review.base]: {
+        ...state,
+        checks: {
+          ...state.checks,
+          [finding.key]: { ...state.checks[finding.key], [locale]: selected },
+        },
+      },
+    },
+  };
 }
 
 export function previewWording(review: Review, locale: Locale) {

@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
 import {
+  type Catalogue,
   indexPlacements,
   outstanding,
   reviewSections,
@@ -9,12 +10,14 @@ import {
   type Finding,
   type Inventory,
   locales,
-  type Observation,
   readCheckpoint,
   updateWording,
+  verified,
+  verifyLine,
   wording,
   wordingError,
 } from './review-state';
+import { clean, keysIn, tagKey } from './tags';
 
 const finding: Finding = {
   key: 'Profile.privacySettings',
@@ -72,49 +75,90 @@ test('imports packed checkpoint choices as locale keys in both snapshots', () =>
   });
   expect(review.per.develop.checks).toEqual({});
   expect(review.per.now.checks).toEqual({});
-  expect(review.per.now.observations).toEqual({});
 });
 
-test('gates a section on each placement and invalidates only changed wording', () => {
-  const review = readCheckpoint(html, JSON.stringify(modelContent));
-  const state = review.per.now;
+test('unlocks multiple placements with one check per language', () => {
+  let review = readCheckpoint(html, JSON.stringify(modelContent));
+  const catalogue: Catalogue = { scenes: {}, errors: [] };
   const privacy = reviewSections[0];
   for (const scene of privacy.scenes) {
     const id = JSON.stringify([finding.key, scene.id, 'Text', 'h2:1']);
-    state.observations[scene.id] = Object.fromEntries(
+    catalogue.scenes[scene.id] = Object.fromEntries(
       locales.map((locale) => [
         locale,
         {
+          actions: [],
+          scope: '',
           occurrences: [
             {
               id,
               key: finding.key,
               surface: 'Text',
-              text: wording(review, finding)[locale] as string,
+              text:
+                scene.viewport === 'mobile'
+                  ? 'Fixture value 1'
+                  : 'Fixture value 2',
             },
           ],
-        } satisfies Observation,
+        },
       ]),
     );
-    state.checks[id] = { en: 'Public settings' };
   }
 
-  let placements = indexPlacements(state);
+  const placements = indexPlacements(catalogue);
+  expect(placements.get(finding.key)).toHaveLength(2);
   expect(sectionPending(review, privacy, [finding], placements)).toBe(true);
-  for (const check of Object.values(state.checks)) check.ja = 'プライバシー';
+  review = verifyLine(review, finding, 'en');
+  expect(sectionPending(review, privacy, [finding], placements)).toBe(true);
+  review = verifyLine(review, finding, 'ja');
   expect(sectionPending(review, privacy, [finding], placements)).toBe(false);
 
   const updated = updateWording(review, {
     picks: { [finding.key]: { source: 'custom', text: { ja: '新しい設定' } } },
   });
-  placements = indexPlacements(updated.per.now);
   expect(
     outstanding(updated, finding, placements.get(finding.key) ?? []).map(
       ({ locale }) => locale,
     ),
-  ).toEqual(['ja', 'ja']);
+  ).toEqual(['ja']);
+  expect(verified(updated, finding, 'en')).toBe(true);
   expect(updated.per.develop).toBe(review.per.develop);
   expect(sectionPending(updated, privacy, [finding], placements)).toBe(true);
+  const reverted = updateWording(updated, { picks: review.per.now.picks });
+  expect(verified(reverted, finding, 'ja')).toBe(false);
+});
+
+test('preserves packed checkpoint indexing when removing unused keys', () => {
+  const packet = {
+    ...inventory,
+    issues: [{ ...finding, key: 'Inbox.simulateTitle' }, finding],
+  };
+  const review = readCheckpoint(
+    `<script id="lr-data">${JSON.stringify(packet)}</script>`,
+    JSON.stringify({
+      ...modelContent,
+      per: {
+        now: {
+          picks: [
+            [0, 'K'],
+            [1, 'C'],
+          ],
+        },
+      },
+    }),
+  );
+  expect(review.inventory.issues.map(({ key }) => key)).toEqual([finding.key]);
+  expect(review.per.now.picks).toEqual({ [finding.key]: { source: 'codex' } });
+});
+
+test('round trips source keys without changing clean Japanese and English text', () => {
+  const tagged = `Privacy${tagKey('Profile.privacySettings')} プライバシー${tagKey('Settings.privacyTitle')}`;
+  expect(keysIn(tagged)).toEqual([
+    'Profile.privacySettings',
+    'Settings.privacyTitle',
+  ]);
+  expect(clean(tagged)).toBe('Privacy プライバシー');
+  expect(keysIn(clean(tagged))).toEqual([]);
 });
 
 test('retains ICU parameters and rich text when editing copy', () => {

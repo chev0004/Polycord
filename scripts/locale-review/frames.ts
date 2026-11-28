@@ -1,15 +1,16 @@
-import type { Scene } from './placements';
+import type { Scene, SceneIndex } from './placements';
 import type { PreviewWindow } from './preview';
 import type { Locale } from './review-state';
 
 export const widths = { desktop: 1120, mobile: 390 };
+export const height = 900;
 
 export async function loadScene(
   iframe: HTMLIFrameElement,
   scene: Scene,
   locale: Locale,
   wording: Record<string, string>,
-  scroll: boolean,
+  index: SceneIndex,
   signal: AbortSignal,
   generation = 0,
 ) {
@@ -31,7 +32,7 @@ export async function loadScene(
       const child = iframe.contentWindow as PreviewWindow | null;
       const currentRun = new URLSearchParams(child?.location.search).get('run');
       if (currentRun === run && child?.localeReview) {
-        await child.localeReview.prepare(scene, scroll);
+        await child.localeReview.prepare(scene, true, index);
         await new Promise((resolve) => setTimeout(resolve, 150));
         signal.throwIfAborted();
         return child.localeReview;

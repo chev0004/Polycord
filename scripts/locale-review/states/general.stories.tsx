@@ -1,18 +1,23 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useTranslations } from 'next-intl';
 import type { ComponentProps } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { DraftNotice } from '@/components/Form/DraftNotice';
 import { AnalyticsDashboard } from '@/features/Analytics/AnalyticsDashboard';
 import analytics from '@/features/Analytics/AnalyticsDashboard.stories';
 import { DiscoveryLoadPanelView } from '@/features/Discovery/DiscoveryLoadPanel';
+import { stubPlayback } from '@/features/Discovery/voicePlaybackStub';
+import { Inbox } from '@/features/Inbox/Inbox';
 import { NotificationEntry } from '@/features/Inbox/NotificationEntry';
 import { WarningNotice } from '@/features/Inbox/WarningNotice';
 import { LegalDocument } from '@/features/Legal/LegalDocument';
 import { LanguageSwitcher } from '@/features/Navbar/LanguageSwitcher';
 import { UserMenu } from '@/features/Navbar/UserMenu';
 import { RouteProgressProvider } from '@/features/Navigation/RouteProgress';
+import { VoiceIntroPlayer } from '@/features/Profile/VoiceIntroPlayer';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { mockFetch } from './mockFetch';
-import { Toasts } from './Toasts';
 
 const meta = {
   title: 'Review/General',
@@ -53,20 +58,42 @@ export const ViewAlerts: Story = {
   ),
 };
 
-function InboxToasts() {
-  const t = useTranslations('Inbox');
-  return (
-    <Toasts
-      messages={[
-        [t('newNotification'), ''],
-        [t('loadError'), ''],
-        [t('writeError'), ''],
-      ]}
+export const SavedVoiceIntro: Story = {
+  beforeEach: stubPlayback(),
+  render: () => (
+    <VoiceIntroPlayer
+      src="/fixtures/voice-short.webm"
+      seconds={4}
+      filename="voice-intro"
     />
-  );
-}
+  ),
+};
 
-export const InboxMessages: Story = { render: () => <InboxToasts /> };
+export const InboxLoadFailure: Story = {
+  beforeEach: () => mockFetch(() => Response.json({}, { status: 500 })),
+  render: () => <Inbox notifications={[]} />,
+};
+
+export const InboxWriteFailure: Story = {
+  beforeEach: () =>
+    mockFetch((_url, init) =>
+      init?.method
+        ? Response.json({}, { status: 500 })
+        : {
+            premium: true,
+            notifications: [
+              {
+                id: 'review-inbox',
+                kind: 'copy',
+                actorName: 'Mina Park',
+                createdAt: new Date().toISOString(),
+                read: false,
+              },
+            ],
+          },
+    ),
+  render: () => <Inbox notifications={[]} />,
+};
 
 export const Drafts: Story = {
   render: () => (
@@ -78,20 +105,43 @@ export const Drafts: Story = {
   ),
 };
 
-function OutsidePage() {
-  const draft = useTranslations('Draft');
+function PageMetadata() {
   const metadata = useTranslations('Metadata');
+  return <meta name="description" content={metadata('description')} />;
+}
+
+export const Metadata: Story = { render: () => <PageMetadata /> };
+
+const draftKey = 'polycord:review-draft';
+const draftSchema = z.object({ value: z.string().optional() });
+
+function DraftConfirmationFixture() {
+  const form = useForm({ defaultValues: { value: '' } });
+  const draft = useFormDraft(draftKey, form, draftSchema);
   return (
-    <dl className="max-w-xl space-y-4 p-6 text-foreground">
-      <dt className="text-subtle">Browser confirmation before leaving</dt>
-      <dd>{draft('leaveWarning')}</dd>
-      <dt className="text-subtle">Page description in search results</dt>
-      <dd>{metadata('description')}</dd>
-    </dl>
+    <form
+      className="max-w-xl p-6"
+      data-draft-unavailable={draft.unavailable || undefined}
+    >
+      <input aria-label="Draft value" {...form.register('value')} />
+      <a href="/review-draft">Leave page</a>
+    </form>
   );
 }
 
-export const OutsideThePage: Story = { render: () => <OutsidePage /> };
+export const DraftConfirmation: Story = {
+  beforeEach: () => {
+    const getItem = Storage.prototype.getItem;
+    Storage.prototype.getItem = function (key) {
+      if (key === draftKey) throw new Error('Draft storage unavailable');
+      return getItem.call(this, key);
+    };
+    return () => {
+      Storage.prototype.getItem = getItem;
+    };
+  },
+  render: () => <DraftConfirmationFixture />,
+};
 
 export const LegalFallback: Story = {
   render: () => (

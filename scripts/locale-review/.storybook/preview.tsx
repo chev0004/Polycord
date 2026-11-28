@@ -17,8 +17,10 @@ function Fixture({
 }) {
   useEffect(() => {
     const view = window as PreviewWindow;
-    view.localeReview = createPreviewBridge();
+    const bridge = createPreviewBridge();
+    view.localeReview = bridge;
     return () => {
+      bridge.dispose();
       delete view.localeReview;
     };
   }, []);
@@ -32,7 +34,7 @@ function Fixture({
       <div className={fontVariables} lang={locale}>
         <style>
           {
-            '[data-locale-review-active] { background: #333d4b; box-shadow: 0 0 0 3px #879caf66; }'
+            '[data-locale-review-active] { background: #333d4b; box-shadow: 0 0 0 3px #879caf66; } .ToastTimer--running { animation-play-state: paused !important; }'
           }
         </style>
         {children}

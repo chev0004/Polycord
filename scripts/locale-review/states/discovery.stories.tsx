@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useTranslations } from 'next-intl';
 import { BlockDialog } from '@/features/Discovery/BlockDialog';
 import { DiscoveryPage } from '@/features/Discovery/DiscoveryPage';
-import pageMeta from '@/features/Discovery/DiscoveryPage.stories';
+import pageMeta, { Default } from '@/features/Discovery/DiscoveryPage.stories';
 import { ProfileCard } from '@/features/Discovery/ProfileCard';
 import { createSampleProfiles } from '@/features/Discovery/profileFixtures';
 import { ReportDialog } from '@/features/Discovery/ReportDialog';
 import { TagCloud } from '@/features/Discovery/TagCloud';
-import { Toasts } from './Toasts';
+import { mockFetch } from './mockFetch';
 
 const meta = {
   title: 'Review/Discovery',
@@ -38,32 +38,56 @@ export const OnboardingReady = onboarding({
   bio: 'I am looking for a patient partner to practice English with.',
 });
 
-function DiscoveryToasts() {
-  const t = useTranslations('Discovery');
-  return (
-    <Toasts
-      messages={[
-        ['saveLogin', ''],
-        ['reportLogin', ''],
-        ['blockLogin', ''],
-        ['reportSuccess', ''],
-        ['reportError', ''],
-        ['reportCooldown', ''],
-        ['blockSuccess', ''],
-        ['shareError', ''],
-        ['bumpSuccess', ''],
-        ['bumpCooldown', ''],
-      ]
-        .map(([name]) => [
-          t(`${name}Title`),
-          t(`${name}Description`, { time: '1 h' }),
-        ])
-        .concat([[t('saveError'), '']])}
-    />
-  );
+function responseAt(path: string, status: number, body = {}) {
+  return () =>
+    mockFetch((url) =>
+      url.pathname === path
+        ? Response.json(body, { status })
+        : { profiles: [], total: 0, tags: [], notifications: [] },
+    );
 }
 
-export const ResultToasts: Story = { render: () => <DiscoveryToasts /> };
+export const Guest: Story = {
+  render: Default.render,
+  args: { isLoggedIn: false },
+};
+export const SaveFailure: Story = {
+  render: Default.render,
+  beforeEach: responseAt('/api/saved', 500),
+};
+export const ReportSuccess: Story = {
+  render: Default.render,
+  beforeEach: responseAt('/api/report', 200),
+};
+export const ReportFailure: Story = {
+  render: Default.render,
+  beforeEach: responseAt('/api/report', 500),
+};
+export const ReportLimited: Story = {
+  render: Default.render,
+  beforeEach: responseAt('/api/report', 429),
+};
+export const BlockSuccess: Story = {
+  render: Default.render,
+  beforeEach: responseAt('/api/block', 200),
+};
+export const BumpLimited: Story = {
+  render: Default.render,
+  args: { currentProfileId: 'profile-1' },
+  beforeEach: responseAt('/api/profile/bump', 429, { remainingMs: 3_723_000 }),
+};
+export const ShareFailure: Story = {
+  render: Default.render,
+  beforeEach: () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: undefined,
+    });
+    return () => {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    };
+  },
+};
 
 function Card({ saved }: { saved: boolean }) {
   const t = useTranslations('DiscoveryStories');

@@ -9,9 +9,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import { loadScene, widths } from './frames';
+import { height, loadScene, widths } from './frames';
 import {
-  allScenes,
+  type Catalogue,
   findingSection,
   indexPlacements,
   outstanding,
@@ -19,7 +19,6 @@ import {
   reviewSections,
   type Scene,
   sectionPending,
-  verified,
 } from './placements';
 import type { PreviewBridge } from './preview';
 import {
@@ -36,22 +35,16 @@ import {
   type Snapshot,
   snapshots,
   updateWording,
+  verified,
+  verifyLine,
   wording,
   wordingError,
 } from './review-state';
+import { loadReview, saveReview } from './storage';
 import './reviewer.css';
 
-const storageKey = 'polycord-visual-locale-review-v1';
 const languages = { en: 'English', ja: '日本語' };
 type SetReview = Dispatch<SetStateAction<Review | null>>;
-
-function loadReview(): Review | null {
-  try {
-    return JSON.parse(localStorage.getItem(storageKey) ?? 'null');
-  } catch {
-    return null;
-  }
-}
 
 function localRoute(locale: Locale, route: string) {
   if (route.startsWith('!/')) return `http://localhost:3000${route.slice(1)}`;
@@ -59,23 +52,19 @@ function localRoute(locale: Locale, route: string) {
     return `http://localhost:3000/${locale}${route}`;
 }
 
-function exportReview(review: Review) {
+function exportReview(review: Review, catalogue: Catalogue) {
+  const placements = indexPlacements(catalogue);
   const report = Object.fromEntries(
     snapshots.map((base) => {
       const state = review.per[base];
       const snapshot = { ...review, base };
-      const placements = indexPlacements(state);
       return [
         base,
         {
           snapshot: review.inventory.bases[base],
           section: state.section,
           rules: state.terms,
-          unscanned: allScenes.flatMap((scene) =>
-            locales
-              .filter((locale) => !state.observations[scene.id]?.[locale])
-              .map((locale) => ({ scene, locale })),
-          ),
+          previewErrors: catalogue.errors,
           findings: review.inventory.issues
             .filter((finding) => available(finding, base))
             .map((finding) => {
@@ -87,17 +76,17 @@ function exportReview(review: Review) {
                 choice: state.picks[finding.key] ?? null,
                 original: finding.original[base],
                 selected: wording(snapshot, finding),
-                placements: occurrences.map((placement) => ({
-                  ...placement,
-                  verification: Object.fromEntries(
-                    locales.map((locale) => [
-                      locale,
-                      verified(state, placement, locale)
-                        ? 'Verified'
-                        : 'Needs review',
-                    ]),
-                  ),
-                })),
+                placements: occurrences,
+                verification: finding.noteOnly
+                  ? undefined
+                  : Object.fromEntries(
+                      locales.map((locale) => [
+                        locale,
+                        verified(snapshot, finding, locale)
+                          ? 'Verified'
+                          : 'Needs review',
+                      ]),
+                    ),
                 outstanding: outstanding(snapshot, finding, occurrences),
               };
             }),
@@ -290,16 +279,16 @@ function WordingEditor({
 
 type WordingDraft = Partial<Record<Locale, string>>;
 
-function PlacementStatus({
-  state,
-  placement,
+function LineStatus({
+  review,
+  finding,
   locale,
 }: {
-  state: Review['per'][Snapshot];
-  placement: Placement;
+  review: Review;
+  finding: Finding;
   locale: Locale;
 }) {
-  const done = verified(state, placement, locale);
+  const done = verified(review, finding, locale);
   return (
     <span className={done ? 'lr-verified' : 'lr-warning'}>
       {languages[locale]} <strong>{done ? 'Verified' : 'Needs review'}</strong>
@@ -310,9 +299,11 @@ function PlacementStatus({
 function Workspace({
   review,
   setReview,
+  catalogue,
 }: {
   review: Review;
   setReview: SetReview;
+  catalogue: Catalogue;
 }) {
   const { base, inventory } = review;
   const state = review.per[base];
@@ -325,8 +316,6 @@ function Workspace({
   const [reload, setReload] = useState(0);
   const [reading, setReading] = useState(true);
   const [error, setError] = useState('');
-  const [scanError, setScanError] = useState('');
-  const [scan, setScan] = useState('');
   const [browsing, setBrowsing] = useState(false);
   const [browsedSection, setBrowsedSection] = useState(0);
   const [sceneSize, setSceneSize] = useState({ width: 0, height: 0 });
@@ -334,9 +323,7 @@ function Workspace({
   const [search, setSearch] = useState('');
   const stage = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
-  const scanFrame = useRef<HTMLIFrameElement>(null);
   const bridge = useRef<PreviewBridge | null>(null);
-  const scanning = useRef<AbortController | null>(null);
   const inspect = useRef(true);
   inspect.current = !interactive;
 
@@ -348,7 +335,7 @@ function Workspace({
     () => new Set(findings.map(({ key }) => key)),
     [findings],
   );
-  const positions = useMemo(() => indexPlacements(state), [state]);
+  const positions = useMemo(() => indexPlacements(catalogue), [catalogue]);
   const unlocked = sections.findIndex((section) =>
     sectionPending(review, section, findings, positions),
   );
@@ -363,6 +350,7 @@ function Workspace({
   const sectionIndex = browsing ? browsedSection : reviewSectionIndex;
   const section = sections[sectionIndex];
   const scene = sceneOverride ?? section.scenes[0];
+  const sceneIndex = scene && catalogue.scenes[scene.id]?.[locale];
   const previewScenes =
     scene && !section.scenes.includes(scene)
       ? [...section.scenes, scene]
@@ -375,20 +363,14 @@ function Workspace({
         ?.some(({ scene }) => scene.sectionId === section.id),
   );
   const finding =
-    sectionFindings.find(({ key }) => key === findingKey) ?? sectionFindings[0];
+    findings.find(({ key }) => key === findingKey) ?? sectionFindings[0];
   const placements = finding ? (positions.get(finding.key) ?? []) : [];
-  const displayedPlacements = browsing
-    ? placements
-    : placements.filter(
-        ({ scene: item }) =>
-          sections.findIndex(({ id }) => id === item.sectionId) <= sectionLimit,
-      );
   const selectedPlacement =
-    displayedPlacements.find(({ id }) => id === placementId) ??
-    displayedPlacements.find(({ scene: item }) => item === scene);
-  const occurrence = live?.occurrences.find(
-    ({ id }) => id === selectedPlacement?.id,
-  );
+    placements.find(({ id }) => id === placementId) ??
+    placements.find(
+      ({ scene: item, rendered }) => item === scene && rendered[locale],
+    );
+  const occurrence = live?.occurrences.find(({ key }) => key === finding?.key);
   const preview = useMemo(
     () => JSON.stringify(previewWording(review, locale)),
     [review, locale],
@@ -417,42 +399,6 @@ function Workspace({
     [base, setReview],
   );
 
-  const record = useCallback(
-    (item: Scene, language: Locale, observed: Observation) => {
-      const cleaned = {
-        occurrences: observed.occurrences.filter(({ key }) =>
-          findingKeys.has(key),
-        ),
-      };
-      mutate((current) => {
-        const latest = current.per[base];
-        if (
-          JSON.stringify(latest.observations[item.id]?.[language]) ===
-          JSON.stringify(cleaned)
-        )
-          return current;
-        return {
-          ...current,
-          per: {
-            ...current.per,
-            [base]: {
-              ...latest,
-              observations: {
-                ...latest.observations,
-                [item.id]: {
-                  ...latest.observations[item.id],
-                  [language]: cleaned,
-                },
-              },
-            },
-          },
-        };
-      });
-      return cleaned;
-    },
-    [base, findingKeys, mutate],
-  );
-
   useEffect(() => {
     const element = stage.current;
     if (!element || !scene) return;
@@ -475,21 +421,29 @@ function Workspace({
     setError('');
     setReading(true);
     setInteractive(false);
+    if (!sceneIndex) {
+      element.src = 'about:blank';
+      setError(
+        'This preview location is unavailable in the selected language.',
+      );
+      setReading(false);
+      return;
+    }
     async function open() {
-      if (!element || !scene) return;
+      if (!sceneIndex || !element || !scene) return;
       try {
         const api = await loadScene(
           element,
           scene,
           locale,
           JSON.parse(preview),
-          true,
+          sceneIndex,
           controller.signal,
           reload,
         );
         if (!api || controller.signal.aborted) return;
         bridge.current = api;
-        const observed = record(scene, locale, api.inspect(scene));
+        const observed = api.inspect(scene, sceneIndex);
         setLive(observed);
         element.contentDocument?.addEventListener(
           'click',
@@ -506,10 +460,7 @@ function Workspace({
               observed,
             );
             if (!occurrence) return;
-            const matched = inventory.issues.find(
-              ({ key }) => key === occurrence.key,
-            );
-            if (!matched || !findingKeys.has(matched.key)) return;
+            if (!findingKeys.has(occurrence.key)) return;
             setFinding(occurrence.key);
             setPlacement(occurrence.id);
           },
@@ -526,22 +477,18 @@ function Workspace({
     }
     void open();
     return () => controller.abort();
-  }, [scene, locale, preview, reload, record, inventory, findingKeys]);
+  }, [scene, sceneIndex, locale, preview, reload, findingKeys]);
 
   useEffect(() => {
     if (!reading && !interactive)
       bridge.current?.highlight(selectedPlacement?.id);
   }, [interactive, reading, selectedPlacement?.id]);
 
-  useEffect(() => () => scanning.current?.abort(), []);
-
   function resetSection() {
-    scanning.current?.abort();
     setScene(undefined);
     setFinding('');
     setPlacement('');
     setSearch('');
-    setScanError('');
   }
 
   function moveSection(id: string) {
@@ -561,80 +508,27 @@ function Workspace({
   function openPlacement(placement: Placement) {
     setScene(placement.scene);
     setPlacement(placement.id);
-  }
-
-  async function scanSection() {
-    const element = scanFrame.current;
-    if (!element || scanning.current) return;
-    const controller = new AbortController();
-    scanning.current = controller;
-    const failed: string[] = [];
-    setScanError('');
-    try {
-      for (const language of locales) {
-        const messages = previewWording(review, language);
-        for (const item of section.scenes) {
-          if (controller.signal.aborted) return;
-          setScan(`${languages[language]} · ${item.state} · ${item.viewport}`);
-          element.style.width = `${widths[item.viewport]}px`;
-          try {
-            const api = await loadScene(
-              element,
-              item,
-              language,
-              messages,
-              false,
-              controller.signal,
-            );
-            if (api) record(item, language, api.inspect(item));
-          } catch {
-            if (controller.signal.aborted) return;
-            failed.push(
-              `${languages[language]} ${item.state} (${item.viewport})`,
-            );
-          }
-        }
-      }
-      if (failed.length)
-        setScanError(`Unmapped previews: ${failed.join(', ')}.`);
-    } finally {
-      setScan('');
-      element.src = 'about:blank';
-      scanning.current = null;
+    if (!placement.rendered[locale]) {
+      const supported = locales.find(
+        (language) => placement.rendered[language],
+      );
+      if (supported) setLocale(supported);
     }
   }
 
   function verify() {
-    if (!occurrence || !canVerify) return;
-    mutate((current) => {
-      const latest = current.per[base];
-      return {
-        ...current,
-        per: {
-          ...current.per,
-          [base]: {
-            ...latest,
-            checks: {
-              ...latest.checks,
-              [occurrence.id]: {
-                ...latest.checks[occurrence.id],
-                [locale]: occurrence.text,
-              },
-            },
-          },
-        },
-      };
-    });
+    if (finding && canVerify)
+      mutate((current) => verifyLine(current, finding, locale));
   }
 
   const width = scene ? widths[scene.viewport] : widths.desktop;
-  const scale = Math.min(1, sceneSize.width / width) || 1;
+  const scale =
+    Math.min(1, sceneSize.width / width, sceneSize.height / height) || 1;
   const qualified = search
     ? sectionFindings.filter(({ key }) =>
         key.toLowerCase().includes(search.toLowerCase()),
       )
     : sectionFindings;
-  const selectedAudit = finding ? outstanding(review, finding, placements) : [];
 
   return (
     <>
@@ -662,7 +556,6 @@ function Workspace({
           <select
             aria-label="Snapshot"
             value={base}
-            disabled={Boolean(scan)}
             onChange={(event) => {
               resetSection();
               setReview({ ...review, base: event.target.value as Snapshot });
@@ -677,16 +570,7 @@ function Workspace({
         </label>
         <button
           type="button"
-          disabled={!section.scenes.length}
-          onClick={() =>
-            scan ? scanning.current?.abort() : void scanSection()
-          }
-        >
-          {scan ? 'Stop finding placements' : 'Find placements'}
-        </button>
-        <button
-          type="button"
-          disabled={browsing || Boolean(scan) || sectionIndex >= sectionLimit}
+          disabled={browsing || sectionIndex >= sectionLimit}
           onClick={() => moveSection(sections[sectionIndex + 1].id)}
         >
           Next section
@@ -703,17 +587,9 @@ function Workspace({
           {browsing ? 'Return to review' : 'Browse inventory'}
         </button>
       </div>
-      {scan && (
-        <output className="lr-status">Finding placements · {scan}</output>
-      )}
       {error && (
         <p className="lr-status lr-warning" role="alert">
           {error}
-        </p>
-      )}
-      {scanError && (
-        <p className="lr-status lr-warning" role="alert">
-          {scanError}
         </p>
       )}
       <div className="lr-workspace">
@@ -770,7 +646,7 @@ function Workspace({
                   title="Polycord fixture"
                   style={{
                     width,
-                    height: Math.max(320, sceneSize.height / scale),
+                    height,
                     transform: `scale(${scale})`,
                   }}
                 />
@@ -779,13 +655,6 @@ function Workspace({
           ) : (
             <p className="lr-status">This section contains audit notes.</p>
           )}
-          <iframe
-            className="lr-scan-frame"
-            ref={scanFrame}
-            title="Placement discovery"
-            aria-hidden="true"
-            tabIndex={-1}
-          />
         </section>
         <aside className="lr-inspector" aria-label="Copy and placements">
           <div className="lr-inspector-head">
@@ -807,14 +676,14 @@ function Workspace({
                 Finding
                 <select
                   aria-label="Finding"
-                  value={qualified.includes(finding) ? finding.key : ''}
+                  value={finding.key}
                   onChange={(event) => {
                     setFinding(event.target.value);
                     setPlacement('');
                   }}
                 >
                   {!qualified.includes(finding) && (
-                    <option value="">Choose a finding</option>
+                    <option value={finding.key}>{finding.key}</option>
                   )}
                   {qualified.map(({ key }) => (
                     <option key={key} value={key}>
@@ -827,7 +696,7 @@ function Workspace({
                 key={`${base}:${finding.key}`}
                 finding={finding}
                 review={review}
-                readOnly={browsing || Boolean(scan)}
+                readOnly={browsing}
                 onChoose={(choice) =>
                   mutate((current) =>
                     updateWording(current, {
@@ -839,53 +708,78 @@ function Workspace({
                   )
                 }
               />
-              <div className="lr-placements">
-                <h3>Placements</h3>
-                {selectedAudit.some(({ reason }) =>
-                  /Unmapped|missing/.test(reason),
-                ) && (
-                  <p className="lr-warning">Unmapped placement needs review.</p>
-                )}
-                {displayedPlacements.map((placement) => (
-                  <div className="lr-placement" key={placement.id}>
-                    <button
-                      type="button"
-                      aria-pressed={selectedPlacement?.id === placement.id}
-                      onClick={() => openPlacement(placement)}
-                    >
-                      {placement.scene.state} · {placement.scene.viewport} ·{' '}
-                      {placement.surface}
-                      <small>
-                        {placement.scene.route}
-                        {placement.rendered[locale]
-                          ? ` · ${placement.rendered[locale]?.text}`
-                          : ''}
-                      </small>
-                    </button>
-                    <div className="lr-placement-status">
-                      {locales.map((language) => (
-                        <PlacementStatus
-                          key={language}
-                          state={state}
-                          placement={placement}
-                          locale={language}
-                        />
-                      ))}
-                    </div>
+              {!finding.noteOnly && (
+                <div className="lr-line-checks">
+                  <div className="lr-line-status">
+                    {locales.map((language) => (
+                      <LineStatus
+                        key={language}
+                        review={review}
+                        finding={finding}
+                        locale={language}
+                      />
+                    ))}
                   </div>
-                ))}
-                {selectedPlacement && (
                   <button
                     type="button"
-                    className="lr-primary lr-verify"
-                    disabled={
-                      !canVerify || verified(state, selectedPlacement, locale)
-                    }
+                    className="lr-primary"
+                    disabled={!canVerify || verified(review, finding, locale)}
                     onClick={verify}
                   >
-                    Verify {languages[locale]} placement
+                    Verify {languages[locale]} wording
                   </button>
+                  {occurrence?.surface === 'Browser confirmation' && (
+                    <button
+                      type="button"
+                      onClick={() => bridge.current?.showConfirmation()}
+                    >
+                      Show browser prompt
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="lr-placements">
+                {!finding.noteOnly && (
+                  <h3>
+                    Locations <small>{placements.length}</small>
+                  </h3>
                 )}
+                {!finding.noteOnly &&
+                  locales.some(
+                    (language) =>
+                      !placements.some(({ rendered }) => rendered[language]),
+                  ) && (
+                    <p className="lr-warning">
+                      Some languages have no mapped preview location.
+                    </p>
+                  )}
+                {placements.map((placement) => (
+                  <button
+                    className="lr-placement"
+                    key={placement.id}
+                    type="button"
+                    aria-pressed={selectedPlacement?.id === placement.id}
+                    onClick={() => openPlacement(placement)}
+                  >
+                    {placement.scene.state} · {placement.scene.viewport} ·{' '}
+                    {placement.surface}
+                    <small>
+                      {placement.scene.route} · {placement.scene.section}
+                      {live?.occurrences.find(({ id }) => id === placement.id)
+                        ?.text && (
+                        <>
+                          {' '}
+                          ·{' '}
+                          {
+                            live.occurrences.find(
+                              ({ id }) => id === placement.id,
+                            )?.text
+                          }
+                        </>
+                      )}
+                    </small>
+                  </button>
+                ))}
                 {finding.location && (
                   <details className="lr-detail">
                     <summary>Locations from checkpoint</summary>
@@ -943,7 +837,7 @@ function Workspace({
               <label key={rule.id} className="lr-field">
                 {rule.label}
                 <select
-                  disabled={browsing || Boolean(scan)}
+                  disabled={browsing}
                   value={state.terms[rule.id] ?? ''}
                   onChange={(event) => {
                     const value = event.target.value;
@@ -980,19 +874,48 @@ function Workspace({
 }
 
 export function LocaleReviewer() {
-  const [review, setReview] = useState(loadReview);
-  const [importing, setImporting] = useState(!review);
+  const [review, setReview] = useState<Review | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [storageError, setStorageError] = useState('');
+  const [catalogue, setCatalogue] = useState<Catalogue>();
+  const [catalogueError, setCatalogueError] = useState('');
+  useEffect(() => {
+    void loadReview().then(
+      (saved) => {
+        setReview(saved);
+        setImporting(!saved);
+        setLoading(false);
+      },
+      () => {
+        setStorageError('This browser could not open the saved review.');
+        setImporting(true);
+        setLoading(false);
+      },
+    );
+    void fetch('/placements.json')
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        setCatalogue(await response.json());
+      })
+      .catch(() =>
+        setCatalogueError(
+          'The preview index could not be opened. Restart the locale reviewer to rebuild it.',
+        ),
+      );
+  }, []);
   useEffect(() => {
     if (!review) return;
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(review));
-      setStorageError('');
-    } catch {
-      setStorageError(
-        'This browser could not save the review. Export your work before closing.',
-      );
-    }
+    void saveReview(review).then(
+      () => {
+        setStorageError('');
+      },
+      () => {
+        setStorageError(
+          'This browser could not save the review. Export your work before closing.',
+        );
+      },
+    );
   }, [review]);
 
   return (
@@ -1007,7 +930,11 @@ export function LocaleReviewer() {
             <button type="button" onClick={() => setImporting(!importing)}>
               {importing ? 'Close import' : 'Import checkpoint'}
             </button>
-            <button type="button" onClick={() => exportReview(review)}>
+            <button
+              type="button"
+              disabled={!catalogue}
+              onClick={() => catalogue && exportReview(review, catalogue)}
+            >
               Export review
             </button>
           </div>
@@ -1018,6 +945,26 @@ export function LocaleReviewer() {
           {storageError}
         </p>
       )}
+      {catalogueError && (
+        <p className="lr-status lr-warning" role="alert">
+          {catalogueError}
+        </p>
+      )}
+      {(loading || (!catalogue && !catalogueError)) && (
+        <output className="lr-status">Opening the locale reviewer…</output>
+      )}
+      {Boolean(catalogue?.errors.length) && (
+        <details className="lr-status lr-warning">
+          <summary>
+            {catalogue?.errors.length} preview locations could not be indexed
+          </summary>
+          {catalogue?.errors.map(({ scene, locale, reason }) => (
+            <p key={`${scene}:${locale}`}>
+              {languages[locale]} · {reason}
+            </p>
+          ))}
+        </details>
+      )}
       {importing && (
         <CheckpointImport
           existing={Boolean(review)}
@@ -1027,8 +974,12 @@ export function LocaleReviewer() {
           }}
         />
       )}
-      {review && !importing && (
-        <Workspace review={review} setReview={setReview} />
+      {review && catalogue && !importing && (
+        <Workspace
+          review={review}
+          setReview={setReview}
+          catalogue={catalogue}
+        />
       )}
     </main>
   );

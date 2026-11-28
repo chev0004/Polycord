@@ -21,7 +21,9 @@ export const clean = (text: string) =>
   text.replace(tag, '').replace(/\s+/g, ' ').trim();
 
 export function localize(messages: Messages, locale: Locale) {
-  const run = new URLSearchParams(window.location.search).get('run') ?? '';
+  const params = new URLSearchParams(window.location.search);
+  const run = params.get('run') ?? '';
+  const trace = params.get('trace') === '1';
   const input = (window.parent as PreviewWindow).localeReviewInputs?.get(run);
   const wording = input?.locale === locale ? input.wording : {};
   const visit = (node: Messages, prefix: string): Messages =>
@@ -31,7 +33,7 @@ export function localize(messages: Messages, locale: Locale) {
         return [
           name,
           typeof value === 'string'
-            ? (wording[key] ?? value) + tagKey(key)
+            ? (wording[key] ?? value) + (trace ? tagKey(key) : '')
             : visit(value, `${key}.`),
         ];
       }),

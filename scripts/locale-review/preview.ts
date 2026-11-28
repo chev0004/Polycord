@@ -1,4 +1,4 @@
-import type { Scene } from './placements';
+import type { Scene, SceneIndex } from './placements';
 import type { Locale, Observation, Occurrence } from './review-state';
 import { clean, keysIn } from './tags';
 
@@ -53,29 +53,42 @@ function ancestry(element: Element, root: Element) {
   return parts.join('/');
 }
 
+function atPath(path: string, root: Element) {
+  let element: Element | undefined = root;
+  for (const segment of path ? path.split('/') : []) {
+    const [tag, index] = segment.split(':');
+    element = Array.from(element?.children ?? []).filter(
+      (child) => child.localName === tag,
+    )[Number(index) - 1];
+  }
+  return element;
+}
+
 const clickable =
   'button, a, summary, label, [role="button"], [role="tab"], [role="menuitem"], [role="option"], [role="radio"]';
 const fields = 'input, textarea';
 const translationKey = /^\w+(\.\w+)+$/;
 
-function find(target: string, query: string) {
+function find(target: string, query: string, last = false) {
   const byKey = translationKey.test(target);
   const byText = target.startsWith('=');
-  return [...document.querySelectorAll(byKey || byText ? query : target)].find(
-    (element) => {
-      if (!visible(element)) return false;
-      if (byText) return element.textContent?.includes(target.slice(1));
-      return (
-        !byKey ||
-        keysIn(
-          ['aria-label', 'placeholder']
-            .map((attribute) => element.getAttribute(attribute))
-            .concat(element.textContent)
-            .join(),
-        ).includes(target)
-      );
-    },
-  );
+  const candidates = [
+    ...document.querySelectorAll(byKey || byText ? query : target),
+  ];
+  if (last && byKey) candidates.reverse();
+  return candidates.find((element) => {
+    if (!visible(element)) return false;
+    if (byText) return element.textContent?.includes(target.slice(1));
+    return (
+      !byKey ||
+      keysIn(
+        ['aria-label', 'placeholder']
+          .map((attribute) => element.getAttribute(attribute))
+          .concat(element.textContent)
+          .join(),
+      ).includes(target)
+    );
+  });
 }
 
 async function waitFor<T>(read: () => T | undefined | null, label: string) {
@@ -99,18 +112,38 @@ function pointer(element: Element, type: string, clientX = 0) {
   );
 }
 
-async function perform(step: string) {
-  if (step.startsWith('?')) {
-    await waitFor(() => find(step.slice(1), 'body *'), step);
-    return;
+async function perform(step: string, path?: string) {
+  if (step === 'Escape') {
+    (document.activeElement ?? document.body).dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+      }),
+    );
+    return '';
   }
-  const [target, value] = step.split(' <- ');
+  if (step === 'refresh inbox') {
+    window.dispatchEvent(
+      new CustomEvent('polycord:inbox-changed', { detail: 'review' }),
+    );
+    return '';
+  }
+  const waiting = step.startsWith('?');
+  const [target, value] = (waiting ? step.slice(1) : step).split(' <- ');
   const swipe = target.startsWith('swipe ');
   const name = swipe ? target.slice(6) : target;
-  const element = await waitFor(
-    () => find(name, value === undefined ? clickable : fields),
-    name,
-  );
+  const element = await waitFor(() => {
+    if (path === undefined)
+      return find(
+        name,
+        waiting ? 'body *' : value === undefined ? clickable : fields,
+        waiting,
+      );
+    const candidate = atPath(path, document.body);
+    return candidate && visible(candidate) ? candidate : undefined;
+  }, name);
+  const location = ancestry(element, document.body);
+  if (waiting) return location;
   if (value !== undefined) {
     Object.getOwnPropertyDescriptor(
       Object.getPrototypeOf(element),
@@ -126,6 +159,7 @@ async function perform(step: string) {
   } else {
     (element as HTMLElement).click();
   }
+  return location;
 }
 
 function privacyScope(scene: Scene) {
@@ -138,8 +172,55 @@ function privacyScope(scene: Scene) {
 export function createPreviewBridge() {
   let targets = new Map<string, Element>();
   let active: Element | undefined;
+  let confirmation: string | undefined;
+  const nativeConfirm = window.confirm;
+  window.confirm = (message) => {
+    confirmation = message;
+    return false;
+  };
 
-  function inspect(scene: Scene): Observation {
+  function inspect(scene: Scene, index?: SceneIndex): Observation {
+    if (index) {
+      targets = new Map();
+      const root = atPath(index.scope, document.body);
+      const occurrences = index.occurrences.flatMap((occurrence) => {
+        if (!root) return [];
+        const [, , surface, path] = JSON.parse(occurrence.id) as [
+          string,
+          string,
+          string,
+          string,
+        ];
+        if (surface === 'Browser confirmation') {
+          return confirmation === undefined
+            ? []
+            : [{ ...occurrence, text: confirmation }];
+        }
+        if (surface === 'Page description') {
+          const description = document.head
+            .querySelector('meta[name="description"]')
+            ?.getAttribute('content');
+          return description === undefined || description === null
+            ? []
+            : [{ ...occurrence, text: description }];
+        }
+        const target = atPath(path, root);
+        if (!target || !visible(target)) return [];
+        const value =
+          surface === 'value' && target instanceof HTMLInputElement
+            ? target.value
+            : attributes.includes(surface)
+              ? (target.getAttribute(surface) ??
+                (surface === 'title'
+                  ? target.querySelector('title')?.textContent
+                  : null))
+              : target.textContent;
+        if (value == null) return [];
+        targets.set(occurrence.id, target);
+        return [{ ...occurrence, text: clean(value) }];
+      });
+      return { occurrences };
+    }
     const root = scene.privacy ? privacyScope(scene) : document.body;
     targets = new Map();
     const occurrences: Occurrence[] = [];
@@ -196,24 +277,53 @@ export function createPreviewBridge() {
       const value = title.textContent ?? '';
       if (element && visible(element)) add(element, value, value, 'title');
     }
+    for (const [surface, copy] of [
+      ['Browser confirmation', confirmation],
+      [
+        'Page description',
+        document.head
+          .querySelector('meta[name="description"]')
+          ?.getAttribute('content'),
+      ],
+    ] as const) {
+      for (const key of keysIn(copy ?? '')) {
+        const id = JSON.stringify([key, scene.id, surface, '']);
+        occurrences.push({ id, key, surface, text: clean(copy ?? '') });
+      }
+    }
     return { occurrences };
   }
 
   return {
     inspect,
-    async prepare(scene: Scene, scroll: boolean) {
-      for (const step of scene.open ?? []) {
-        await perform(step);
+    dispose() {
+      window.confirm = nativeConfirm;
+    },
+    showConfirmation() {
+      if (confirmation !== undefined) nativeConfirm.call(window, confirmation);
+    },
+    async prepare(scene: Scene, scroll: boolean, index?: SceneIndex) {
+      const actions: string[] = [];
+      for (const [stepIndex, step] of (scene.open ?? []).entries()) {
+        actions.push(await perform(step, index?.actions[stepIndex]));
         await new Promise((resolve) => setTimeout(resolve, 150));
       }
+      const mobileToast = document.querySelector(
+        '.MobileToast[data-state="open"]',
+      );
+      if (mobileToast) pointer(mobileToast, 'pointerdown');
+      let scope = '';
       if (scene.privacy) {
         const root = await waitFor(
-          () => privacyScope(scene),
+          () =>
+            index ? atPath(index.scope, document.body) : privacyScope(scene),
           'Profile Privacy',
         );
+        scope = ancestry(root, document.body);
         if (scroll && scene.viewport === 'desktop')
           root.scrollIntoView({ block: 'start' });
       }
+      return { actions, scope };
     },
     highlight(id: string | undefined) {
       active?.removeAttribute('data-locale-review-active');
