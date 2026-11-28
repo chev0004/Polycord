@@ -78,12 +78,13 @@ checkpoint. The previews use Polycord’s Storybook fixtures, including a signed
 dummy profile. The command runs independently of the Next.js app and needs no
 additional environment variables.
 
-Use **Find placements** to load the section’s supported states in both locales.
-Click copy in the preview to inspect its translation key, or open **Inspect
-accessibility and attributes** for labels and placeholders. Verify each placement
-in both languages to unlock the next section. **Browse inventory** lets you
-inspect other sections while verification is pending. Checkpoint links open
-matching routes in the local Next.js app when it is running.
+The first launch indexes the preview fixtures in both languages. Subsequent
+launches reuse the index until its inputs change. Click copy to inspect its
+translation key, or open **Inspect accessibility and attributes** for labels
+and placeholders. **Locations** lists every indexed appearance of a line.
+Verify the English and Japanese wording once each to unlock the next section.
+Changing one language clears that language’s check. **Browse inventory** lets
+you inspect other sections while verification is pending.
 
 The reviewer saves progress in this browser. **Export review** downloads the
 choices, shared rules, observed placements, and outstanding checks for both
