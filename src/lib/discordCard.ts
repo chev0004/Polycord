@@ -57,7 +57,8 @@ export const discordCardVersion = (row: PublicProfileRow) => {
     .update(JSON.stringify([banner, accent, data.avatarUrl]))
     .digest('base64url')
     .slice(0, 8);
-  return `${updated.toString(36)}-${layout}-${look}-${DISCORD_CARD_DESIGN}`;
+  const design = layout === 'now-playing' ? 2 : DISCORD_CARD_DESIGN;
+  return `${updated.toString(36)}-${layout}-${look}-${design}`;
 };
 
 export const discordCardImagePath = (row: PublicProfileRow, now = new Date()) =>
