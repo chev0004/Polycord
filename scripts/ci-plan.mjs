@@ -6,6 +6,7 @@ import { jobNames } from './ci-evidence.mjs';
 const docs = /\.md$|^docs\/|^LICENSE$/;
 const story = /^src\/.+\.stories\.tsx?$/;
 const locale = /^src\/locales\/[\w-]+\.json$/;
+const devTool = /^scripts\/locale-review\//;
 const tooling = [
   '.husky/commit-msg',
   '.husky/pre-commit',
@@ -91,6 +92,9 @@ export function planChanges(base, head, run = spawnSync) {
     } else if (tooling.includes(file)) {
       jobs.static = true;
       reasons.push(`${file}: isolated tooling, runs static checks.`);
+    } else if (devTool.test(file)) {
+      jobs.static = jobs.unit = true;
+      reasons.push(`${file}: local dev tool, runs static and unit checks.`);
     } else if (locale.test(file)) {
       const values = copyChanges(base, head, file, run);
       if (!values)

@@ -122,6 +122,14 @@ test('isolated tooling runs only static checks', async () => {
   assert.deepEqual(running(planChanges(base, head)), ['static']);
 });
 
+test('local dev tools run static and unit checks', async () => {
+  const head = await commit({
+    'scripts/locale-review/review-state.ts': 'b',
+    'scripts/locale-review/reviewer.css': 'b',
+  });
+  assert.deepEqual(running(planChanges(base, head)), ['static', 'unit']);
+});
+
 test('shared source, migrations and lockfiles run the full suite', async () => {
   for (const file of ['src/app.ts', 'drizzle/0041_add.sql', 'bun.lock']) {
     const head = await commit({ [file]: `${file} changed` });
