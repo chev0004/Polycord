@@ -130,7 +130,7 @@ test('unlocks multiple placements with one check per language', () => {
     ),
   ).toEqual(['ja']);
   expect(verified(updated, finding, 'en')).toBe(true);
-  expect(updated.per.develop).toEqual(review.per.develop);
+  expect(updated.per.develop.picks).toEqual(updated.per.now.picks);
   expect(sectionPending(updated, privacy, [finding], placements)).toBe(true);
   const reverted = updateWording(updated, { picks: review.per.now.picks });
   expect(verified(reverted, finding, 'ja')).toBe(false);
@@ -186,7 +186,7 @@ test('retains ICU parameters and rich text when editing copy', () => {
   );
 });
 
-test('shares choices and rules between snapshots for unchanged lines', () => {
+test('shares choices and rules between snapshots for every line', () => {
   const unchanged: Finding = {
     ...finding,
     key: 'Profile.editProfileSubtitle',
@@ -217,6 +217,7 @@ test('shares choices and rules between snapshots for unchanged lines', () => {
     }),
   );
   expect(review.per.now.picks).toEqual({
+    [finding.key]: { source: 'codex' },
     [unchanged.key]: { source: 'custom', text: { ja: '編集しましょう' } },
     [kept.key]: { source: 'keep' },
   });
