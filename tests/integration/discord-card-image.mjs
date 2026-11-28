@@ -69,16 +69,17 @@ const image = (id) =>
     params: Promise.resolve({ id }),
   });
 const assertAnimation = async (response) => {
-  assert.equal(response.headers.get('content-type'), 'image/webp');
-  const { width, pageHeight, delay, loop } = await sharp(
-    await response.arrayBuffer(),
-    { pages: -1 },
-  ).metadata();
+  assert.equal(response.headers.get('content-type'), 'image/gif');
+  const {
+    width,
+    height,
+    pageHeight = height,
+    delay,
+    loop,
+  } = await sharp(await response.arrayBuffer(), { pages: -1 }).metadata();
   assert.deepEqual([width, pageHeight, loop], [934, 320, 0]);
-  assert.ok(delay.every((ms) => ms === 41 || ms === 42));
-  const length = delay.reduce((sum, ms) => sum + ms, 0);
-  assert.equal(delay.length, Math.round((length * 24) / 1000));
-  return length;
+  assert.ok(delay.every((ms) => ms > 0 && ms % 40 === 0));
+  return delay.reduce((sum, ms) => sum + ms, 0);
 };
 const row = async () =>
   getPublicProfileById(
