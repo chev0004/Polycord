@@ -70,6 +70,25 @@ bun run build
 bun run start
 ```
 
+## Review Locale Copy
+
+Run `bun run review:locales` to open the local reviewer. Import
+`locale-review-live.html` and `locale-review-progress.json` from the same saved
+checkpoint. The previews use Polycord’s Storybook fixtures, including a signed-in
+dummy profile. The command runs independently of the Next.js app and needs no
+additional environment variables.
+
+Use **Find placements** to load the section’s supported states in both locales.
+Click copy in the preview to inspect its translation key, or open **Inspect
+accessibility and attributes** for labels and placeholders. Verify each placement
+in both languages to unlock the next section. **Browse inventory** lets you
+inspect other sections while verification is pending. Checkpoint links open
+matching routes in the local Next.js app when it is running.
+
+The reviewer saves progress in this browser. **Export review** downloads the
+choices, shared rules, observed placements, and outstanding checks for both
+snapshots. Keep the checkpoint and export outside the repository.
+
 ## Staging
 
 Staging runs at https://polycord.chev.dev on the Netlify project
