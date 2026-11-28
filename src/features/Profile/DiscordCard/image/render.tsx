@@ -13,6 +13,7 @@ import {
 } from '../types';
 import { beatAt, cycling, type Motion, resting, type Shot } from './animation';
 import { loadFigtree, loadMono, loadZen } from './fonts';
+import { encodeAnimation } from './gif';
 import { BleedImage } from './layouts/bleed';
 import {
   CharacterSelectImage,
@@ -35,9 +36,8 @@ import { createMeasure } from './measure';
 import { cardPalette } from './palette';
 import type { CardImageProps } from './parts';
 import { staged } from './staging';
-import { encodeAnimation } from './webp';
 
-const FPS = 24;
+const FPS = 25;
 
 const IMAGE_LAYOUTS: Record<
   DiscordCardLayout,
@@ -162,6 +162,6 @@ export const renderDiscordCardImage = async ({
   );
 
   return new Response(new Uint8Array(animation), {
-    headers: { ...headers, 'Content-Type': 'image/webp' },
+    headers: { ...headers, 'Content-Type': 'image/gif' },
   });
 };
