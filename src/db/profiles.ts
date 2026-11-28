@@ -404,6 +404,14 @@ export const getPublicProfileById = async (
   return row;
 };
 
+export const getPublicProfileByDiscordUserId = async (
+  discordUserId: string,
+) => {
+  const row = await getProfileByDiscordUserId(discordUserId);
+
+  return row && isVisibleProfile(row) ? row : null;
+};
+
 export const listBlockedProfilePreviews = async (viewerUserId: string) => {
   const rows = await db
     .select({
