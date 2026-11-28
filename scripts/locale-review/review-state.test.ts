@@ -7,11 +7,11 @@ import {
   sectionPending,
 } from './placements';
 import {
-  carryForward,
   type Finding,
   type Inventory,
   locales,
   readCheckpoint,
+  shareLines,
   updateWording,
   verified,
   verifyLine,
@@ -130,7 +130,7 @@ test('unlocks multiple placements with one check per language', () => {
     ),
   ).toEqual(['ja']);
   expect(verified(updated, finding, 'en')).toBe(true);
-  expect(updated.per.develop).toBe(review.per.develop);
+  expect(updated.per.develop).toEqual(review.per.develop);
   expect(sectionPending(updated, privacy, [finding], placements)).toBe(true);
   const reverted = updateWording(updated, { picks: review.per.now.picks });
   expect(verified(reverted, finding, 'ja')).toBe(false);
@@ -186,7 +186,7 @@ test('retains ICU parameters and rich text when editing copy', () => {
   );
 });
 
-test('carries Develop choices and rules into Working tree for unchanged lines', () => {
+test('shares choices and rules between snapshots for unchanged lines', () => {
   const unchanged: Finding = {
     ...finding,
     key: 'Profile.editProfileSubtitle',
@@ -220,6 +220,20 @@ test('carries Develop choices and rules into Working tree for unchanged lines', 
     [unchanged.key]: { source: 'custom', text: { ja: '編集しましょう' } },
     [kept.key]: { source: 'keep' },
   });
+  expect(review.per.develop.picks[kept.key]).toEqual({ source: 'codex' });
   expect(review.per.now.terms).toEqual({ visibility: 'public' });
-  expect(carryForward(review)).toEqual(review);
+  expect(shareLines(review)).toEqual(review);
+
+  const checked = verifyLine(review, unchanged, 'ja');
+  expect(verified({ ...checked, base: 'develop' }, unchanged, 'ja')).toBe(true);
+  expect(checked.per.develop.checks[finding.key]).toBeUndefined();
+
+  const picked = updateWording(
+    { ...checked, base: 'develop' },
+    { picks: { ...checked.per.develop.picks, [kept.key]: { source: 'keep' } } },
+  );
+  expect(picked.per.now.picks[kept.key]).toEqual({ source: 'keep' });
+  expect(picked.per.now.picks[unchanged.key]).toEqual(
+    picked.per.develop.picks[unchanged.key],
+  );
 });
