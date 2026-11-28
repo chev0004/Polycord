@@ -33,7 +33,9 @@ export async function loadScene(
       const currentRun = new URLSearchParams(child?.location.search).get('run');
       if (currentRun === run && child?.localeReview) {
         await child.localeReview.prepare(scene, true, index);
-        await new Promise((resolve) => setTimeout(resolve, 150));
+        await new Promise((resolve) =>
+          setTimeout(resolve, scene.open?.length ? 450 : 150),
+        );
         signal.throwIfAborted();
         return child.localeReview;
       }
