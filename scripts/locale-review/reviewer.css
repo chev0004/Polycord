@@ -332,6 +332,29 @@
   text-align: left;
 }
 
+.lr-option-picker {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  align-items: center;
+  border: 1px solid var(--lr-line);
+  border-radius: 7px;
+  background: var(--lr-control);
+  text-align: center;
+}
+
+.lr-option-picker span {
+  padding: 4px 6px;
+  overflow-wrap: anywhere;
+}
+
+.lr-app .lr-option-picker button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-color: transparent;
+  font-size: 20px;
+}
+
 .lr-rules {
   margin-top: 12px;
 }

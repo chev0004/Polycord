@@ -1,5 +1,4 @@
 import {
-  type ChangeEvent,
   type Dispatch,
   type FormEvent,
   type SetStateAction,
@@ -9,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { height, loadScene, widths } from './frames';
 import {
   type Catalogue,
@@ -173,6 +173,9 @@ function WordingEditor({
   const selected = wording(review, finding);
   const original = finding.original[review.base];
   const [custom, setCustom] = useState<WordingDraft | null>(null);
+  const optionIndex = options.findIndex(
+    ({ id }) => id === (custom ? 'custom' : choice?.source),
+  );
   const errors = locales.map((locale) =>
     original[locale] === undefined
       ? ''
@@ -182,8 +185,10 @@ function WordingEditor({
         ),
   );
 
-  function choose(event: ChangeEvent<HTMLSelectElement>) {
-    const source = event.target.value;
+  function stepOption(direction: -1 | 1) {
+    const current = optionIndex < 0 && direction === -1 ? 0 : optionIndex;
+    const next = (current + direction + options.length) % options.length;
+    const source = options[next].id;
     if (source === 'custom') {
       setCustom({ ...selected });
       return;
@@ -196,28 +201,45 @@ function WordingEditor({
     <>
       {!finding.noteOnly && (
         <>
-          <label className="lr-field">
-            Wording option
-            <select
-              aria-label="Wording option"
-              disabled={readOnly}
-              value={custom ? 'custom' : (choice?.source ?? '')}
-              onChange={choose}
-            >
-              <option value="" disabled>
-                Choose wording
-              </option>
-              {choice &&
-                !options.some((option) => option.id === choice.source) && (
-                  <option value={choice.source}>{choice.source}</option>
-                )}
-              {options.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <fieldset
+            className="lr-field"
+            onKeyDown={(event) => {
+              if (
+                event.altKey ||
+                event.ctrlKey ||
+                event.metaKey ||
+                (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+              )
+                return;
+              event.preventDefault();
+              stepOption(event.key === 'ArrowLeft' ? -1 : 1);
+            }}
+          >
+            <legend>Wording option</legend>
+            <div className="lr-option-picker">
+              <button
+                type="button"
+                aria-label="Previous wording option"
+                disabled={readOnly}
+                onClick={() => stepOption(-1)}
+              >
+                <MdChevronLeft aria-hidden="true" />
+              </button>
+              <span aria-live="polite">
+                {options[optionIndex]?.label ??
+                  choice?.source ??
+                  'Choose wording'}
+              </span>
+              <button
+                type="button"
+                aria-label="Next wording option"
+                disabled={readOnly}
+                onClick={() => stepOption(1)}
+              >
+                <MdChevronRight aria-hidden="true" />
+              </button>
+            </div>
+          </fieldset>
           <div className="lr-wording">
             {locales.map((locale, index) => (
               <section key={locale} lang={locale}>
