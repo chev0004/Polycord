@@ -172,6 +172,20 @@ test('records release evidence for direct validation and verified reuse', async 
   assert.equal(posts.length, 2);
 });
 
+test('a partial release run passes without recording release evidence', async () => {
+  const result = await reportResult(
+    env({
+      RELEASE_SHA: git('rev-parse', 'HEAD').stdout.trim(),
+      RECORD_EVIDENCE: 'false',
+      NEEDS: needs(true, {}, ['static', 'unit']),
+    }),
+    spawnSync,
+    request,
+  );
+  assert.equal(result.passed, true);
+  assert.equal(posts.length, 0);
+});
+
 test('does not record evidence for forks or branches outside release CI', async () => {
   for (const overrides of [
     { RECORD_EVIDENCE: 'false' },

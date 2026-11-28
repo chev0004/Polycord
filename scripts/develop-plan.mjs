@@ -33,6 +33,7 @@ async function provenRun(sha, env, run, github, wait) {
   if (!pull) return null;
   const { jobs: landed } = planChanges(`${sha}^1`, sha, run);
   const required = jobNames.filter((job) => landed[job]);
+  let composed = null;
 
   for (let check = 0; check < 30; check++) {
     const statuses =
@@ -41,12 +42,7 @@ async function provenRun(sha, env, run, github, wait) {
       const [, id, attempt] =
         status.target_url?.match(/\/actions\/runs\/(\d+)\/attempts\/(\d+)$/) ??
         [];
-      if (
-        status.context !== resultContext ||
-        status.state !== 'success' ||
-        status.description !== evidence(tree, policy) ||
-        !id
-      )
+      if (status.context !== resultContext || status.state !== 'success' || !id)
         continue;
       const ciRun = await github(`actions/runs/${id}`);
       if (
@@ -79,8 +75,11 @@ async function provenRun(sha, env, run, github, wait) {
           ['success', 'skipped'].includes(conclusion),
         ) &&
         ['gate', 'CI result', ...required].every(passed)
-      )
-        return ciRun.id;
+      ) {
+        if (status.description === evidence(tree, policy))
+          return { id: ciRun.id, exact: true };
+        composed = { id: ciRun.id, exact: false };
+      }
     }
     const runs = await github(
       `actions/workflows/tests.yml/runs?event=pull_request&head_sha=${pull.head.sha}&per_page=20`,
@@ -88,10 +87,10 @@ async function provenRun(sha, env, run, github, wait) {
     if (
       !runs?.workflow_runs.some(({ status }) => activeStates.includes(status))
     )
-      return null;
+      return composed;
     await wait(30000);
   }
-  return null;
+  return composed;
 }
 
 export async function planDevelop(
@@ -185,13 +184,21 @@ export async function planDevelop(
     };
 
   const proven = await provenRun(sha, env, run, github, wait);
-  if (proven)
+  if (proven?.exact)
     return {
       ...noJobs(
-        `Run ${proven} validated the same tree under the same CI policy.`,
+        `Run ${proven.id} validated the same tree under the same CI policy.`,
       ),
       reused: true,
       deploy: develop,
+    };
+  if (proven && develop)
+    return {
+      jobs: { ...noJobs().jobs, static: true, unit: true },
+      reasons: [
+        `Run ${proven.id} validated this pull request before develop moved; static and unit checks cover the merge.`,
+      ],
+      deploy: true,
     };
 
   return { ...fullPlan('Validate fully.'), deploy: develop };
