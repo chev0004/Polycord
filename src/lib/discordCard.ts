@@ -60,5 +60,11 @@ export const discordCardVersion = (row: PublicProfileRow) => {
   return `${updated.toString(36)}-${layout}-${look}-${DISCORD_CARD_DESIGN}`;
 };
 
+export const discordCardExtension = ({
+  layout,
+  data,
+}: ReturnType<typeof discordCardFor>) =>
+  layout === 'now-playing' || data.targets.length > 1 ? 'gif' : 'png';
+
 export const discordCardImagePath = (row: PublicProfileRow, now = new Date()) =>
-  `/api/discord-card/${row.profile.id}/${discordCardVersion(row)}/${Math.floor(now.getTime() / 60000)}.gif`;
+  `/api/discord-card/${row.profile.id}/${discordCardVersion(row)}/${Math.floor(now.getTime() / 60000)}.${discordCardExtension(discordCardFor(row))}`;
