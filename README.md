@@ -116,6 +116,8 @@ The Discord application must allow that URI as well as the localhost callback.
 Staging has its own `AUTH_SECRET` and VAPID keys. Set
 `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` for push;
 the subject is `https://polycord.chev.dev`. Rebuild after changing the public key.
+Staging also has its own `POLYCORD_BOT_KEY`, the secret the testing Discord bot sends
+to `/api/bot/*` endpoints as a `Bearer` token.
 Product analytics is disabled with `POLYCORD_ANALYTICS_DISABLED=true`. `netlify.toml` pins the build runtimes and adds a
 `noindex, nofollow` response header for static files. `next.config.ts` adds the
 same header to server-rendered responses on `polycord.chev.dev`. Leave

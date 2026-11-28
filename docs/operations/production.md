@@ -23,6 +23,7 @@ The owner does these steps. None of them is automated.
 | `POLYCORD_ADMIN_USER_IDS` | Current administrators only |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | A new key pair, never the staging pair |
 | `VAPID_SUBJECT` | `https://polycord.net` |
+| `POLYCORD_BOT_KEY` | New random value, never the staging one; the production bot sends it to `/api/bot/*` |
 | `NEXT_PUBLIC_DISCORD_INVITE_URL` | The Polycord Discord server invite |
 | `POLYCORD_ANALYTICS_DISABLED` | `true` until the owner approves analytics in production |
 | `NEXT_PUBLIC_DISCOVERY_SKELETON_ENABLED` | Same value as staging |

@@ -125,7 +125,10 @@ for (const file of walk(apiRoot)) {
   await middleware(request(path));
   if (lookups !== before) continue;
   skipped.push(path);
-  if (['/api/health', '/api/build', '/api/internal/ban-check'].includes(path))
+  if (
+    ['/api/health', '/api/build', '/api/internal/ban-check'].includes(path) ||
+    path.startsWith('/api/bot/')
+  )
     continue;
   assert.match(
     readFileSync(file, 'utf8'),
