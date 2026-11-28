@@ -146,7 +146,7 @@ export function readCheckpoint(html: string, progress: string): Review {
       section: 'profile-privacy',
     };
   }
-  return carryForward({
+  return shareLines({
     inventory: {
       ...inventory,
       issues: inventory.issues.filter(({ key }) => !unusedKeys.has(key)),
@@ -156,28 +156,63 @@ export function readCheckpoint(html: string, progress: string): Review {
   });
 }
 
-export function carryForward(review: Review): Review {
-  const { develop, now } = review.per;
-  const carried = review.inventory.issues.flatMap((finding) =>
-    develop.picks[finding.key] &&
-    locales.every(
-      (locale) =>
-        finding.original.develop?.[locale] === finding.original.now?.[locale],
+const sharedKeys = (review: Review) =>
+  review.inventory.issues
+    .filter((finding) =>
+      locales.every(
+        (locale) =>
+          finding.original.develop?.[locale] === finding.original.now?.[locale],
+      ),
     )
-      ? [[finding.key, develop.picks[finding.key]]]
-      : [],
-  );
+    .map(({ key }) => key);
+
+export function shareLines(review: Review): Review {
+  const keys = sharedKeys(review);
+  const fill = (from: SnapshotReview, to: SnapshotReview): SnapshotReview => ({
+    ...to,
+    picks: {
+      ...Object.fromEntries(
+        keys.flatMap((key) =>
+          from.picks[key] ? [[key, from.picks[key]]] : [],
+        ),
+      ),
+      ...to.picks,
+    },
+    checks: {
+      ...to.checks,
+      ...Object.fromEntries(
+        keys.flatMap((key) =>
+          from.checks[key]
+            ? [[key, { ...from.checks[key], ...to.checks[key] }]]
+            : [],
+        ),
+      ),
+    },
+    terms: { ...from.terms, ...to.terms },
+  });
+  const { develop, now } = review.per;
   return {
     ...review,
-    per: {
-      ...review.per,
-      now: {
-        ...now,
-        picks: { ...Object.fromEntries(carried), ...now.picks },
-        terms: { ...develop.terms, ...now.terms },
-      },
-    },
+    per: { develop: fill(now, develop), now: fill(develop, now) },
   };
+}
+
+function mirror(review: Review): Review {
+  const from = review.per[review.base];
+  const other = review.base === 'develop' ? 'now' : 'develop';
+  const to = {
+    ...review.per[other],
+    picks: { ...review.per[other].picks },
+    checks: { ...review.per[other].checks },
+    terms: from.terms,
+  };
+  for (const key of sharedKeys(review)) {
+    if (from.picks[key]) to.picks[key] = from.picks[key];
+    else delete to.picks[key];
+    if (from.checks[key]) to.checks[key] = from.checks[key];
+    else delete to.checks[key];
+  }
+  return { ...review, per: { ...review.per, [other]: to } };
 }
 
 export function choiceOptions(
@@ -314,7 +349,7 @@ export function updateWording(
     }
     current.checks[finding.key] = remaining;
   }
-  return next;
+  return mirror(next);
 }
 
 export function verified(review: Review, finding: Finding, locale: Locale) {
@@ -343,7 +378,7 @@ export function verifyLine(
   const line = { ...state.checks[finding.key] };
   if (mode === 'toggle' && line[locale] === selected) delete line[locale];
   else line[locale] = selected;
-  return {
+  return mirror({
     ...review,
     per: {
       ...review.per,
@@ -355,7 +390,7 @@ export function verifyLine(
         },
       },
     },
-  };
+  });
 }
 
 export function previewWording(review: Review, locale: Locale) {
