@@ -112,6 +112,13 @@ test('unlocks multiple placements with one check per language', () => {
   expect(sectionPending(review, privacy, [finding], placements)).toBe(true);
   review = verifyLine(review, finding, 'ja');
   expect(sectionPending(review, privacy, [finding], placements)).toBe(false);
+  expect(verified(verifyLine(review, finding, 'ja'), finding, 'ja')).toBe(true);
+  const toggled = verifyLine(review, finding, 'ja', 'toggle');
+  expect(verified(toggled, finding, 'ja')).toBe(false);
+  expect(verified(toggled, finding, 'en')).toBe(true);
+  expect(
+    verified(verifyLine(toggled, finding, 'ja', 'toggle'), finding, 'ja'),
+  ).toBe(true);
 
   const updated = updateWording(review, {
     picks: { [finding.key]: { source: 'custom', text: { ja: '新しい設定' } } },

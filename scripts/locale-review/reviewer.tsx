@@ -345,15 +345,16 @@ function Workspace({
   const stage = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const bridge = useRef<PreviewBridge | null>(null);
-  const inspect = useRef(true);
-  inspect.current = !interactive;
+  const canEdit = !browsing && !reading && !interactive && !error;
+  const interaction = useRef({ inspect: !interactive, canEdit });
+  interaction.current = { inspect: !interactive, canEdit };
 
   const findings = useMemo(
     () => inventory.issues.filter((finding) => available(finding, base)),
     [inventory, base],
   );
-  const findingKeys = useMemo(
-    () => new Set(findings.map(({ key }) => key)),
+  const findingsByKey = useMemo(
+    () => new Map(findings.map((finding) => [finding.key, finding])),
     [findings],
   );
   const positions = useMemo(() => indexPlacements(catalogue), [catalogue]);
@@ -419,8 +420,7 @@ function Workspace({
       .filter(({ key }) => reviewStatusByKey.get(key) === 'pending')
       .map(({ key }) => key),
   );
-  const finding =
-    findings.find(({ key }) => key === findingKey) ?? sectionFindings[0];
+  const finding = findingsByKey.get(findingKey) ?? sectionFindings[0];
   const placements = finding ? (positions.get(finding.key) ?? []) : [];
   const selectedPlacement =
     placements.find(({ id }) => id === placementId) ??
@@ -438,14 +438,7 @@ function Workspace({
     proposed !== undefined &&
     original !== undefined &&
     !wordingError(original, proposed);
-  const canVerify = Boolean(
-    occurrence &&
-      validWording &&
-      !browsing &&
-      !reading &&
-      !interactive &&
-      !error,
-  );
+  const canVerify = Boolean(occurrence && validWording && canEdit);
 
   const mutate = useCallback(
     (change: (current: Review) => Review) => {
@@ -502,26 +495,43 @@ function Workspace({
         bridge.current = api;
         const observed = api.inspect(scene, sceneIndex);
         setLive(observed);
+        const inspectCopy = (event: MouseEvent) => {
+          if (
+            !interaction.current.inspect ||
+            (event.target as Node | null)?.nodeType !== Node.ELEMENT_NODE
+          )
+            return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const occurrence = api.occurrenceAt(
+            event.target as Element,
+            observed,
+          );
+          if (!occurrence) return;
+          const clicked = findingsByKey.get(occurrence.key);
+          if (!clicked) return;
+          setFinding(clicked.key);
+          setPlacement(occurrence.id);
+          if (
+            event.type === 'dblclick' &&
+            interaction.current.canEdit &&
+            occurrence.surface === 'Text' &&
+            !clicked.noteOnly
+          ) {
+            element?.contentDocument?.getSelection()?.removeAllRanges();
+            mutate((current) => verifyLine(current, clicked, locale, 'toggle'));
+          }
+        };
+        const options = { capture: true, signal: controller.signal };
         element.contentDocument?.addEventListener(
           'click',
-          (event) => {
-            if (
-              !inspect.current ||
-              (event.target as Node | null)?.nodeType !== Node.ELEMENT_NODE
-            )
-              return;
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            const occurrence = api.occurrenceAt(
-              event.target as Element,
-              observed,
-            );
-            if (!occurrence) return;
-            if (!findingKeys.has(occurrence.key)) return;
-            setFinding(occurrence.key);
-            setPlacement(occurrence.id);
-          },
-          { capture: true, signal: controller.signal },
+          inspectCopy,
+          options,
+        );
+        element.contentDocument?.addEventListener(
+          'dblclick',
+          inspectCopy,
+          options,
         );
       } catch (error) {
         if (!controller.signal.aborted)
@@ -534,7 +544,7 @@ function Workspace({
     }
     void open();
     return () => controller.abort();
-  }, [scene, sceneIndex, locale, preview, reload, findingKeys]);
+  }, [scene, sceneIndex, locale, preview, reload, findingsByKey, mutate]);
 
   useEffect(() => {
     bridge.current?.highlight(
@@ -706,6 +716,9 @@ function Workspace({
             <div className="lr-review-legend">
               <span data-locale-review-status="pending">Needs review</span>
               <span data-locale-review-status="verified">Verified</span>
+              {!browsing && (
+                <span>Double-click copy to toggle verification</span>
+              )}
             </div>
           )}
           {scene ? (
@@ -827,6 +840,13 @@ function Workspace({
                       onClick={() => {
                         setFinding(item.key);
                         setPlacement(item.id);
+                      }}
+                      onDoubleClick={() => {
+                        const clicked = findingsByKey.get(item.key);
+                        if (canEdit && clicked)
+                          mutate((current) =>
+                            verifyLine(current, clicked, locale, 'toggle'),
+                          );
                       }}
                     >
                       {item.surface} ·{' '}

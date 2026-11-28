@@ -164,13 +164,15 @@
 
 .lr-review-legend {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 0 0 8px;
   color: var(--lr-muted);
   font-size: 12px;
 }
 
-.lr-review-legend span {
+.lr-review-legend [data-locale-review-status] {
   padding: 2px 6px;
 }
 

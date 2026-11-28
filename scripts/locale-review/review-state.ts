@@ -305,6 +305,7 @@ export function verifyLine(
   review: Review,
   finding: Finding,
   locale: Locale,
+  mode: 'verify' | 'toggle' = 'verify',
 ): Review {
   const selected = wording(review, finding)[locale];
   const original = finding.original[review.base][locale];
@@ -315,6 +316,9 @@ export function verifyLine(
   )
     return review;
   const state = review.per[review.base];
+  const line = { ...state.checks[finding.key] };
+  if (mode === 'toggle' && line[locale] === selected) delete line[locale];
+  else line[locale] = selected;
   return {
     ...review,
     per: {
@@ -323,7 +327,7 @@ export function verifyLine(
         ...state,
         checks: {
           ...state.checks,
-          [finding.key]: { ...state.checks[finding.key], [locale]: selected },
+          [finding.key]: line,
         },
       },
     },
