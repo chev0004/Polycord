@@ -2,11 +2,12 @@ import { Avatar, Brand, type CardImageProps, Chips, Kicker } from '../parts';
 
 export const WatermarkImage = ({
   data,
+  active,
   palette,
   measure,
   t,
 }: CardImageProps) => {
-  const target = data.targets[0];
+  const target = data.targets[active];
   const footer = [
     data.availability?.text,
     [data.country, data.time].filter(Boolean).join(' · '),
@@ -101,12 +102,17 @@ export const WatermarkImage = ({
         {target ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <Kicker palette={palette}>{t('learning')}</Kicker>
-            <span style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.1 }}>
-              {target.name}
-            </span>
-            <span style={{ fontSize: 16, color: palette.soft }}>
-              {target.level}
-            </span>
+            <div
+              data-motion="cycle"
+              style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+            >
+              <span style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.1 }}>
+                {target.name}
+              </span>
+              <span style={{ fontSize: 16, color: palette.soft }}>
+                {target.level}
+              </span>
+            </div>
           </div>
         ) : null}
       </div>

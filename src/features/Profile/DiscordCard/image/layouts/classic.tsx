@@ -10,8 +10,8 @@ import {
 const RIGHT_COLUMN = 387.6;
 
 export const ClassicImage = (props: CardImageProps) => {
-  const { data, palette, measure, t } = props;
-  const target = data.targets[0];
+  const { data, active, palette, measure, t } = props;
+  const target = data.targets[active];
 
   return (
     <div
@@ -129,12 +129,19 @@ export const ClassicImage = (props: CardImageProps) => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                <span>{target.name}</span>
-                {target.level ? (
-                  <span style={{ fontSize: 15, fontWeight: 500, opacity: 0.8 }}>
-                    {`· ${target.level}`}
-                  </span>
-                ) : null}
+                <div
+                  data-motion="cycle"
+                  style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                >
+                  <span>{target.name}</span>
+                  {target.level ? (
+                    <span
+                      style={{ fontSize: 15, fontWeight: 500, opacity: 0.8 }}
+                    >
+                      {`· ${target.level}`}
+                    </span>
+                  ) : null}
+                </div>
               </div>
             ) : null}
           </div>

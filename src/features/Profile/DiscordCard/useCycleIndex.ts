@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-
-const CYCLE_INTERVAL = 2800;
+import { DISCORD_CARD_CYCLE } from './types';
 
 export const useCycleIndex = (count: number, enabled = true) => {
   const [index, setIndex] = useState(0);
@@ -9,7 +8,7 @@ export const useCycleIndex = (count: number, enabled = true) => {
     if (!enabled || count < 2) return;
     const timer = window.setInterval(
       () => setIndex((previous) => previous + 1),
-      CYCLE_INTERVAL,
+      DISCORD_CARD_CYCLE,
     );
     return () => window.clearInterval(timer);
   }, [count, enabled]);

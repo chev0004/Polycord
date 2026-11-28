@@ -1,3 +1,4 @@
+import { type Motion, slides } from '../animation';
 import {
   Avatar,
   Brand,
@@ -7,15 +8,30 @@ import {
   Icon,
   Segments,
 } from '../parts';
+import { addColumns, clamp, difference } from '../pixels';
 
 const MAIN = 634;
+const LEVEL = 118;
+const GAP = 6;
+const FILL = 320;
 
-const Level = ({ children, color }: { children: string; color: string }) => (
+const Level = ({
+  children,
+  color,
+  width = LEVEL,
+  motion,
+}: {
+  children: string;
+  color: string;
+  width?: number;
+  motion?: string;
+}) => (
   <span
+    data-motion={motion}
     style={{
       display: 'flex',
       justifyContent: 'flex-end',
-      minWidth: 118,
+      width,
       fontSize: 16,
       color,
     }}
@@ -24,9 +40,57 @@ const Level = ({ children, color }: { children: string; color: string }) => (
   </span>
 );
 
+export const rankMotion: Motion = async (stage) => {
+  const { targets } = stage.data;
+  const filled = (steps: number) => ({
+    ...stage.data,
+    targets: targets.map((target) => ({ ...target, steps })),
+  });
+  const empty = filled(0);
+  const base = await stage.shot({ data: empty });
+  const slide = await slides(stage, 18, { data: empty });
+  const bar = difference(
+    await stage.shot({ data: filled(4), lite: true }),
+    await stage.shot({ data: empty, lite: true }),
+  );
+  const segment = (bar.width - GAP * 3) / 4;
+
+  return {
+    paint: (beat) => {
+      const frame = base.slice();
+      slide(frame, beat);
+      const from = targets[beat.previous]?.steps ?? 0;
+      const to = targets[beat.active]?.steps ?? 0;
+      const duration = FILL / Math.max(1, Math.abs(to - from));
+      addColumns(frame, bar, (x) => {
+        const index = Math.floor(x / (segment + GAP));
+        const order = to >= from ? index - from : from - 1 - index;
+        const progress = clamp(
+          (beat.elapsed - Math.max(0, order) * duration) / duration,
+        );
+        const before = Number(index < from);
+        const fill = before + (Number(index < to) - before) * progress;
+        return [x, clamp(fill * segment - (x - index * (segment + GAP)))];
+      });
+      return frame;
+    },
+  };
+};
+
 export const RankImage = (props: CardImageProps) => {
-  const { data, palette, measure, t } = props;
-  const target = data.targets[0];
+  const { data, active, palette, measure, t } = props;
+  const target = data.targets[active];
+  const codes = Math.max(
+    0,
+    ...data.targets.map(
+      ({ code }) =>
+        measure(code, { size: 15, weight: 800, spacing: 0.06 }) + 20,
+    ),
+  );
+  const levels = Math.max(
+    LEVEL,
+    ...data.targets.map(({ level }) => measure(level, { size: 16 })),
+  );
   const schedule = data.availability
     ? 32 + measure(data.availability.short, { size: 16 })
     : 0;
@@ -151,40 +215,33 @@ export const RankImage = (props: CardImageProps) => {
               fontSize: 18,
             }}
           >
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                height: 30,
-                padding: '0 10px',
-                borderRadius: 8,
-                fontSize: 15,
-                fontWeight: 800,
-                letterSpacing: '0.06em',
-                background: palette.darker,
-                color: palette.light,
-              }}
-            >
-              {target.code}
-            </span>
-            <div style={{ display: 'flex', flex: 1 }}>
-              <Segments
-                steps={target.steps}
-                palette={palette}
-                width={
-                  MAIN -
-                  28 -
-                  118 -
-                  (measure(target.code, {
-                    size: 15,
-                    weight: 800,
-                    spacing: 0.06,
-                  }) +
-                    20)
-                }
-              />
+            <div style={{ display: 'flex', width: codes }}>
+              <span
+                data-motion="cycle"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: 30,
+                  padding: '0 10px',
+                  borderRadius: 8,
+                  fontSize: 15,
+                  fontWeight: 800,
+                  letterSpacing: '0.06em',
+                  background: palette.darker,
+                  color: palette.light,
+                }}
+              >
+                {target.code}
+              </span>
             </div>
-            <Level color={palette.soft}>{target.level}</Level>
+            <Segments
+              steps={target.steps}
+              palette={palette}
+              width={MAIN - 28 - codes - levels}
+            />
+            <Level motion="cycle" width={levels} color={palette.soft}>
+              {target.level}
+            </Level>
           </div>
         ) : null}
         <div

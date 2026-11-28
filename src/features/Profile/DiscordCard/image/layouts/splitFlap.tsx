@@ -1,10 +1,16 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { layer, type Motion } from '../animation';
 import type { CardPalette } from '../palette';
 import { Avatar, Brand, type CardImageProps, Chips, Kicker } from '../parts';
+import { cropSprite, drawSprite } from '../pixels';
 
 const MAX_WORD_LENGTH = 18;
 const SMALL_WORD_LENGTH = 9;
 const MEDIUM_WORD_LENGTH = 15;
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const BASE_FLIPS = 4;
+const FLIP_INTERVAL = 55;
+const CELL_DELAY = 35;
 
 const SIZES = {
   large: { width: 46, height: 64, font: 38, radius: 6, gap: 5 },
@@ -42,7 +48,9 @@ const Cell = ({
       height: size.height,
       borderRadius: size.radius,
       background: 'linear-gradient(180deg, #22272d 50%, #1a1e22 50%)',
-      boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.04)',
+      borderWidth: 1,
+      borderStyle: 'solid',
+      borderColor: 'rgba(255, 255, 255, 0.04)',
       fontSize: size.font,
       fontWeight: 800,
       lineHeight: 1,
@@ -53,9 +61,9 @@ const Cell = ({
     <div
       style={{
         position: 'absolute',
-        left: 0,
-        right: 0,
-        top: size.height / 2 - 1,
+        left: -1,
+        right: -1,
+        top: size.height / 2 - 2,
         height: 2,
         background: '#0a0b0c',
       }}
@@ -68,13 +76,18 @@ const Flaps = ({
   width,
   size,
   color = '#fff',
+  motion,
 }: {
   word: string;
   width: number;
   size: (typeof SIZES)[keyof typeof SIZES];
   color?: string;
+  motion?: string;
 }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: size.gap }}>
+  <div
+    data-motion={motion}
+    style={{ display: 'flex', alignItems: 'center', gap: size.gap }}
+  >
     {[...word.toLocaleUpperCase().padEnd(width, ' ')].map((char, index) => (
       // biome-ignore lint/suspicious/noArrayIndexKey: flap cells are positional
       <Cell key={index} char={char} size={size} color={color} />
@@ -101,22 +114,83 @@ const Line = ({
   </div>
 );
 
+const widest = (words: string[]) =>
+  Math.max(1, ...words.map((word) => word.length));
+
+export const splitFlapMotion: Motion = async (stage) => {
+  const base = await stage.shot();
+  const cells = await layer(stage, 'flaps');
+  const names = stage.data.targets.map((item) => clip(item.name));
+  const rows = await Promise.all(
+    [names, stage.data.targets.map((item) => item.level)].map(
+      async (words, row) => {
+        const width = widest(words);
+        const size = row ? SIZES.small : flapSize(width);
+        const upper = words.map((word) =>
+          word.toLocaleUpperCase().padEnd(width, ' '),
+        );
+        const chars = [...new Set([...LETTERS, ...upper.join('')])];
+        const step = size.width + size.gap;
+        const sheetWidth = chars.length * step;
+        const sheet = await stage.sheet(
+          <Flaps word={chars.join('')} width={chars.length} size={size} />,
+          sheetWidth,
+          size.height,
+        );
+        return {
+          words: upper,
+          step,
+          top: row ? cells.y + cells.height - size.height : cells.y,
+          sprites: new Map(
+            chars.map((char, index) => [
+              char,
+              cropSprite(sheet, sheetWidth, {
+                x: index * step,
+                y: 0,
+                width: size.width,
+                height: size.height,
+              }),
+            ]),
+          ),
+        };
+      },
+    ),
+  );
+
+  return {
+    paint: ({ active, previous, elapsed }) => {
+      const frame = base.slice();
+      rows.forEach(({ words, step, top, sprites }, row) => {
+        [...(words[active] ?? '')].forEach((final, cell) => {
+          const from = words[previous][cell];
+          const since = elapsed - cell * CELL_DELAY;
+          const flip = Math.floor(since / FLIP_INTERVAL);
+          let char = final;
+          if (from !== final && flip < BASE_FLIPS + cell)
+            char =
+              since < 0
+                ? from
+                : LETTERS[(active * 7 + row * 5 + cell * 11 + flip * 17) % 26];
+          const sprite = sprites.get(char);
+          if (sprite) drawSprite(frame, sprite, cells.x + cell * step, top);
+        });
+      });
+      return frame;
+    },
+  };
+};
+
 export const SplitFlapImage = ({
   data,
+  active,
   palette,
   measure,
   t,
 }: CardImageProps) => {
-  const target = data.targets[0];
+  const target = data.targets[active];
   const native = clip(data.native.name);
-  const nameWidth = Math.max(
-    1,
-    ...data.targets.map((item) => clip(item.name).length),
-  );
-  const levelWidth = Math.max(
-    1,
-    ...data.targets.map((item) => item.level.length),
-  );
+  const nameWidth = widest(data.targets.map((item) => clip(item.name)));
+  const levelWidth = widest(data.targets.map((item) => item.level));
 
   return (
     <div
@@ -151,6 +225,7 @@ export const SplitFlapImage = ({
         {target ? (
           <Line label={t('learning')} palette={palette}>
             <Flaps
+              motion="flaps"
               word={clip(target.name)}
               width={nameWidth}
               size={flapSize(nameWidth)}
@@ -159,7 +234,12 @@ export const SplitFlapImage = ({
         ) : null}
         {target ? (
           <Line label={t('level')} palette={palette}>
-            <Flaps word={target.level} width={levelWidth} size={SIZES.small} />
+            <Flaps
+              motion="flaps"
+              word={target.level}
+              width={levelWidth}
+              size={SIZES.small}
+            />
           </Line>
         ) : null}
         {data.tags.length ? (

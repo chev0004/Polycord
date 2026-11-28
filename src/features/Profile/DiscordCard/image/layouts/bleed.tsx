@@ -3,10 +3,6 @@ import { fitSize } from '../measure';
 import { Avatar, Brand, type CardImageProps, Chips, Kicker } from '../parts';
 
 const TOP_OFFSET = 0.19;
-const OUTLINE = [...Array(16).keys()].map((step) => [
-  2 * Math.cos((step * Math.PI) / 8),
-  2 * Math.sin((step * Math.PI) / 8),
-]);
 const BASE = 210;
 
 const fitLines = (measure: Measure, text: string) => {
@@ -33,10 +29,19 @@ const fitLines = (measure: Measure, text: string) => {
   return { lines, size, bottom: (lines.length - TOP_OFFSET) * size + overhang };
 };
 
-export const BleedImage = ({ data, palette, measure, t }: CardImageProps) => {
-  const target = data.targets[0];
+export const BleedImage = ({
+  data,
+  active,
+  palette,
+  measure,
+  t,
+}: CardImageProps) => {
+  const target = data.targets[active];
   const name = fitLines(measure, data.native.script);
   const learn = Math.max(136, 306 - name.bottom);
+  const fit = (text: string) =>
+    fitSize(measure, text, { size: learn, weight: 900, spacing: -0.04 }, 600);
+  const tallest = Math.max(0, ...data.targets.map((item) => fit(item.name)));
 
   return (
     <div
@@ -78,12 +83,14 @@ export const BleedImage = ({ data, palette, measure, t }: CardImageProps) => {
       </Kicker>
       {target ? (
         <div
+          data-motion="cycle"
           style={{
             display: 'flex',
             flexDirection: 'column',
             position: 'absolute',
             left: 36,
             bottom: -34,
+            height: tallest + 15.6,
           }}
         >
           <Kicker palette={palette} style={{ paddingLeft: 4 }}>
@@ -91,19 +98,13 @@ export const BleedImage = ({ data, palette, measure, t }: CardImageProps) => {
           </Kicker>
           <span
             style={{
-              fontSize: fitSize(
-                measure,
-                target.name,
-                { size: learn, weight: 900, spacing: -0.04 },
-                600,
-              ),
+              fontSize: fit(target.name),
               fontWeight: 900,
               lineHeight: 1,
               letterSpacing: '-0.04em',
               color: palette.deep,
-              textShadow: OUTLINE.map(
-                ([x, y]) => `${x}px ${y}px 0 ${palette.primary}`,
-              ).join(', '),
+              WebkitTextStrokeWidth: 4,
+              WebkitTextStrokeColor: palette.primary,
               whiteSpace: 'nowrap',
             }}
           >

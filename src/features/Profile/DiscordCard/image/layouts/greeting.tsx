@@ -15,43 +15,43 @@ const Bubble = ({
   greeting,
   style,
   labelColor,
+  motion,
 }: {
   label: ReactNode;
   greeting: string;
   style: CSSProperties;
   labelColor?: string;
+  motion?: string;
 }) => (
-  <div
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 6,
-      padding: '14px 22px',
-      ...style,
-    }}
-  >
-    {label}
-    <span
-      style={{
-        fontFamily: 'Zen',
-        fontSize: 34,
-        fontWeight: 700,
-        lineHeight: 1.15,
-        color: labelColor,
-      }}
+  <div style={{ display: 'flex', padding: '14px 22px', ...style }}>
+    <div
+      data-motion={motion}
+      style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
     >
-      {greeting}
-    </span>
+      {label}
+      <span
+        style={{
+          fontFamily: 'Zen',
+          fontSize: 34,
+          fontWeight: 700,
+          lineHeight: 1.15,
+          color: labelColor,
+        }}
+      >
+        {greeting}
+      </span>
+    </div>
   </div>
 );
 
 export const GreetingImage = ({
   data,
+  active,
   palette,
   measure,
   t,
 }: CardImageProps) => {
-  const target = data.targets[0];
+  const target = data.targets[active];
   const learning =
     44 +
     Math.max(
@@ -62,7 +62,7 @@ export const GreetingImage = ({
           weight: 700,
           spacing: 0.12,
         }),
-        measure(item.greeting, { size: 34, weight: 700 }),
+        measure(item.greeting, { size: 34, zen: true }),
       ]),
     );
 
@@ -180,6 +180,7 @@ export const GreetingImage = ({
         />
         {target ? (
           <Bubble
+            motion="cycle"
             label={
               <Kicker palette={palette}>
                 {t('learningWith', { language: target.name })}
@@ -188,7 +189,7 @@ export const GreetingImage = ({
             greeting={target.greeting}
             style={{
               alignSelf: 'flex-end',
-              width: learning,
+              minWidth: learning,
               background: palette.darker,
               borderTopLeftRadius: 26,
               borderTopRightRadius: 26,

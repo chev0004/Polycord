@@ -7,8 +7,14 @@ import {
   ScheduleRow,
 } from '../parts';
 
-export const PhotoImage = ({ data, palette, measure, t }: CardImageProps) => {
-  const target = data.targets[0];
+export const PhotoImage = ({
+  data,
+  active,
+  palette,
+  measure,
+  t,
+}: CardImageProps) => {
+  const target = data.targets[active];
 
   return (
     <div
@@ -128,6 +134,7 @@ export const PhotoImage = ({ data, palette, measure, t }: CardImageProps) => {
             </Kicker>
             {target ? (
               <span
+                data-motion="cycle"
                 style={{
                   display: 'flex',
                   alignItems: 'center',

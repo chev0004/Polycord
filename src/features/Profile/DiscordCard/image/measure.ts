@@ -76,6 +76,7 @@ export type MeasureStyle = {
   weight?: number;
   spacing?: number;
   mono?: boolean;
+  zen?: boolean;
 };
 
 export type Measure = (text: string, style: MeasureStyle) => number;
@@ -87,10 +88,15 @@ export const createMeasure = (fonts: CardFont[]): Measure => {
       .map((font) => [font.weight, readMetrics(font.data)]),
   );
 
-  return (text, { size, weight = 400, spacing = 0, mono = false }) => {
+  const japanese = fonts.find((font) => font.name === 'Zen');
+  const zenMetrics = japanese && readMetrics(japanese.data);
+
+  return (text, { size, weight = 400, spacing = 0, mono, zen }) => {
     const font = mono
       ? undefined
-      : (metrics.get(weight as CardFont['weight']) ?? metrics.get(400));
+      : zen
+        ? zenMetrics
+        : (metrics.get(weight as CardFont['weight']) ?? metrics.get(400));
     let units = 0;
     for (const char of text) {
       const code = char.codePointAt(0) ?? 0;
