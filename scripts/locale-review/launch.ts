@@ -13,7 +13,13 @@ const port = 6014;
 async function fingerprint() {
   const hash = new Bun.CryptoHasher('sha256');
   const patterns = [
-    '{src,public,tests/fixtures,.storybook,scripts/locale-review}/**/*',
+    ...[
+      'src',
+      'public',
+      'tests/fixtures',
+      '.storybook',
+      'scripts/locale-review',
+    ].map((directory) => `${directory}/**/*`),
     '{package.json,bun.lock,postcss.config.mjs,tailwind.config.ts,next.config.ts,tsconfig.json}',
   ];
   for (const pattern of patterns) {
