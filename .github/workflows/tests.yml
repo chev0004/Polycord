@@ -21,6 +21,7 @@ jobs:
       statuses: read
     outputs:
       validate: ${{ steps.plan.outputs.validate }}
+      reused: ${{ steps.plan.outputs.reused }}
       static: ${{ steps.plan.outputs.static }}
       unit: ${{ steps.plan.outputs.unit }}
       package: ${{ steps.plan.outputs.package }}
@@ -197,6 +198,7 @@ jobs:
           NEEDS: ${{ toJSON(needs) }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           RECORD_EVIDENCE: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+          RELEASE_SHA: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/prod') && github.sha || '' }}
 
   deploy-staging:
     needs: [gate, result]

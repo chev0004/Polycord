@@ -42,7 +42,7 @@ The owner does these steps. None of them is automated.
 ## Releasing a candidate
 
 1. Choose a `develop` commit whose staging deploy is verified.
-2. Point `prod` at it with `git push origin <sha>:refs/heads/prod`. While Actions minutes remain, the push runs the Tests workflow on `prod`, whose `CI result` check becomes the release evidence.
+2. Point `prod` at it with `git push origin <sha>:refs/heads/prod`. While Actions minutes remain, the push runs the Tests workflow on `prod` and records `ci/release` once validation is confirmed.
 3. Apply any pending migrations to the production database first, following [Migrations](readiness.md#migrations). The package build runs `scripts/check-migrations.ts` and fails if the database is behind.
 4. In a codespace set up as in [owner-run deployment](../staging-deployment.md#owner-run-deployment), run:
 
@@ -59,7 +59,7 @@ node scripts/deploy-production.mjs
 `scripts/deploy-production.mjs` refuses to continue unless:
 
 - it runs outside GitHub Actions on Linux with Node 22, from a clean checkout of the current `prod` tip. It requires the production site and domain and checks that hosted builds are stopped if Git is linked;
-- the commit has a passing `CI result` check. Without one, it runs the full suite first (migrations, `check:all`, script tests, unit tests, browser tests and Storybook tests) against `TEST_DATABASE_URL`, a disposable database that must differ from `DATABASE_URL`, with the Netlify and GitHub tokens removed from the environment;
+- validation is confirmed by matching `ci/release` evidence or by running the full suite (migrations, `check:all`, script tests, unit tests, browser tests and Storybook tests) against `TEST_DATABASE_URL`, a disposable database that must differ from `DATABASE_URL`, with the Netlify and GitHub tokens removed from the environment;
 - `POLYCORD_PUBLIC_URL` and `DISCORD_REDIRECT_URI` use the production origin, `POLYCORD_ENVIRONMENT` and `POLYCORD_SEED_ENABLED` are unset, the Discord, VAPID, administrator and invite keys are present, and the database has no `seed_database` row.
 
 It then builds offline, uploads with `--no-build`, and checks that the published server digest matches the package, the runtime is Node 22 and no hosted build ran. A database-backed health check runs against the new deploy permalink, where Netlify supplies the masked credential to the app. If a check fails after upload, the script reports the failure and restores the previous deploy when one exists. The summary records the deploy ID, source commit, validation, digest, origin, approved project reference, number of administrators, analytics setting and seed state. Paste it into the release record.

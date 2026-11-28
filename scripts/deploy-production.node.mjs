@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, test } from 'node:test';
 import { matchesSupabaseProject } from '../src/db/supabase-project.mjs';
+import { evidence } from './ci-evidence.mjs';
 import { deployProduction } from './deploy-production.mjs';
 
 const siteId = 'production-site';
@@ -14,12 +15,13 @@ const sha = 'c'.repeat(40);
 const origin = 'https://polycord.example';
 const deployUrl = 'https://uploaded--polycord-production.netlify.app';
 const digest = createHash('sha256').update('server archive').digest('hex');
+const policy = createHash('sha256').update('policy files').digest('hex');
 const originalCwd = process.cwd();
 const originalEnv = { ...process.env };
 let calls;
 let values;
 let functionValues;
-let ciRuns;
+let ciStatuses;
 let seedRows;
 let site;
 let healthy;
@@ -78,7 +80,14 @@ beforeEach(async () => {
     DATABASE_URL: '********',
     POLYCORD_PRODUCTION_SUPABASE_PROJECT_REF: project,
   };
-  ciRuns = [{ conclusion: 'success' }];
+  ciStatuses = [
+    {
+      context: 'ci/release',
+      state: 'success',
+      description: evidence(sha, policy),
+      creator: { login: 'github-actions[bot]' },
+    },
+  ];
   seedRows = 0;
   healthy = true;
   site = {
@@ -98,6 +107,7 @@ function run(command, args, options) {
   calls.push({ command, args });
   let stdout = '';
   if (args[0] === 'rev-parse') stdout = sha;
+  if (args[0] === 'ls-tree') stdout = 'policy files';
   if (args[0] === 'ls-remote') {
     assert.equal(args[2], 'refs/heads/prod');
     stdout = `${sha}\trefs/heads/prod\n`;
@@ -115,8 +125,8 @@ function run(command, args, options) {
 
 async function request(url, { method = 'GET' } = {}) {
   calls.push({ url, method });
-  if (url.includes('/check-runs'))
-    return { ok: true, json: async () => ({ check_runs: ciRuns }) };
+  if (url.endsWith(`/commits/${sha}/statuses?per_page=100`))
+    return { ok: true, json: async () => ciStatuses };
   if (url === `${deployUrl}/api/health`)
     return {
       ok: healthy,
@@ -206,9 +216,9 @@ test('refuses the staging site', async () => {
   assert.equal(calls.length, 0);
 });
 
-test('refuses a candidate without a passing CI result or local validation', async () => {
-  ciRuns = [{ conclusion: 'failure' }];
-  await assert.rejects(deploy(), /No passing CI result/);
+test('refuses a candidate without release evidence or local validation', async () => {
+  ciStatuses = [];
+  await assert.rejects(deploy(), /No valid CI release evidence/);
   assert.equal(built(), false);
 });
 

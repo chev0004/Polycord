@@ -34,8 +34,8 @@ When the stop is reached, until the next billing cycle:
 
 - Pull request and `develop` runs do not start, so no `CI result` evidence is produced and ticket sync stops. Run `bun run tickets sync` locally after merges.
 - The Husky pre-push hook still runs `check:all` locally on every push that changes more than docs.
-- Staging and production keep serving their last verified deploys. Owner-run deploys continue: without a passing `CI result`, they run the full suite locally against a disposable database before packaging.
-- When the cycle resets, re-run the newest `develop` workflow so `CI result` and `staging/published` evidence catch up.
+- Staging and production keep serving their last verified deploys. Without valid `ci/release` evidence, owner-run deploys run the full suite locally against a disposable database before packaging.
+- When the cycle resets, run Tests manually on `develop` to validate the current tip and record `ci/release`.
 
 ## Measured Usage
 

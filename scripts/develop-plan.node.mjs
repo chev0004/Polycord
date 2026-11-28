@@ -218,6 +218,7 @@ test('skips validation and packaging after an equivalent publish', async () => {
   const result = await plan(tip);
   assert.equal(validates(result), false);
   assert.equal(result.deploy, false);
+  assert.equal(result.reused, undefined);
 });
 
 test('validates code that differs from the last publish', async () => {
@@ -246,6 +247,7 @@ test('reuses a green pull request run for the exact landed tree', async () => {
   const develop = await plan(merge);
   assert.equal(validates(develop), false);
   assert.equal(develop.deploy, true);
+  assert.equal(develop.reused, true);
   assert.match(develop.reasons[0], /Run 11/);
   const main = await plan(merge, { GITHUB_REF: 'refs/heads/main' });
   assert.equal(validates(main), false);
