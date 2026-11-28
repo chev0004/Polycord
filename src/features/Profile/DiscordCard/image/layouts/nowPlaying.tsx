@@ -1,19 +1,111 @@
 import type { ReactNode } from 'react';
+import { DISCORD_CARD_CYCLE, DISCORD_CARD_WIDTH } from '../../types';
+import { ease, layer, type Motion, states } from '../animation';
 import { Avatar, Brand, type CardImageProps, Chips, Kicker } from '../parts';
+import {
+  addColumns,
+  addLayer,
+  clamp,
+  type Pixels,
+  rotateDisc,
+} from '../pixels';
 
 const RIGHT = 462;
+const PAGE = 3;
+const SPIN = 3200;
+const LONGEST = 28000;
+const FADE = 500;
+const CENTER_X = 222;
+const CENTER_Y = 160;
+const RECORD = 128;
+const AVATAR = 61;
 const GROOVES = [...Array(42).keys()].map((ring) => 127 - ring * 3);
 const SHEEN = [
-  { from: 50, to: 100, alpha: 0.07 },
-  { from: 230, to: 280, alpha: 0.05 },
+  { middle: 75, alpha: 0.07 },
+  { middle: 255, alpha: 0.05 },
 ];
 
-const wedge = (start: number, end: number) => {
-  const point = (angle: number) => {
-    const radians = ((angle - 90) * Math.PI) / 180;
-    return `${128 + 128 * Math.cos(radians)},${128 + 128 * Math.sin(radians)}`;
+const GLOSS = Float32Array.from({ length: (RECORD * 2) ** 2 }, (_, at) => {
+  const dx = (at % (RECORD * 2)) + 0.5 - RECORD;
+  const dy = Math.floor(at / (RECORD * 2)) + 0.5 - RECORD;
+  const angle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+  return SHEEN.reduce(
+    (sum, { middle, alpha }) =>
+      sum + alpha * clamp(1 - Math.abs(angle - middle) / 25),
+    0,
+  );
+});
+
+const shine = (frame: Pixels, radius: number) => {
+  for (let dy = -radius; dy < radius; dy++) {
+    for (let dx = -radius; dx < radius; dx++) {
+      if ((dx + 0.5) ** 2 + (dy + 0.5) ** 2 > radius * radius) continue;
+      const strength = GLOSS[(dy + RECORD) * RECORD * 2 + dx + RECORD];
+      if (!strength) continue;
+      const index = ((CENTER_Y + dy) * DISCORD_CARD_WIDTH + CENTER_X + dx) * 4;
+      for (let channel = 0; channel < 3; channel++)
+        frame[index + channel] += (255 - frame[index + channel]) * strength;
+    }
+  }
+};
+
+const loopFor = (count: number) => {
+  if (count < 2) return SPIN;
+  const cycle = count * DISCORD_CARD_CYCLE;
+  const drift = (loop: number) =>
+    Math.abs(loop / Math.round(loop / SPIN) - SPIN);
+  return states(Math.floor(LONGEST / cycle))
+    .map((repeat) => cycle * (repeat + 1))
+    .sort((a, b) => drift(a) - drift(b))[0];
+};
+
+export const nowPlayingMotion: Motion = async (stage) => {
+  const { count } = stage;
+  const loop = loopFor(count);
+  const turns = Math.round(loop / SPIN);
+  const record = await stage.shot();
+  const base = record.slice();
+  shine(base, RECORD);
+  const page = (index: number) => Math.floor(index / PAGE);
+  const rows = await Promise.all(
+    states(count).map(async (active) => {
+      const previous = (active + count - 1) % count;
+      return {
+        settled: await layer(stage, 'rows', { active }, {}),
+        turning:
+          count > 1 && page(previous) === page(active)
+            ? await layer(stage, 'rows', { active, lit: previous }, {})
+            : undefined,
+      };
+    }),
+  );
+  const bar = await layer(stage, 'bar');
+
+  return {
+    continuous: loop,
+    paint: ({ time, active, elapsed }) => {
+      const frame = base.slice();
+      rotateDisc(
+        frame,
+        record,
+        CENTER_X,
+        CENTER_Y,
+        AVATAR,
+        (360 * turns * time) / loop,
+      );
+      shine(frame, AVATAR);
+      const { settled, turning } = rows[active];
+      const fade = turning ? ease(elapsed / FADE) : 1;
+      addLayer(frame, settled, fade);
+      if (turning) addLayer(frame, turning, 1 - fade);
+      const progress = elapsed / DISCORD_CARD_CYCLE;
+      addColumns(frame, bar, (x) => [
+        Math.floor((x + 0.5) / progress),
+        clamp(progress * bar.width - x),
+      ]);
+      return frame;
+    },
   };
-  return `M128,128 L${point(start)} A128,128 0 0 1 ${point(end)} Z`;
 };
 
 const Track = ({
@@ -56,6 +148,7 @@ const Track = ({
     <span
       style={{
         display: 'flex',
+        alignItems: 'baseline',
         flex: 1,
         minWidth: 0,
         whiteSpace: 'pre',
@@ -70,10 +163,13 @@ const Track = ({
 
 export const NowPlayingImage = ({
   data,
+  active,
+  lit = active,
   palette,
   measure,
   t,
 }: CardImageProps) => {
+  const page = Math.floor(active / PAGE) * PAGE;
   const schedule = data.availability
     ? measure(data.availability.text, { size: 14 }) + 12
     : 0;
@@ -133,19 +229,6 @@ export const NowPlayingImage = ({
                 strokeWidth={1}
               />
             ))}
-            {SHEEN.flatMap(({ from, to, alpha }) =>
-              [...Array(10).keys()].map((slice) => {
-                const start = from + ((to - from) * slice) / 10;
-                const middle = 1 - Math.abs(slice + 0.5 - 5) / 5;
-                return (
-                  <path
-                    key={`${from}-${slice}`}
-                    d={wedge(start, start + (to - from) / 10)}
-                    fill={`rgba(255, 255, 255, ${(alpha * middle).toFixed(4)})`}
-                  />
-                );
-              }),
-            )}
           </svg>
           <Avatar
             data={data}
@@ -218,18 +301,25 @@ export const NowPlayingImage = ({
             ) : null}
             <span>{data.native.name}</span>
           </Track>
-          {data.targets.slice(0, 3).map((track, index) => (
-            <Track
-              key={track.code}
-              code={`B${index + 1}`}
-              level={track.level}
-              color={index === 0 ? '#fff' : palette.subtle}
-              codeColor={index === 0 ? palette.primary : undefined}
-              bold={index === 0}
-            >
-              <span>{track.name}</span>
-            </Track>
-          ))}
+          <div
+            data-motion="rows"
+            style={{ display: 'flex', flexDirection: 'column' }}
+          >
+            {data.targets.slice(page, page + PAGE).map((track, index) => (
+              <Track
+                key={track.code}
+                code={`B${page + index + 1}`}
+                level={track.level}
+                color={page + index === lit ? '#fff' : palette.subtle}
+                codeColor={
+                  page + index === active ? palette.primary : undefined
+                }
+                bold={page + index === active}
+              >
+                <span>{track.name}</span>
+              </Track>
+            ))}
+          </div>
         </div>
         <div
           style={{
@@ -245,9 +335,15 @@ export const NowPlayingImage = ({
               display: 'flex',
               height: 4,
               borderRadius: 2,
-              background: palette.fill,
+              background: palette.darker,
+              overflow: 'hidden',
             }}
-          />
+          >
+            <div
+              data-motion="bar"
+              style={{ width: RIGHT, height: 4, background: palette.fill }}
+            />
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {data.availability ? (
               <span

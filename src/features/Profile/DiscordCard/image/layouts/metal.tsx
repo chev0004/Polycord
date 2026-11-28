@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { type Motion, slides } from '../animation';
 import { fitSize, fitTags } from '../measure';
 import { Avatar, type CardImageProps, ICONS, Icon } from '../parts';
 
@@ -37,8 +38,29 @@ const Label = ({
   </span>
 );
 
-export const MetalImage = ({ data, palette, measure, t }: CardImageProps) => {
-  const target = data.targets[0];
+export const metalMotion: Motion = async (stage) => {
+  const base = await stage.shot();
+  const name = await slides(stage, 38);
+  const level = await slides(stage, 13, { name: 'level' });
+
+  return {
+    paint: (beat) => {
+      const frame = base.slice();
+      name(frame, beat);
+      level(frame, beat);
+      return frame;
+    },
+  };
+};
+
+export const MetalImage = ({
+  data,
+  active,
+  palette,
+  measure,
+  t,
+}: CardImageProps) => {
+  const target = data.targets[active];
   const groove =
     palette.ink === '#fff'
       ? 'rgba(255, 255, 255, 0.28)'
@@ -81,6 +103,7 @@ export const MetalImage = ({ data, palette, measure, t }: CardImageProps) => {
         }}
       >
         <span
+          data-motion="level"
           style={{
             fontSize: 13,
             fontWeight: 700,
@@ -203,6 +226,7 @@ export const MetalImage = ({ data, palette, measure, t }: CardImageProps) => {
           </svg>
           {target ? (
             <span
+              data-motion="cycle"
               style={{
                 ...EMBOSSED,
                 fontSize: fitSize(

@@ -1,53 +1,63 @@
 import 'server-only';
 import { ImageResponse } from 'next/og';
 import { createTranslator } from 'next-intl';
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
+import sharp from 'sharp';
 import type { DiscordCardLayout } from '@/constants/discordCards';
 import en from '@/locales/en.json';
 import {
+  DISCORD_CARD_CYCLE,
   DISCORD_CARD_HEIGHT,
   DISCORD_CARD_WIDTH,
   type DiscordCardData,
 } from '../types';
+import { beatAt, cycling, type Motion, resting, type Shot } from './animation';
 import { loadFigtree, loadMono, loadZen } from './fonts';
 import { BleedImage } from './layouts/bleed';
-import { CharacterSelectImage } from './layouts/characterSelect';
+import {
+  CharacterSelectImage,
+  characterSelectMotion,
+} from './layouts/characterSelect';
 import { ClassicImage } from './layouts/classic';
 import { DiagonalImage } from './layouts/diagonal';
 import { ExchangePassImage } from './layouts/exchangePass';
 import { GreetingImage } from './layouts/greeting';
-import { MetalImage } from './layouts/metal';
+import { MetalImage, metalMotion } from './layouts/metal';
 import { MirrorImage } from './layouts/mirror';
-import { NowPlayingImage } from './layouts/nowPlaying';
-import { OrbitImage } from './layouts/orbit';
+import { NowPlayingImage, nowPlayingMotion } from './layouts/nowPlaying';
+import { OrbitImage, orbitMotion } from './layouts/orbit';
 import { PhotoImage } from './layouts/photo';
-import { RankImage } from './layouts/rank';
+import { RankImage, rankMotion } from './layouts/rank';
 import { SplitImage } from './layouts/split';
-import { SplitFlapImage } from './layouts/splitFlap';
+import { SplitFlapImage, splitFlapMotion } from './layouts/splitFlap';
 import { WatermarkImage } from './layouts/watermark';
 import { createMeasure } from './measure';
 import { cardPalette } from './palette';
 import type { CardImageProps } from './parts';
+import { staged } from './staging';
+import { encodeAnimation } from './webp';
+
+const FPS = 24;
 
 const IMAGE_LAYOUTS: Record<
   DiscordCardLayout,
-  ComponentType<CardImageProps>
+  [ComponentType<CardImageProps>, Motion]
 > = {
-  classic: ClassicImage,
-  rank: RankImage,
-  split: SplitImage,
-  photo: PhotoImage,
-  bleed: BleedImage,
-  diagonal: DiagonalImage,
-  'exchange-pass': ExchangePassImage,
-  metal: MetalImage,
-  orbit: OrbitImage,
-  'now-playing': NowPlayingImage,
-  greeting: GreetingImage,
-  mirror: MirrorImage,
-  watermark: WatermarkImage,
-  'character-select': CharacterSelectImage,
-  'split-flap': SplitFlapImage,
+  classic: [ClassicImage, cycling(17, { varies: true })],
+  rank: [RankImage, rankMotion],
+  split: [SplitImage, cycling(16)],
+  photo: [PhotoImage, cycling(26)],
+  bleed: [BleedImage, cycling(16)],
+  diagonal: [DiagonalImage, cycling(16)],
+  'exchange-pass': [ExchangePassImage, cycling(72)],
+  metal: [MetalImage, metalMotion],
+  orbit: [OrbitImage, orbitMotion],
+  'now-playing': [NowPlayingImage, nowPlayingMotion],
+  greeting: [GreetingImage, cycling(16)],
+  mirror: [MirrorImage, cycling(16)],
+  watermark: [WatermarkImage, cycling(16)],
+  'character-select': [CharacterSelectImage, characterSelectMotion],
+  'split-flap': [SplitFlapImage, splitFlapMotion],
 };
 
 const t = createTranslator({
@@ -72,7 +82,7 @@ export const renderDiscordCardImage = async ({
   data: DiscordCardData;
   banner: string;
   accent: string;
-  headers?: HeadersInit;
+  headers?: Record<string, string>;
 }) => {
   const [figtree, mono, zen] = await Promise.all([
     loadFigtree(),
@@ -80,30 +90,78 @@ export const renderDiscordCardImage = async ({
     loadZen(zenText(data)),
   ]);
   const fonts = [...figtree, ...mono, ...zen];
-  const Layout = IMAGE_LAYOUTS[layout];
+  const [Layout, motion] = IMAGE_LAYOUTS[layout];
+  const palette = cardPalette(banner, accent);
+  const measure = createMeasure(fonts);
+  const count = Math.max(1, data.targets.length);
 
-  return new ImageResponse(
-    <div
-      style={{
-        display: 'flex',
-        width: DISCORD_CARD_WIDTH,
-        height: DISCORD_CARD_HEIGHT,
-        fontFamily: 'Figtree',
-        color: '#fff',
-      }}
-    >
-      <Layout
-        data={data}
-        palette={cardPalette(banner, accent)}
-        measure={createMeasure(fonts)}
-        t={t}
-      />
-    </div>,
-    {
-      width: DISCORD_CARD_WIDTH,
-      height: DISCORD_CARD_HEIGHT,
-      fonts,
-      headers,
-    },
+  const sheet = async (element: ReactNode, width: number, height: number) => {
+    const png = new ImageResponse(
+      <div
+        style={{
+          display: 'flex',
+          width,
+          height,
+          fontFamily: 'Figtree',
+          color: '#fff',
+        }}
+      >
+        {element}
+      </div>,
+      { width, height, fonts },
+    );
+    return new Uint8ClampedArray(
+      await sharp(await png.arrayBuffer())
+        .ensureAlpha()
+        .raw()
+        .toBuffer(),
+    );
+  };
+
+  const shots = new Map<string, ReturnType<typeof sheet>>();
+  const shot = (options: Shot = {}) => {
+    const key = JSON.stringify(options);
+    const taken =
+      shots.get(key) ??
+      sheet(
+        staged(
+          <Layout
+            data={options.data ?? data}
+            active={options.active ?? 0}
+            lit={options.lit}
+            palette={palette}
+            measure={measure}
+            t={t}
+          />,
+          options,
+        ),
+        DISCORD_CARD_WIDTH,
+        DISCORD_CARD_HEIGHT,
+      );
+    shots.set(key, taken);
+    return taken;
+  };
+
+  const { paint, continuous } = await motion({
+    data,
+    palette,
+    measure,
+    t,
+    count,
+    shot,
+    sheet,
+  });
+  const loop = continuous ?? count * DISCORD_CARD_CYCLE;
+  const draw = continuous ? paint : resting(paint);
+  const frames = Math.round((loop * FPS) / 1000);
+  const start = (index: number) => Math.round((index * loop) / frames);
+  const animation = await encodeAnimation(
+    frames,
+    (index) => draw(beatAt(start(index), count)),
+    (index) => start(index + 1) - start(index),
   );
+
+  return new Response(new Uint8Array(animation), {
+    headers: { ...headers, 'Content-Type': 'image/webp' },
+  });
 };

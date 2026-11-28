@@ -5,6 +5,8 @@ import type { CardPalette } from './palette';
 
 export type CardImageProps = {
   data: DiscordCardData;
+  active: number;
+  lit?: number;
   palette: CardPalette;
   measure: Measure;
   t: (key: string, values?: Record<string, string>) => string;

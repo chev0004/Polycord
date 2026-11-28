@@ -3,8 +3,17 @@ import { Avatar, Brand, type CardImageProps, Chips, Kicker } from '../parts';
 
 const RIGHT = 514;
 
-export const SplitImage = ({ data, palette, measure, t }: CardImageProps) => {
-  const target = data.targets[0];
+export const SplitImage = ({
+  data,
+  active,
+  palette,
+  measure,
+  t,
+}: CardImageProps) => {
+  const target = data.targets[active];
+  const fit = (name: string) =>
+    fitSize(measure, name, { size: 68, weight: 900, spacing: -0.03 }, 510);
+  const tallest = Math.max(0, ...data.targets.map(({ name }) => fit(name)));
   const who = Math.min(
     RIGHT * 0.6,
     Math.max(
@@ -143,28 +152,30 @@ export const SplitImage = ({ data, palette, measure, t }: CardImageProps) => {
         >
           <Kicker palette={palette}>{t('learning')}</Kicker>
           {target ? (
-            <span
+            <div
+              data-motion="cycle"
               style={{
-                fontSize: fitSize(
-                  measure,
-                  target.name,
-                  { size: 68, weight: 900, spacing: -0.03 },
-                  510,
-                ),
-                fontWeight: 900,
-                lineHeight: 1,
-                letterSpacing: '-0.03em',
-                marginTop: 8,
-                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'column',
+                height: tallest + 36.4,
               }}
             >
-              {target.name}
-            </span>
-          ) : null}
-          {target ? (
-            <span style={{ fontSize: 17, color: palette.soft, marginTop: 8 }}>
-              {target.level}
-            </span>
+              <span
+                style={{
+                  fontSize: fit(target.name),
+                  fontWeight: 900,
+                  lineHeight: 1,
+                  letterSpacing: '-0.03em',
+                  marginTop: 8,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {target.name}
+              </span>
+              <span style={{ fontSize: 17, color: palette.soft, marginTop: 8 }}>
+                {target.level}
+              </span>
+            </div>
           ) : null}
         </div>
         <div

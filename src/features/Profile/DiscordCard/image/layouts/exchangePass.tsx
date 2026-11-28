@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { DiscordCardTarget } from '../../types';
 import { fitTags } from '../measure';
 import type { CardPalette } from '../palette';
 import {
@@ -48,13 +49,26 @@ const Field = ({
   </div>
 );
 
+const route = (item: DiscordCardTarget) =>
+  [item.name, item.level].filter(Boolean).join(' · ');
+
 export const ExchangePassImage = ({
   data,
+  active,
   palette,
   measure,
   t,
 }: CardImageProps) => {
-  const target = data.targets[0];
+  const target = data.targets[active];
+  const destination = Math.ceil(
+    Math.max(
+      0,
+      ...data.targets.flatMap((item) => [
+        measure(item.code, { size: 72, weight: 900, spacing: -0.02 }),
+        measure(route(item), { size: 16, weight: 500 }),
+      ]),
+    ),
+  );
   const dots = {
     flex: 1,
     height: 2,
@@ -73,6 +87,7 @@ export const ExchangePassImage = ({
       style={{ display: 'flex', position: 'relative', width: 934, height: 320 }}
     >
       <svg
+        data-backdrop
         aria-hidden="true"
         width={934}
         height={320}
@@ -143,11 +158,14 @@ export const ExchangePassImage = ({
           </div>
           {target ? (
             <div
+              data-motion="cycle"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-end',
+                width: destination,
                 color: palette.primary,
+                whiteSpace: 'nowrap',
               }}
             >
               <span
@@ -168,7 +186,7 @@ export const ExchangePassImage = ({
                   marginTop: 8,
                 }}
               >
-                {[target.name, target.level].filter(Boolean).join(' · ')}
+                {route(target)}
               </span>
             </div>
           ) : null}

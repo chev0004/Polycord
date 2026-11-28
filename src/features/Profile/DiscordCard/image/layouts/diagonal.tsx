@@ -3,11 +3,15 @@ import { Avatar, Brand, type CardImageProps, Chips, Kicker } from '../parts';
 
 export const DiagonalImage = ({
   data,
+  active,
   palette,
   measure,
   t,
 }: CardImageProps) => {
-  const target = data.targets[0];
+  const target = data.targets[active];
+  const fit = (name: string) =>
+    fitSize(measure, name, { size: 60, weight: 900, spacing: -0.03 }, 330);
+  const tallest = Math.max(0, ...data.targets.map(({ name }) => fit(name)));
 
   return (
     <div
@@ -155,26 +159,31 @@ export const DiagonalImage = ({
           }}
         >
           <Kicker palette={palette}>{t('learning')}</Kicker>
-          <span
+          <div
+            data-motion="cycle"
             style={{
-              fontSize: fitSize(
-                measure,
-                target.name,
-                { size: 60, weight: 900, spacing: -0.03 },
-                330,
-              ),
-              fontWeight: 900,
-              letterSpacing: '-0.03em',
-              lineHeight: 1.05,
-              marginTop: 4,
-              whiteSpace: 'nowrap',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              height: tallest * 1.05 + 28.4,
             }}
           >
-            {target.name}
-          </span>
-          <span style={{ fontSize: 17, color: palette.soft, marginTop: 4 }}>
-            {target.level}
-          </span>
+            <span
+              style={{
+                fontSize: fit(target.name),
+                fontWeight: 900,
+                letterSpacing: '-0.03em',
+                lineHeight: 1.05,
+                marginTop: 4,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {target.name}
+            </span>
+            <span style={{ fontSize: 17, color: palette.soft, marginTop: 4 }}>
+              {target.level}
+            </span>
+          </div>
         </div>
       ) : null}
     </div>

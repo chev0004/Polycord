@@ -1,8 +1,91 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { bezier, type Motion, shifts, slides } from '../animation';
 import { fitSize } from '../measure';
+import type { CardPalette } from '../palette';
 import { Brand, type CardImageProps, Chips, Segments } from '../parts';
+import { addLayer, cropSprite, drawSprite } from '../pixels';
 
 const RIGHT = 550;
+const PAGE = 3;
+const STEP = 134;
+const MOVE = 450;
+const LEFT = 352;
+const MARGIN = { x: 10, y: 20 };
+const glide = bezier(0.7, 0, 0.2, 1.3);
+const topHeight = (tags: string[]) => (tags.length ? 52 : 50);
+const slot = (index: number) => STEP * ((index % PAGE) + 1);
+
+const Cursor = ({
+  palette,
+  label,
+  style,
+}: {
+  palette: CardPalette;
+  label: string;
+  style: CSSProperties;
+}) => (
+  <div
+    data-motion="cursor"
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      position: 'absolute',
+      width: 122,
+      height: 104,
+      borderRadius: 12,
+      boxShadow: `0 0 0 3px ${palette.primary}, 0 0 0 7px ${palette.deep}`,
+      ...style,
+    }}
+  >
+    <span
+      style={{
+        position: 'absolute',
+        top: -15,
+        padding: '1px 8px',
+        borderRadius: 3,
+        background: palette.fill,
+        color: palette.ink,
+        fontSize: 12,
+        fontWeight: 900,
+        fontStyle: 'italic',
+      }}
+    >
+      {label}
+    </span>
+  </div>
+);
+
+export const characterSelectMotion: Motion = async (stage) => {
+  const base = await stage.shot();
+  const slide = await slides(stage, 16, { varies: true });
+  const moved = await shifts(stage);
+  const size = { width: 142, height: 135 };
+  const sheet = await stage.sheet(
+    <div style={{ display: 'flex', position: 'relative', ...size }}>
+      <Cursor
+        palette={stage.palette}
+        label={stage.t('player')}
+        style={{ left: MARGIN.x, top: MARGIN.y }}
+      />
+    </div>,
+    size.width,
+    size.height,
+  );
+  const cursor = cropSprite(sheet, size.width, { x: 0, y: 0, ...size });
+  const top = 26 + topHeight(stage.data.tags) + 22;
+
+  return {
+    paint: (beat) => {
+      const frame = base.slice();
+      addLayer(frame, moved[beat.active]);
+      slide(frame, beat);
+      const from = slot(beat.previous);
+      const x = from + (slot(beat.active) - from) * glide(beat.elapsed / MOVE);
+      drawSprite(frame, cursor, LEFT + x - MARGIN.x, top - MARGIN.y);
+      return frame;
+    },
+  };
+};
 
 const Tile = ({
   background,
@@ -44,11 +127,13 @@ const Tile = ({
 
 export const CharacterSelectImage = ({
   data,
+  active,
   palette,
   measure,
   t,
 }: CardImageProps) => {
-  const target = data.targets[0];
+  const target = data.targets[active];
+  const page = Math.floor(active / PAGE) * PAGE;
   const id = Math.min(
     210,
     Math.max(
@@ -121,6 +206,7 @@ export const CharacterSelectImage = ({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
+            height: topHeight(data.tags),
             gap: 12,
             fontSize: 14,
             lineHeight: 1.45,
@@ -216,7 +302,7 @@ export const CharacterSelectImage = ({
               {data.native.script}
             </span>
           </Tile>
-          {data.targets.slice(0, 3).map((item) => (
+          {data.targets.slice(page, page + PAGE).map((item) => (
             <Tile
               key={item.code}
               background="#1e2328"
@@ -235,38 +321,15 @@ export const CharacterSelectImage = ({
               </span>
             </Tile>
           ))}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              position: 'absolute',
-              left: 134,
-              top: 0,
-              width: 122,
-              height: 104,
-              borderRadius: 12,
-              boxShadow: `0 0 0 3px ${palette.primary}, 0 0 0 7px ${palette.deep}`,
-            }}
-          >
-            <span
-              style={{
-                position: 'absolute',
-                top: -15,
-                padding: '1px 8px',
-                borderRadius: 3,
-                background: palette.fill,
-                color: palette.ink,
-                fontSize: 12,
-                fontWeight: 900,
-                fontStyle: 'italic',
-              }}
-            >
-              {t('player')}
-            </span>
-          </div>
+          <Cursor
+            palette={palette}
+            label={t('player')}
+            style={{ left: slot(active), top: 0 }}
+          />
         </div>
         {target ? (
           <div
+            data-motion="cycle"
             style={{
               display: 'flex',
               alignItems: 'flex-end',
