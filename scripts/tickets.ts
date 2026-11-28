@@ -21,6 +21,7 @@ const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_DB_ID = process.env.NOTION_DB_ID;
 const API_BASE = 'https://api.notion.com/v1';
 const API_VERSION = '2022-06-28';
+const HOME_REPO = 'chev0004/polycord';
 
 if (!NOTION_API_KEY || !NOTION_DB_ID) {
   console.error('Missing NOTION_API_KEY or NOTION_DB_ID in .env.local');
@@ -105,17 +106,31 @@ function extractText(rt: RichText): string {
   return rt.map((r) => r.plain_text).join('');
 }
 
-function formatTicket(page: NotionPage): string {
+function prRepo(href: string): string {
+  return href.split('/').slice(-4, -2).join('/').toLowerCase();
+}
+
+function prKey(href: string): string {
+  return `${prRepo(href)}#${href.split('/').pop()}`;
+}
+
+function prLabel(page: NotionPage): string {
+  const href = page.properties.PR?.rich_text?.[0]?.href;
+  if (!href) return '—';
+  const [, name] = href.split('/').slice(-4, -2);
+  const number = `#${href.split('/').pop()}`;
+  return prRepo(href) === HOME_REPO ? number : `${name}${number}`;
+}
+
+function formatTicket(page: NotionPage, prWidth: number): string {
   const p = page.properties;
   const ticket = extractText(p.Ticket.title);
   const title = extractText(p.Title.rich_text);
   const status = p.Status.status?.name ?? 'Unknown';
   const priority = p.Priority.select?.name ?? '—';
   const area = p.Area.select?.name ?? '—';
-  const prHref = p.PR?.rich_text?.[0]?.href;
-  const pr = prHref ? `#${prHref.split('/').pop()}` : '—';
 
-  return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${pr.padEnd(5)} ${area.padEnd(14)} ${title}`;
+  return `${ticket.padEnd(14)} ${status.padEnd(14)} ${priority.padEnd(5)} ${prLabel(page).padEnd(prWidth)} ${area.padEnd(14)} ${title}`;
 }
 
 const statusMap: Record<string, string> = {
@@ -137,16 +152,24 @@ function normalizeStatus(value: string): string {
 async function syncPrStatuses(pages: NotionPage[]) {
   if (pages.length === 0) return;
   try {
-    const merged = new Set<number>(
-      JSON.parse(
-        execSync(
-          'gh pr list --state merged --json number --limit 1000',
-        ).toString(),
-      ).map((pr: { number: number }) => pr.number),
+    const repos = new Set(
+      pages.flatMap((page) => {
+        const href = page.properties.PR?.rich_text?.[0]?.href;
+        return href ? [prRepo(href)] : [];
+      }),
+    );
+    const merged = new Set<string>(
+      [...repos].flatMap((repo) =>
+        JSON.parse(
+          execSync(
+            `gh pr list --repo ${repo} --state merged --json number --limit 1000`,
+          ).toString(),
+        ).map((pr: { number: number }) => `${repo}#${pr.number}`),
+      ),
     );
     for (const page of pages) {
       const href = page.properties.PR?.rich_text?.[0]?.href;
-      const prMerged = href ? merged.has(Number(href.split('/').pop())) : false;
+      const prMerged = href ? merged.has(prKey(href)) : false;
       if (page.properties.Status.status?.name === 'Aborted') continue;
       const done = page.properties.Status.status?.name === 'Done';
       if (prMerged === done) continue;
@@ -199,12 +222,13 @@ async function cmdList(args: string[]) {
     );
   });
 
+  const prWidth = Math.max(5, ...pages.map((page) => prLabel(page).length));
   console.log(
-    `${'TICKET'.padEnd(14)} ${'STATUS'.padEnd(14)} ${'PRI'.padEnd(5)} ${'PR'.padEnd(5)} ${'AREA'.padEnd(14)} TITLE`,
+    `${'TICKET'.padEnd(14)} ${'STATUS'.padEnd(14)} ${'PRI'.padEnd(5)} ${'PR'.padEnd(prWidth)} ${'AREA'.padEnd(14)} TITLE`,
   );
-  console.log('-'.repeat(90));
+  console.log('-'.repeat(85 + prWidth));
   for (const page of pages) {
-    console.log(formatTicket(page));
+    console.log(formatTicket(page, prWidth));
   }
   console.log(`\n${pages.length} ticket(s)`);
 }
