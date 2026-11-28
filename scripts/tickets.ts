@@ -105,6 +105,14 @@ function extractText(rt: RichText): string {
   return rt.map((r) => r.plain_text).join('');
 }
 
+function prRepo(href: string): string {
+  return href.split('/').slice(-4, -2).join('/').toLowerCase();
+}
+
+function prKey(href: string): string {
+  return `${prRepo(href)}#${href.split('/').pop()}`;
+}
+
 function formatTicket(page: NotionPage): string {
   const p = page.properties;
   const ticket = extractText(p.Ticket.title);
@@ -137,16 +145,24 @@ function normalizeStatus(value: string): string {
 async function syncPrStatuses(pages: NotionPage[]) {
   if (pages.length === 0) return;
   try {
-    const merged = new Set<number>(
-      JSON.parse(
-        execSync(
-          'gh pr list --state merged --json number --limit 1000',
-        ).toString(),
-      ).map((pr: { number: number }) => pr.number),
+    const repos = new Set(
+      pages.flatMap((page) => {
+        const href = page.properties.PR?.rich_text?.[0]?.href;
+        return href ? [prRepo(href)] : [];
+      }),
+    );
+    const merged = new Set<string>(
+      [...repos].flatMap((repo) =>
+        JSON.parse(
+          execSync(
+            `gh pr list --repo ${repo} --state merged --json number --limit 1000`,
+          ).toString(),
+        ).map((pr: { number: number }) => `${repo}#${pr.number}`),
+      ),
     );
     for (const page of pages) {
       const href = page.properties.PR?.rich_text?.[0]?.href;
-      const prMerged = href ? merged.has(Number(href.split('/').pop())) : false;
+      const prMerged = href ? merged.has(prKey(href)) : false;
       if (page.properties.Status.status?.name === 'Aborted') continue;
       const done = page.properties.Status.status?.name === 'Done';
       if (prMerged === done) continue;
