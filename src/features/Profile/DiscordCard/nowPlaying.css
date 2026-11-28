@@ -27,7 +27,7 @@
   height: 256px;
 }
 .dc-np-rec {
-  animation: dc-np-spin 3.2s linear infinite;
+  animation: dc-np-spin 8s linear infinite;
   position: absolute;
   left: 62px;
   top: 0;

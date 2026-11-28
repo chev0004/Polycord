@@ -12,7 +12,7 @@ import {
 
 const RIGHT = 462;
 const PAGE = 3;
-const SPIN = 3200;
+const SPIN = 8000;
 const LONGEST = 28000;
 const FADE = 500;
 const CENTER_X = 222;
