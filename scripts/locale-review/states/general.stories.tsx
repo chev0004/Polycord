@@ -132,12 +132,18 @@ function DraftConfirmationFixture() {
 export const DraftConfirmation: Story = {
   beforeEach: () => {
     const getItem = Storage.prototype.getItem;
+    const setItem = Storage.prototype.setItem;
     Storage.prototype.getItem = function (key) {
       if (key === draftKey) throw new Error('Draft storage unavailable');
       return getItem.call(this, key);
     };
+    Storage.prototype.setItem = function (key, value) {
+      if (key === draftKey) throw new Error('Draft storage unavailable');
+      return setItem.call(this, key, value);
+    };
     return () => {
       Storage.prototype.getItem = getItem;
+      Storage.prototype.setItem = setItem;
     };
   },
   render: () => <DraftConfirmationFixture />,
