@@ -254,16 +254,23 @@ test('reuses a green pull request run for the exact landed tree', async () => {
   assert.equal(main.deploy, false);
 });
 
-test('validates when the base advanced after the pull request run', async () => {
+test('runs static and unit checks when develop moved after the pull request run', async () => {
   const { head, merge } = await mergedPull(
     { 'src/app.ts': 'b' },
     { 'src/other.ts': 'a' },
   );
   proveRun(head, evidence(treeOf(head), ciPolicy(head)));
   assert.notEqual(treeOf(head), treeOf(merge));
-  const result = await plan(merge);
-  assert.equal(validates(result), true);
-  assert.equal(result.deploy, true);
+  const develop = await plan(merge);
+  assert.deepEqual(
+    Object.keys(develop.jobs).filter((job) => develop.jobs[job]),
+    ['static', 'unit'],
+  );
+  assert.equal(develop.deploy, true);
+  assert.equal(develop.reused, undefined);
+  assert.match(develop.reasons[0], /Run 11/);
+  const prod = await plan(merge, { GITHUB_REF: 'refs/heads/prod' });
+  assert.equal(Object.values(prod.jobs).every(Boolean), true);
 });
 
 test('validates when the pull request changes CI policy', async () => {
