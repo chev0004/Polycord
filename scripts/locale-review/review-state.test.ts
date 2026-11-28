@@ -7,6 +7,7 @@ import {
   sectionPending,
 } from './placements';
 import {
+  carryForward,
   type Finding,
   type Inventory,
   locales,
@@ -183,4 +184,42 @@ test('retains ICU parameters and rich text when editing copy', () => {
   expect(wordingError(original, '<strong>{name}</strong> {count')).toContain(
     'Check',
   );
+});
+
+test('carries Develop choices and rules into Working tree for unchanged lines', () => {
+  const unchanged: Finding = {
+    ...finding,
+    key: 'Profile.editProfileSubtitle',
+    original: {
+      develop: { en: 'Edit', ja: '編集' },
+      now: { en: 'Edit', ja: '編集' },
+    },
+  };
+  const kept: Finding = { ...unchanged, key: 'Profile.aboutYouTitle' };
+  const review = readCheckpoint(
+    `<script id="lr-data">${JSON.stringify({ ...inventory, issues: [finding, unchanged, kept] })}</script>`,
+    JSON.stringify({
+      version: 1,
+      toneRevision: 1,
+      base: 'now',
+      packed: true,
+      per: {
+        develop: {
+          terms: { visibility: 'public' },
+          picks: [
+            [0, 'C'],
+            [1, 'E', { ja: '編集しましょう' }],
+            [2, 'C'],
+          ],
+        },
+        now: { picks: [[2, 'K']] },
+      },
+    }),
+  );
+  expect(review.per.now.picks).toEqual({
+    [unchanged.key]: { source: 'custom', text: { ja: '編集しましょう' } },
+    [kept.key]: { source: 'keep' },
+  });
+  expect(review.per.now.terms).toEqual({ visibility: 'public' });
+  expect(carryForward(review)).toEqual(review);
 });

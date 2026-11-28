@@ -146,13 +146,37 @@ export function readCheckpoint(html: string, progress: string): Review {
       section: 'profile-privacy',
     };
   }
-  return {
+  return carryForward({
     inventory: {
       ...inventory,
       issues: inventory.issues.filter(({ key }) => !unusedKeys.has(key)),
     },
     base: model.base,
     per,
+  });
+}
+
+export function carryForward(review: Review): Review {
+  const { develop, now } = review.per;
+  const carried = review.inventory.issues.flatMap((finding) =>
+    develop.picks[finding.key] &&
+    locales.every(
+      (locale) =>
+        finding.original.develop?.[locale] === finding.original.now?.[locale],
+    )
+      ? [[finding.key, develop.picks[finding.key]]]
+      : [],
+  );
+  return {
+    ...review,
+    per: {
+      ...review.per,
+      now: {
+        ...now,
+        picks: { ...Object.fromEntries(carried), ...now.picks },
+        terms: { ...develop.terms, ...now.terms },
+      },
+    },
   };
 }
 

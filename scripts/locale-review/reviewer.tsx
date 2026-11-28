@@ -24,6 +24,7 @@ import type { PreviewBridge, ReviewStatus } from './preview';
 import {
   available,
   type Choice,
+  carryForward,
   choiceOptions,
   type Finding,
   type Locale,
@@ -979,7 +980,7 @@ export function LocaleReviewer() {
   useEffect(() => {
     void loadReview().then(
       (saved) => {
-        setReview(saved);
+        setReview(saved && carryForward(saved));
         setImporting(!saved);
         setLoading(false);
       },
