@@ -105,7 +105,7 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
     ],
   },
   privacy: {
-    lastUpdated: '2026-11-27',
+    lastUpdated: '2026-11-28',
     intro:
       'Polycord is run by an individual operator, called "we" in this policy. It explains what we collect, why, and the control you have over it. We try to collect as little as we need to run a language-partner discovery service, and we never sell your personal data.',
     sections: [
@@ -149,6 +149,13 @@ const en: Record<LegalDocumentId, LegalDocumentContent> = {
           'Product analytics records events such as sign-ups, profile saves, searches, views, and username copies. Events may include your account ID, locale, language selections, country, and the profile owner’s account ID. We do not collect Discord message content.',
           'Turn off Product analytics in Settings to stop future product events associated with your signed-in account, including browser and server events. This does not erase earlier events or disable records needed for features, notifications, security, or billing. Signed-out events are not associated with your signed-in preference.',
           'Discovery can show sponsored spots, which Supporters do not see. Polycord serves their images itself and counts how often each spot is shown and clicked only as totals, without recording who saw or clicked it. Sponsors receive only those totals, and receive nothing from your browser unless you follow their link.',
+        ],
+      },
+      {
+        heading: 'The Polycord Discord app',
+        paragraphs: [
+          'When you use a Polycord app command in Discord, Discord sends the app your Discord account details, the server or conversation you used it in, and what you entered in the command. The app uses your Discord ID only to find your public profile and answer the command, and we do not store any of it.',
+          'The /profile command posts your profile card where you used it. The card shows the same details as your public profile, and nothing is posted if your profile is not public.',
         ],
       },
       {
