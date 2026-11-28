@@ -32,7 +32,8 @@ export async function reportResult(
   )
     failed.unshift('validation plan missing or inconsistent');
   if (failed.length) return { passed: false, reason: failed.join(', ') };
-  const release = env.RELEASE_SHA && (validated || plan.reused === 'true');
+  const full = jobNames.every((name) => plan[name] === 'true');
+  const release = env.RELEASE_SHA && (full || plan.reused === 'true');
   const sha = release
     ? env.RELEASE_SHA
     : validated && env.RECORD_EVIDENCE === 'true' && env.HEAD_SHA;
