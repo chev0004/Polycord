@@ -423,7 +423,6 @@ function Workspace({
         occurrences: observed.occurrences.filter(({ key }) =>
           findingKeys.has(key),
         ),
-        ambiguous: observed.ambiguous.filter((key) => findingKeys.has(key)),
       };
       mutate((current) => {
         const latest = current.per[base];
@@ -843,11 +842,9 @@ function Workspace({
               <div className="lr-placements">
                 <h3>Placements</h3>
                 {selectedAudit.some(({ reason }) =>
-                  /[Uu]nmapped|[Aa]mbiguous|missing/.test(reason),
+                  /Unmapped|missing/.test(reason),
                 ) && (
-                  <p className="lr-warning">
-                    Unmapped or ambiguous placement needs review.
-                  </p>
+                  <p className="lr-warning">Unmapped placement needs review.</p>
                 )}
                 {displayedPlacements.map((placement) => (
                   <div className="lr-placement" key={placement.id}>

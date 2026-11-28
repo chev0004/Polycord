@@ -1,14 +1,10 @@
 import type { Preview } from '@storybook/react';
 import { NextIntlClientProvider } from 'next-intl';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { fontVariables } from '@/app/fonts';
 import en from '@/locales/en.json';
 import ja from '@/locales/ja.json';
-import {
-  createPreviewBridge,
-  mergeMessages,
-  type PreviewWindow,
-} from '../preview';
+import { createPreviewBridge, type PreviewWindow } from '../preview';
 import type { Locale } from '../review-state';
 import '@/app/globals.css';
 
@@ -19,14 +15,6 @@ function Fixture({
   children: ReactNode;
   locale: Locale;
 }) {
-  const original = locale === 'ja' ? ja : en;
-  const parent = window.parent as PreviewWindow;
-  const run = new URLSearchParams(window.location.search).get('run') ?? '';
-  const input = parent.localeReviewInputs?.get(run);
-  const [messages] = useState(() =>
-    mergeMessages(original, input?.locale === locale ? input.wording : {}),
-  );
-
   useEffect(() => {
     const view = window as PreviewWindow;
     view.localeReview = createPreviewBridge();
@@ -36,7 +24,11 @@ function Fixture({
   }, []);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
+    <NextIntlClientProvider
+      locale={locale}
+      messages={locale === 'ja' ? ja : en}
+      timeZone="UTC"
+    >
       <div className={fontVariables} lang={locale}>
         <style>
           {

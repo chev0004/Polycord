@@ -1,35 +1,6 @@
-import { normalize, renderedTranslations } from './intl';
 import type { Scene } from './placements';
 import type { Locale, Observation, Occurrence } from './review-state';
-
-export interface Messages {
-  [key: string]: string | Messages;
-}
-
-export function mergeMessages(
-  original: Messages,
-  wording: Record<string, string>,
-) {
-  const messages: Messages = structuredClone(original);
-  for (const [key, value] of Object.entries(wording)) {
-    const parts = key.split('.');
-    const leaf = parts.pop() as string;
-    let node: Messages | undefined = messages;
-    for (const part of parts) {
-      const child: string | Messages | undefined = Object.hasOwn(node, part)
-        ? node[part]
-        : undefined;
-      if (typeof child !== 'object') {
-        node = undefined;
-        break;
-      }
-      node = child;
-    }
-    if (node && Object.hasOwn(node, leaf) && typeof node[leaf] === 'string')
-      node[leaf] = value;
-  }
-  return messages;
-}
+import { clean, keysIn } from './tags';
 
 export type PreviewBridge = ReturnType<typeof createPreviewBridge>;
 export type PreviewWindow = Window & {
@@ -51,14 +22,14 @@ const attributes = [
 const selector = [
   ...attributes.map((attribute) => `[${attribute}]`),
   'input[type="submit"]',
-  'svg title',
 ].join(',');
 
 function visible(element: Element) {
+  const box = element.closest('option')?.closest('select') ?? element;
   return Boolean(
-    element.getClientRects().length &&
-      getComputedStyle(element).visibility === 'visible' &&
-      !element.closest('[aria-hidden="true"], [hidden]'),
+    box.getClientRects().length &&
+      getComputedStyle(box).visibility === 'visible' &&
+      !element.closest('[data-aria-hidden], [hidden]'),
   );
 }
 
@@ -82,34 +53,33 @@ function ancestry(element: Element, root: Element) {
   return parts.join('/');
 }
 
-function copyKeys(text: string, privacy?: boolean) {
-  const value = normalize(text);
-  const translated =
-    renderedTranslations.get(value) ??
-    renderedTranslations.get(
-      value.replace(/^[:：·「」\s]+|[:：·「」\s]+$/g, ''),
-    );
-  return [...(translated ?? [])].filter(
-    (key) => !privacy || key.startsWith('Profile.'),
-  );
-}
+const clickable =
+  'button, a, summary, label, [role="button"], [role="tab"], [role="menuitem"], [role="option"], [role="radio"]';
+const fields = 'input, textarea';
+const translationKey = /^\w+(\.\w+)+$/;
 
-function findControl(key: string, query: string) {
-  return [...document.querySelectorAll(query)].find(
-    (element) =>
-      visible(element) &&
-      [
-        element.textContent,
-        element.getAttribute('aria-label'),
-        ...[...element.querySelectorAll('span, p, h2, h3')].map(
-          (child) => child.textContent,
-        ),
-      ].some((text) => text && copyKeys(text).includes(key)),
+function find(target: string, query: string) {
+  const byKey = translationKey.test(target);
+  const byText = target.startsWith('=');
+  return [...document.querySelectorAll(byKey || byText ? query : target)].find(
+    (element) => {
+      if (!visible(element)) return false;
+      if (byText) return element.textContent?.includes(target.slice(1));
+      return (
+        !byKey ||
+        keysIn(
+          ['aria-label', 'placeholder']
+            .map((attribute) => element.getAttribute(attribute))
+            .concat(element.textContent)
+            .join(),
+        ).includes(target)
+      );
+    },
   );
 }
 
 async function waitFor<T>(read: () => T | undefined | null, label: string) {
-  for (let attempt = 0; attempt < 40; attempt++) {
+  for (let attempt = 0; attempt < 80; attempt++) {
     const result = read();
     if (result) return result;
     await new Promise((resolve) => setTimeout(resolve, 75));
@@ -117,11 +87,49 @@ async function waitFor<T>(read: () => T | undefined | null, label: string) {
   throw new Error(`The preview could not open ${label}.`);
 }
 
-function privacyScope(scene: Scene) {
-  const heading = findControl(
-    'Profile.privacySettings',
-    'h1,h2,h3,[role="heading"]',
+function pointer(element: Element, type: string, clientX = 0) {
+  element.dispatchEvent(
+    new PointerEvent(type, {
+      bubbles: true,
+      button: 0,
+      pointerId: 1,
+      pointerType: 'mouse',
+      clientX,
+    }),
   );
+}
+
+async function perform(step: string) {
+  if (step.startsWith('?')) {
+    await waitFor(() => find(step.slice(1), 'body *'), step);
+    return;
+  }
+  const [target, value] = step.split(' <- ');
+  const swipe = target.startsWith('swipe ');
+  const name = swipe ? target.slice(6) : target;
+  const element = await waitFor(
+    () => find(name, value === undefined ? clickable : fields),
+    name,
+  );
+  if (value !== undefined) {
+    Object.getOwnPropertyDescriptor(
+      Object.getPrototypeOf(element),
+      'value',
+    )?.set?.call(element, value);
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+  } else if (swipe) {
+    pointer(element, 'pointerdown', 300);
+    pointer(element, 'pointermove', 150);
+    pointer(element, 'pointerup', 150);
+  } else if (element.getAttribute('aria-haspopup') === 'menu') {
+    pointer(element, 'pointerdown');
+  } else {
+    (element as HTMLElement).click();
+  }
+}
+
+function privacyScope(scene: Scene) {
+  const heading = find('Profile.privacySettings', 'h1,h2,h3,[role="heading"]');
   return heading?.closest(
     scene.viewport === 'mobile' ? '[role="dialog"]' : 'section',
   );
@@ -135,27 +143,26 @@ export function createPreviewBridge() {
     const root = scene.privacy ? privacyScope(scene) : document.body;
     targets = new Map();
     const occurrences: Occurrence[] = [];
-    const ambiguous = new Set<string>();
-    if (!root) return { occurrences, ambiguous: [] };
+    if (!root) return { occurrences };
 
-    const add = (element: Element, value: string, surface: string) => {
-      const text = normalize(value);
-      const keys = copyKeys(text, scene.privacy);
-      if (keys.length > 1) {
-        for (const key of keys) ambiguous.add(key);
-        return;
+    const add = (
+      element: Element,
+      source: string,
+      value: string,
+      surface: string,
+    ) => {
+      for (const key of keysIn(source)) {
+        if (scene.privacy && !key.startsWith('Profile.')) continue;
+        const id = JSON.stringify([
+          key,
+          scene.id,
+          surface,
+          ancestry(element, root),
+        ]);
+        if (targets.has(id)) continue;
+        targets.set(id, element);
+        occurrences.push({ id, key, surface, text: clean(value) });
       }
-      if (!keys.length) return;
-      const [key] = keys;
-      const id = JSON.stringify([
-        key,
-        scene.id,
-        surface,
-        ancestry(element, root),
-      ]);
-      if (targets.has(id)) return;
-      targets.set(id, element);
-      occurrences.push({ id, key, surface, text });
     };
 
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -163,72 +170,41 @@ export function createPreviewBridge() {
       const element = node.parentElement;
       if (
         !element ||
-        !node.textContent?.trim() ||
-        element.closest('script, style, noscript, svg') ||
+        !node.textContent ||
+        element.closest('script, style, noscript, title') ||
         !visible(element)
       )
         continue;
       const surface = element.closest('.sr-only')
         ? 'Screen reader text'
-        : 'Text';
-      add(element, node.textContent, surface);
-    }
-    for (const element of root.querySelectorAll(
-      'p, span, a, button, label, h1, h2, h3, li',
-    )) {
-      const text = normalize(element.textContent ?? '');
-      if (
-        !element.children.length ||
-        !copyKeys(text, scene.privacy).length ||
-        [...element.children].some(
-          (child) => normalize(child.textContent ?? '') === text,
-        ) ||
-        [...element.childNodes].some(
-          (node) =>
-            node.nodeType === Node.TEXT_NODE &&
-            normalize(node.textContent ?? '') === text,
-        ) ||
-        !visible(element)
-      )
-        continue;
-      add(
-        element,
-        text,
-        element.closest('.sr-only') ? 'Screen reader text' : 'Text',
-      );
+        : element.closest('option')
+          ? 'Menu option'
+          : 'Text';
+      add(element, node.textContent, element.textContent ?? '', surface);
     }
     for (const element of root.querySelectorAll(selector)) {
       if (!visible(element)) continue;
       for (const attribute of attributes) {
         const value = element.getAttribute(attribute);
-        if (value) add(element, value, attribute);
+        if (value) add(element, value, value, attribute);
       }
       if (element instanceof HTMLInputElement && element.type === 'submit')
-        add(element, element.value, 'value');
+        add(element, element.value, element.value, 'value');
     }
-    return { occurrences, ambiguous: [...ambiguous] };
+    for (const title of root.querySelectorAll('svg title')) {
+      const element = title.parentElement;
+      const value = title.textContent ?? '';
+      if (element && visible(element)) add(element, value, value, 'title');
+    }
+    return { occurrences };
   }
 
   return {
     inspect,
     async prepare(scene: Scene, scroll: boolean) {
-      for (const key of scene.open ?? []) {
-        const control = await waitFor(
-          () => findControl(key, 'button, [role="button"], [role="tab"]'),
-          key,
-        );
-        if (!(control instanceof HTMLElement)) continue;
-        if (control.getAttribute('aria-haspopup') === 'menu') {
-          control.dispatchEvent(
-            new PointerEvent('pointerdown', {
-              bubbles: true,
-              button: 0,
-              pointerType: 'mouse',
-            }),
-          );
-        } else {
-          control.click();
-        }
+      for (const step of scene.open ?? []) {
+        await perform(step);
+        await new Promise((resolve) => setTimeout(resolve, 150));
       }
       if (scene.privacy) {
         const root = await waitFor(

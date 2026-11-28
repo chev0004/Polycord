@@ -85,7 +85,6 @@ test('gates a section on each placement and invalidates only changed wording', (
       locales.map((locale) => [
         locale,
         {
-          ambiguous: [],
           occurrences: [
             {
               id,

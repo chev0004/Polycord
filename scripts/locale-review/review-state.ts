@@ -46,10 +46,7 @@ export type Occurrence = {
   surface: string;
   text: string;
 };
-export type Observation = {
-  occurrences: Occurrence[];
-  ambiguous: string[];
-};
+export type Observation = { occurrences: Occurrence[] };
 export type SnapshotReview = {
   picks: Record<string, Choice>;
   terms: Record<string, string>;
