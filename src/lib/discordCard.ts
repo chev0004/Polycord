@@ -1,4 +1,5 @@
 import 'server-only';
+import { createHash } from 'node:crypto';
 import { resolveDiscordCard } from '@/constants/discordCards';
 import { formatCurrentTime } from '@/constants/languages';
 import { type getPublicProfileById, mapProfileToDiscoveryProfile } from '@/db';
@@ -15,7 +16,7 @@ type PublicProfileRow = NonNullable<
 const imageAvatar = (url?: string) =>
   url?.replace(/\.gif\?/, '.png?').replace(/size=\d+/, 'size=512');
 
-export const discordCardFor = (row: PublicProfileRow) => {
+export const discordCardFor = (row: PublicProfileRow, now = new Date()) => {
   const profile = mapProfileToDiscoveryProfile(row);
   const theme = profile.cardTheme ?? getFreeCardTheme(0);
 
@@ -35,18 +36,29 @@ export const discordCardFor = (row: PublicProfileRow) => {
       tags: profile.tags,
       availability: profile.availability,
       country: profile.country,
-      time: profile.timezone ? formatCurrentTime(profile.timezone) : undefined,
+      time: profile.timezone
+        ? formatCurrentTime(profile.timezone, '24hr', 'en', now)
+        : undefined,
       locale: 'en',
       labels: ENGLISH_CARD_LABELS,
     }),
   };
 };
 
-export const discordCardImagePath = (row: PublicProfileRow) => {
+const DISCORD_CARD_DESIGN = 1;
+
+export const discordCardVersion = (row: PublicProfileRow) => {
   const updated = Math.max(
     row.profile.updatedAt.getTime(),
     row.user.updatedAt.getTime(),
   );
-  const { layout } = discordCardFor(row);
-  return `/api/discord-card/${row.profile.id}?v=${updated.toString(36)}-${layout}`;
+  const { layout, banner, accent, data } = discordCardFor(row);
+  const look = createHash('sha256')
+    .update(JSON.stringify([banner, accent, data.avatarUrl]))
+    .digest('base64url')
+    .slice(0, 8);
+  return `${updated.toString(36)}-${layout}-${look}-${DISCORD_CARD_DESIGN}`;
 };
+
+export const discordCardImagePath = (row: PublicProfileRow, now = new Date()) =>
+  `/api/discord-card/${row.profile.id}/${discordCardVersion(row)}/${Math.floor(now.getTime() / 60000)}.gif`;
