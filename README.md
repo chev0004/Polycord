@@ -79,12 +79,13 @@ dummy profile. The command runs independently of the Next.js app and needs no
 additional environment variables.
 
 The first launch indexes the preview fixtures in both languages. Subsequent
-launches reuse the index until its inputs change. Click copy to inspect its
-translation key, or open **Inspect accessibility and attributes** for labels
-and placeholders. **Locations** lists every indexed appearance of a line.
-Verify the English and Japanese wording once each to unlock the next section.
-Changing one language clears that language’s check. **Browse inventory** lets
-you inspect other sections while verification is pending.
+launches reuse the index until its inputs change. Dotted underlines mark copy
+that needs review in the current section and preview language. Click copy to
+inspect its translation key, or open **Inspect accessibility and attributes**
+for labels and placeholders. **Locations** lists every indexed appearance of a
+line. Verify each line once per language across all its locations to unlock
+the next section. Changing one language clears that language’s check.
+**Browse inventory** lets you inspect other sections while verification is pending.
 
 The reviewer saves progress in this browser. **Export review** downloads the
 choices, shared rules, observed placements, and outstanding checks for both

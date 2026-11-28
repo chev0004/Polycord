@@ -141,6 +141,24 @@
   gap: 4px;
 }
 
+[data-locale-review-pending],
+.lr-review-mark {
+  text-decoration: underline dotted
+    color-mix(in srgb, currentColor 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+[data-locale-review-active] {
+  box-shadow: 0 0 0 1px #a6b4c44d;
+}
+
+.lr-review-legend {
+  margin: 0 0 8px;
+  color: var(--lr-muted);
+  font-size: 12px;
+}
+
 .lr-stage {
   display: flex;
   justify-content: center;
@@ -281,6 +299,10 @@
 
 .lr-detail[open] summary {
   margin-bottom: 8px;
+}
+
+.lr-attribute-count {
+  color: var(--lr-muted);
 }
 
 .lr-detail a {

@@ -41,7 +41,6 @@ import {
   wordingError,
 } from './review-state';
 import { loadReview, saveReview } from './storage';
-import './reviewer.css';
 
 const languages = { en: 'English', ja: '日本語' };
 type SetReview = Dispatch<SetStateAction<Review | null>>;
@@ -355,12 +354,44 @@ function Workspace({
     scene && !section.scenes.includes(scene)
       ? [...section.scenes, scene]
       : section.scenes;
-  const sectionFindings = findings.filter(
-    (finding) =>
-      findingSection(finding) === section.id ||
-      positions
-        .get(finding.key)
-        ?.some(({ scene }) => scene.sectionId === section.id),
+  const sectionId = section.id;
+  const sectionFindings = useMemo(
+    () =>
+      findings.filter(
+        (finding) =>
+          findingSection(finding) === sectionId ||
+          positions
+            .get(finding.key)
+            ?.some(({ scene }) => scene.sectionId === sectionId),
+      ),
+    [findings, positions, sectionId],
+  );
+  const pendingByKey = useMemo(
+    () =>
+      new Map(
+        sectionFindings
+          .filter((finding) => !finding.noteOnly)
+          .map((finding) => [finding.key, !verified(review, finding, locale)]),
+      ),
+    [sectionFindings, review, locale],
+  );
+  const pendingTextIds = useMemo(
+    () =>
+      live?.occurrences
+        .filter(
+          ({ key, surface }) => surface === 'Text' && pendingByKey.get(key),
+        )
+        .map(({ id }) => id) ?? [],
+    [live, pendingByKey],
+  );
+  const inspectable =
+    live?.occurrences.filter(
+      ({ key, surface }) => surface !== 'Text' && pendingByKey.has(key),
+    ) ?? [];
+  const pendingAttributes = new Set(
+    inspectable
+      .filter(({ key }) => pendingByKey.get(key))
+      .map(({ key }) => key),
   );
   const finding =
     findings.find(({ key }) => key === findingKey) ?? sectionFindings[0];
@@ -480,9 +511,14 @@ function Workspace({
   }, [scene, sceneIndex, locale, preview, reload, findingKeys]);
 
   useEffect(() => {
-    if (!reading && !interactive)
-      bridge.current?.highlight(selectedPlacement?.id);
+    bridge.current?.highlight(
+      !reading && !interactive ? selectedPlacement?.id : undefined,
+    );
   }, [interactive, reading, selectedPlacement?.id]);
+
+  useEffect(() => {
+    bridge.current?.markPending(!reading && !interactive ? pendingTextIds : []);
+  }, [interactive, pendingTextIds, reading]);
 
   function resetSection() {
     setScene(undefined);
@@ -638,6 +674,12 @@ function Workspace({
               {interactive ? 'Resume inspection' : 'Interact with preview'}
             </button>
           </div>
+          {!reading && !interactive && pendingTextIds.length > 0 && (
+            <p className="lr-review-legend">
+              <span className="lr-review-mark">Dotted underline</span> marks
+              wording to review.
+            </p>
+          )}
           {scene ? (
             <div className="lr-stage" ref={stage} aria-busy={reading}>
               <div className="lr-frame-box" style={{ width: width * scale }}>
@@ -726,7 +768,8 @@ function Workspace({
                     disabled={!canVerify || verified(review, finding, locale)}
                     onClick={verify}
                   >
-                    Verify {languages[locale]} wording
+                    Verify this line in{' '}
+                    {locale === 'en' ? 'English' : 'Japanese'}
                   </button>
                   {occurrence?.surface === 'Browser confirmation' && (
                     <button
@@ -737,6 +780,41 @@ function Workspace({
                     </button>
                   )}
                 </div>
+              )}
+              {!interactive && inspectable.length > 0 && (
+                <details className="lr-detail">
+                  <summary>
+                    Inspect accessibility and attributes
+                    {pendingAttributes.size > 0 && (
+                      <small className="lr-attribute-count">
+                        {' '}
+                        · {pendingAttributes.size} to review
+                      </small>
+                    )}
+                  </summary>
+                  {inspectable.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setFinding(item.key);
+                        setPlacement(item.id);
+                      }}
+                    >
+                      {item.surface} ·{' '}
+                      <span
+                        className={
+                          pendingByKey.get(item.key)
+                            ? 'lr-review-mark'
+                            : undefined
+                        }
+                      >
+                        {item.text}
+                      </span>
+                      <small>{item.key}</small>
+                    </button>
+                  ))}
+                </details>
               )}
               <div className="lr-placements">
                 {!finding.noteOnly && (
@@ -798,34 +876,6 @@ function Workspace({
                     {finding.location.steps.map((step) => (
                       <p key={step}>{step}</p>
                     ))}
-                  </details>
-                )}
-                {Boolean(
-                  live?.occurrences.some((item) => item.surface !== 'Text'),
-                ) && (
-                  <details className="lr-detail">
-                    <summary>Inspect accessibility and attributes</summary>
-                    {live?.occurrences
-                      .filter(
-                        ({ surface, key }) =>
-                          surface !== 'Text' &&
-                          sectionFindings.some(
-                            (finding) => finding.key === key,
-                          ),
-                      )
-                      .map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => {
-                            setFinding(item.key);
-                            setPlacement(item.id);
-                          }}
-                        >
-                          {item.surface} · {item.text}
-                          <small>{item.key}</small>
-                        </button>
-                      ))}
                   </details>
                 )}
               </div>

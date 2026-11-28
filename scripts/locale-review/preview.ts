@@ -171,6 +171,7 @@ function privacyScope(scene: Scene) {
 
 export function createPreviewBridge() {
   let targets = new Map<string, Element>();
+  const marked = new Set<Element>();
   let active: Element | undefined;
   let confirmation: string | undefined;
   const nativeConfirm = window.confirm;
@@ -324,6 +325,18 @@ export function createPreviewBridge() {
           root.scrollIntoView({ block: 'start' });
       }
       return { actions, scope };
+    },
+    markPending(ids: string[]) {
+      for (const element of marked) {
+        element.removeAttribute('data-locale-review-pending');
+      }
+      marked.clear();
+      for (const id of ids) {
+        const element = targets.get(id);
+        if (!element) continue;
+        element.setAttribute('data-locale-review-pending', '');
+        marked.add(element);
+      }
     },
     highlight(id: string | undefined) {
       active?.removeAttribute('data-locale-review-active');

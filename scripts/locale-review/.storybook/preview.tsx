@@ -7,6 +7,7 @@ import ja from '@/locales/ja.json';
 import { createPreviewBridge, type PreviewWindow } from '../preview';
 import type { Locale } from '../review-state';
 import '@/app/globals.css';
+import '../reviewer.css';
 
 function Fixture({
   children,
@@ -33,9 +34,7 @@ function Fixture({
     >
       <div className={fontVariables} lang={locale}>
         <style>
-          {
-            '[data-locale-review-active] { background: #333d4b; box-shadow: 0 0 0 3px #879caf66; } .ToastTimer--running { animation-play-state: paused !important; }'
-          }
+          {'.ToastTimer--running { animation-play-state: paused !important; }'}
         </style>
         {children}
       </div>
