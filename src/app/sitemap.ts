@@ -8,6 +8,7 @@ const publicPaths = [
   '/legal/terms',
   '/legal/privacy',
   '/legal/guidelines',
+  '/advertise',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
