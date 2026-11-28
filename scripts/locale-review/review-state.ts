@@ -157,14 +157,7 @@ export function readCheckpoint(html: string, progress: string): Review {
 }
 
 const sharedKeys = (review: Review) =>
-  review.inventory.issues
-    .filter((finding) =>
-      locales.every(
-        (locale) =>
-          finding.original.develop?.[locale] === finding.original.now?.[locale],
-      ),
-    )
-    .map(({ key }) => key);
+  review.inventory.issues.map(({ key }) => key);
 
 export function shareLines(review: Review): Review {
   const keys = sharedKeys(review);
