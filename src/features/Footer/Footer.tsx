@@ -72,6 +72,11 @@ export const Footer: React.FC<FooterProps> = ({
     { id: 'home', label: t('homeLink'), href: `/${locale}` },
     { id: 'saved', label: t('savedLink'), href: `/${locale}/saved` },
     { id: 'settings', label: t('settingsLink'), href: `/${locale}/settings` },
+    {
+      id: 'advertise',
+      label: t('advertiseLink'),
+      href: `/${locale}/advertise`,
+    },
   ];
 
   const legalLinks: { id: string; label: string; href: string }[] = [

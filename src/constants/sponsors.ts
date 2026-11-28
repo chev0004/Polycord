@@ -7,6 +7,13 @@ export const SPONSOR_LIMITS: Record<SponsorTier, number> = {
   banner: 1,
 };
 
+export const SPONSOR_PRICES_USD: Record<SponsorTier, number> = {
+  card: 50,
+  banner: 100,
+};
+
+export const SPONSOR_BOOKING_DAYS = 30;
+
 export const SPONSOR_IMAGE_SIZES = {
   card: { width: 1080, height: 1350 },
   banner: { width: 2400, height: 300 },

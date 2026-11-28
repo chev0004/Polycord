@@ -1,5 +1,6 @@
 export * from './account';
 export * from './analytics';
+export * from './audience';
 export * from './billing';
 export * from './boosts';
 export * from './health';
