@@ -156,6 +156,7 @@ jobs:
         with:
           name: browser-test-results-${{ strategy.job-index }}
           path: test-results/
+          retention-days: 7
 
   storybook:
     needs: [gate, static]
@@ -177,6 +178,7 @@ jobs:
         with:
           name: storybook-test-results
           path: test-results/
+          retention-days: 7
 
   result:
     name: CI result
